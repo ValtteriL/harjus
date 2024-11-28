@@ -14,6 +14,9 @@ let
     devEnv = mkShellNoCC rec {
       name = "devEnv";
 
+      # environment variables
+      ELIXIR_ERL_OPTIONS="+fnu";
+
       # packages to be installed in env
       packages = with pkgs; [
         elixir
@@ -22,7 +25,7 @@ let
 
       # this is executed when shell entered
       shellHook = ''
-        iex
+        iex -S mix
       '';
     };
 
