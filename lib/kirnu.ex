@@ -15,4 +15,8 @@ defmodule Kirnu do
   def hello do
     :world
   end
+
+  def start do
+    Websocket.start_link("wss://stream.binance.com:9443/ws/BTCUSD@bookTicker", %{})
+  end
 end
