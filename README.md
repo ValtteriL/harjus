@@ -1,23 +1,8 @@
 # Kirnu
 
-**TODO: Add description**
+Binance arbitrage bot.
 
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `kirnu` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:kirnu, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/kirnu>.
+Uses triangular arbitration on Spot trading, and Cash-and-Carry between SPOT and Futures.
 
 ## Development
 
@@ -30,4 +15,3 @@ nix-shell -A devEnv
 ```bash
 mix test
 ```
-
