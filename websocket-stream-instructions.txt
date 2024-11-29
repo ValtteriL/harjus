@@ -1,0 +1,31 @@
+wss://stream.binance.com:443/stream or wss://stream.binance.com:9443/stream
+
+send subscribe message:
+{"method": "SUBSCRIBE", "params": ["btcusdt@bookTicker","ethusdt@bookTicker"], "id": "asd"}
+
+
+sample response msg:
+
+this is the ack:
+{"result":null,"id":"asd"}
+
+then:
+{"stream":"ethusdt@bookTicker","data":{"u":39841078441,"s":"ETHUSDT","b":"3602.26000000","B":"63.91290000","a":"3602.27000000","A":"18.21240000"}}
+
+
+
+USE RAW STREAMS AS WE CAN DIFFERENTIATE BY SYMBOL HERE
+
+to minimize traffic (responses are shorter):
+wss://stream.binance.com:443/ws/kek or wss://stream.binance.com:9443/kek
+
+send subscription message:
+{"method": "SUBSCRIBE", "params": ["btcusdt@bookTicker","ethusdt@bookTicker"], "id": "asd"}
+
+sample response msgs:
+
+this is the ack:
+{"result":null,"id":"asd"}
+
+then:
+{"u":39841319504,"s":"ETHUSDT","b":"3607.79000000","B":"20.54720000","a":"3607.80000000","A":"78.49690000"}
