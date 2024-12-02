@@ -1,28 +1,26 @@
 defmodule Arbmapper do
   @moduledoc """
-  Module for finding arbitrage opportunities in Binance.
+  Module for finding arbitrage opportunities.
   """
-
-  # Get all trading pairs from Binance
-  @spec get_symbols() :: [%{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}]
-  def get_symbols do
-    {:ok, resp} = Req.get("https://api.binance.com/api/v3/exchangeInfo")
-
-    resp.body["symbols"]
-    |> Enum.map(fn x -> Map.take(x, ["symbol", "baseAsset", "quoteAsset"]) end)
-  end
 
   @doc """
-  Generate graph from trading pairs
-
-  ## Examples
-
-      iex> Kirnu.generate_graph([%{symbol: "BTCUSD", baseAsset: "BTC", quoteAsset: "USD"}])
-      :digraph.graph()
+  Generate trading paths from symbols
   """
+  @spec generate_trading_paths([
+          %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
+        ]) :: [[:digraph.vertex()]]
+  def generate_trading_paths(symbols) do
+    graph = generate_graph(symbols)
+
+    :digraph.vertices(graph)
+    |> Enum.map(fn x -> get_simple_cycles_for_vertex(graph, x) end)
+    |> Enum.concat()
+  end
+
+  # generate graph from symbols
   @spec generate_graph([%{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}]) ::
           :digraph.graph()
-  def generate_graph(symbols) do
+  defp generate_graph(symbols) do
     graph = :digraph.new()
 
     # Add symbols as vertices
@@ -40,37 +38,43 @@ defmodule Arbmapper do
     graph
   end
 
-  @doc """
-  Get all unique cycles for every symbol in graph
-  """
-  @spec get_simple_cycles(:digraph.graph()) :: [[:digraph.vertex()]]
-  def get_simple_cycles(graph) do
-    # for every vertex in graph, find all simple cycles
-    vertices = :digraph.vertices(graph)
-    vertices |> Enum.map(fn x -> get_simple_cycles_for_symbol(graph, x) end) |> List.flatten
+  # get list of simple cycles for vertex
+  @spec get_simple_cycles_for_vertex(:digraph.graph(), :digraph.vertex()) :: [[:digraph.vertex()]]
+  defp get_simple_cycles_for_vertex(graph, vertex) do
+    :digraph.out_neighbours(graph, vertex)
+    |> Enum.map(fn x -> dfs(graph, vertex, x) end)
+    |> List.flatten()
+    |> Enum.chunk_while([], &chunk_fun/2, &after_fun/1)
   end
 
-  def get_simple_cycles_for_symbol(graph, symbol, visited \\ [], acc \\ []) do
-    :digraph.out_neighbours(graph, symbol)
+  defp dfs(_graph, start, start, acc \\ [])
+
+  defp dfs(_graph, start, start, acc) do
+    [start] ++ acc ++ [start]
   end
 
+  defp dfs(graph, start, current, acc) do
+    if current in acc do
+      nil
+    end
 
-  # take start node
-  # if start node in neighbors, record loop
-  # take
+    :digraph.out_neighbours(graph, current)
+    |> Enum.map(fn x -> dfs(graph, start, x, acc ++ [current]) end)
+  end
 
-  @doc """
-  Get trading pair symbols for all edges in a path, in order
+  defp chunk_fun(element, []) do
+    {:cont, [element]}
+  end
 
-  Used to find trading pair symbols for a cycle
-  """
-  # @spec get_symbols_for_path(:digraph.graph(), [:digraph.vertex()]) :: [charlist()]
-  # def get_symbols_for_path(graph, path) do
-  #  # TODO
-  #  :digraph.get_vertices_for_path(graph, path)
-  #
-  #  g
-  #  |> :digraph.edges()
-  #  |> Enum.map(fn x -> :digraph.edge(g, x) |> Tuple.to_list() |> List.last() end)
-  # end
+  defp chunk_fun(element, [h | t]) do
+    if element == h do
+      {:cont, [h | t] ++ [element], []}
+    else
+      {:cont, [h | t] ++ [element]}
+    end
+  end
+
+  defp after_fun(acc) do
+    {:cont, acc}
+  end
 end
