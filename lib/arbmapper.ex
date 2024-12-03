@@ -24,7 +24,7 @@ defmodule Arbmapper do
     graph = :digraph.new()
 
     # Add symbols as vertices
-    uniq_base_symbols = symbols |> Enum.map(fn x -> x["baseAsset"] end) |> Enum.uniq()
+    uniq_base_symbols = symbols |> Enum.map(fn x -> x[:baseAsset] end) |> Enum.uniq()
 
     for s <- uniq_base_symbols do
       :digraph.add_vertex(graph, s)
@@ -32,7 +32,7 @@ defmodule Arbmapper do
 
     # Add trading pairs as edges
     for s <- symbols do
-      :digraph.add_edge(graph, s["baseAsset"], s["quoteAsset"], s["symbol"])
+      :digraph.add_edge(graph, s[:baseAsset], s[:quoteAsset], s[:symbol])
     end
 
     graph

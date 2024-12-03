@@ -5,6 +5,10 @@ defmodule Binance do
     {:ok, resp} = Req.get("https://api.binance.com/api/v3/exchangeInfo")
 
     resp.body["symbols"]
-    |> Enum.map(fn x -> Map.take(x, ["symbol", "baseAsset", "quoteAsset"]) end)
+    |> Enum.map(fn x ->
+      Map.take(x, ["symbol", "baseAsset", "quoteAsset"])
+      # use atoms as keys
+      |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
+    end)
   end
 end
