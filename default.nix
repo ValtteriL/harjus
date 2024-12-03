@@ -21,11 +21,12 @@ let
       packages = with pkgs; [
         elixir
         mix2nix
+        cowsay
       ];
 
       # this is executed when shell entered
       shellHook = ''
-        iex -S mix
+        cowsay "Kirnu!"
       '';
     };
 
