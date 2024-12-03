@@ -41,25 +41,36 @@ defmodule Arbmapper do
   # get list of simple cycles for vertex
   @spec get_simple_cycles_for_vertex(:digraph.graph(), :digraph.vertex()) :: [[:digraph.vertex()]]
   defp get_simple_cycles_for_vertex(graph, vertex) do
-    :digraph.out_neighbours(graph, vertex)
-    |> Enum.map(fn x -> dfs(graph, vertex, x) end)
+    neighbors =
+      :digraph.out_neighbours(graph, vertex)
+      |> Enum.map(fn x -> {x, [vertex]} end)
+
+    dfs(graph, vertex, neighbors)
     |> List.flatten()
     |> Enum.chunk_while([], &chunk_fun/2, &after_fun/1)
   end
 
-  defp dfs(_graph, start, start, acc \\ [])
+  @spec dfs(:digraph.graph(), :digraph.vertex(), [{:digraph.vertex(), [:digraph.vertex()]}], [
+          :digraph.vertex()
+        ]) :: [[:digraph.vertex()]]
+  defp dfs(graph, start, neighbors \\ [], cycles \\ [])
 
-  defp dfs(_graph, start, start, acc) do
-    [start] ++ acc ++ [start]
+  defp dfs(_graph, _start, [], cycles) do
+    cycles
   end
 
-  defp dfs(graph, start, current, acc) do
-    if current in acc do
-      nil
-    end
+  defp dfs(graph, start, [{start, acc} | tail], cycles) do
+    dfs(graph, start, tail, [start | acc] ++ cycles)
+  end
 
-    :digraph.out_neighbours(graph, current)
-    |> Enum.map(fn x -> dfs(graph, start, x, acc ++ [current]) end)
+  defp dfs(graph, start, [{current, acc} | tail], cycles) do
+    if current in acc do
+      dfs(graph, start, tail, cycles)
+    else
+      new_acc = [current | acc]
+      neighbors = :digraph.out_neighbours(graph, current) |> Enum.map(fn x -> {x, new_acc} end)
+      dfs(graph, start, neighbors ++ tail, cycles)
+    end
   end
 
   defp chunk_fun(element, []) do
