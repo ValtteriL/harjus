@@ -64,12 +64,17 @@ defmodule Arbmapper do
   end
 
   defp dfs(graph, start, [{current, acc} | tail], cycles) do
-    if current in acc do
-      dfs(graph, start, tail, cycles)
-    else
-      new_acc = [current | acc]
-      neighbors = :digraph.out_neighbours(graph, current) |> Enum.map(fn x -> {x, new_acc} end)
-      dfs(graph, start, neighbors ++ tail, cycles)
+    cond do
+      length(acc) > 4 ->
+        dfs(graph, start, tail, cycles)
+
+      current in acc ->
+        dfs(graph, start, tail, cycles)
+
+      true ->
+        new_acc = [current | acc]
+        neighbors = :digraph.out_neighbours(graph, current) |> Enum.map(fn x -> {x, new_acc} end)
+        dfs(graph, start, neighbors ++ tail, cycles)
     end
   end
 

@@ -7,6 +7,6 @@ defmodule Kirnu do
     symbols = Binance.get_symbols()
     _trading_paths = Arbmapper.generate_trading_paths(symbols)
 
-    Websocket.start_link("wss://stream.binance.com:9443/ws/BTCUSD@bookTicker", %{})
+    #Websocket.start_link("wss://stream.binance.com:9443/ws/BTCUSD@bookTicker", %{})
   end
 end
