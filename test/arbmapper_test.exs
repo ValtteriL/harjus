@@ -2,7 +2,7 @@ defmodule ArbmapperTest do
   use ExUnit.Case
   doctest Arbmapper
 
-  test "generates trading paths" do
+  test "generates correct trading paths" do
     trading_symbols = [
       %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH"},
       %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC"},
@@ -12,9 +12,28 @@ defmodule ArbmapperTest do
     trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
 
     assert trading_paths == [
-             ["BTC", "LTC", "ETH", "BTC"],
-             ["LTC", "ETH", "BTC", "LTC"],
-             ["ETH", "BTC", "LTC", "ETH"]
+             ["LTCBTC", "ETHLTC", "BTCETH"],
+             ["ETHLTC", "BTCETH", "LTCBTC"],
+             ["BTCETH", "LTCBTC", "ETHLTC"]
            ]
+  end
+
+  test "generates empty paths if no paths" do
+    trading_symbols = [
+      %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH"},
+      %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC"}
+    ]
+
+    trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
+
+    assert trading_paths == []
+  end
+
+  test "generates empty paths if no empty symbols" do
+    trading_symbols = []
+
+    trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
+
+    assert trading_paths == []
   end
 end

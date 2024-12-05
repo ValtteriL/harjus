@@ -5,16 +5,21 @@ defmodule Arbmapper do
 
   @doc """
   Generate trading paths from symbols
+
+  Returns trading symbols to buy that make up a cycle
   """
   @spec generate_trading_paths([
           %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
-        ]) :: [[:digraph.vertex()]]
+        ]) :: [[:digraph.label()]]
   def generate_trading_paths(symbols) do
     graph = generate_graph(symbols)
+
+    full_edges = :digraph.edges(graph) |> Enum.map(fn e -> :digraph.edge(graph, e) end)
 
     :digraph.vertices(graph)
     |> Enum.map(fn x -> get_simple_cycles_for_vertex(graph, x) end)
     |> Enum.concat()
+    |> Enum.map(fn x -> vertex_path_to_symbols(full_edges, x) end)
   end
 
   # generate graph from symbols
@@ -53,7 +58,7 @@ defmodule Arbmapper do
   @spec dfs(:digraph.graph(), :digraph.vertex(), [{:digraph.vertex(), [:digraph.vertex()]}], [
           :digraph.vertex()
         ]) :: [[:digraph.vertex()]]
-  defp dfs(graph, start, neighbors \\ [], cycles \\ [])
+  defp dfs(graph, start, neighbors, cycles \\ [])
 
   defp dfs(_graph, _start, [], cycles) do
     cycles
@@ -92,5 +97,21 @@ defmodule Arbmapper do
 
   defp after_fun(acc) do
     {:cont, acc}
+  end
+
+  # Convert list of vertexes into list of trading pair symbols
+  @spec vertex_path_to_symbols(
+          [{:digraph.edge(), :digraph.vertex(), :digraph.vertex(), :digraph.label()}],
+          [:digraph.vertex()]
+        ) :: [:digraph.label()]
+  defp vertex_path_to_symbols(edges, path) do
+    path
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.map(fn [b, q] ->
+      edges
+      |> Enum.filter(fn {_, from, to, _} -> to == b and from == q end)
+      |> List.first()
+      |> elem(3)
+    end)
   end
 end
