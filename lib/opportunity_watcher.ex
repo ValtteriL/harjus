@@ -1,26 +1,95 @@
 defmodule OpportunityWatcher do
-  use Agent
+  @moduledoc """
+  Process for watching for arbitrage opportunities.
 
-  @spec start([charlist()]) :: {:error, any()} | {:ok, pid()}
-  @doc """
-  Starts a new opportunity watcher.
+  Gets trading symbol price and quantity updates, and emits arbitrage opportunities.
+  Arbitrage opportunity = positive return on a cycle
   """
-  def start(trading_path) do
-    # TODO: init data structure for holding trading path, subscribe to trading symbol feeds
-    Agent.start(fn -> trading_path end)
+
+  use GenServer
+
+  # API
+
+  @doc """
+  Start the opportunity watcher
+
+  Args:
+    trading_paths: list of trading symbol lists to watch for arbitrage opportunities
+  """
+  @spec start_link([[charlist()]]) :: :ignore | {:error, any()} | {:ok, pid()}
+  def start_link(trading_paths) do
+    GenServer.start_link(__MODULE__, trading_paths)
   end
 
   @doc """
-  Gets a value from the `bucket` by `key`.
+  Update trading symbol price and quantity
+
+  This triggers a recalculation of arbitrage opportunities
   """
-  def get(bucket, key) do
-    Agent.get(bucket, &Map.get(&1, key))
+  @spec update_symbol(pid, {charlist(), float(), float()}) :: :ok
+  def update_symbol(pid, update) do
+    GenServer.cast(pid, {:update_symbol, update})
   end
 
-  @doc """
-  Puts the `value` for the given `key` in the `bucket`.
-  """
-  def put(bucket, key, value) do
-    Agent.update(bucket, &Map.put(&1, key, value))
+  # Callbacks
+
+  @impl true
+  @spec init([[charlist()]]) ::
+          {:ok,
+           %{
+             trading_paths: [[charlist()]],
+             current_prices_quantities: %{
+               charlist() => %{best_ask: float(), quantity: float()}
+             }
+           }}
+  def init(trading_paths) do
+    # initialize current prices and quantities for each trading symbol
+    current_prices_quantities =
+      trading_paths
+      |> List.flatten()
+      |> Enum.uniq()
+      |> Enum.map(fn x -> {x, %{:best_ask => 0.0, :quantity => 0.0}} end)
+      |> Map.new()
+
+    initial_state = %{
+      trading_paths: trading_paths,
+      current_prices_quantities: current_prices_quantities
+    }
+
+    {:ok, initial_state}
+  end
+
+  @impl true
+  @spec handle_cast({:update_symbol, {charlist(), float(), float()}}, %{
+          trading_paths: [[charlist()]],
+          current_prices_quantities: %{charlist() => %{best_ask: float(), quantity: float()}}
+        }) ::
+          {:noreply,
+           %{
+             trading_paths: [[charlist()]],
+             current_prices_quantities: %{
+               charlist() => %{best_ask: float(), quantity: float()}
+             }
+           }}
+  def handle_cast({:update_symbol, {symbol, best_ask, quantity}}, state) do
+    # update state
+    new_state = %{
+      trading_paths: state.trading_paths,
+      current_prices_quantities:
+        state.current_prices_quantities
+        |> Map.replace(symbol, %{best_ask: best_ask, quantity: quantity})
+    }
+
+    # calculate arbitrage opportunities and emit
+    opportunities =
+      new_state.trading_paths
+      |> Enum.map(fn path ->
+        Opportunity.triangular_arbitrage(path, new_state.current_prices_quantities)
+      end)
+
+    IO.puts("Opportunities: #{inspect(opportunities)}")
+    # TODO: emit
+
+    {:noreply, new_state}
   end
 end
