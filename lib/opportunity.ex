@@ -3,40 +3,42 @@ defmodule Opportunity do
   Functions for calculating arbitrage opportunities.
   """
 
-  @doc """
-  Calculate triangular arbitrage profit and capacity in first trading pair currency for trading path given prices and available quantities
-
-  The idea is that the maximum capacity is the quantity of the best_bid in the first trading pair currency.
-  """
-  @spec triangular_arbitrage([charlist()], %{
+  @spec profit([charlist()], %{
           charlist() => %{best_ask: float(), quantity: float()}
-        }) :: %{
-          # profit in percent (not multiplied by 100)
-          profit: float(),
-          # capacity of opportunity
-          capacity: float()
-        }
-  def triangular_arbitrage(path, price_quantity_map) do
-    # calculate profit
-    profit =
-      path
-      |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol).best_ask end)
-      |> Enum.reduce(1, fn price, acc -> acc / price end)
-      |> Kernel.-(1)
+        }) :: float()
+  @doc """
+  Calculate triangular arbitrage profit percentage for a trading path given symbol prices
+  """
+  def profit(trading_path, price_quantity_map) do
+    trading_path
+    |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol).best_ask end)
+    |> Enum.reduce(1, fn price, acc -> acc / price end)
+    |> Kernel.-(1)
+  end
 
-    first_symbol_price = Map.get(price_quantity_map, Enum.at(path, 0)).best_ask
-    # convert all quantities to first trading pair currency, multiply by quantity, take minimum
-    capacity =
-      path
-      |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol) end)
-      |> Enum.map_reduce(first_symbol_price, fn price_quantity, acc ->
-        {price_quantity.best_ask / acc * price_quantity.quantity,
-         price_quantity.best_ask / acc * price_quantity.quantity}
-      end)
-      # drop accumulator
-      |> elem(0)
-      |> Enum.min()
+  @spec capacity(
+          [charlist()],
+          %{
+            charlist() => %{best_ask: float(), quantity: float()}
+          },
+          float()
+        ) :: float()
+  @doc """
+  Calculate triangular arbitrage capacity for a trading path given symbol offer quantities and profit percentage
 
-    %{profit: profit, capacity: capacity}
+  The capacity is the amount of the first trading pair currency that can be traded in the path.
+  Taking into accound only best ask prices and quantities.
+  """
+  def capacity(trading_path, price_quantity_map, profit) do
+    first_symbol_qty = Map.get(price_quantity_map, Enum.at(trading_path, 0)).quantity
+
+    trading_path
+    |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol) end)
+    # skip first symbol
+    |> Enum.drop(1)
+    |> Enum.reduce(first_symbol_qty, fn price_quantity, acc ->
+      min(acc / price_quantity.best_ask, price_quantity.quantity)
+    end)
+    |> Kernel./(1 + profit)
   end
 end

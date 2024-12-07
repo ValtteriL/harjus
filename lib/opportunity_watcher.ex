@@ -84,7 +84,12 @@ defmodule OpportunityWatcher do
     opportunities =
       new_state.trading_paths
       |> Enum.map(fn path ->
-        Opportunity.triangular_arbitrage(path, new_state.current_prices_quantities)
+        {path, Opportunity.profit(path, new_state.current_prices_quantities)}
+      end)
+      |> Enum.filter(fn {_, profit} -> profit > 0.0 end) # filter nonprofitable
+      |> Enum.map(fn {path, profit} ->
+        capacity = Opportunity.capacity(path, new_state.current_prices_quantities, profit)
+        {path, profit, capacity}
       end)
 
     IO.puts("Opportunities: #{inspect(opportunities)}")
