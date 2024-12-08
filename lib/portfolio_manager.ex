@@ -1,0 +1,75 @@
+defmodule PortfolioManager do
+  @moduledoc """
+  Process for filtering, and prioritizing opportunities.
+
+  Gets opportunities from the OpportunityWatcher,
+  filters out unprofitable ones,
+  and sends the most profitable to Executor, if any.
+  """
+
+  use GenServer
+
+  # API
+
+  @doc """
+  Start the portfolio manager
+
+  Args:
+    pid: pid of the process to send the most profitable opportunities
+    TODO: here would be place for trading fees, info which symbols are in margin, ...
+  """
+  @spec start_link(pid()) :: :ignore | {:error, any()} | {:ok, pid()}
+  def start_link(pid) do
+    GenServer.start_link(__MODULE__, pid)
+  end
+
+  @doc """
+  Send opportunities to Portfolio Manager
+  """
+  @spec send_opportunities(pid, [%{path: [charlist()], profit: float(), capacity: float()}]) ::
+          :ok
+  def send_opportunities(pid, opportunities) do
+    GenServer.cast(pid, {:update_opportunities, opportunities})
+  end
+
+  # Callbacks
+
+  @impl true
+  @spec init({pid()}) ::
+          {:ok,
+           %{
+             pid: pid()
+           }}
+  def init(pid) do
+    initial_state = %{
+      pid: pid
+    }
+
+    {:ok, initial_state}
+  end
+
+  @impl true
+  @spec handle_cast(
+          {:update_opportunities, [%{path: [charlist()], profit: float(), capacity: float()}]},
+          %{
+            pid: pid()
+          }
+        ) ::
+          {:noreply,
+           %{
+             pid: pid()
+           }}
+  def handle_cast(
+        {:update_opportunities, _opportunities},
+        state
+      ) do
+    # update state
+    new_state = %{
+      pid: state.pid
+    }
+
+    # TODO
+
+    {:noreply, new_state}
+  end
+end

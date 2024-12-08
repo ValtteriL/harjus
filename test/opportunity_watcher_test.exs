@@ -3,24 +3,22 @@ defmodule OpportunityWatcherTest do
   doctest OpportunityWatcher
 
   setup do
-    # TODO: add trading paths?
-    # TODO: pass pid where to send opportunities here?
-    {:ok, pid} = OpportunityWatcher.start_link([])
+    trading_paths = [["BTCUSDT", "USDTBTC"]]
+    # pass self -> receive msgs meant for portfolio manager
+    {:ok, pid} = OpportunityWatcher.start_link(self(), trading_paths)
     %{pid: pid}
   end
 
-  test "symbol update emits positive opportunities", %{pid: pid} do
-    # TODO
+  test "symbol update emits opportunities", %{pid: pid} do
     OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 10000.0, 1.0})
-  end
 
-  test "symbol update does not emit negative opportunities", %{pid: pid} do
-    # TODO
-    OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 10000.0, 1.0})
-  end
+    # negative oppotunities should not be emitted
+    refute_receive _
 
-  test "no opportunities emitted if uninitialized", %{pid: pid} do
-    # TODO
-    OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 10000.0, 1.0})
+    OpportunityWatcher.update_symbol(pid, {"USDTBTC", 0.00005, 1337.1337})
+
+    assert_receive {:"$gen_cast",
+                    {:update_opportunities,
+                     [%{path: ["BTCUSDT", "USDTBTC"], profit: _, capacity: _}]}}
   end
 end
