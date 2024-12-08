@@ -8,6 +8,7 @@ defmodule PortfolioManager do
   """
 
   use GenServer
+  require Logger
 
   # API
 
@@ -60,7 +61,7 @@ defmodule PortfolioManager do
              pid: pid()
            }}
   def handle_cast(
-        {:update_opportunities, _opportunities},
+        {:update_opportunities, opportunities},
         state
       ) do
     # update state
@@ -69,6 +70,7 @@ defmodule PortfolioManager do
     }
 
     # TODO
+    Logger.info("Portfolio Manager: received opportunities #{inspect(opportunities)}")
 
     {:noreply, new_state}
   end
