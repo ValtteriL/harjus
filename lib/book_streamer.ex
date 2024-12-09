@@ -19,40 +19,58 @@ defmodule BookStreamer do
   """
   @spec start_link(pid(), [charlist()], String.t()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(pid, symbols, url \\ "wss://testnet.binance.vision/ws/kek") do
-    WebSockex.start_link(url, __MODULE__, %{pid: pid, symbols: symbols})
+    {:ok, pid} = WebSockex.start_link(url, __MODULE__, %{pid: pid})
+
+    # subscribe to symbols
+    params =
+      symbols
+      |> String.downcase()
+      |> Enum.map(fn s -> "#{s}@bookTicker" end)
+    WebSockex.send_frame(pid, {:text, Poison.encode!(%{method: "SUBSCRIBE", params: params, id: "sub_id"})})
+
+    {:ok, pid}
   end
 
   # handle messages from websocket server
-  def handle_frame({_type, %{result: _, id: "sub_id"}}, state) do
-    Logger.info("Subscribed!")
+
+  # subscription ack
+  def handle_frame({:text, %{result: null, id: "sub_id"}}, state) do
+    Logger.info("Subscribed")
     {:ok, state}
   end
 
+  # ping
+  def handle_frame({:text, "PING"}, state) do
+    Logger.info("PONG")
+    {:reply, {:text, "PONG"}, state}
+  end
+
+  # book ticker update
   def handle_frame({type, msg}, state) do
+    case Poison.decode(msg) do
+      {:error, error} ->
+        Logger.debug(inspect(msg))
+        Logger.error(inspect(error))
+      {:ok, message} ->
+        case message["id"] do
+          "sub_id" ->
+            Logger.info("Subscribed")
+            :ok
+          else
+            # TODO
+        end
+        # TODO
+    end
+
     Logger.info("Received Message - Type: #{inspect(type)} -- Message: #{inspect(msg)}")
     # TODO: parse the message and send the best ask price and quantity to opportunity watcher
     {:ok, state}
   end
 
-  # handle asyc messages from WebSockex.cast() (user)
-  def handle_cast({:send, {type, msg} = frame}, state) do
-    Logger.info("Sending #{type} frame with payload: #{msg}")
-    {:reply, frame, state}
-  end
-
-  # run when the connection is established
-  def handle_connect(conn, state) do
-    Logger.info("Connected!")
-    subscribe_to_symbols(conn, state.symbols)
+  # catch-all
+  def handle_frame({type, msg}, state) do
+    Logger.info("Received Message - Type: #{inspect(type)} -- Message: #{inspect(msg)}")
+    # TODO: parse the message and send the best ask price and quantity to opportunity watcher
     {:ok, state}
-  end
-
-  defp subscribe_to_symbols(conn, symbols) do
-    params =
-      symbols
-      |> String.downcase()
-      |> Enum.map(fn s -> "#{s}@bookTicker" end)
-
-    WebSockex.cast(conn, %{method: "SUBSCRIBE", params: params, id: "sub_id"})
   end
 end
