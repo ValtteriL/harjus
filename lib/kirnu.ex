@@ -23,5 +23,8 @@ defmodule Kirnu do
 
     # sleep 5 seconds
     Process.sleep(5000)
+
+    # bs_pid = Process.whereis :book_streamer
+    Process.info(bs_pid)
   end
 end
