@@ -29,3 +29,11 @@ this is the ack:
 
 then:
 {"u":39841319504,"s":"ETHUSDT","b":"3607.79000000","B":"20.54720000","a":"3607.80000000","A":"78.49690000"}
+
+
+
+
+
+Total number of streams: 2833
+a single connection has a limit of 1024 streams: https://developers.binance.com/docs/binance-spot-api-docs/web-socket-streams
+Thus must split into at least 3 bookstreamers

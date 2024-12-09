@@ -90,4 +90,10 @@ defmodule BookStreamer do
 
     {:ok, state}
   end
+
+  def handle_frame({type, msg}, state) do
+    Logger.error("Unhandled frame type: #{type}")
+    Logger.debug(inspect(msg))
+    {:ok, state}
+  end
 end
