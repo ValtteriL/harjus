@@ -16,6 +16,7 @@ let
 
       # environment variables
       ELIXIR_ERL_OPTIONS="+fnu";
+      LC_ALL="C";
 
       # packages to be installed in env
       packages = with pkgs; [
