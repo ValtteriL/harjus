@@ -17,60 +17,77 @@ defmodule BookStreamer do
     symbols: list of trading symbols to subscribe updates on
     url: websocket url to connect to
   """
-  @spec start_link(pid(), [charlist()], String.t()) :: :ignore | {:error, any()} | {:ok, pid()}
+  @spec start_link(
+          pid :: pid(),
+          symbols :: [String.t()],
+          url ::
+            String.t()
+            | %WebSockex.Conn{
+                cacerts: any(),
+                conn_mod: :gen_tcp | :ssl,
+                extra_headers: [{any(), any()}],
+                host: binary(),
+                insecure: any(),
+                path: binary(),
+                port: non_neg_integer(),
+                query: nil | binary(),
+                resp_headers: [{any(), any()}],
+                socket: any(),
+                socket_connect_timeout: non_neg_integer(),
+                socket_recv_timeout: non_neg_integer(),
+                ssl_options: any(),
+                transport: :ssl | :tcp
+              }
+        ) :: {:ok, pid()}
   def start_link(pid, symbols, url \\ "wss://testnet.binance.vision/ws/kek") do
-    {:ok, pid} = WebSockex.start_link(url, __MODULE__, %{pid: pid})
+    {:ok, ws_pid} = WebSockex.start_link(url, __MODULE__, %{pid: pid})
 
     # subscribe to symbols
     params =
       symbols
-      |> String.downcase()
-      |> Enum.map(fn s -> "#{s}@bookTicker" end)
-    WebSockex.send_frame(pid, {:text, Poison.encode!(%{method: "SUBSCRIBE", params: params, id: "sub_id"})})
+      |> Enum.map(fn s -> "#{String.downcase(s)}@bookTicker" end)
 
-    {:ok, pid}
+    WebSockex.send_frame(
+      ws_pid,
+      {:text, Poison.encode!(%{method: "SUBSCRIBE", params: params, id: "sub_id"})}
+    )
+
+    {:ok, ws_pid}
   end
 
   # handle messages from websocket server
 
-  # subscription ack
-  def handle_frame({:text, %{result: null, id: "sub_id"}}, state) do
-    Logger.info("Subscribed")
-    {:ok, state}
-  end
-
   # ping
-  def handle_frame({:text, "PING"}, state) do
-    Logger.info("PONG")
-    {:reply, {:text, "PONG"}, state}
+  def handle_ping({:ping, id}, state) do
+    Logger.info("PING received")
+    {:reply, {:pong, id}, state}
   end
 
   # book ticker update
-  def handle_frame({type, msg}, state) do
+  def handle_frame({:text, msg}, state) do
     case Poison.decode(msg) do
       {:error, error} ->
         Logger.debug(inspect(msg))
         Logger.error(inspect(error))
+
       {:ok, message} ->
-        case message["id"] do
-          "sub_id" ->
+        cond do
+          message["id"] == "sub_id" ->
+            # subscription ack
             Logger.info("Subscribed")
             :ok
-          else
-            # TODO
+
+          true ->
+            # book ticker update
+            Logger.info("Book ticker update received")
+            symbol = message["s"]
+            best_ask_price = message["a"]
+            best_ask_qty = message["A"]
+
+            OpportunityWatcher.update_symbol(state.pid, {symbol, best_ask_price, best_ask_qty})
         end
-        # TODO
     end
 
-    Logger.info("Received Message - Type: #{inspect(type)} -- Message: #{inspect(msg)}")
-    # TODO: parse the message and send the best ask price and quantity to opportunity watcher
-    {:ok, state}
-  end
-
-  # catch-all
-  def handle_frame({type, msg}, state) do
-    Logger.info("Received Message - Type: #{inspect(type)} -- Message: #{inspect(msg)}")
-    # TODO: parse the message and send the best ask price and quantity to opportunity watcher
     {:ok, state}
   end
 end
