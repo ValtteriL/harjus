@@ -18,7 +18,7 @@ defmodule BinanceSpotStreams do
   @spec parse_message(msg :: String.t()) ::
           {:error, any()}
           | {:sub_ack}
-          | {:book_ticker_update, {String.t(), String.t(), String.t()}}
+          | {:book_ticker_update, {charlist(), float(), float()}}
           | {:unknown, map()}
   def parse_message(msg) do
     case Poison.decode(msg) do
@@ -33,8 +33,8 @@ defmodule BinanceSpotStreams do
 
           has_keys?(message, ["u", "s", "b", "B", "a", "A"]) ->
             symbol = message["s"]
-            best_ask_price = message["a"]
-            best_ask_qty = message["A"]
+            best_ask_price = String.to_float(message["a"])
+            best_ask_qty = String.to_float(message["A"])
             {:book_ticker_update, {symbol, best_ask_price, best_ask_qty}}
 
           true ->
