@@ -12,6 +12,14 @@ nix-shell -A devEnv
 
 ### Test
 
+Run unit tests
+
 ```bash
 mix test
+```
+
+Run static code analysis
+
+```bash
+mix dialyzer
 ```
