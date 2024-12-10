@@ -48,7 +48,9 @@ defmodule Arbmapper do
   end
 
   # get list of simple cycles for vertex
-  @spec get_simple_cycles_for_vertex(graph :: :digraph.graph(), vertex :: :digraph.vertex()) :: [[:digraph.vertex()]]
+  @spec get_simple_cycles_for_vertex(graph :: :digraph.graph(), vertex :: :digraph.vertex()) :: [
+          [:digraph.vertex()]
+        ]
   defp get_simple_cycles_for_vertex(graph, vertex) do
     neighbors =
       :digraph.out_neighbours(graph, vertex)
@@ -59,9 +61,14 @@ defmodule Arbmapper do
     |> Enum.chunk_while([], &chunk_fun/2, &after_fun/1)
   end
 
-  @spec dfs(graph :: :digraph.graph(), start :: :digraph.vertex(), neighbors :: [{:digraph.vertex(), [:digraph.vertex()]}], cycles :: [
-          :digraph.vertex()
-        ]) :: [[:digraph.vertex()]]
+  @spec dfs(
+          graph :: :digraph.graph(),
+          start :: :digraph.vertex(),
+          neighbors :: [{:digraph.vertex(), [:digraph.vertex()]}],
+          cycles :: [
+            :digraph.vertex()
+          ]
+        ) :: [[:digraph.vertex()]]
   defp dfs(graph, start, neighbors, cycles \\ [])
 
   defp dfs(_graph, _start, [], cycles) do
@@ -106,7 +113,7 @@ defmodule Arbmapper do
   # Convert list of vertexes into list of trading pair symbols
   @spec vertex_path_to_symbols(
           edges :: [{:digraph.edge(), :digraph.vertex(), :digraph.vertex(), :digraph.label()}],
-          [:digraph.vertex()]
+          path :: [:digraph.vertex()]
         ) :: [:digraph.label()]
   defp vertex_path_to_symbols(edges, path) do
     path

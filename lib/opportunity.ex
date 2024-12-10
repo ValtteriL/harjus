@@ -24,7 +24,7 @@ defmodule Opportunity do
           price_quantity_map :: %{
             charlist() => %{best_ask: float(), quantity: float()}
           },
-          float()
+          profit :: float()
         ) :: float()
   @doc """
   Calculate triangular arbitrage capacity for a trading path given symbol offer quantities and profit percentage

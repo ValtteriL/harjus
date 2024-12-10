@@ -27,7 +27,10 @@ defmodule PortfolioManager do
   @doc """
   Send opportunities to Portfolio Manager
   """
-  @spec send_opportunities(pid :: pid(), [%{path: [charlist()], profit: float(), capacity: float()}]) ::
+  @spec send_opportunities(
+          pid :: pid(),
+          opportunities :: [%{path: [charlist()], profit: float(), capacity: float()}]
+        ) ::
           :ok
   def send_opportunities(pid, opportunities) do
     GenServer.cast(pid, {:update_opportunities, opportunities})
@@ -70,7 +73,7 @@ defmodule PortfolioManager do
     }
 
     # TODO
-    Logger.info("Portfolio Manager: received opportunities #{inspect(opportunities)}")
+    Logger.notice("Portfolio Manager: received opportunities #{inspect(opportunities)}")
 
     {:noreply, new_state}
   end

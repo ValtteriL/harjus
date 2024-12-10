@@ -52,7 +52,6 @@ defmodule BookStreamer do
 
   # ping
   def handle_ping({:ping, id}, state) do
-    Logger.info("PING received")
     {:reply, {:pong, id}, state}
   end
 
@@ -68,7 +67,6 @@ defmodule BookStreamer do
         :ok
 
       {:book_ticker_update, {symbol, best_ask_price, best_ask_qty}} ->
-        Logger.info("Book ticker update received")
         OpportunityWatcher.update_symbol(state.pid, {symbol, best_ask_price, best_ask_qty})
         :ok
 
