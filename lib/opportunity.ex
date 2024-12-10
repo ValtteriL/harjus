@@ -3,9 +3,12 @@ defmodule Opportunity do
   Functions for calculating arbitrage opportunities.
   """
 
-  @spec profit([charlist()], %{
-          charlist() => %{best_ask: float(), quantity: float()}
-        }) :: float()
+  @spec profit(
+          trading_path :: [charlist()],
+          price_quantity_map :: %{
+            charlist() => %{best_ask: float(), quantity: float()}
+          }
+        ) :: float()
   @doc """
   Calculate triangular arbitrage profit percentage for a trading path given symbol prices
   """
@@ -17,8 +20,8 @@ defmodule Opportunity do
   end
 
   @spec capacity(
-          [charlist()],
-          %{
+          trading_path :: [charlist()],
+          price_quantity_map :: %{
             charlist() => %{best_ask: float(), quantity: float()}
           },
           float()

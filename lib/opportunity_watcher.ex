@@ -17,7 +17,8 @@ defmodule OpportunityWatcher do
     pid: pid of the process to send opportunity messages
     trading_paths: list of trading symbol lists to watch for arbitrage opportunities
   """
-  @spec start_link(pid(), [[charlist()]]) :: :ignore | {:error, any()} | {:ok, pid()}
+  @spec start_link(pid :: pid(), trading_paths :: [[charlist()]]) ::
+          :ignore | {:error, any()} | {:ok, pid()}
   def start_link(pid, trading_paths) do
     GenServer.start_link(__MODULE__, {pid, trading_paths})
   end
@@ -27,7 +28,7 @@ defmodule OpportunityWatcher do
 
   This triggers a recalculation of arbitrage opportunities
   """
-  @spec update_symbol(pid, {charlist(), float(), float()}) :: :ok
+  @spec update_symbol(pid :: pid(), update :: {charlist(), float(), float()}) :: :ok
   def update_symbol(pid, update) do
     GenServer.cast(pid, {:update_symbol, update})
   end
@@ -35,7 +36,7 @@ defmodule OpportunityWatcher do
   # Callbacks
 
   @impl true
-  @spec init({pid(), [[charlist()]]}) ::
+  @spec init({pid :: pid(), trading_paths :: [[charlist()]]}) ::
           {:ok,
            %{
              pid: pid(),
@@ -63,11 +64,14 @@ defmodule OpportunityWatcher do
   end
 
   @impl true
-  @spec handle_cast({:update_symbol, {charlist(), float(), float()}}, %{
-          pid: pid(),
-          trading_paths: [[charlist()]],
-          current_prices_quantities: %{charlist() => %{best_ask: float(), quantity: float()}}
-        }) ::
+  @spec handle_cast(
+          {:update_symbol, {symbol :: charlist(), best_ask :: float(), quantity :: float()}},
+          %{
+            pid: pid(),
+            trading_paths: [[charlist()]],
+            current_prices_quantities: %{charlist() => %{best_ask: float(), quantity: float()}}
+          }
+        ) ::
           {:noreply,
            %{
              pid: pid(),

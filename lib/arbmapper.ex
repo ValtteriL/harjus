@@ -8,9 +8,11 @@ defmodule Arbmapper do
 
   Returns trading symbols to buy that make up a cycle
   """
-  @spec generate_trading_paths([
-          %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
-        ]) :: [[:digraph.label()]]
+  @spec generate_trading_paths(
+          symbols :: [
+            %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
+          ]
+        ) :: [[:digraph.label()]]
   def generate_trading_paths(symbols) do
     graph = generate_graph(symbols)
 
@@ -23,7 +25,9 @@ defmodule Arbmapper do
   end
 
   # generate graph from symbols
-  @spec generate_graph([%{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}]) ::
+  @spec generate_graph(
+          symbols :: [%{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}]
+        ) ::
           :digraph.graph()
   defp generate_graph(symbols) do
     graph = :digraph.new()
@@ -44,7 +48,7 @@ defmodule Arbmapper do
   end
 
   # get list of simple cycles for vertex
-  @spec get_simple_cycles_for_vertex(:digraph.graph(), :digraph.vertex()) :: [[:digraph.vertex()]]
+  @spec get_simple_cycles_for_vertex(graph :: :digraph.graph(), vertex :: :digraph.vertex()) :: [[:digraph.vertex()]]
   defp get_simple_cycles_for_vertex(graph, vertex) do
     neighbors =
       :digraph.out_neighbours(graph, vertex)
@@ -55,7 +59,7 @@ defmodule Arbmapper do
     |> Enum.chunk_while([], &chunk_fun/2, &after_fun/1)
   end
 
-  @spec dfs(:digraph.graph(), :digraph.vertex(), [{:digraph.vertex(), [:digraph.vertex()]}], [
+  @spec dfs(graph :: :digraph.graph(), start :: :digraph.vertex(), neighbors :: [{:digraph.vertex(), [:digraph.vertex()]}], cycles :: [
           :digraph.vertex()
         ]) :: [[:digraph.vertex()]]
   defp dfs(graph, start, neighbors, cycles \\ [])
@@ -101,7 +105,7 @@ defmodule Arbmapper do
 
   # Convert list of vertexes into list of trading pair symbols
   @spec vertex_path_to_symbols(
-          [{:digraph.edge(), :digraph.vertex(), :digraph.vertex(), :digraph.label()}],
+          edges :: [{:digraph.edge(), :digraph.vertex(), :digraph.vertex(), :digraph.label()}],
           [:digraph.vertex()]
         ) :: [:digraph.label()]
   defp vertex_path_to_symbols(edges, path) do
