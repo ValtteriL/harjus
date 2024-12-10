@@ -43,14 +43,7 @@ defmodule BookStreamer do
     {:ok, ws_pid} = WebSockex.start_link(url, __MODULE__, %{pid: pid})
 
     # subscribe to symbols
-    params =
-      symbols
-      |> Enum.map(fn s -> "#{String.downcase(s)}@bookTicker" end)
-
-    WebSockex.send_frame(
-      ws_pid,
-      {:text, Poison.encode!(%{method: "SUBSCRIBE", params: params, id: "sub_id"})}
-    )
+    WebSockex.send_frame(ws_pid, {:text, BinanceSpotStreams.subscribe_message(symbols)})
 
     {:ok, ws_pid}
   end
@@ -65,27 +58,23 @@ defmodule BookStreamer do
 
   # book ticker update
   def handle_frame({:text, msg}, state) do
-    case Poison.decode(msg) do
+    case BinanceSpotStreams.parse_message(msg) do
       {:error, error} ->
         Logger.debug(inspect(msg))
         Logger.error(inspect(error))
 
-      {:ok, message} ->
-        cond do
-          message["id"] == "sub_id" ->
-            # subscription ack
-            Logger.info("Subscribed")
-            :ok
+      {:sub_ack} ->
+        Logger.info("Subscribed")
+        :ok
 
-          true ->
-            # book ticker update
-            Logger.info("Book ticker update received")
-            symbol = message["s"]
-            best_ask_price = message["a"]
-            best_ask_qty = message["A"]
+      {:book_ticker_update, {symbol, best_ask_price, best_ask_qty}} ->
+        Logger.info("Book ticker update received")
+        OpportunityWatcher.update_symbol(state.pid, {symbol, best_ask_price, best_ask_qty})
+        :ok
 
-            OpportunityWatcher.update_symbol(state.pid, {symbol, best_ask_price, best_ask_qty})
-        end
+      {:unknown, message} ->
+        Logger.error("Unknown message")
+        Logger.debug(inspect(message))
     end
 
     {:ok, state}
