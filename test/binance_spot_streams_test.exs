@@ -16,7 +16,7 @@ defmodule BinanceSpotStreamsTest do
   end
 
   test "parses subscription ack" do
-    subscription_ack = Poison.encode!(%{id: "sub_id", result: "null"})
+    subscription_ack = Poison.encode!(%{id: "sub_id", result: nil})
 
     assert BinanceSpotStreams.parse_message(subscription_ack) == {:sub_ack}
   end

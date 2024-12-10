@@ -27,7 +27,7 @@ defmodule BinanceSpotStreams do
 
       {:ok, message} ->
         cond do
-          message["id"] == "sub_id" and message["result"] == "null" ->
+          message["id"] == "sub_id" and message["result"] == nil ->
             # subscription ack
             {:sub_ack}
 
