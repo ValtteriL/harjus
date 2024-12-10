@@ -102,6 +102,8 @@ defmodule OpportunityWatcher do
         capacity = Opportunity.capacity(path, new_state.current_prices_quantities, profit)
         %{path: path, profit: profit, capacity: capacity}
       end)
+      # filter insufficient capacity
+      |> Enum.filter(fn map -> Map.fetch!(map, :capacity) > 0.0 end)
 
     # send any opportunities to Portfolio Manager
     if length(opportunities) > 0 do
