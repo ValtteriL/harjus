@@ -6,8 +6,7 @@ defmodule Kirnu do
   def start do
     # discover trading paths
     symbols = Binance.get_symbols()
-    trading_paths = Arbmapper.generate_trading_paths(symbols)
-    symbol_list = Enum.map(symbols, & &1[:symbol])
+    {trading_paths, symbol_list} = Arbmapper.generate_trading_paths(symbols, ["BNB"])
 
     # create portfolio manager
     {:ok, pm_pid} = PortfolioManager.start_link(self())

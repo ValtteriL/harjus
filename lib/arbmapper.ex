@@ -4,16 +4,20 @@ defmodule Arbmapper do
   """
 
   @doc """
-  Generate trading paths from symbols
+  Generate trading paths and symbols to subscribe to from symbols
 
   Returns trading symbols to buy that make up a cycle
+
+  starting_paths can be provided to limit to cycles that start and end at those symbols
+  This also limits the symbols to subscribe to to those in the paths
   """
   @spec generate_trading_paths(
           symbols :: [
             %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
-          ]
-        ) :: [[:digraph.label()]]
-  def generate_trading_paths(symbols) do
+          ],
+          starting_symbols :: [charlist()]
+        ) :: {trading_paths :: [[:digraph.label()]], symbol_list :: [charlist()]}
+  def generate_trading_paths(symbols, starting_symbols \\ []) do
     graph = generate_graph(symbols)
 
     full_edges = :digraph.edges(graph) |> Enum.map(fn e -> :digraph.edge(graph, e) end)
