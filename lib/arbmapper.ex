@@ -22,10 +22,17 @@ defmodule Arbmapper do
 
     full_edges = :digraph.edges(graph) |> Enum.map(fn e -> :digraph.edge(graph, e) end)
 
-    :digraph.vertices(graph)
-    |> Enum.map(fn x -> get_simple_cycles_for_vertex(graph, x) end)
-    |> Enum.concat()
-    |> Enum.map(fn x -> vertex_path_to_symbols(full_edges, x) end)
+    trading_paths =
+      :digraph.vertices(graph)
+      |> Enum.map(fn x -> get_simple_cycles_for_vertex(graph, x) end)
+      |> Enum.concat()
+      |> Enum.map(fn x -> vertex_path_to_symbols(full_edges, x) end)
+      # filter paths that don't start with starting_symbols if any defined
+      |> Enum.filter(fn x -> Enum.at(x, 0) in starting_symbols or starting_symbols === [] end)
+
+    symbol_list = trading_paths |> List.flatten() |> Enum.uniq()
+
+    {trading_paths, symbol_list}
   end
 
   # generate graph from symbols
