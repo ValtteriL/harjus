@@ -26,6 +26,7 @@ defmodule Kirnu.MixProject do
       {:websockex, "~> 0.4.3"},
       {:req, "~> 0.5.7"},
       {:poison, "~> 6.0"},
+      {:dotenv_parser, "~> 2.0"},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
     ]
   end
