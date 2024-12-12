@@ -15,20 +15,21 @@ defmodule Arbmapper do
           symbols :: [
             %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
           ],
-          starting_symbols :: [charlist()]
+          starting_symbols :: [charlist()],
+          depth :: integer()
         ) :: {trading_paths :: [[:digraph.label()]], symbol_list :: [charlist()]}
-  def generate_trading_paths(symbols, starting_symbols \\ []) do
+  def generate_trading_paths(symbols, starting_symbols \\ [], depth \\ 4) do
     graph = generate_graph(symbols)
 
     full_edges = :digraph.edges(graph) |> Enum.map(fn e -> :digraph.edge(graph, e) end)
 
     trading_paths =
       :digraph.vertices(graph)
-      |> Enum.map(fn x -> get_simple_cycles_for_vertex(graph, x) end)
+      # filter paths that don't start with starting_symbols if any defined
+      |> Enum.filter(fn x -> x in starting_symbols or starting_symbols === [] end)
+      |> Enum.map(fn x -> get_simple_cycles_for_vertex(graph, x, depth) end)
       |> Enum.concat()
       |> Enum.map(fn x -> vertex_path_to_symbols(full_edges, x) end)
-      # filter paths that don't start with starting_symbols if any defined
-      |> Enum.filter(fn x -> Enum.at(x, 0) in starting_symbols or starting_symbols === [] end)
 
     symbol_list = trading_paths |> List.flatten() |> Enum.uniq()
 
@@ -59,15 +60,19 @@ defmodule Arbmapper do
   end
 
   # get list of simple cycles for vertex
-  @spec get_simple_cycles_for_vertex(graph :: :digraph.graph(), vertex :: :digraph.vertex()) :: [
+  @spec get_simple_cycles_for_vertex(
+          graph :: :digraph.graph(),
+          vertex :: :digraph.vertex(),
+          depth :: integer()
+        ) :: [
           [:digraph.vertex()]
         ]
-  defp get_simple_cycles_for_vertex(graph, vertex) do
+  defp get_simple_cycles_for_vertex(graph, vertex, depth) do
     neighbors =
       :digraph.out_neighbours(graph, vertex)
       |> Enum.map(fn x -> {x, [vertex]} end)
 
-    dfs(graph, vertex, neighbors)
+    dfs(graph, vertex, neighbors, [], depth)
     |> List.flatten()
     |> Enum.chunk_while([], &chunk_fun/2, &after_fun/1)
   end
@@ -78,30 +83,31 @@ defmodule Arbmapper do
           neighbors :: [{:digraph.vertex(), [:digraph.vertex()]}],
           cycles :: [
             :digraph.vertex()
-          ]
+          ],
+          depth :: integer()
         ) :: [[:digraph.vertex()]]
-  defp dfs(graph, start, neighbors, cycles \\ [])
+  defp dfs(graph, start, neighbors, cycles, depth)
 
-  defp dfs(_graph, _start, [], cycles) do
+  defp dfs(_graph, _start, [], cycles, _depth) do
     cycles
   end
 
-  defp dfs(graph, start, [{start, acc} | tail], cycles) do
-    dfs(graph, start, tail, [start | acc] ++ cycles)
+  defp dfs(graph, start, [{start, acc} | tail], cycles, depth) do
+    dfs(graph, start, tail, [start | acc] ++ cycles, depth)
   end
 
-  defp dfs(graph, start, [{current, acc} | tail], cycles) do
+  defp dfs(graph, start, [{current, acc} | tail], cycles, depth) do
     cond do
-      length(acc) > 4 ->
-        dfs(graph, start, tail, cycles)
+      length(acc) > depth ->
+        dfs(graph, start, tail, cycles, depth)
 
       current in acc ->
-        dfs(graph, start, tail, cycles)
+        dfs(graph, start, tail, cycles, depth)
 
       true ->
         new_acc = [current | acc]
         neighbors = :digraph.out_neighbours(graph, current) |> Enum.map(fn x -> {x, new_acc} end)
-        dfs(graph, start, neighbors ++ tail, cycles)
+        dfs(graph, start, neighbors ++ tail, cycles, depth)
     end
   end
 

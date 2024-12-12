@@ -19,19 +19,36 @@ defmodule ArbmapperTest do
               ], ["LTCBTC", "ETHLTC", "BTCETH"]}
   end
 
-  test "filters paths and symbols correctly" do
+  test "filters paths and symbols correctly using starting symbols" do
     trading_symbols = [
       %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH"},
       %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC"},
       %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC"}
     ]
 
-    trading_paths = Arbmapper.generate_trading_paths(trading_symbols, ["LTCBTC"])
+    trading_paths = Arbmapper.generate_trading_paths(trading_symbols, ["BTC"])
 
     assert trading_paths ==
              {[
                 ["LTCBTC", "ETHLTC", "BTCETH"]
               ], ["LTCBTC", "ETHLTC", "BTCETH"]}
+  end
+
+  test "filters paths and symbols correctly using depth" do
+    trading_symbols = [
+      %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH"},
+      %{symbol: "ETHBTC", baseAsset: "ETH", quoteAsset: "BTC"},
+      %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC"},
+      %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC"}
+    ]
+
+    trading_paths = Arbmapper.generate_trading_paths(trading_symbols, [], 1)
+
+    assert trading_paths ==
+             {[
+                ["ETHBTC", "BTCETH"],
+                ["BTCETH", "ETHBTC"]
+              ], ["ETHBTC", "BTCETH"]}
   end
 
   test "generates empty paths if no paths" do
