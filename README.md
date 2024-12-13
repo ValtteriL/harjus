@@ -23,3 +23,11 @@ Run static code analysis
 ```bash
 mix dialyzer
 ```
+
+### Build
+
+```bash
+nix-build
+
+# executable then available at ./result-2/bin/kirnu
+```

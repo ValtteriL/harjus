@@ -28,3 +28,5 @@ kirnu-*.tar
 
 .vscode/
 .env
+result
+result-*
