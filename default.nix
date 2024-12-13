@@ -11,16 +11,6 @@ with pkgs;
 let
   packages = rec {
 
-    # the derivation for kirnu
-
-    test = beamPackages.mixRelease rec {
-      pname = "kirnu";
-      version = "1.0.0";
-      src = ./.;
-      removeCookie = false;
-      mixNixDeps = import ./deps.nix { inherit lib beamPackages; };
-    };
-
     # The shell of our experiment runtime environment
     devEnv = mkShellNoCC rec {
       name = "devEnv";
@@ -42,6 +32,38 @@ let
       shellHook = ''
         cowsay "Kirnu!"
       '';
+    };
+
+    # build derivation
+    kirnuBuild = beamPackages.mixRelease rec {
+      pname = "kirnu";
+      version = "1.0.0";
+      src = ./.;
+      removeCookie = false;
+      mixNixDeps = import ./deps.nix { inherit lib beamPackages; };
+    };
+
+    # docker packaging derivation
+    docker = pkgs.dockerTools.buildLayeredImage {
+      name = "kirnu";
+      created = "now";
+      config =
+        {
+          Cmd = [
+            "kirnu"
+            "start_iex"
+          ];
+          Env = [
+            "ELIXIR_ERL_OPTIONS=+fnu"
+            "LC_ALL=C"
+            "ERL_AFLAGS='-kernel shell_history enabled'"
+          ];
+        };
+
+      contents = [
+        kirnuBuild
+        dockerTools.binSh
+      ];
     };
 
 
