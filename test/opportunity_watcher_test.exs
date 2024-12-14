@@ -5,7 +5,8 @@ defmodule OpportunityWatcherTest do
   setup do
     trading_paths = [["BTCUSDT", "USDTBTC"]]
     # pass self -> receive msgs meant for portfolio manager
-    {:ok, pid} = OpportunityWatcher.start_link(self(), trading_paths)
+    Process.register(self(), PortfolioManager)
+    {:ok, pid} = OpportunityWatcher.start_link(trading_paths)
     %{pid: pid}
   end
 

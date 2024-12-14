@@ -17,10 +17,10 @@ defmodule OpportunityWatcher do
     pid: pid of the process to send opportunity messages
     trading_paths: list of trading symbol lists to watch for arbitrage opportunities
   """
-  @spec start_link(pid :: pid(), trading_paths :: [[charlist()]]) ::
+  @spec start_link(trading_paths :: [[charlist()]]) ::
           :ignore | {:error, any()} | {:ok, pid()}
-  def start_link(pid, trading_paths) do
-    GenServer.start_link(__MODULE__, {pid, trading_paths})
+  def start_link(trading_paths) do
+    GenServer.start_link(__MODULE__, trading_paths, name: __MODULE__)
   end
 
   @doc """
@@ -36,7 +36,7 @@ defmodule OpportunityWatcher do
   # Callbacks
 
   @impl true
-  @spec init({pid :: pid(), trading_paths :: [[charlist()]]}) ::
+  @spec init(trading_paths :: [[charlist()]]) ::
           {:ok,
            %{
              pid: pid(),
@@ -45,7 +45,9 @@ defmodule OpportunityWatcher do
                charlist() => %{best_ask: float(), quantity: float()}
              }
            }}
-  def init({pid, trading_paths}) do
+  def init(trading_paths) do
+    pid = Process.whereis(PortfolioManager)
+
     # initialize current prices and quantities for each trading symbol
     current_prices_quantities =
       trading_paths

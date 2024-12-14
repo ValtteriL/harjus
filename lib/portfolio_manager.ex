@@ -19,9 +19,11 @@ defmodule PortfolioManager do
     pid: pid of the process to send the most profitable opportunities
     TODO: here would be place for trading fees, info which symbols are in margin, ...
   """
-  @spec start_link(pid :: pid()) :: :ignore | {:error, any()} | {:ok, pid()}
-  def start_link(pid) do
-    GenServer.start_link(__MODULE__, pid)
+  @spec start_link(arg :: any()) :: :ignore | {:error, any()} | {:ok, pid()}
+  def start_link(_arg) do
+    # TODO: put executor here
+    pid = nil
+    GenServer.start_link(__MODULE__, pid, name: __MODULE__)
   end
 
   @doc """

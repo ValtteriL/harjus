@@ -18,7 +18,6 @@ defmodule BookStreamer do
     url: websocket url to connect to
   """
   @spec start_link(
-          pid :: pid(),
           symbols :: [String.t()],
           url ::
             String.t()
@@ -39,7 +38,8 @@ defmodule BookStreamer do
                 transport: :ssl | :tcp
               }
         ) :: {:ok, pid()}
-  def start_link(pid, symbols, url \\ "wss://testnet.binance.vision/ws/kek") do
+  def start_link(symbols, url \\ "wss://testnet.binance.vision/ws/kek") do
+    pid = Process.whereis(OpportunityWatcher)
     {:ok, ws_pid} = WebSockex.start_link(url, __MODULE__, %{pid: pid})
 
     # subscribe to symbols

@@ -51,7 +51,7 @@ let
         {
           Cmd = [
             "kirnu"
-            "start_iex"
+            "start"
           ];
           Env = [
             "ELIXIR_ERL_OPTIONS=+fnu"
