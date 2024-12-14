@@ -8,6 +8,10 @@ Uses triangular arbitration on Spot trading, and Cash-and-Carry between SPOT and
 
 ```bash
 nix-shell -A devEnv
+
+# start shell with or without the starting application
+iex -S mix
+iex -S mix run --no-start
 ```
 
 ### Test

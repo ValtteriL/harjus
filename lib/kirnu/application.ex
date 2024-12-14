@@ -2,13 +2,20 @@ defmodule Kirnu.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
+  require Logger
 
   use Application
 
   @impl true
   def start(_type, _args) do
     # discover trading paths
+    Logger.info("Requesting symbols")
     symbols = Binance.get_symbols()
+
+    Logger.debug("Symbols: #{inspect(symbols)}")
+    Logger.debug("Number of symbols: #{length(symbols)}")
+
+    Logger.info("Generating trading paths")
 
     {trading_paths, symbol_list} =
       Arbmapper.generate_trading_paths(
@@ -17,6 +24,17 @@ defmodule Kirnu.Application do
         Application.fetch_env!(:kirnu, :max_trading_path_length)
       )
 
+    Logger.debug("Start symbols: #{inspect(Application.fetch_env!(:kirnu, :start_symbols))}")
+
+    Logger.debug(
+      "Max trading path length: #{inspect(Application.fetch_env!(:kirnu, :max_trading_path_length))}"
+    )
+
+    Logger.debug("Trading paths: #{inspect(trading_paths)}")
+    Logger.debug("Symbol list: #{inspect(symbol_list)}")
+    Logger.debug("Number of trading paths: #{length(trading_paths)}")
+    Logger.debug("Number of symbols: #{length(symbol_list)}")
+
     # multiple book streamers with max 1024 symbols each
     book_streamers =
       symbol_list
@@ -24,6 +42,10 @@ defmodule Kirnu.Application do
       |> Enum.map(fn partial_list ->
         {BookStreamer, partial_list}
       end)
+
+    Logger.debug("Book streamers: #{inspect(book_streamers)}")
+    Logger.debug("Number of book streamers: #{length(book_streamers)}")
+    Process.sleep(:infinity)
 
     children =
       [
@@ -35,9 +57,14 @@ defmodule Kirnu.Application do
         {OpportunityWatcher, trading_paths}
       ] ++ book_streamers
 
+    Logger.debug("Children: #{inspect(children)}")
+    Logger.debug("Number of children: #{length(children)}")
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :rest_for_one, name: Kirnu.Supervisor]
+    opts = [strategy: :rest_for_one, name: Kirnu]
+
+    Logger.info("Starting child processes")
     Supervisor.start_link(children, opts)
   end
 end
