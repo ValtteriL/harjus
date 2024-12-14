@@ -15,7 +15,7 @@ nix-shell -A devEnv
 Run unit tests
 
 ```bash
-mix test --no-start
+mix test
 ```
 
 Run static code analysis
