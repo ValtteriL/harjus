@@ -12,11 +12,23 @@ defmodule ArbmapperTest do
     trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
 
     assert trading_paths ==
-             {[
-                ["LTCBTC", "ETHLTC", "BTCETH"],
-                ["ETHLTC", "BTCETH", "LTCBTC"],
-                ["BTCETH", "LTCBTC", "ETHLTC"]
-              ], ["LTCBTC", "ETHLTC", "BTCETH"]}
+             {
+               [
+                 [{"BTCETH", :short}, {"BTCETH", :long}],
+                 [{"LTCBTC", :long}, {"ETHLTC", :long}, {"BTCETH", :long}],
+                 [{"BTCETH", :short}, {"ETHLTC", :short}, {"LTCBTC", :short}],
+                 [{"LTCBTC", :long}, {"LTCBTC", :short}],
+                 [{"LTCBTC", :short}, {"BTCETH", :short}, {"ETHLTC", :short}],
+                 [{"ETHLTC", :long}, {"ETHLTC", :short}],
+                 [{"ETHLTC", :long}, {"BTCETH", :long}, {"LTCBTC", :long}],
+                 [{"LTCBTC", :short}, {"LTCBTC", :long}],
+                 [{"BTCETH", :long}, {"BTCETH", :short}],
+                 [{"ETHLTC", :short}, {"LTCBTC", :short}, {"BTCETH", :short}],
+                 [{"ETHLTC", :short}, {"ETHLTC", :long}],
+                 [{"BTCETH", :long}, {"LTCBTC", :long}, {"ETHLTC", :long}]
+               ],
+               ["BTCETH", "LTCBTC", "ETHLTC"]
+             }
   end
 
   test "filters paths and symbols correctly using starting symbols" do
@@ -30,8 +42,11 @@ defmodule ArbmapperTest do
 
     assert trading_paths ==
              {[
-                ["LTCBTC", "ETHLTC", "BTCETH"]
-              ], ["LTCBTC", "ETHLTC", "BTCETH"]}
+                [{"BTCETH", :short}, {"BTCETH", :long}],
+                [{"LTCBTC", :long}, {"ETHLTC", :long}, {"BTCETH", :long}],
+                [{"BTCETH", :short}, {"ETHLTC", :short}, {"LTCBTC", :short}],
+                [{"LTCBTC", :long}, {"LTCBTC", :short}]
+              ], ["BTCETH", "LTCBTC", "ETHLTC"]}
   end
 
   test "filters paths and symbols correctly using depth" do
@@ -45,17 +60,27 @@ defmodule ArbmapperTest do
     trading_paths = Arbmapper.generate_trading_paths(trading_symbols, [], 1)
 
     assert trading_paths ==
-             {[
-                ["ETHBTC", "BTCETH"],
-                ["BTCETH", "ETHBTC"]
-              ], ["ETHBTC", "BTCETH"]}
+             {
+               [
+                 [{"ETHBTC", :long}, {"BTCETH", :long}],
+                 [{"ETHBTC", :long}, {"BTCETH", :long}],
+                 [{"ETHBTC", :long}, {"BTCETH", :long}],
+                 [{"ETHBTC", :long}, {"BTCETH", :long}],
+                 [{"LTCBTC", :long}, {"LTCBTC", :short}],
+                 [{"ETHLTC", :long}, {"ETHLTC", :short}],
+                 [{"LTCBTC", :short}, {"LTCBTC", :long}],
+                 [{"BTCETH", :long}, {"ETHBTC", :long}],
+                 [{"BTCETH", :long}, {"ETHBTC", :long}],
+                 [{"BTCETH", :long}, {"ETHBTC", :long}],
+                 [{"BTCETH", :long}, {"ETHBTC", :long}],
+                 [{"ETHLTC", :short}, {"ETHLTC", :long}]
+               ],
+               ["ETHBTC", "BTCETH", "LTCBTC", "ETHLTC"]
+             }
   end
 
   test "generates empty paths if no paths" do
-    trading_symbols = [
-      %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH"},
-      %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC"}
-    ]
+    trading_symbols = []
 
     trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
 

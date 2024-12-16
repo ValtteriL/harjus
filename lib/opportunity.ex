@@ -4,9 +4,9 @@ defmodule Opportunity do
   """
 
   @spec profit(
-          trading_path :: [charlist()],
+          trading_path :: [{charlist(), :long | :short}],
           price_quantity_map :: %{
-            charlist() => %{best_ask: float(), quantity: float()}
+            {charlist(), :long | :short} => %{price: float(), quantity: float()}
           }
         ) :: float()
   @doc """
@@ -14,15 +14,15 @@ defmodule Opportunity do
   """
   def profit(trading_path, price_quantity_map) do
     trading_path
-    |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol).best_ask end)
+    |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol).price end)
     |> Enum.reduce(1, fn price, acc -> acc / price end)
     |> Kernel.-(1)
   end
 
   @spec capacity(
-          trading_path :: [charlist()],
+          trading_path :: [{charlist(), :long | :short}],
           price_quantity_map :: %{
-            charlist() => %{best_ask: float(), quantity: float()}
+            {charlist(), :long | :short} => %{price: float(), quantity: float()}
           },
           profit :: float()
         ) :: float()
@@ -40,7 +40,7 @@ defmodule Opportunity do
     # skip first symbol
     |> Enum.drop(1)
     |> Enum.reduce(first_symbol_qty, fn price_quantity, acc ->
-      min(acc / price_quantity.best_ask, price_quantity.quantity)
+      min(acc / price_quantity.price, price_quantity.quantity)
     end)
     |> Kernel./(1 + profit)
   end

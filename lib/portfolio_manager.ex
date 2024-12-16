@@ -31,7 +31,9 @@ defmodule PortfolioManager do
   """
   @spec send_opportunities(
           pid :: pid(),
-          opportunities :: [%{path: [charlist()], profit: float(), capacity: float()}]
+          opportunities :: [
+            %{path: [{charlist(), :long | :short}], profit: float(), capacity: float()}
+          ]
         ) ::
           :ok
   def send_opportunities(pid, opportunities) do
@@ -56,7 +58,8 @@ defmodule PortfolioManager do
 
   @impl true
   @spec handle_cast(
-          {:update_opportunities, [%{path: [charlist()], profit: float(), capacity: float()}]},
+          {:update_opportunities,
+           [%{path: [{charlist(), :long | :short}], profit: float(), capacity: float()}]},
           %{
             pid: pid()
           }

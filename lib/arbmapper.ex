@@ -17,7 +17,9 @@ defmodule Arbmapper do
           ],
           starting_symbols :: [charlist()],
           depth :: integer()
-        ) :: {trading_paths :: [[:digraph.label()]], symbol_list :: [charlist()]}
+        ) ::
+          {trading_paths :: [[{symbol :: charlist(), position :: :long | :short}]],
+           symbol_list :: [charlist()]}
   def generate_trading_paths(symbols, starting_symbols \\ [], depth \\ 4) do
     graph = generate_graph(symbols)
 
@@ -31,7 +33,8 @@ defmodule Arbmapper do
       |> Enum.concat()
       |> Enum.map(fn x -> vertex_path_to_symbols(full_edges, x) end)
 
-    symbol_list = trading_paths |> List.flatten() |> Enum.uniq()
+    symbol_list =
+      trading_paths |> List.flatten() |> Enum.map(fn x -> elem(x, 0) end) |> Enum.uniq()
 
     {trading_paths, symbol_list}
   end
@@ -52,8 +55,10 @@ defmodule Arbmapper do
     end
 
     # Add trading pairs as edges
+    # forward (long), backward (short)
     for s <- symbols do
-      :digraph.add_edge(graph, s[:baseAsset], s[:quoteAsset], s[:symbol])
+      :digraph.add_edge(graph, s[:baseAsset], s[:quoteAsset], {s[:symbol], :long})
+      :digraph.add_edge(graph, s[:quoteAsset], s[:baseAsset], {s[:symbol], :short})
     end
 
     graph

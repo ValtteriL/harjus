@@ -17,7 +17,7 @@ defmodule OpportunityWatcher do
     pid: pid of the process to send opportunity messages
     trading_paths: list of trading symbol lists to watch for arbitrage opportunities
   """
-  @spec start_link(trading_paths :: [[charlist()]]) ::
+  @spec start_link(trading_paths :: [[{charlist(), :long | :short}]]) ::
           :ignore | {:error, any()} | {:ok, pid()}
   def start_link(trading_paths) do
     GenServer.start_link(__MODULE__, trading_paths, name: __MODULE__)
@@ -28,7 +28,12 @@ defmodule OpportunityWatcher do
 
   This triggers a recalculation of arbitrage opportunities
   """
-  @spec update_symbol(pid :: pid(), update :: {charlist(), float(), float()}) :: :ok
+  @spec update_symbol(
+          pid :: pid(),
+          update ::
+            {symbol :: charlist(), ask_price :: float(), ask_qty :: float(), bid_price :: float(),
+             bid_qty :: float()}
+        ) :: :ok
   def update_symbol(pid, update) do
     GenServer.cast(pid, {:update_symbol, update})
   end
@@ -36,13 +41,13 @@ defmodule OpportunityWatcher do
   # Callbacks
 
   @impl true
-  @spec init(trading_paths :: [[charlist()]]) ::
+  @spec init(trading_paths :: [[{charlist(), :long | :short}]]) ::
           {:ok,
            %{
              pid: pid(),
-             trading_paths: [[charlist()]],
+             trading_paths: [[{charlist(), :long | :short}]],
              current_prices_quantities: %{
-               charlist() => %{best_ask: float(), quantity: float()}
+               {charlist(), :long | :short} => %{price: float(), quantity: float()}
              }
            }}
   def init(trading_paths) do
@@ -53,7 +58,7 @@ defmodule OpportunityWatcher do
       trading_paths
       |> List.flatten()
       |> Enum.uniq()
-      |> Enum.map(fn x -> {x, %{:best_ask => 1.0, :quantity => 0.0}} end)
+      |> Enum.map(fn x -> {x, %{:price => 1.0, :quantity => 0.0}} end)
       |> Map.new()
 
     initial_state = %{
@@ -67,29 +72,34 @@ defmodule OpportunityWatcher do
 
   @impl true
   @spec handle_cast(
-          {:update_symbol, {symbol :: charlist(), best_ask :: float(), quantity :: float()}},
+          {:update_symbol,
+           {symbol :: charlist(), ask_price :: float(), ask_qty :: float(), bid_price :: float(),
+            bid_qty :: float()}},
           %{
             pid: pid(),
-            trading_paths: [[charlist()]],
-            current_prices_quantities: %{charlist() => %{best_ask: float(), quantity: float()}}
+            trading_paths: [[{charlist(), :long | :short}]],
+            current_prices_quantities: %{
+              {charlist(), :long | :short} => %{price: float(), quantity: float()}
+            }
           }
         ) ::
           {:noreply,
            %{
              pid: pid(),
-             trading_paths: [[charlist()]],
+             trading_paths: [[{charlist(), :long | :short}]],
              current_prices_quantities: %{
-               charlist() => %{best_ask: float(), quantity: float()}
+               {charlist(), :long | :short} => %{price: float(), quantity: float()}
              }
            }}
-  def handle_cast({:update_symbol, {symbol, best_ask, quantity}}, state) do
+  def handle_cast({:update_symbol, {symbol, ask_price, ask_qty, bid_price, bid_qty}}, state) do
     # update state
     new_state = %{
       pid: state.pid,
       trading_paths: state.trading_paths,
       current_prices_quantities:
         state.current_prices_quantities
-        |> Map.replace(symbol, %{best_ask: best_ask, quantity: quantity})
+        |> Map.replace({symbol, :long}, %{price: ask_price, quantity: ask_qty})
+        |> Map.replace({symbol, :short}, %{price: bid_price, quantity: bid_qty})
     }
 
     # calculate arbitrage opportunities
@@ -98,6 +108,7 @@ defmodule OpportunityWatcher do
       |> Enum.map(fn path ->
         {path, Opportunity.profit(path, new_state.current_prices_quantities)}
       end)
+      |> IO.inspect()
       # filter nonprofitable
       |> Enum.filter(fn {_, profit} -> profit > 0.0 end)
       |> Enum.map(fn {path, profit} ->

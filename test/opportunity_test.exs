@@ -3,13 +3,13 @@ defmodule OpportunityTest do
   doctest Opportunity
 
   test "correct profit and capacity with 2 symbols" do
-    path = ["BTCUSDT", "USDTBTC"]
+    path = [{"BTCUSDT", :long}, {"USDTBTC", :long}]
 
     price_table = %{
-      "BTCUSDT" => %{best_ask: 10000.0, quantity: 1.0},
-      "USDTBTC" => %{best_ask: 0.00005, quantity: 1337.1337},
-      "ETHBTC" => %{best_ask: 0.1, quantity: 10.0},
-      "USDTETH" => %{best_ask: 0.001, quantity: 1.0}
+      {"BTCUSDT", :long} => %{price: 10000.0, quantity: 1.0},
+      {"USDTBTC", :long} => %{price: 0.00005, quantity: 1337.1337},
+      {"ETHBTC", :long} => %{price: 0.1, quantity: 10.0},
+      {"USDTETH", :long} => %{price: 0.001, quantity: 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -19,13 +19,28 @@ defmodule OpportunityTest do
     assert capacity == 1337.1337 / (1 + profit)
   end
 
-  test "correct profit and capacity with 3 symbols" do
-    path = ["BTCUSDT", "ETHBTC", "USDTETH"]
+  test "correct profit and capacity with long and short" do
+    path = [{"BTCUSDT", :long}, {"BTCUSDT", :short}]
 
     price_table = %{
-      "BTCUSDT" => %{best_ask: 10000.0, quantity: 1.0},
-      "ETHBTC" => %{best_ask: 0.1, quantity: 10.0},
-      "USDTETH" => %{best_ask: 0.001, quantity: 1.0}
+      {"BTCUSDT", :long} => %{price: 0.5, quantity: 1.0},
+      {"BTCUSDT", :short} => %{price: 1.0, quantity: 1.0}
+    }
+
+    profit = Opportunity.profit(path, price_table)
+    capacity = Opportunity.capacity(path, price_table, profit)
+
+    assert profit == 2.0
+    assert capacity == 1.0 / (1 + profit)
+  end
+
+  test "correct profit and capacity with 3 symbols" do
+    path = [{"BTCUSDT", :long}, {"ETHBTC", :long}, {"USDTETH", :long}]
+
+    price_table = %{
+      {"BTCUSDT", :long} => %{price: 10000.0, quantity: 1.0},
+      {"ETHBTC", :long} => %{price: 0.1, quantity: 10.0},
+      {"USDTETH", :long} => %{price: 0.001, quantity: 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -49,9 +64,9 @@ defmodule OpportunityTest do
 
   test "missing symbol in pricing results in KeyError" do
     assert_raise KeyError, fn ->
-      Opportunity.profit(["BTCUSDT", "ETHBTC", "USDTETH"], %{
-        "BTCUSDT" => %{best_ask: 10000.0, quantity: 1.0},
-        "ETHBTC" => %{best_ask: 0.1, quantity: 10.0}
+      Opportunity.profit([{"BTCUSDT", :long}, {"ETHBTC", :long}, {"USDTETH", :long}], %{
+        {"BTCUSDT", :long} => %{price: 10000.0, quantity: 1.0},
+        {"ETHBTC", :long} => %{price: 0.1, quantity: 10.0}
       })
     end
   end

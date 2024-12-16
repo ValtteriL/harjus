@@ -66,8 +66,12 @@ defmodule BookStreamer do
         Logger.info("Subscribed")
         :ok
 
-      {:book_ticker_update, {symbol, best_ask_price, best_ask_qty}} ->
-        OpportunityWatcher.update_symbol(state.pid, {symbol, best_ask_price, best_ask_qty})
+      {:book_ticker_update, {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}} ->
+        OpportunityWatcher.update_symbol(
+          state.pid,
+          {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}
+        )
+
         :ok
 
       {:unknown, message} ->
