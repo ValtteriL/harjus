@@ -16,7 +16,7 @@ defmodule Kirnu.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Kirnu.Application, []}
+      mod: {Kirnu, []}
     ]
   end
 
