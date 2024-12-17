@@ -1,4 +1,4 @@
-defmodule Kirnu do
+defmodule Harjus do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -20,14 +20,14 @@ defmodule Kirnu do
     {trading_paths, symbol_list} =
       Arbmapper.generate_trading_paths(
         symbols,
-        starting_symbols: Application.fetch_env!(:kirnu, :start_symbols),
-        depth: Application.fetch_env!(:kirnu, :max_trading_path_length)
+        starting_symbols: Application.fetch_env!(:harjus, :start_symbols),
+        depth: Application.fetch_env!(:harjus, :max_trading_path_length)
       )
 
-    Logger.debug("Start symbols: #{inspect(Application.fetch_env!(:kirnu, :start_symbols))}")
+    Logger.debug("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
 
     Logger.debug(
-      "Max trading path length: #{inspect(Application.fetch_env!(:kirnu, :max_trading_path_length))}"
+      "Max trading path length: #{inspect(Application.fetch_env!(:harjus, :max_trading_path_length))}"
     )
 
     Logger.debug("Trading paths: #{inspect(trading_paths)}")
@@ -62,7 +62,7 @@ defmodule Kirnu do
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :rest_for_one, name: Kirnu]
+    opts = [strategy: :rest_for_one, name: Harjus]
 
     Logger.info("Starting child processes")
     Supervisor.start_link(children, opts)

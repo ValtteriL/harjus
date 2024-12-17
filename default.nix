@@ -30,13 +30,13 @@ let
 
       # this is executed when shell entered
       shellHook = ''
-        cowsay "Kirnu!"
+        cowsay "Harjus!"
       '';
     };
 
     # build derivation
-    kirnuBuild = beamPackages.mixRelease rec {
-      pname = "kirnu";
+    harjusBuild = beamPackages.mixRelease rec {
+      pname = "harjus";
       version = "1.0.0";
       src = ./.;
       removeCookie = false;
@@ -45,12 +45,12 @@ let
 
     # docker packaging derivation
     docker = pkgs.dockerTools.buildLayeredImage {
-      name = "kirnu";
+      name = "harjus";
       created = "now";
       config =
         {
           Cmd = [
-            "kirnu"
+            "harjus"
             "start"
           ];
           Env = [
@@ -61,7 +61,7 @@ let
         };
 
       contents = [
-        kirnuBuild
+        harjusBuild
         dockerTools.binSh
       ];
     };

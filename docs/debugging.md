@@ -6,7 +6,7 @@
 # find pids for processes
 Process.whereis PortfolioManager
 Process.whereis OpportunityWatcher
-Process.whereis Kirnu.Supervisor
+Process.whereis Harjus.Supervisor
 
 # find process info
 Process.info(Process.whereis OpportunityWatcher)

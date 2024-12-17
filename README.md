@@ -1,4 +1,4 @@
-# Kirnu
+# Harjus
 
 Binance arbitrage bot.
 
@@ -32,12 +32,12 @@ mix dialyzer
 
 ### Build
 
-Build kirnu and package into a container
+Build harjus and package into a container
 
 ```bash
 nix-build
 
-# executable then available at ./result-3/bin/kirnu
+# executable then available at ./result-3/bin/harjus
 # container then available at ./result-2
 ```
 
