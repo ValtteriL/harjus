@@ -8,7 +8,10 @@ defmodule Harjus.MixProject do
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: [test: "test --no-start"]
+      aliases: [test: "test --no-start"],
+      dialyzer: [
+        paths: ["_build/dev/lib/harjus/ebin", "_build/test/lib/harjus/ebin"]
+      ]
     ]
   end
 
