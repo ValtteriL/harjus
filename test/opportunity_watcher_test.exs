@@ -17,15 +17,18 @@ defmodule OpportunityWatcherTest do
     # negative oppotunities should not be emitted
     refute_receive _
 
-    # TODO: make sense of this
-    # OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 1.0, 100.0, 2.0, 100.0}) # WHY DOES NOT WORK??
-
-    # MEANWHILE THESE BOTH WORK (only one should work)
-    OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 1.0, 1.0, 0.1, 100})
-    OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 0.1, 1.0, 1.0, 100})
+    # profitable opportunity - buy 1 BTC with 1 USDT, sell for 2 USDT = 100% profit
+    # capacity: 1.0 USDT (someone willing to buy 1 BTC for 2 USDT)
+    OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 1.0, 1.0, 2.0, 1.0})
 
     assert_receive {:"$gen_cast",
                     {:update_opportunities,
-                     [%{path: [{"BTCUSDT", :long}, {"BTCUSDT", :short}], profit: _, capacity: _}]}}
+                     [
+                       %{
+                         path: [{"BTCUSDT", :long}, {"BTCUSDT", :short}],
+                         profit: 1.0,
+                         capacity: 1.0
+                       }
+                     ]}}
   end
 end

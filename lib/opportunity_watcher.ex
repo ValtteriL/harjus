@@ -99,7 +99,10 @@ defmodule OpportunityWatcher do
       current_prices_quantities:
         state.current_prices_quantities
         |> Map.replace({symbol, :long}, %{price: ask_price, quantity: ask_qty})
-        |> Map.replace({symbol, :short}, %{price: bid_price, quantity: bid_qty})
+        |> Map.replace({symbol, :short}, %{
+          price: bid_price ** -1,
+          quantity: bid_qty * bid_price
+        })
     }
 
     # calculate arbitrage opportunities
@@ -108,7 +111,6 @@ defmodule OpportunityWatcher do
       |> Enum.map(fn path ->
         {path, Opportunity.profit(path, new_state.current_prices_quantities)}
       end)
-      |> IO.inspect()
       # filter nonprofitable
       |> Enum.filter(fn {_, profit} -> profit > 0.0 end)
       |> Enum.map(fn {path, profit} ->
