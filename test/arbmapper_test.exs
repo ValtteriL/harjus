@@ -38,7 +38,7 @@ defmodule ArbmapperTest do
       %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC"}
     ]
 
-    trading_paths = Arbmapper.generate_trading_paths(trading_symbols, ["BTC"])
+    trading_paths = Arbmapper.generate_trading_paths(trading_symbols, starting_symbols: ["BTC"])
 
     assert trading_paths ==
              {[
@@ -57,7 +57,8 @@ defmodule ArbmapperTest do
       %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC"}
     ]
 
-    trading_paths = Arbmapper.generate_trading_paths(trading_symbols, [], 1)
+    trading_paths =
+      Arbmapper.generate_trading_paths(trading_symbols, starting_symbols: [], depth: 1)
 
     assert trading_paths ==
              {

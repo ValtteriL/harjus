@@ -15,12 +15,17 @@ defmodule Arbmapper do
           symbols :: [
             %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
           ],
-          starting_symbols :: [charlist()],
-          depth :: integer()
+          opts :: [
+            starting_symbols: [charlist()],
+            depth: integer()
+          ]
         ) ::
           {trading_paths :: [[{symbol :: charlist(), position :: :long | :short}]],
            symbol_list :: [charlist()]}
-  def generate_trading_paths(symbols, starting_symbols \\ [], depth \\ 4) do
+  def generate_trading_paths(symbols, opts \\ []) do
+    starting_symbols = Keyword.get(opts, :starting_symbols, [])
+    depth = Keyword.get(opts, :depth, 4)
+
     graph = generate_graph(symbols)
 
     full_edges = :digraph.edges(graph) |> Enum.map(fn e -> :digraph.edge(graph, e) end)

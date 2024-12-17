@@ -20,8 +20,8 @@ defmodule Kirnu.Application do
     {trading_paths, symbol_list} =
       Arbmapper.generate_trading_paths(
         symbols,
-        Application.fetch_env!(:kirnu, :start_symbols),
-        Application.fetch_env!(:kirnu, :max_trading_path_length)
+        starting_symbols: Application.fetch_env!(:kirnu, :start_symbols),
+        depth: Application.fetch_env!(:kirnu, :max_trading_path_length)
       )
 
     Logger.debug("Start symbols: #{inspect(Application.fetch_env!(:kirnu, :start_symbols))}")
