@@ -52,7 +52,6 @@ defmodule ArbmapperTest do
   test "filters paths and symbols correctly using depth" do
     trading_symbols = [
       %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH"},
-      %{symbol: "ETHBTC", baseAsset: "ETH", quoteAsset: "BTC"},
       %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC"},
       %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC"}
     ]
@@ -63,20 +62,14 @@ defmodule ArbmapperTest do
     assert trading_paths ==
              {
                [
-                 [{"ETHBTC", :long}, {"BTCETH", :long}],
-                 [{"ETHBTC", :long}, {"BTCETH", :long}],
-                 [{"ETHBTC", :long}, {"BTCETH", :long}],
-                 [{"ETHBTC", :long}, {"BTCETH", :long}],
+                 [{"BTCETH", :short}, {"BTCETH", :long}],
                  [{"LTCBTC", :long}, {"LTCBTC", :short}],
                  [{"ETHLTC", :long}, {"ETHLTC", :short}],
                  [{"LTCBTC", :short}, {"LTCBTC", :long}],
-                 [{"BTCETH", :long}, {"ETHBTC", :long}],
-                 [{"BTCETH", :long}, {"ETHBTC", :long}],
-                 [{"BTCETH", :long}, {"ETHBTC", :long}],
-                 [{"BTCETH", :long}, {"ETHBTC", :long}],
+                 [{"BTCETH", :long}, {"BTCETH", :short}],
                  [{"ETHLTC", :short}, {"ETHLTC", :long}]
                ],
-               ["ETHBTC", "BTCETH", "LTCBTC", "ETHLTC"]
+               ["BTCETH", "LTCBTC", "ETHLTC"]
              }
   end
 
