@@ -32,7 +32,8 @@ defmodule Harjus.MixProject do
       {:req, "~> 0.5.7"},
       {:poison, "~> 6.0"},
       {:dotenv_parser, "~> 2.0"},
-      {:dialyxir, "~> 1.4", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
+      {:castore, "~> 1.0"}
     ]
   end
 end

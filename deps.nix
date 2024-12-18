@@ -8,6 +8,19 @@ let
   self = packages // (overrides self packages);
 
   packages = with beamPackages; with self; {
+    castore = buildMix rec {
+      name = "castore";
+      version = "1.0.10";
+
+      src = fetchHex {
+        pkg = "castore";
+        version = "${version}";
+        sha256 = "1b0b7ea14d889d9ea21202c43a4fa015eb913021cb535e8ed91946f4b77a8848";
+      };
+
+      beamDeps = [];
+    };
+
     dialyxir = buildMix rec {
       name = "dialyxir";
       version = "1.4.5";
@@ -109,7 +122,7 @@ let
         sha256 = "5ee441dffc1892f1ae59127f74afe8fd82fda6587794278d924e4d90ea3d63f9";
       };
 
-      beamDeps = [ hpax ];
+      beamDeps = [ castore hpax ];
     };
 
     nimble_options = buildMix rec {
