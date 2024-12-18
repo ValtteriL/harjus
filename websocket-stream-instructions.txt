@@ -37,3 +37,24 @@ then:
 Total number of streams: 2833
 a single connection has a limit of 1024 streams: https://developers.binance.com/docs/binance-spot-api-docs/web-socket-streams
 Thus must split into at least 3 bookstreamers
+
+
+
+
+# Testnet
+url: wss://testnet.binance.vision/ws/kek
+
+
+{"method": "SUBSCRIBE", "params": ["btcusdt@bookTicker","ethusdt@bookTicker"], "id": "asd"}
+
+378 - REPLY
+384 symbols - REPLY
+385 - no reply
+390 - no reply
+399 - no reply
+400 - no reply
+441 - no reply
+500 - no reply
+522 symbol - no reply
+1045 symbol - no reply
+1257 symbols - no reply

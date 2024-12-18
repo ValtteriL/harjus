@@ -35,10 +35,10 @@ defmodule Harjus do
     Logger.debug("Number of trading paths: #{length(trading_paths)}")
     Logger.debug("Number of symbols: #{length(symbol_list)}")
 
-    # multiple book streamers with max 1024 symbols each
+    # multiple book streamers with 200 symbols each
     book_streamers =
       symbol_list
-      |> Enum.chunk_every(1024)
+      |> Enum.chunk_every(200)
       |> Enum.map_reduce(1, fn partial_list, acc ->
         {Supervisor.child_spec({BookStreamer, partial_list},
            id: String.to_atom("book_streamer_#{acc}")

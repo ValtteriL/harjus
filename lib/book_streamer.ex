@@ -42,6 +42,8 @@ defmodule BookStreamer do
     pid = Process.whereis(OpportunityWatcher)
     {:ok, ws_pid} = WebSockex.start_link(url, __MODULE__, %{pid: pid})
 
+    Logger.debug("Subscribing to #{length(symbols)} symbols...")
+
     # subscribe to symbols
     WebSockex.send_frame(ws_pid, {:text, BinanceSpotStreams.subscribe_message(symbols)})
 
