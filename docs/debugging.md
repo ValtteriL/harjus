@@ -12,7 +12,7 @@ Process.whereis Harjus.Supervisor
 Process.info(Process.whereis OpportunityWatcher)
 
 
-
+Process.info Process.whereis Elixir.Harjus
 
 
 
