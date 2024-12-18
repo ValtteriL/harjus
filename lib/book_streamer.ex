@@ -17,28 +17,18 @@ defmodule BookStreamer do
     symbols: list of trading symbols to subscribe updates on
     url: websocket url to connect to
   """
-  @spec start_link(
+  @spec start_link({
           symbols :: [String.t()],
-          url ::
-            String.t()
-            | %WebSockex.Conn{
-                cacerts: any(),
-                conn_mod: :gen_tcp | :ssl,
-                extra_headers: [{any(), any()}],
-                host: binary(),
-                insecure: any(),
-                path: binary(),
-                port: non_neg_integer(),
-                query: nil | binary(),
-                resp_headers: [{any(), any()}],
-                socket: any(),
-                socket_connect_timeout: non_neg_integer(),
-                socket_recv_timeout: non_neg_integer(),
-                ssl_options: any(),
-                transport: :ssl | :tcp
-              }
-        ) :: {:ok, pid()}
-  def start_link(symbols, url \\ "wss://testnet.binance.vision/ws/kek") do
+          is_prod :: bool()
+        }) :: {:ok, pid()}
+  def start_link({symbols, is_prod}) do
+    url =
+      if is_prod do
+        "wss://stream.binance.com:443/ws/kek"
+      else
+        "wss://testnet.binance.vision/ws/kek"
+      end
+
     pid = Process.whereis(OpportunityWatcher)
     {:ok, ws_pid} = WebSockex.start_link(url, __MODULE__, %{pid: pid})
 

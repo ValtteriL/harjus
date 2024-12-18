@@ -9,8 +9,11 @@ defmodule Harjus do
   @impl true
   def start(_type, _args) do
     # discover trading paths
+    Logger.info("Starting Harjus")
+    Logger.info("Running in production: #{Application.fetch_env!(:harjus, :is_prod)}")
+
     Logger.info("Requesting symbols")
-    symbols = Binance.get_symbols()
+    symbols = Binance.get_symbols(Application.fetch_env!(:harjus, :is_prod))
 
     Logger.debug("Symbols: #{inspect(symbols)}")
     Logger.debug("Number of symbols: #{length(symbols)}")
@@ -40,7 +43,8 @@ defmodule Harjus do
       symbol_list
       |> Enum.chunk_every(200)
       |> Enum.map_reduce(1, fn partial_list, acc ->
-        {Supervisor.child_spec({BookStreamer, partial_list},
+        {Supervisor.child_spec(
+           {BookStreamer, {partial_list, Application.fetch_env!(:harjus, :is_prod)}},
            id: String.to_atom("book_streamer_#{acc}")
          ), acc + 1}
       end)
