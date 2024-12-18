@@ -39,13 +39,15 @@ defmodule Harjus do
     book_streamers =
       symbol_list
       |> Enum.chunk_every(1024)
-      |> Enum.map(fn partial_list ->
-        {BookStreamer, partial_list}
+      |> Enum.map_reduce(1, fn partial_list, acc ->
+        {Supervisor.child_spec({BookStreamer, partial_list},
+           id: String.to_atom("book_streamer_#{acc}")
+         ), acc + 1}
       end)
+      |> elem(0)
 
     Logger.debug("Book streamers: #{inspect(book_streamers)}")
     Logger.debug("Number of book streamers: #{length(book_streamers)}")
-    Process.sleep(:infinity)
 
     children =
       [

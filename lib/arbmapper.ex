@@ -24,7 +24,7 @@ defmodule Arbmapper do
            symbol_list :: [charlist()]}
   def generate_trading_paths(symbols, opts \\ []) do
     starting_symbols = Keyword.get(opts, :starting_symbols, [])
-    depth = Keyword.get(opts, :depth, 4)
+    depth = Keyword.get(opts, :depth, 2)
 
     graph = generate_graph(symbols)
 
