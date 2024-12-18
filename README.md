@@ -44,9 +44,12 @@ nix-build
 ### Running
 
 ```bash
-docker image load -i $(realpath result-2)
-docker container run --rm -it <image>
+IMAGE=`docker image load -q < result-2|awk '{print $3}'`
+docker container run --rm -it --env-file .env $IMAGE
 
 # can also run shell inside container
-docker container run --rm -it <image> /bin/sh
+docker container run --rm -it $IMAGE /bin/sh
+
+# push to k8s registry
+docker image push $IMAGE
 ```

@@ -45,7 +45,7 @@ let
 
     # docker packaging derivation
     docker = pkgs.dockerTools.buildLayeredImage {
-      name = "harjus";
+      name = "charlie.koti.kontu:32000/harjus";
       created = "now";
       config =
         {
