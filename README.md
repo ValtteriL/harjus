@@ -52,4 +52,7 @@ docker container run --rm -it $IMAGE /bin/sh
 
 # push to k8s registry
 docker image push $IMAGE
+
+# run in k8s
+kubectl run -i -t harjus --image=$IMAGE --restart=Never --env "START_SYMBOLS=BNB" --env "PROD=true"
 ```
