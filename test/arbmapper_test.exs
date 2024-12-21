@@ -14,20 +14,14 @@ defmodule ArbmapperTest do
     assert trading_paths ==
              {
                [
-                 [{"BTCETH", :short}, {"BTCETH", :long}],
                  [{"LTCBTC", :long}, {"ETHLTC", :long}, {"BTCETH", :long}],
                  [{"BTCETH", :short}, {"ETHLTC", :short}, {"LTCBTC", :short}],
-                 [{"LTCBTC", :long}, {"LTCBTC", :short}],
                  [{"LTCBTC", :short}, {"BTCETH", :short}, {"ETHLTC", :short}],
-                 [{"ETHLTC", :long}, {"ETHLTC", :short}],
                  [{"ETHLTC", :long}, {"BTCETH", :long}, {"LTCBTC", :long}],
-                 [{"LTCBTC", :short}, {"LTCBTC", :long}],
-                 [{"BTCETH", :long}, {"BTCETH", :short}],
                  [{"ETHLTC", :short}, {"LTCBTC", :short}, {"BTCETH", :short}],
-                 [{"ETHLTC", :short}, {"ETHLTC", :long}],
                  [{"BTCETH", :long}, {"LTCBTC", :long}, {"ETHLTC", :long}]
                ],
-               ["BTCETH", "LTCBTC", "ETHLTC"]
+               ["LTCBTC", "ETHLTC", "BTCETH"]
              }
   end
 
@@ -42,11 +36,9 @@ defmodule ArbmapperTest do
 
     assert trading_paths ==
              {[
-                [{"BTCETH", :short}, {"BTCETH", :long}],
                 [{"LTCBTC", :long}, {"ETHLTC", :long}, {"BTCETH", :long}],
-                [{"BTCETH", :short}, {"ETHLTC", :short}, {"LTCBTC", :short}],
-                [{"LTCBTC", :long}, {"LTCBTC", :short}]
-              ], ["BTCETH", "LTCBTC", "ETHLTC"]}
+                [{"BTCETH", :short}, {"ETHLTC", :short}, {"LTCBTC", :short}]
+              ], ["LTCBTC", "ETHLTC", "BTCETH"]}
   end
 
   test "filters paths and symbols correctly using depth" do
@@ -59,17 +51,11 @@ defmodule ArbmapperTest do
     trading_paths =
       Arbmapper.generate_trading_paths(trading_symbols, starting_symbols: [], depth: 1)
 
+    # arbmapper skips paths of length 1, thus now should be compeltely empty
     assert trading_paths ==
              {
-               [
-                 [{"BTCETH", :short}, {"BTCETH", :long}],
-                 [{"LTCBTC", :long}, {"LTCBTC", :short}],
-                 [{"ETHLTC", :long}, {"ETHLTC", :short}],
-                 [{"LTCBTC", :short}, {"LTCBTC", :long}],
-                 [{"BTCETH", :long}, {"BTCETH", :short}],
-                 [{"ETHLTC", :short}, {"ETHLTC", :long}]
-               ],
-               ["BTCETH", "LTCBTC", "ETHLTC"]
+               [],
+               []
              }
   end
 
