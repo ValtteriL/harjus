@@ -10,6 +10,9 @@ defmodule PortfolioManager do
   use GenServer
   require Logger
 
+  @type trading_symbol() :: {charlist(), :long | :short}
+  @type opportunity() :: {path :: [trading_symbol()], profit :: float(), capacity :: float()}
+
   # API
 
   @doc """
@@ -32,7 +35,7 @@ defmodule PortfolioManager do
   @spec send_opportunities(
           pid :: pid(),
           opportunities :: [
-            %{path: [{charlist(), :long | :short}], profit: float(), capacity: float()}
+            opportunity()
           ]
         ) ::
           :ok
@@ -58,8 +61,7 @@ defmodule PortfolioManager do
 
   @impl true
   @spec handle_cast(
-          {:update_opportunities,
-           [%{path: [{charlist(), :long | :short}], profit: float(), capacity: float()}]},
+          {:update_opportunities, [opportunity()]},
           %{
             pid: pid()
           }
