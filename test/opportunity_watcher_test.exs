@@ -22,13 +22,16 @@ defmodule OpportunityWatcherTest do
     OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 1.0, 1.0, 2.0, 1.0})
 
     assert_receive {:"$gen_cast",
-                    {:update_opportunities,
-                     [
-                       %{
-                         path: [{"BTCUSDT", :long}, {"BTCUSDT", :short}],
-                         profit: 1.0,
-                         capacity: 1.0
-                       }
-                     ]}}
+     {:update_opportunities,
+      [
+        {
+          # path
+          [{"BTCUSDT", :long}, {"BTCUSDT", :short}],
+          # profit
+          1.0,
+          # capacity
+          1.0
+        }
+      ]}}
   end
 end

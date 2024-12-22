@@ -18,8 +18,8 @@ defmodule OpportunityWatcher do
   @type state() :: %{
           pid: pid,
           pathid_to_path_map: %{integer() => trading_path()},
-          symbol_to_price_qty_tuple: %{trading_symbol() => price_qty_tuple()},
-          symbol_to_pathids_map: %{trading_symbol() => [integer()]},
+          trading_symbol_to_price_qty_tuple: %{trading_symbol() => price_qty_tuple()},
+          symbol_to_pathids_map: %{charlist() => [integer()]},
           pathid_to_profit_cap_tuple: %{integer() => profit_cap_tuple()}
         }
 
@@ -67,20 +67,24 @@ defmodule OpportunityWatcher do
       |> Map.new()
 
     # initialize current prices and quantities for each trading symbol
-    symbol_to_price_qty_tuple =
+    trading_symbol_to_price_qty_tuple =
       trading_paths
       |> List.flatten()
       |> Enum.uniq()
-      |> Enum.map(fn x -> {x, %{:price => 1.0, :quantity => 0.0}} end)
+      |> Enum.map(fn x -> {x, {1.0, 0.0}} end)
       |> Map.new()
 
     # initialize symbol to pathids map
     symbol_to_pathids_map =
       trading_paths
       |> Enum.with_index()
-      |> Enum.flat_map(fn {path, index} -> Enum.map(path, fn symbol -> {symbol, index} end) end)
-      |> Enum.group_by(fn {symbol, _} -> symbol end)
-      |> Enum.map(fn {symbol, list} -> {symbol, Enum.map(list, fn {_, index} -> index end)} end)
+      |> Enum.flat_map(fn {path, index} ->
+        Enum.map(path, fn trading_symbol -> {trading_symbol, index} end)
+      end)
+      |> Enum.group_by(fn {{symbol, _}, _} -> symbol end)
+      |> Enum.map(fn {symbol, list} ->
+        {symbol, Enum.map(list, fn {_, index} -> index end) |> Enum.uniq()}
+      end)
       |> Map.new()
 
     # initialize pathid to profit cap tuple
@@ -95,7 +99,7 @@ defmodule OpportunityWatcher do
     initial_state = %{
       pid: pid,
       pathid_to_path_map: pathid_to_path_map,
-      symbol_to_price_qty_tuple: symbol_to_price_qty_tuple,
+      trading_symbol_to_price_qty_tuple: trading_symbol_to_price_qty_tuple,
       symbol_to_pathids_map: symbol_to_pathids_map,
       pathid_to_profit_cap_tuple: pathid_to_profit_cap_tuple
     }
@@ -111,8 +115,8 @@ defmodule OpportunityWatcher do
           {:noreply, state()}
   def handle_cast({:update_symbol, {symbol, ask_price, ask_qty, bid_price, bid_qty}}, state) do
     # update price and quantity on long + short
-    new_symbol_to_price_qty_tuple =
-      state.symbol_to_price_qty_tuple
+    new_trading_symbol_to_price_qty_tuple =
+      state.trading_symbol_to_price_qty_tuple
       |> Map.replace!({symbol, :long}, {ask_price, ask_qty})
       |> Map.replace!({symbol, :short}, {
         bid_price ** -1,
@@ -126,8 +130,8 @@ defmodule OpportunityWatcher do
       affected_pathids
       |> Enum.map(fn pathid ->
         path = state.pathid_to_path_map[pathid]
-        profit = Opportunity.profit(path, new_symbol_to_price_qty_tuple)
-        capacity = Opportunity.capacity(path, new_symbol_to_price_qty_tuple, profit)
+        profit = Opportunity.profit(path, new_trading_symbol_to_price_qty_tuple)
+        capacity = Opportunity.capacity(path, new_trading_symbol_to_price_qty_tuple, profit)
         {pathid, {profit, capacity}}
       end)
 
@@ -143,7 +147,7 @@ defmodule OpportunityWatcher do
       pid: state.pid,
       pathid_to_path_map: state.pathid_to_path_map,
       symbol_to_pathids_map: state.symbol_to_pathids_map,
-      symbol_to_price_qty_tuple: new_symbol_to_price_qty_tuple,
+      trading_symbol_to_price_qty_tuple: new_trading_symbol_to_price_qty_tuple,
       pathid_to_profit_cap_tuple: new_pathid_to_profit_cap_tuple
     }
 
