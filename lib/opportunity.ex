@@ -3,10 +3,14 @@ defmodule Opportunity do
   Functions for calculating arbitrage opportunities.
   """
 
+  @type trading_symbol() :: {charlist(), :long | :short}
+  @type trading_path() :: [trading_symbol()]
+  @type price_qty_tuple() :: {price :: float(), quantity :: float()}
+
   @spec profit(
-          trading_path :: [{charlist(), :long | :short}],
+          trading_path :: trading_path(),
           price_quantity_map :: %{
-            {charlist(), :long | :short} => %{price: float(), quantity: float()}
+            trading_symbol() => price_qty_tuple()
           }
         ) :: float()
   @doc """
@@ -14,15 +18,15 @@ defmodule Opportunity do
   """
   def profit(trading_path, price_quantity_map) do
     trading_path
-    |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol).price end)
+    |> Enum.map(fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
     |> Enum.reduce(1, fn price, acc -> acc / price end)
     |> Kernel.-(1)
   end
 
   @spec capacity(
-          trading_path :: [{charlist(), :long | :short}],
+          trading_path :: trading_path(),
           price_quantity_map :: %{
-            {charlist(), :long | :short} => %{price: float(), quantity: float()}
+            trading_symbol() => price_qty_tuple()
           },
           profit :: float()
         ) :: float()
@@ -33,14 +37,14 @@ defmodule Opportunity do
   Taking into accound only best ask prices and quantities.
   """
   def capacity(trading_path, price_quantity_map, profit) do
-    first_symbol_qty = Map.get(price_quantity_map, Enum.at(trading_path, 0)).quantity
+    first_symbol_qty = elem(Map.get(price_quantity_map, Enum.at(trading_path, 0)), 1)
 
     trading_path
     |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol) end)
     # skip first symbol
     |> Enum.drop(1)
     |> Enum.reduce(first_symbol_qty, fn price_quantity, acc ->
-      min(acc / price_quantity.price, price_quantity.quantity)
+      min(acc / elem(price_quantity, 0), elem(price_quantity, 1))
     end)
     |> Kernel./(1 + profit)
   end

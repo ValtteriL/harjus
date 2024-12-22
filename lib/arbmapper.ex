@@ -8,6 +8,8 @@ defmodule Arbmapper do
 
   Returns trading symbols to buy that make up a cycle
 
+  Does not return trading paths of depth 1, as they are not useful for arbitrage
+
   starting_paths can be provided to limit to cycles that start and end at those symbols
   This also limits the symbols to subscribe to to those in the paths
   """
@@ -37,6 +39,8 @@ defmodule Arbmapper do
       |> Enum.map(fn x -> get_simple_cycles_for_vertex(graph, x, depth) end)
       |> Enum.concat()
       |> Enum.map(fn x -> vertex_path_to_symbols(full_edges, x) end)
+      # filter paths with only 2 symbols (they wont happen in practice)
+      |> Enum.filter(fn x -> length(x) > 2 end)
 
     symbol_list =
       trading_paths |> List.flatten() |> Enum.map(fn x -> elem(x, 0) end) |> Enum.uniq()
@@ -108,6 +112,7 @@ defmodule Arbmapper do
 
   defp dfs(graph, start, [{current, acc} | tail], cycles, depth) do
     cond do
+      # dont consider longer cycles than depth
       length(acc) > depth ->
         dfs(graph, start, tail, cycles, depth)
 

@@ -6,10 +6,10 @@ defmodule OpportunityTest do
     path = [{"BTCUSDT", :long}, {"USDTBTC", :long}]
 
     price_table = %{
-      {"BTCUSDT", :long} => %{price: 10000.0, quantity: 1.0},
-      {"USDTBTC", :long} => %{price: 0.00005, quantity: 1337.1337},
-      {"ETHBTC", :long} => %{price: 0.1, quantity: 10.0},
-      {"USDTETH", :long} => %{price: 0.001, quantity: 1.0}
+      {"BTCUSDT", :long} => {10000.0, 1.0},
+      {"USDTBTC", :long} => {0.00005, 1337.1337},
+      {"ETHBTC", :long} => {0.1, 10.0},
+      {"USDTETH", :long} => {0.001, 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -23,8 +23,8 @@ defmodule OpportunityTest do
     path = [{"BTCUSDT", :long}, {"BTCUSDT", :short}]
 
     price_table = %{
-      {"BTCUSDT", :long} => %{price: 1.0, quantity: 1.0},
-      {"BTCUSDT", :short} => %{price: 2.0 ** -1, quantity: 1.0}
+      {"BTCUSDT", :long} => {1.0, 1.0},
+      {"BTCUSDT", :short} => {2.0 ** -1, 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -38,9 +38,9 @@ defmodule OpportunityTest do
     path = [{"BTCUSDT", :long}, {"ETHBTC", :long}, {"USDTETH", :long}]
 
     price_table = %{
-      {"BTCUSDT", :long} => %{price: 10000.0, quantity: 1.0},
-      {"ETHBTC", :long} => %{price: 0.1, quantity: 10.0},
-      {"USDTETH", :long} => %{price: 0.001, quantity: 1.0}
+      {"BTCUSDT", :long} => {10000.0, 1.0},
+      {"ETHBTC", :long} => {0.1, 10.0},
+      {"USDTETH", :long} => {0.001, 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -56,17 +56,17 @@ defmodule OpportunityTest do
     assert profit == 0.0
   end
 
-  test "empty path results in KeyError on capacity" do
-    assert_raise KeyError, fn ->
+  test "empty price_quantity_map results in ArgumentError on capacity" do
+    assert_raise ArgumentError, fn ->
       Opportunity.capacity([], %{}, 1)
     end
   end
 
-  test "missing symbol in pricing results in KeyError" do
-    assert_raise KeyError, fn ->
+  test "missing symbol in pricing results in ArgumentError" do
+    assert_raise ArgumentError, fn ->
       Opportunity.profit([{"BTCUSDT", :long}, {"ETHBTC", :long}, {"USDTETH", :long}], %{
-        {"BTCUSDT", :long} => %{price: 10000.0, quantity: 1.0},
-        {"ETHBTC", :long} => %{price: 0.1, quantity: 10.0}
+        {"BTCUSDT", :long} => {10000.0, 1.0},
+        {"ETHBTC", :long} => {0.1, 10.0}
       })
     end
   end
