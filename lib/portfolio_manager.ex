@@ -13,8 +13,12 @@ defmodule PortfolioManager do
   @type pm_args() :: %{
           min_profit_percentage: float(),
           min_profit_capacity: float(),
-          standard_commission: float(),
-          tax_commission: float(),
+          standard_commission_taker: float(),
+          standard_commission_buyer: float(),
+          standard_commission_seller: float(),
+          tax_commission_taker: float(),
+          tax_commission_buyer: float(),
+          tax_commission_seller: float(),
           discount: float()
         }
   @type state() :: %{
@@ -22,8 +26,12 @@ defmodule PortfolioManager do
           pid: pid(),
           min_profit_percentage: float(),
           min_profit_capacity: float(),
-          standard_commission: float(),
-          tax_commission: float(),
+          standard_commission_taker: float(),
+          standard_commission_buyer: float(),
+          standard_commission_seller: float(),
+          tax_commission_taker: float(),
+          tax_commission_buyer: float(),
+          tax_commission_seller: float(),
           discount: float()
         }
 
@@ -73,8 +81,12 @@ defmodule PortfolioManager do
       pid: pid,
       min_profit_percentage: args.min_profit_percentage,
       min_profit_capacity: args.min_profit_capacity,
-      standard_commission: args.standard_commission,
-      tax_commission: args.tax_commission,
+      standard_commission_taker: args.standard_commission_taker,
+      standard_commissions_buyer: args.standard_commission_buyer,
+      standard_commissions_seller: args.standard_commission_seller,
+      tax_commission_taker: args.tax_commission_taker,
+      tax_commission_buyer: args.tax_commission_buyer,
+      tax_commission_seller: args.tax_commission_seller,
       discount: args.discount
     }
 
@@ -91,8 +103,35 @@ defmodule PortfolioManager do
         {:update_opportunities, opportunities},
         state
       ) do
-    # TODO
-    Logger.notice("Portfolio Manager: received opportunities #{inspect(opportunities)}")
+    profitable_opportunities =
+      opportunities
+      |> Enum.filter(fn {path, profit, capacity} ->
+        # filter unprofitable, too low capacity opportunities
+
+        commission =
+          TradingFeeCalculator.total_commission_percentage(
+            path,
+            state.standard_commission_taker,
+            state.standard_commissions_buyer,
+            state.standard_commissions_seller,
+            state.tax_commission_taker,
+            state.tax_commission_buyer,
+            state.tax_commission_seller,
+            state.discount
+          )
+
+        profit - commission >= state.min_profit_percentage &&
+          capacity >= state.min_profit_capacity
+      end)
+      # sort by profit * capacity
+      |> Enum.sort(fn {_, profit1, cap1}, {_, profit2, cap2} ->
+        profit2 * cap2 > profit1 * cap1
+      end)
+
+    # send any profitable opportunities to Executor
+    if length(profitable_opportunities) > 0 do
+      PortfolioManager.send_opportunities(state.pid, profitable_opportunities)
+    end
 
     {:noreply, state}
   end
