@@ -35,10 +35,17 @@ defmodule Harjus.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:castore, "~> 1.0"},
 <<<<<<< HEAD
+<<<<<<< HEAD
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
 =======
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
 >>>>>>> 18e3a13 (Add mix task quality for code quality checks)
+=======
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false}
+=======
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+>>>>>>> 94d18a0 (Add credo)
+>>>>>>> 8b1c180 (Add credo)
     ]
   end
 end
