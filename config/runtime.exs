@@ -11,7 +11,6 @@ config :harjus,
   is_prod: ConfigHelper.get_env("PROD", false, :bool),
   min_profit_percentage: ConfigHelper.get_env("MIN_PROFIT_PERCENTAGE", 0.001, :float),
   min_capacity: ConfigHelper.get_env("MIN_CAPACITY", 0.0, :float),
-  min_profit_capacity: ConfigHelper.get_env(),
   standard_commission_taker: ConfigHelper.get_env("STD_COMMISSION_TAKER", 0.001, :float), # TODO
   standard_commission_buyer: ConfigHelper.get_env("STD_COMMISSION_BUYER", 0.001, :float), # TODO
   standard_commission_seller: ConfigHelper.get_env("STD_COMMISSION_SELLER", 0.001, :float), # TODO

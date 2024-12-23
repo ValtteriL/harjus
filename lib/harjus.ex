@@ -55,7 +55,7 @@ defmodule Harjus do
 
     pm_args = %{
       min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
-      min_profit_capacity: Application.fetch_env!(:harjus, :min_profit_capacity),
+      min_capacity: Application.fetch_env!(:harjus, :min_capacity),
       standard_commission_taker: Application.fetch_env!(:harjus, :standard_commission_taker),
       standard_commission_buyer: Application.fetch_env!(:harjus, :standard_commission_buyer),
       standard_commission_seller: Application.fetch_env!(:harjus, :standard_commission_seller),

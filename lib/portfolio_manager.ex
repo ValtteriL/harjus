@@ -12,7 +12,7 @@ defmodule PortfolioManager do
 
   @type pm_args() :: %{
           min_profit_percentage: float(),
-          min_profit_capacity: float(),
+          min_capacity: float(),
           standard_commission_taker: float(),
           standard_commission_buyer: float(),
           standard_commission_seller: float(),
@@ -25,7 +25,7 @@ defmodule PortfolioManager do
           # executor pid
           pid: pid(),
           min_profit_percentage: float(),
-          min_profit_capacity: float(),
+          min_capacity: float(),
           standard_commission_taker: float(),
           standard_commission_buyer: float(),
           standard_commission_seller: float(),
@@ -45,7 +45,7 @@ defmodule PortfolioManager do
 
   Args:
     min_profit_percentage : minimum profit percentage to consider an opportunity
-    min_profit_capacity : minimum capacity to consider an opportunity
+    min_capacity : minimum capacity to consider an opportunity
     standard_commission : standard trading commission
     tax_commission : trading tax commission
     discount : discount rate on standard commission if paying fees with BNB
@@ -80,7 +80,7 @@ defmodule PortfolioManager do
     initial_state = %{
       pid: pid,
       min_profit_percentage: args.min_profit_percentage,
-      min_profit_capacity: args.min_profit_capacity,
+      min_capacity: args.min_capacity,
       standard_commission_taker: args.standard_commission_taker,
       standard_commissions_buyer: args.standard_commission_buyer,
       standard_commissions_seller: args.standard_commission_seller,
@@ -121,7 +121,7 @@ defmodule PortfolioManager do
           )
 
         profit - commission >= state.min_profit_percentage &&
-          capacity >= state.min_profit_capacity
+          capacity >= state.min_capacity
       end)
       # sort by profit * capacity
       |> Enum.sort(fn {_, profit1, cap1}, {_, profit2, cap2} ->
