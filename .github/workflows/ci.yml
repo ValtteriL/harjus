@@ -24,7 +24,7 @@ jobs:
         run: nix-build
 
       - name: Upload container image
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: container-image
           path: result-2
