@@ -63,8 +63,8 @@ defmodule Harjus do
         {OpportunityWatcher, trading_paths},
         {UserDataStreamer,
          %{
-           api_key: System.get_env("BINANCE_API_KEY"),
-           api_secret: System.get_env("BINANCE_API_SECRET"),
+           api_key: Application.fetch_env!(:harjus, :binance_api_key),
+           api_secret: Application.fetch_env!(:harjus, :binance_api_secret),
            is_prod: Application.fetch_env!(:harjus, :is_prod)
          }},
         {WSSpotApiClient,
