@@ -60,7 +60,13 @@ defmodule Harjus do
 
         # processes are started in order
         {PortfolioManager, []},
-        {OpportunityWatcher, trading_paths}
+        {OpportunityWatcher, trading_paths},
+        {UserDataStreamer,
+         %{
+           api_key: System.get_env("BINANCE_API_KEY"),
+           api_secret: System.get_env("BINANCE_API_SECRET"),
+           is_prod: Application.fetch_env!(:harjus, :is_prod)
+         }}
       ] ++ book_streamers
 
     Logger.debug("Children: #{inspect(children)}")
