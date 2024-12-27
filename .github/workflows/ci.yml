@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Nix
+        uses: cachix/install-nix-action@v14
+
+      - name: Run nix-build
+        run: nix-build
+
+      - name: Upload container image
+        uses: actions/upload-artifact@v2
+        with:
+          name: container-image
+          path: result-2
