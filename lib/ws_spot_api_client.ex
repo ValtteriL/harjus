@@ -1,70 +1,36 @@
 defmodule WSSpotApiClient do
   use GenServer
-  require Logger
 
   def start_link(api_key, api_secret) do
     GenServer.start_link(__MODULE__, {api_key, api_secret}, name: __MODULE__)
   end
 
   def init({api_key, api_secret}) do
-    {:ok, %{api_key: api_key, api_secret: api_secret}, {:continue, :connect}}
+    {:ok, conn} = WebSockex.start_link("wss://stream.binance.com:9443/ws", __MODULE__, %{api_key: api_key, api_secret: api_secret})
+    {:ok, conn}
   end
 
-  def handle_continue(:connect, state) do
-    case connect(state.api_key, state.api_secret) do
-      {:ok, conn} ->
-        {:noreply, Map.put(state, :conn, conn)}
-
-      {:error, reason} ->
-        Logger.error("Failed to connect: #{reason}")
-        {:stop, reason, state}
-    end
+  def make_order(symbol, quantity) do
+    GenServer.call(__MODULE__, {:make_order, symbol, quantity})
   end
 
-  def make_order(order) do
-    GenServer.call(__MODULE__, {:make_order, order})
+  def get_balances(asset) do
+    GenServer.call(__MODULE__, {:get_balances, asset})
   end
 
-  def get_balances() do
-    GenServer.call(__MODULE__, :get_balances)
+  def handle_call({:make_order, symbol, quantity}, _from, state) do
+    order_request = WSSpotApi.new_order_request(symbol, quantity)
+    # Send the order request
+    {:reply, :ok, state}
   end
 
-  def handle_call({:make_order, order}, _from, state) do
-    case send_order(state.conn, order) do
-      {:ok, response} ->
-        {:reply, {:ok, response}, state}
-
-      {:error, reason} ->
-        {:reply, {:error, reason}, state}
-    end
-  end
-
-  def handle_call(:get_balances, _from, state) do
-    case fetch_balances(state.conn) do
-      {:ok, balances} ->
-        {:reply, {:ok, balances}, state}
-
-      {:error, reason} ->
-        {:reply, {:error, reason}, state}
-    end
+  def handle_call({:get_balances, asset}, _from, state) do
+    balance_request = WSSpotApi.get_balance_request(asset)
+    # Send the get balance request
+    {:reply, :ok, state}
   end
 
   def handle_info({:ping, _}, state) do
-    {:noreply, state}
-  end
-
-  defp connect(api_key, api_secret) do
-    # Implement the connection logic here
-    {:ok, :connection}
-  end
-
-  defp send_order(conn, order) do
-    # Implement the order sending logic here
-    {:ok, :order_response}
-  end
-
-  defp fetch_balances(conn) do
-    # Implement the balance fetching logic here
-    {:ok, :balances}
+    {:reply, :pong, state}
   end
 end
