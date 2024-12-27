@@ -8,7 +8,7 @@ defmodule Harjus.MixProject do
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: [test: "test --no-start", quality: ["format", "compile --all-warnings --warnings-as-errors", "test", "credo --strict", "dialyzer --ignore-exit-status"]],
+      aliases: [test: "test --no-start", quality: ["format", "compile --all-warnings --warnings-as-errors", "test", "credo --strict", "dialyzer --ignore-exit-status"], quality.ci: ["format --check-formatted", "compile --all-warnings --warnings-as-errors", "test", " credo --strict" , "dialyzer"]],
       dialyzer: [
         paths: ["_build/dev/lib/harjus/ebin", "_build/test/lib/harjus/ebin"]
       ]
