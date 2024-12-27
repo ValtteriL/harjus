@@ -18,3 +18,6 @@ config :harjus,
   tax_commission_buyer: ConfigHelper.get_env("TAX_COMMISION_BUYER", 0.001, :float), # TODO
   tax_commission_seller: ConfigHelper.get_env("TAX_COMMISION_SELLER", 0.001, :float), # TODO
   discount: ConfigHelper.get_env("DISCOUNT", 0.25, :float)
+  is_prod: ConfigHelper.get_env("PROD", false, :bool),
+  binance_api_key: ConfigHelper.get_env("BINANCE_API_KEY", "", :str),
+  binance_api_secret: ConfigHelper.get_env("BINANCE_API_SECRET", "", :str)
