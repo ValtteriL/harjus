@@ -16,6 +16,10 @@ jobs:
       - name: Set up Nix
         uses: cachix/install-nix-action@v14
 
+      - name: Activate nix-shell and run mix quality.ci
+        run: |
+          nix-shell -p devEnv --run "mix quality.ci"
+
       - name: Run nix-build
         run: nix-build
 
