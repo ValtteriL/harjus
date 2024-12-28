@@ -25,6 +25,7 @@ defmodule UserDataStreamer do
 
       {:user_data_event, event} ->
         Logger.info("Received user data event: #{inspect(event)}")
+        Executor.send_trade_update(self(), event)
 
       {:unknown, message} ->
         Logger.error("Unknown message: #{inspect(message)}")

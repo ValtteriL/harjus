@@ -69,7 +69,8 @@ defmodule Harjus do
          }},
         {WSSpotApiClient,
          {Application.fetch_env!(:harjus, :binance_api_key),
-          Application.fetch_env!(:harjus, :binance_api_secret)}}
+          Application.fetch_env!(:harjus, :binance_api_secret)}},
+        {Executor, []}
       ] ++ book_streamers
 
     Logger.debug("Children: #{inspect(children)}")
