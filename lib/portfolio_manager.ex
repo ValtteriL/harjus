@@ -24,9 +24,9 @@ defmodule PortfolioManager do
   """
   @spec start_link(arg :: any()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(_arg) do
-    # TODO: put executor here
     pid = nil
-    GenServer.start_link(__MODULE__, pid, name: __MODULE__)
+    {:ok, executor_pid} = Executor.start_link([])
+    GenServer.start_link(__MODULE__, {pid, executor_pid}, name: __MODULE__)
   end
 
   @doc """
@@ -46,14 +46,16 @@ defmodule PortfolioManager do
   # Callbacks
 
   @impl true
-  @spec init({pid()}) ::
+  @spec init({pid(), pid()}) ::
           {:ok,
            %{
-             pid: pid()
+             pid: pid(),
+             executor_pid: pid()
            }}
-  def init(pid) do
+  def init({pid, executor_pid}) do
     initial_state = %{
-      pid: pid
+      pid: pid,
+      executor_pid: executor_pid
     }
 
     {:ok, initial_state}
@@ -63,12 +65,14 @@ defmodule PortfolioManager do
   @spec handle_cast(
           {:update_opportunities, [opportunity()]},
           %{
-            pid: pid()
+            pid: pid(),
+            executor_pid: pid()
           }
         ) ::
           {:noreply,
            %{
-             pid: pid()
+             pid: pid(),
+             executor_pid: pid()
            }}
   def handle_cast(
         {:update_opportunities, opportunities},
@@ -76,11 +80,16 @@ defmodule PortfolioManager do
       ) do
     # update state
     new_state = %{
-      pid: state.pid
+      pid: state.pid,
+      executor_pid: state.executor_pid
     }
 
-    # TODO
     Logger.notice("Portfolio Manager: received opportunities #{inspect(opportunities)}")
+
+    if length(opportunities) > 0 do
+      most_profitable_opportunity = Enum.max_by(opportunities, fn {_, profit, _} -> profit end)
+      GenServer.cast(state.executor_pid, {:opportunity, most_profitable_opportunity})
+    end
 
     {:noreply, new_state}
   end
