@@ -18,7 +18,7 @@ jobs:
 
       - name: Activate nix-shell and run mix quality.ci
         run: |
-          nix-shell -E devEnv --run "mix quality.ci"
+          nix-shell -A devEnv --run "mix quality.ci"
 
       - name: Run nix-build
         run: nix-build
