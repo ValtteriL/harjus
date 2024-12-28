@@ -6,7 +6,12 @@ defmodule WSSpotApiClient do
   end
 
   def init({api_key, api_secret}) do
-    {:ok, conn} = WebSockex.start_link("wss://stream.binance.com:9443/ws", __MODULE__, %{api_key: api_key, api_secret: api_secret})
+    {:ok, conn} =
+      WebSockex.start_link("wss://stream.binance.com:9443/ws", __MODULE__, %{
+        api_key: api_key,
+        api_secret: api_secret
+      })
+
     {:ok, conn}
   end
 
