@@ -53,4 +53,10 @@ defmodule Harjus.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
+
+  def cli do
+    [
+      preferred_envs: [quality: :test, "quality.ci": :test]
+    ]
+  end
 end
