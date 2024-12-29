@@ -1,5 +1,5 @@
 defmodule WSSpotApiClient do
-  @moduledoc "client process to interact with the Binance Spot API"
+  @moduledoc "client process to interact with the Binance WS Spot API"
   use GenServer
 
   def start_link(api_key, api_secret) do
@@ -36,7 +36,7 @@ defmodule WSSpotApiClient do
     {:reply, :ok, state}
   end
 
-  def handle_info({:ping, _}, state) do
-    {:reply, :pong, state}
-  end
+  # def handle_info({:ping, _}, state) do
+  #  {:reply, :pong, state}
+  # end
 end
