@@ -8,7 +8,23 @@ defmodule Harjus.MixProject do
       elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      aliases: [test: "test --no-start", quality: ["format", "compile --all-warnings --warnings-as-errors", "test", "credo --strict", "dialyzer --ignore-exit-status"], "quality.ci": ["format --check-formatted", "compile --all-warnings --warnings-as-errors", "test", "credo --strict", "dialyzer"]],
+      aliases: [
+        test: "test --no-start",
+        quality: [
+          "format",
+          "compile --all-warnings --warnings-as-errors",
+          "test",
+          "credo --strict",
+          "dialyzer --ignore-exit-status"
+        ],
+        "quality.ci": [
+          "format --check-formatted",
+          "compile --all-warnings --warnings-as-errors",
+          "test",
+          "credo --strict",
+          "dialyzer"
+        ]
+      ],
       dialyzer: [
         paths: ["_build/dev/lib/harjus/ebin", "_build/test/lib/harjus/ebin"]
       ]
@@ -33,7 +49,8 @@ defmodule Harjus.MixProject do
       {:poison, "~> 6.0"},
       {:dotenv_parser, "~> 2.0"},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
-      {:castore, "~> 1.0"},{:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      {:castore, "~> 1.0"},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end
 end

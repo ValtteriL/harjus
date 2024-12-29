@@ -10,7 +10,9 @@ defmodule UserDataStreamer do
         "wss://testnet.binance.vision/ws/#{api_key}"
       end
 
-    {:ok, pid} = WebSockex.start_link(url, __MODULE__, %{api_key: api_key, api_secret: api_secret})
+    {:ok, pid} =
+      WebSockex.start_link(url, __MODULE__, %{api_key: api_key, api_secret: api_secret})
+
     subscribe(pid)
     {:ok, pid}
   end
