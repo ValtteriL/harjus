@@ -1,4 +1,5 @@
 defmodule WSSpotApi do
+  @moduledoc "Module for parsing and constructing requests for the WS Spot API"
   def new_order_request(symbol, quantity) do
     %{
       method: "ORDER",

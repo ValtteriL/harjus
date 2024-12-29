@@ -1,4 +1,5 @@
 defmodule WSSpotApiClient do
+  @moduledoc "client process to interact with the Binance Spot API"
   use GenServer
 
   def start_link(api_key, api_secret) do

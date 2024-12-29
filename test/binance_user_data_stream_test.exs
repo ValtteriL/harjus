@@ -1,4 +1,5 @@
 defmodule BinanceUserDataStreamTest do
+  @moduledoc "Tests for BinanceUserDataStream"
   use ExUnit.Case
   doctest BinanceUserDataStream
 

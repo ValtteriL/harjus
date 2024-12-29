@@ -1,4 +1,5 @@
 defmodule UserDataStreamer do
+  @moduledoc "Client process for receiving messages from Binance WSuser data stream"
   use WebSockex
   require Logger
 

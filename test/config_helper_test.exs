@@ -1,4 +1,5 @@
 defmodule ConfigHelperTest do
+  @moduledoc "Tests for Confi"
   use ExUnit.Case
   doctest ConfigHelper
 

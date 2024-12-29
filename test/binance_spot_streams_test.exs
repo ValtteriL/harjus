@@ -1,4 +1,5 @@
 defmodule BinanceSpotStreamsTest do
+  @moduledoc "Tests for BinanceSpotStreams"
   use ExUnit.Case
   doctest BinanceSpotStreams
 
