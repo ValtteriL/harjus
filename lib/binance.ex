@@ -1,4 +1,5 @@
 defmodule Binance do
+  @moduledoc "Binance specific api calls"
   # Get all trading pairs from Binance
   @spec get_symbols(is_prod :: bool()) :: [
           %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}

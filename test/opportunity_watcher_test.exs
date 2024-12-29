@@ -1,5 +1,6 @@
 defmodule OpportunityWatcherTest do
-  use ExUnit.Case, async: true
+  @moduledoc "Tests for OpportunityWatcher"
+  use ExUnit.Case, async: false
   doctest OpportunityWatcher
 
   setup do
@@ -12,7 +13,7 @@ defmodule OpportunityWatcherTest do
 
   test "symbol update emits opportunities", %{pid: pid} do
     # 1:1 - no opportunity
-    OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 10000.0, 1.0, 10000.0, 1.0})
+    OpportunityWatcher.update_symbol(pid, {"BTCUSDT", 10_000.0, 1.0, 10_000.0, 1.0})
 
     # negative oppotunities should not be emitted
     refute_receive _

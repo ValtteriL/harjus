@@ -125,12 +125,12 @@ defmodule PortfolioManager do
       end)
       # sort by profit * capacity
       |> Enum.sort(fn {_, profit1, cap1}, {_, profit2, cap2} ->
-        profit2 * cap2 > profit1 * cap1
+        profit2 * cap2 < profit1 * cap1
       end)
 
     # send any profitable opportunities to Executor
     if length(profitable_opportunities) > 0 do
-      PortfolioManager.send_opportunities(state.pid, profitable_opportunities)
+      Executor.send_opportunities(state.pid, profitable_opportunities)
     end
 
     {:noreply, state}

@@ -1,4 +1,5 @@
 defmodule ConfigHelper do
+  @moduledoc "Functions for reading config values in correct type"
   @type config_type :: :str | :int | :bool | :float | :list
 
   @doc """
