@@ -1,4 +1,5 @@
 defmodule OpportunityTest do
+  @moduledoc "Tests for Opportunity"
   use ExUnit.Case, async: true
   doctest Opportunity
 
@@ -6,7 +7,7 @@ defmodule OpportunityTest do
     path = [{"BTCUSDT", :long}, {"USDTBTC", :long}]
 
     price_table = %{
-      {"BTCUSDT", :long} => {10000.0, 1.0},
+      {"BTCUSDT", :long} => {10_000.0, 1.0},
       {"USDTBTC", :long} => {0.00005, 1337.1337},
       {"ETHBTC", :long} => {0.1, 10.0},
       {"USDTETH", :long} => {0.001, 1.0}
@@ -38,7 +39,7 @@ defmodule OpportunityTest do
     path = [{"BTCUSDT", :long}, {"ETHBTC", :long}, {"USDTETH", :long}]
 
     price_table = %{
-      {"BTCUSDT", :long} => {10000.0, 1.0},
+      {"BTCUSDT", :long} => {10_000.0, 1.0},
       {"ETHBTC", :long} => {0.1, 10.0},
       {"USDTETH", :long} => {0.001, 1.0}
     }
@@ -65,7 +66,7 @@ defmodule OpportunityTest do
   test "missing symbol in pricing results in ArgumentError" do
     assert_raise ArgumentError, fn ->
       Opportunity.profit([{"BTCUSDT", :long}, {"ETHBTC", :long}, {"USDTETH", :long}], %{
-        {"BTCUSDT", :long} => {10000.0, 1.0},
+        {"BTCUSDT", :long} => {10_000.0, 1.0},
         {"ETHBTC", :long} => {0.1, 10.0}
       })
     end

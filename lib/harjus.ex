@@ -53,13 +53,20 @@ defmodule Harjus do
     Logger.debug("Book streamers: #{inspect(book_streamers)}")
     Logger.debug("Number of book streamers: #{length(book_streamers)}")
 
+    pm_args = %{
+      min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
+      min_capacity: Application.fetch_env!(:harjus, :min_capacity),
+      commission: Application.fetch_env!(:harjus, :commission)
+    }
+
     children =
       [
         # Starts a worker by calling: HelloWorld.Worker.start_link(arg)
         # {HelloWorld.Worker, arg}
 
         # processes are started in order
-        {PortfolioManager, []},
+        {Executor, []},
+        {PortfolioManager, pm_args},
         {OpportunityWatcher, trading_paths},
         {UserDataStreamer,
          %{
@@ -69,8 +76,7 @@ defmodule Harjus do
          }},
         {WSSpotApiClient,
          {Application.fetch_env!(:harjus, :binance_api_key),
-          Application.fetch_env!(:harjus, :binance_api_secret)}},
-        {Executor, []}
+          Application.fetch_env!(:harjus, :binance_api_secret)}}
       ] ++ book_streamers
 
     Logger.debug("Children: #{inspect(children)}")

@@ -8,8 +8,9 @@ end
 config :harjus,
   max_trading_path_length: ConfigHelper.get_env("MAX_TRADING_PATH_LENGTH", 2, :int),
   start_symbols: ConfigHelper.get_env("START_SYMBOLS", [], :list),
+  is_prod: ConfigHelper.get_env("PROD", false, :bool),
   min_profit_percentage: ConfigHelper.get_env("MIN_PROFIT_PERCENTAGE", 0.001, :float),
   min_capacity: ConfigHelper.get_env("MIN_CAPACITY", 0.0, :float),
-  is_prod: ConfigHelper.get_env("PROD", false, :bool),
+  commission: ConfigHelper.get_env("COMMISSION", 0.001, :float),
   binance_api_key: ConfigHelper.get_env("BINANCE_API_KEY", "", :str),
   binance_api_secret: ConfigHelper.get_env("BINANCE_API_SECRET", "", :str)

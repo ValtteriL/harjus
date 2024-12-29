@@ -8,6 +8,19 @@ let
   self = packages // (overrides self packages);
 
   packages = with beamPackages; with self; {
+    bunt = buildMix rec {
+      name = "bunt";
+      version = "1.0.0";
+
+      src = fetchHex {
+        pkg = "bunt";
+        version = "${version}";
+        sha256 = "dc5f86aa08a5f6fa6b8096f0735c4e76d54ae5c9fa2c143e5a1fc7c1cd9bb6b5";
+      };
+
+      beamDeps = [];
+    };
+
     castore = buildMix rec {
       name = "castore";
       version = "1.0.10";
@@ -19,6 +32,19 @@ let
       };
 
       beamDeps = [];
+    };
+
+    credo = buildMix rec {
+      name = "credo";
+      version = "1.7.10";
+
+      src = fetchHex {
+        pkg = "credo";
+        version = "${version}";
+        sha256 = "71fbc9a6b8be21d993deca85bf151df023a3097b01e09a2809d460348561d8cd";
+      };
+
+      beamDeps = [ bunt file_system jason ];
     };
 
     dialyxir = buildMix rec {
@@ -55,6 +81,19 @@ let
         pkg = "erlex";
         version = "${version}";
         sha256 = "3ed95f79d1a844c3f6bf0cea61e0d5612a42ce56da9c03f01df538685365efb0";
+      };
+
+      beamDeps = [];
+    };
+
+    file_system = buildMix rec {
+      name = "file_system";
+      version = "1.0.1";
+
+      src = fetchHex {
+        pkg = "file_system";
+        version = "${version}";
+        sha256 = "4414d1f38863ddf9120720cd976fce5bdde8e91d8283353f0e31850fa89feb9e";
       };
 
       beamDeps = [];

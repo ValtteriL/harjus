@@ -1,36 +1,90 @@
 defmodule Executor do
-  use GenServer
+  @moduledoc """
+  Process for executing trades.
 
-  def start_link(_) do
+  Gets approved and prioritized opportunities from PortfolioManager,
+  and executes them.
+
+  While executing a trade, discards all new opportunities.
+  """
+
+  # maybe statem more appropriate?
+  use GenServer
+  require Logger
+
+  # TODO
+  @type state() :: %{
+          pid: pid()
+        }
+
+  @type trading_symbol() :: {charlist(), :long | :short}
+  @type opportunity() :: {path :: [trading_symbol()], profit :: float(), capacity :: float()}
+
+  # API
+
+  @doc """
+  Start the executor
+
+  """
+  @spec start_link(arg :: any()) ::
+          :ignore | {:error, any()} | {:ok, pid()}
+  def start_link(_arg) do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
-  def init(_) do
-    {:ok, %{state: :checking_balance, balance: nil, opportunities: []}}
+  @doc """
+  Send opportunities to Portfolio Manager
+  """
+  @spec send_opportunities(
+          pid :: pid(),
+          opportunities :: [
+            opportunity()
+          ]
+        ) ::
+          :ok
+  def send_opportunities(pid, opportunities) do
+    GenServer.cast(pid, {:update_opportunities, opportunities})
   end
 
-  def handle_cast({:opportunity, opportunity}, %{state: :waiting_for_opportunities} = state) do
-    {:noreply, %{state | opportunities: [opportunity | state.opportunities]}}
+  # Callbacks
+
+  @impl true
+  @spec init({pid()}) ::
+          {:ok,
+           %{
+             pid: pid()
+           }}
+  def init(pid) do
+    initial_state = %{
+      pid: pid
+    }
+
+    {:ok, initial_state}
   end
 
-  def handle_cast({:opportunity, _opportunity}, state) do
-    {:noreply, state}
-  end
+  @impl true
+  @spec handle_cast(
+          {:update_opportunities, [opportunity()]},
+          %{
+            pid: pid()
+          }
+        ) ::
+          {:noreply,
+           %{
+             pid: pid()
+           }}
+  def handle_cast(
+        {:update_opportunities, opportunities},
+        state
+      ) do
+    # update state
+    new_state = %{
+      pid: state.pid
+    }
 
-  def handle_cast({:trade_update, trade_update}, %{state: :waiting_for_fill} = state) do
-    # Handle trade filled update
-    {:noreply, state}
-  end
+    # TODO
+    Logger.notice("Portfolio Manager: received opportunities #{inspect(opportunities)}")
 
-  def handle_cast({:trade_update, _trade_update}, state) do
-    {:noreply, state}
-  end
-
-  def send_opportunity(pid, opportunity) do
-    GenServer.cast(pid, {:opportunity, opportunity})
-  end
-
-  def send_trade_update(pid, trade_update) do
-    GenServer.cast(pid, {:trade_update, trade_update})
+    {:noreply, new_state}
   end
 end

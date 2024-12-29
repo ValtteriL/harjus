@@ -1,4 +1,5 @@
 defmodule ArbmapperTest do
+  @moduledoc "Tests for Arbmapper"
   use ExUnit.Case
   doctest Arbmapper
 

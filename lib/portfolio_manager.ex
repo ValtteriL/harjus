@@ -10,6 +10,19 @@ defmodule PortfolioManager do
   use GenServer
   require Logger
 
+  @type pm_args() :: %{
+          min_profit_percentage: float(),
+          min_capacity: float(),
+          commission: float()
+        }
+  @type state() :: %{
+          # executor pid
+          pid: pid(),
+          min_profit_percentage: float(),
+          min_capacity: float(),
+          commission: float()
+        }
+
   @type trading_symbol() :: {charlist(), :long | :short}
   @type opportunity() :: {path :: [trading_symbol()], profit :: float(), capacity :: float()}
 
@@ -19,14 +32,13 @@ defmodule PortfolioManager do
   Start the portfolio manager
 
   Args:
-    pid: pid of the process to send the most profitable opportunities
-    TODO: here would be place for trading fees, info which symbols are in margin, ...
+    min_profit_percentage : minimum profit percentage to consider an opportunity
+    min_capacity : minimum capacity to consider an opportunity
+    commission : standard trading commission
   """
-  @spec start_link(arg :: any()) :: :ignore | {:error, any()} | {:ok, pid()}
-  def start_link(_arg) do
-    pid = nil
-    {:ok, executor_pid} = Executor.start_link([])
-    GenServer.start_link(__MODULE__, {pid, executor_pid}, name: __MODULE__)
+  @spec start_link(args :: pm_args()) :: :ignore | {:error, any()} | {:ok, pid()}
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   @doc """
@@ -46,16 +58,16 @@ defmodule PortfolioManager do
   # Callbacks
 
   @impl true
-  @spec init({pid(), pid()}) ::
-          {:ok,
-           %{
-             pid: pid(),
-             executor_pid: pid()
-           }}
-  def init({pid, executor_pid}) do
+  @spec init(args :: pm_args()) ::
+          {:ok, state()}
+  def init(args) do
+    pid = Process.whereis(Executor)
+
     initial_state = %{
       pid: pid,
-      executor_pid: executor_pid
+      min_profit_percentage: args.min_profit_percentage,
+      min_capacity: args.min_capacity,
+      commission: args.commission
     }
 
     {:ok, initial_state}
@@ -64,33 +76,37 @@ defmodule PortfolioManager do
   @impl true
   @spec handle_cast(
           {:update_opportunities, [opportunity()]},
-          %{
-            pid: pid(),
-            executor_pid: pid()
-          }
+          state()
         ) ::
-          {:noreply,
-           %{
-             pid: pid(),
-             executor_pid: pid()
-           }}
+          {:noreply, state()}
   def handle_cast(
         {:update_opportunities, opportunities},
         state
       ) do
-    # update state
-    new_state = %{
-      pid: state.pid,
-      executor_pid: state.executor_pid
-    }
+    profitable_opportunities =
+      opportunities
+      |> Enum.filter(fn {path, profit, capacity} ->
+        # filter unprofitable, too low capacity opportunities
 
-    Logger.notice("Portfolio Manager: received opportunities #{inspect(opportunities)}")
+        commission =
+          TradingFeeCalculator.total_commission_percentage(
+            path,
+            state.commission
+          )
 
-    if length(opportunities) > 0 do
-      most_profitable_opportunity = Enum.max_by(opportunities, fn {_, profit, _} -> profit end)
-      GenServer.cast(state.executor_pid, {:opportunity, most_profitable_opportunity})
+        profit - commission >= state.min_profit_percentage &&
+          capacity >= state.min_capacity
+      end)
+      # sort by profit * capacity
+      |> Enum.sort(fn {_, profit1, cap1}, {_, profit2, cap2} ->
+        profit2 * cap2 < profit1 * cap1
+      end)
+
+    # send any profitable opportunities to Executor
+    if length(profitable_opportunities) > 0 do
+      Executor.send_opportunities(state.pid, profitable_opportunities)
     end
 
-    {:noreply, new_state}
+    {:noreply, state}
   end
 end
