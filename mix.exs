@@ -13,14 +13,14 @@ defmodule Harjus.MixProject do
         quality: [
           "format",
           "compile --all-warnings --warnings-as-errors",
-          "test",
+          "test --no-start",
           "credo --strict",
           "dialyzer --ignore-exit-status"
         ],
         "quality.ci": [
           "format --check-formatted",
           "compile --all-warnings --warnings-as-errors",
-          "test",
+          "test --no-start",
           "credo --strict",
           "dialyzer"
         ]

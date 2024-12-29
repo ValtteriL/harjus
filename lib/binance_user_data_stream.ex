@@ -4,7 +4,7 @@ defmodule BinanceUserDataStream do
   """
 
   @spec subscribe_message() :: String.t()
-  def subscribe_message() do
+  def subscribe_message do
     Poison.encode!(%{method: "SUBSCRIBE", params: ["!userData"], id: "user_data_sub"})
   end
 
