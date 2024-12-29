@@ -13,26 +13,14 @@ defmodule PortfolioManager do
   @type pm_args() :: %{
           min_profit_percentage: float(),
           min_capacity: float(),
-          standard_commission_taker: float(),
-          standard_commission_buyer: float(),
-          standard_commission_seller: float(),
-          tax_commission_taker: float(),
-          tax_commission_buyer: float(),
-          tax_commission_seller: float(),
-          discount: float()
+          commission: float()
         }
   @type state() :: %{
           # executor pid
           pid: pid(),
           min_profit_percentage: float(),
           min_capacity: float(),
-          standard_commission_taker: float(),
-          standard_commission_buyer: float(),
-          standard_commission_seller: float(),
-          tax_commission_taker: float(),
-          tax_commission_buyer: float(),
-          tax_commission_seller: float(),
-          discount: float()
+          commission: float()
         }
 
   @type trading_symbol() :: {charlist(), :long | :short}
@@ -46,9 +34,7 @@ defmodule PortfolioManager do
   Args:
     min_profit_percentage : minimum profit percentage to consider an opportunity
     min_capacity : minimum capacity to consider an opportunity
-    standard_commission : standard trading commission
-    tax_commission : trading tax commission
-    discount : discount rate on standard commission if paying fees with BNB
+    commission : standard trading commission
   """
   @spec start_link(args :: pm_args()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(args) do
@@ -81,13 +67,7 @@ defmodule PortfolioManager do
       pid: pid,
       min_profit_percentage: args.min_profit_percentage,
       min_capacity: args.min_capacity,
-      standard_commission_taker: args.standard_commission_taker,
-      standard_commissions_buyer: args.standard_commission_buyer,
-      standard_commissions_seller: args.standard_commission_seller,
-      tax_commission_taker: args.tax_commission_taker,
-      tax_commission_buyer: args.tax_commission_buyer,
-      tax_commission_seller: args.tax_commission_seller,
-      discount: args.discount
+      commission: args.commission
     }
 
     {:ok, initial_state}
@@ -111,13 +91,7 @@ defmodule PortfolioManager do
         commission =
           TradingFeeCalculator.total_commission_percentage(
             path,
-            state.standard_commission_taker,
-            state.standard_commissions_buyer,
-            state.standard_commissions_seller,
-            state.tax_commission_taker,
-            state.tax_commission_buyer,
-            state.tax_commission_seller,
-            state.discount
+            state.commission
           )
 
         profit - commission >= state.min_profit_percentage &&

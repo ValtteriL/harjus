@@ -7,13 +7,7 @@ defmodule PortfolioManagerTest do
     pm_args = %{
       min_profit_percentage: 0.01,
       min_capacity: 0.01,
-      standard_commission_taker: 0.01,
-      standard_commission_buyer: 0.02,
-      standard_commission_seller: 0.03,
-      tax_commission_taker: 0.04,
-      tax_commission_buyer: 0.05,
-      tax_commission_seller: 0.06,
-      discount: 0.25
+      commission: 0.01
     }
 
     # pass self -> receive msgs meant for portfolio manager

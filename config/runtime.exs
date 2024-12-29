@@ -11,18 +11,6 @@ config :harjus,
   is_prod: ConfigHelper.get_env("PROD", false, :bool),
   min_profit_percentage: ConfigHelper.get_env("MIN_PROFIT_PERCENTAGE", 0.001, :float),
   min_capacity: ConfigHelper.get_env("MIN_CAPACITY", 0.0, :float),
-  # TODO
-  standard_commission_taker: ConfigHelper.get_env("STD_COMMISSION_TAKER", 0.001, :float),
-  # TODO
-  standard_commission_buyer: ConfigHelper.get_env("STD_COMMISSION_BUYER", 0.001, :float),
-  # TODO
-  standard_commission_seller: ConfigHelper.get_env("STD_COMMISSION_SELLER", 0.001, :float),
-  # TODO
-  tax_commission_taker: ConfigHelper.get_env("TAX_COMMISSION_TAKER", 0.001, :float),
-  # TODO
-  tax_commission_buyer: ConfigHelper.get_env("TAX_COMMISION_BUYER", 0.001, :float),
-  # TODO
-  tax_commission_seller: ConfigHelper.get_env("TAX_COMMISION_SELLER", 0.001, :float),
-  discount: ConfigHelper.get_env("DISCOUNT", 0.25, :float),
+  commission: ConfigHelper.get_env("COMMISSION", 0.001, :float),
   binance_api_key: ConfigHelper.get_env("BINANCE_API_KEY", "", :str),
   binance_api_secret: ConfigHelper.get_env("BINANCE_API_SECRET", "", :str)

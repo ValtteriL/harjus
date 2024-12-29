@@ -56,13 +56,7 @@ defmodule Harjus do
     pm_args = %{
       min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
       min_capacity: Application.fetch_env!(:harjus, :min_capacity),
-      standard_commission_taker: Application.fetch_env!(:harjus, :standard_commission_taker),
-      standard_commission_buyer: Application.fetch_env!(:harjus, :standard_commission_buyer),
-      standard_commission_seller: Application.fetch_env!(:harjus, :standard_commission_seller),
-      tax_commission_taker: Application.fetch_env!(:harjus, :tax_commission_taker),
-      tax_commission_buyer: Application.fetch_env!(:harjus, :tax_commission_buyer),
-      tax_commission_seller: Application.fetch_env!(:harjus, :tax_commission_seller),
-      discount: Application.fetch_env!(:harjus, :discount)
+      commission: Application.fetch_env!(:harjus, :commission)
     }
 
     children =
