@@ -71,27 +71,18 @@ defmodule Harjus do
         # {HelloWorld.Worker, arg}
 
         # processes are started in order
-<<<<<<< HEAD
+        {Executor, []},
         {PortfolioManager, pm_args},
-        {OpportunityWatcher, trading_paths},
-        {Executor, []}
-=======
-        {PortfolioManager, []},
         {OpportunityWatcher, trading_paths},
         {UserDataStreamer,
          %{
            api_key: Application.fetch_env!(:harjus, :binance_api_key),
            api_secret: Application.fetch_env!(:harjus, :binance_api_secret),
            is_prod: Application.fetch_env!(:harjus, :is_prod)
-<<<<<<< HEAD
-         }}
->>>>>>> 0ca0156 (Add UserDataStreamer to subscribe to Binance user data stream)
-=======
          }},
         {WSSpotApiClient,
          {Application.fetch_env!(:harjus, :binance_api_key),
           Application.fetch_env!(:harjus, :binance_api_secret)}}
->>>>>>> fcf359b (Start WSSpotApiClient when the application starts)
       ] ++ book_streamers
 
     Logger.debug("Children: #{inspect(children)}")
