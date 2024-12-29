@@ -17,9 +17,8 @@ defmodule ConfigHelper do
   end
 
   def get_env(var, default, type) do
-    with {:ok, val} <- System.fetch_env(var) do
-      get_with_type(val, type)
-    else
+    case System.fetch_env(var) do
+      {:ok, val} -> get_with_type(val, type)
       :error -> default
     end
   end
