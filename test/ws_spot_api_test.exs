@@ -1,5 +1,5 @@
 defmodule WSSpotApiTest do
-  @moduledoc "Tests for WS"
+  @moduledoc "Tests for WSSpotApi"
   use ExUnit.Case
 
   test "new_order_request/2 constructs a new order request" do
