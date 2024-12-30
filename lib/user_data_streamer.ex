@@ -1,21 +1,32 @@
 defmodule UserDataStreamer do
-  @moduledoc "Client process for receiving messages from Binance WSuser data stream"
+  @moduledoc """
+  Client process for receiving messages from Binance WSuser data stream
+
+  https://github.com/binance/binance-spot-api-docs/blob/master/user-data-stream.md
+
+  User Data Streams are accessed at /ws/<listenKey>
+  
+  TODO: MUST schedule keepalive/ping every 30 minutes!!
+
+  """
 
   use WebSockex
   require Logger
 
-  def start_link(%{api_key: api_key, api_secret: api_secret, is_prod: is_prod}) do
+  def start_link(%{is_prod: is_prod, listen_key: listen_key}) do
+
     url =
       if is_prod do
-        "wss://stream.binance.com:9443/ws/#{api_key}"
+        "wss://stream.binance.com/ws/#{listen_key}"
       else
-        "wss://testnet.binance.vision/ws/#{api_key}"
+        "wss://stream.testnet.binance.vision/ws/#{listen_key}"
       end
 
-    {:ok, pid} =
-      WebSockex.start_link(url, __MODULE__, %{api_key: api_key, api_secret: api_secret})
+    executor_pid = Process.whereis(Executor)
 
-    subscribe(pid)
+    {:ok, pid} =
+      WebSockex.start_link(url, __MODULE__, %{pid: executor_pid})
+
     {:ok, pid}
   end
 
@@ -24,11 +35,14 @@ defmodule UserDataStreamer do
       {:error, error} ->
         Logger.error(inspect(error))
 
-      {:sub_ack} ->
-        Logger.info("Subscribed to user data stream")
+      {:account_update, update} ->
+        # TODO: 
 
-      {:user_data_event, event} ->
-        Logger.info("Received user data event: #{inspect(event)}")
+      {:order_update, update} ->
+        # TODO: 
+
+      {:key_expired} ->
+        Logger.fatal("Listen key expired")
 
       {:unknown, message} ->
         Logger.error("Unknown message: #{inspect(message)}")
@@ -39,9 +53,5 @@ defmodule UserDataStreamer do
 
   def handle_ping({:ping, id}, state) do
     {:reply, {:pong, id}, state}
-  end
-
-  def subscribe(pid) do
-    WebSockex.send_frame(pid, {:text, BinanceUserDataStream.subscribe_message()})
   end
 end
