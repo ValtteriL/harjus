@@ -1,42 +1,80 @@
 defmodule WSSpotApiClient do
-  @moduledoc "client process to interact with the Binance WS Spot API"
-  use GenServer
+  @moduledoc """
+  Client process to interact with the Binance WS Spot API
 
-  def start_link(api_key, api_secret) do
-    GenServer.start_link(__MODULE__, {api_key, api_secret}, name: __MODULE__)
+  Opens a persistent websocket connection to Binance and can then be used to send requests
+  """
+  use WebSockex
+  require Logger
+
+  @type trading_symbol() :: {charlist(), :long | :short}
+
+  @spec start_link(is_prod :: bool()) :: {:ok, pid()}
+  def start_link(is_prod) do
+    GenServer.start_link(__MODULE__, is_prod, name: __MODULE__)
   end
 
-  def init({api_key, api_secret}) do
-    {:ok, conn} =
-      WebSockex.start_link("wss://stream.binance.com:9443/ws", __MODULE__, %{
-        api_key: api_key,
-        api_secret: api_secret
-      })
+  def init(is_prod) do
+    url =
+      if is_prod do
+        "wss://ws-api.binance.com:443/ws-api/v3"
+      else
+        "wss://testnet.binance.vision/ws-api/v3"
+      end
 
-    {:ok, conn}
+    {:ok, ws_pid} =
+      WebSockex.start_link(url, __MODULE__, %{})
+
+    {:ok, ws_pid}
   end
 
-  def make_order(symbol, quantity) do
-    GenServer.call(__MODULE__, {:make_order, symbol, quantity})
+  # API
+
+  @spec market_order(
+          client :: pid(),
+          trading_symbol :: trading_symbol(),
+          quantity :: float(),
+          api_key :: String.t(),
+          api_secret :: String.t()
+        ) :: :ok
+  def market_order(client, trading_symbol, quantity, api_key, api_secret) do
+    Logger.debug("Market order: #{trading_symbol} #{quantity}")
+
+    order_request =
+      BinanceWSSpotApi.market_order_request(trading_symbol, quantity, api_key, api_secret)
+
+    WebSockex.send_frame(client, {:text, order_request})
   end
 
-  def get_balances(asset) do
-    GenServer.call(__MODULE__, {:get_balances, asset})
+  # handle messages from websocket server
+
+  # ping
+  def handle_ping({:ping, id}, state) do
+    {:reply, {:pong, id}, state}
   end
 
-  def handle_call({:make_order, symbol, quantity}, _from, state) do
-    _order_request = WSSpotApi.new_order_request(symbol, quantity)
-    # Send the order request
-    {:reply, :ok, state}
+  # book ticker update
+  def handle_frame({:text, msg}, state) do
+    case BinanceWSSpotApi.parse_message(msg) do
+      {:error, error} ->
+        Logger.debug(inspect(msg))
+        Logger.error(inspect(error))
+
+      {:order_ack} ->
+        Logger.debug("Order acknowledged")
+        :ok
+
+      {:unknown, message} ->
+        Logger.error("Unknown message")
+        Logger.debug(inspect(message))
+    end
+
+    {:ok, state}
   end
 
-  def handle_call({:get_balances, asset}, _from, state) do
-    _balance_request = WSSpotApi.get_balance_request(asset)
-    # Send the get balance request
-    {:reply, :ok, state}
+  def handle_frame({type, msg}, state) do
+    Logger.error("Unhandled frame type: #{type}")
+    Logger.debug(inspect(msg))
+    {:ok, state}
   end
-
-  # def handle_info({:ping, _}, state) do
-  #  {:reply, :pong, state}
-  # end
 end
