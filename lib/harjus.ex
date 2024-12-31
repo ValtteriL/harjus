@@ -68,11 +68,12 @@ defmodule Harjus do
         {Executor, []},
         {PortfolioManager, pm_args},
         {OpportunityWatcher, trading_paths},
-        {BinanceFixClient, %{
-          public_key: Application.fetch_env!(:harjus, :binance_ed25519_public_key),
-          api_secret: Application.fetch_env!(:harjus, :binance_ed25519_private_key),
-          is_prod: Application.fetch_env!(:harjus, :is_prod)
-        }},
+        {BinanceFixClient,
+         %{
+           public_key: Application.fetch_env!(:harjus, :binance_ed25519_public_key),
+           private_key: Application.fetch_env!(:harjus, :binance_ed25519_private_key),
+           is_prod: Application.fetch_env!(:harjus, :is_prod)
+         }}
       ] ++ book_streamers
 
     Logger.debug("Children: #{inspect(children)}")

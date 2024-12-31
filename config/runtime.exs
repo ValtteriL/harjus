@@ -13,4 +13,4 @@ config :harjus,
   min_capacity: ConfigHelper.get_env("MIN_CAPACITY", 0.0, :float),
   commission: ConfigHelper.get_env("COMMISSION", 0.001, :float),
   binance_ed25519_public_key: ConfigHelper.get_env("BINANCE_ED25519_PUBLIC_KEY", "", :str),
-  binance_ed25519_private_key: ConfigHelper.get_env("BINANCE_ED25519_PUBLIC_KEY", "", :str)
+  binance_ed25519_private_key: ConfigHelper.get_env("BINANCE_ED25519_PRIVATE_KEY", "", :str)
