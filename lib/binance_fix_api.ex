@@ -58,6 +58,14 @@ defmodule BinanceFixApi do
   # dummy defaults
   @sender "123"
 
+  @doc """
+  Construct a logon message
+
+  ## Parameters
+    * `seq_num` - sequence number
+    * `public_key` - public key (in PEM format without "---BEGIN PUBLIC...")
+    * `private_key` - private key (in PEM format without "---BEGIN PUBLIC...")
+  """
   def logon(seq_num, public_key, private_key) do
     ts = timestamp()
 
@@ -121,6 +129,12 @@ defmodule BinanceFixApi do
     )
   end
 
+  @doc """
+  Construct a heartbeat message
+
+  ## Parameters
+    * `seq_num` - sequence number
+  """
   def heartbeat(seq_num) do
     serialize(
       %MessageToSend{
@@ -153,8 +167,11 @@ defmodule BinanceFixApi do
     payload = <<msg_type, 1, sender_comp_id, 1, target_comp_id, 1, msg_seq_num, 1, sending_time>>
 
     # convert key into usable format
-    [{:PrivateKeyInfo, _, :not_encrypted} = pem_entry] = :public_key.pem_decode(private_key)
-    decoded_key = :public_key.pem_entry_decode(pem_entry)
+    decoded_key =
+      Enum.join(["-----BEGIN PRIVATE KEY-----\n", private_key, "\n-----END PRIVATE KEY-----\n"])
+      |> :public_key.pem_decode()
+      |> hd()
+      |> :public_key.pem_entry_decode()
 
     signature = :public_key.sign(payload, :sha256, decoded_key)
     Base.encode64(signature)
