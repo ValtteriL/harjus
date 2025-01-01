@@ -21,6 +21,7 @@ defmodule BinanceFixApi do
   # InMessage types
   @msg_type_heartbeat "0"
   @msg_type_logon "A"
+  @msg_type_single_order_entry "D"
   @tag_msg_type "35"
   @tag_seqnum "34"
   @tag_sender_comp_id "49"
@@ -42,7 +43,17 @@ defmodule BinanceFixApi do
 
   @message_handling_unordered 1
   @response_mode_everything 1
-  @drop_copy_off "N"
+
+  # InMessage types new order entry
+  @tag_cl_order_id "11"
+  @tag_order_type "40"
+  @tag_side "54"
+  @tag_symbol "55"
+  @tag_cash_order_qty "152"
+
+  @order_type_market "1"
+  @order_side_buy "1"
+  @order_side_sell "2"
 
   # dummy defaults
   @sender "123"
@@ -64,19 +75,50 @@ defmodule BinanceFixApi do
           {@tag_heartbeat_interval, 60},
           {@tag_raw_data_length, signature_length},
           {@tag_raw_data, signature},
-          {@tag_reset_seq_num_flag, "Y"},
+          {@tag_reset_seq_num_flag, true},
           {@tag_username, public_key},
           {@tag_message_handling, @message_handling_unordered},
           {@tag_response_mode, @response_mode_everything},
-          {@tag_drop_copy_flag, @drop_copy_off}
+          {@tag_drop_copy_flag, false}
         ]
       },
       ts
     )
   end
 
+  @doc """
+  Construct a market order request message
+
+  ## Parameters
+    * `seq_num` - sequence number
+    * `trading_symbol` - trading symbol
+    * `quantity` - quantity (in quote asset units)
+  """
   def market_order_request(seq_num, trading_symbol, quantity) do
-    # TODO
+    side =
+      case trading_symbol do
+        {_, :long} -> @order_side_buy
+        {_, :short} -> @order_side_sell
+      end
+
+    {symbol, _} = trading_symbol
+
+    serialize(
+      %MessageToSend{
+        seqnum: seq_num,
+        msg_type: @msg_type_single_order_entry,
+        sender: @sender,
+        orig_sending_time: nil,
+        body: [
+          {@tag_cl_order_id, "123"},
+          {@tag_order_type, @order_type_market},
+          {@tag_side, side},
+          {@tag_symbol, symbol},
+          {@tag_cash_order_qty, quantity}
+        ]
+      },
+      timestamp()
+    )
   end
 
   def heartbeat(seq_num) do
@@ -111,7 +153,7 @@ defmodule BinanceFixApi do
     payload = <<msg_type, 1, sender_comp_id, 1, target_comp_id, 1, msg_seq_num, 1, sending_time>>
 
     # convert key into usable format
-    [{'PrivateKeyInfo', _, :not_encrypted} = pem_entry] = :public_key.pem_decode(private_key)
+    [{:PrivateKeyInfo, _, :not_encrypted} = pem_entry] = :public_key.pem_decode(private_key)
     decoded_key = :public_key.pem_entry_decode(pem_entry)
 
     signature = :public_key.sign(payload, :sha256, decoded_key)
