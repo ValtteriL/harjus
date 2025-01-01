@@ -18,6 +18,14 @@ defmodule BinanceFixApi do
               body: []
   end
 
+  defmodule ExecutionReport do
+    @moduledoc "execution report type"
+
+    @type t :: %ExecutionReport{}
+
+    defstruct []
+  end
+
   # InMessage types
   @msg_type_heartbeat "0"
   @msg_type_logon "A"
@@ -43,6 +51,7 @@ defmodule BinanceFixApi do
 
   @message_handling_unordered 1
   @response_mode_everything 1
+  @soh 1
 
   # InMessage types new order entry
   @tag_cl_order_id "11"
@@ -148,11 +157,40 @@ defmodule BinanceFixApi do
     )
   end
 
-  def parse_message(message) do
-    # TODO
+  @doc """
+  Parse a FIX message
+  """
+  @spec parse_message(binary()) ::
+          {:heartbeat}
+          | {:test_request}
+          | {:reject}
+          | {:logon}
+          | {:news}
+          | {:execution_report, map()}
+          | {:unknown, ExecutionReport.t()}
+  def parse_message(<<"8=FIX.4.4", @soh, "9=", rest::binary>> = message) do
+    [str_len, rest1] = :binary.split(rest, <<@soh>>)
+
+    case rest1 do
+      <<"35=0">> -> {:heartbeat}
+      <<"35=1">> -> {:test_request}
+      <<"35=3">> -> {:reject}
+      <<"35=A">> -> {:logon}
+      <<"35=B">> -> {:news}
+      <<"35=8">> -> {:execution_report, parse_execution_report(rest1)}
+      _ -> {:unknown, message}
+    end
   end
 
   # private functions
+
+  defp parse_execution_report(message) do
+
+    fields = 
+
+    fields = parse_fields(rest, len)
+    Enum.into(fields, %{})
+  end
 
   defp sign({msg_type, sender_comp_id, target_comp_id, msg_seq_num, sending_time}, private_key) do
     # The signature payload is a text string constructed by concatenating the VALUES of the following fields in this exact order, separated by the SOH character
