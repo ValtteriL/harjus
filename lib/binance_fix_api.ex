@@ -20,6 +20,7 @@ defmodule BinanceFixApi do
 
   # InMessage types
   @msg_type_heartbeat "0"
+  @msg_type_logon "A"
   @tag_msg_type "35"
   @tag_seqnum "34"
   @tag_sender_comp_id "49"
@@ -28,11 +29,50 @@ defmodule BinanceFixApi do
   @tag_poss_dup_flag "43"
   @tag_orig_sending_time "122"
 
+  # InMessage types logon
+  @tag_encrypt_method "98"
+  @tag_heartbeat_interval "108"
+  @tag_raw_data_length "95"
+  @tag_raw_data "96"
+  @tag_reset_seq_num_flag "141"
+  @tag_username "553"
+  @tag_message_handling "25035"
+  @tag_response_mode "25036"
+  @tag_drop_copy_flag "9406"
+
+  @message_handling_unordered 1
+  @response_mode_everything 1
+  @drop_copy_off "N"
+
   # dummy defaults
   @sender "123"
 
   def logon(seq_num, public_key, private_key) do
-    # TODO
+    ts = timestamp()
+
+    signature = sign({@msg_type_logon, @sender, "SPOT", seq_num, ts}, private_key)
+    signature_length = String.length(signature)
+
+    serialize(
+      %MessageToSend{
+        seqnum: seq_num,
+        msg_type: @msg_type_logon,
+        sender: @sender,
+        orig_sending_time: nil,
+        body: [
+          {@tag_encrypt_method, 0},
+          {@tag_heartbeat_interval, 60},
+          {@tag_raw_data_length, signature_length},
+          {@tag_raw_data, signature},
+          {@tag_reset_seq_num_flag, "Y"},
+          {@tag_username, public_key},
+          {@tag_message_handling, @message_handling_unordered},
+          {@tag_response_mode, @response_mode_everything},
+          {@tag_drop_copy_flag, @drop_copy_off}
+        ]
+      },
+      ts
+    )
   end
 
   def market_order_request(seq_num, trading_symbol, quantity) do
@@ -57,6 +97,27 @@ defmodule BinanceFixApi do
   end
 
   # private functions
+
+  defp sign({msg_type, sender_comp_id, target_comp_id, msg_seq_num, sending_time}, private_key) do
+    # The signature payload is a text string constructed by concatenating the VALUES of the following fields in this exact order, separated by the SOH character
+    # MsgType (35)
+    # SenderCompID (49)
+    # TargetCompID (56)
+    # MsgSeqNum (34)
+    # SendingTime (52)
+
+    # Sign the payload using your private key. Encode the signature with base64.
+
+    payload = <<msg_type, 1, sender_comp_id, 1, target_comp_id, 1, msg_seq_num, 1, sending_time>>
+
+    # convert key into usable format
+    [{'PrivateKeyInfo', _, :not_encrypted} = pem_entry] = :public_key.pem_decode(private_key)
+    decoded_key = :public_key.pem_entry_decode(pem_entry)
+
+    signature = :public_key.sign(payload, :sha256, decoded_key)
+    Base.encode64(signature)
+  end
+
   defp timestamp do
     Calendar.strftime(DateTime.utc_now(), "%Y%m%d-%H:%M:%S.%f")
   end
@@ -126,10 +187,6 @@ defmodule BinanceFixApi do
 
   defp serialize_value(v) when is_float(v) do
     :erlang.float_to_binary(v, [{:decimals, 10}, :compact])
-  end
-
-  defp serialize_value(%DateTime{} = v) do
-    DateUtil.serialize_date(v)
   end
 
   defp serialize_value(v) when is_integer(v), do: Integer.to_string(v)
