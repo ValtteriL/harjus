@@ -23,49 +23,121 @@ defmodule BinanceFixApi do
 
     @type t :: %ExecutionReport{}
 
-    defstruct []
+    @enforce_keys [
+      :order_status,
+      :quantity_base,
+      :quantity_quote,
+      :symbol,
+      :side,
+      :fee_currency,
+      :fee_amount
+    ]
+    defstruct [
+      :order_status,
+      :quantity_base,
+      :quantity_quote,
+      :symbol,
+      :side,
+      :fee_currency,
+      :fee_amount
+    ]
+
+    defmodule ExecutionType do
+      @moduledoc "execution type values"
+      def new, do: "0"
+      def canceled, do: "4"
+      def replaced, do: "5"
+      def rejected, do: "8"
+      def trade, do: "F"
+      def expired, do: "C"
+    end
+
+    defmodule OrderStatus do
+      @moduledoc "order status values"
+      def new, do: "0"
+      def partially_filled, do: "1"
+      def filled, do: "2"
+      def canceled, do: "4"
+      def pending_cancel, do: "6"
+      def rejected, do: "8"
+      def pending_new, do: "A"
+      def expired, do: "C"
+    end
   end
 
-  # InMessage types
+  defmodule MsgType do
+    @moduledoc "message type enum"
+    def heartbeat, do: "0"
+    def test_request, do: "1"
+    def logon, do: "A"
+    def news, do: "B"
+    def execution_report, do: "8"
+    def reject, do: "3"
+    def single_order_entry, do: "D"
+  end
+
   @msg_type_heartbeat "0"
+  @msg_type_test_request "1"
   @msg_type_logon "A"
-  @msg_type_single_order_entry "D"
-  @tag_msg_type "35"
-  @tag_seqnum "34"
-  @tag_sender_comp_id "49"
-  @tag_sending_time "52"
-  @tag_target_comp_id "56"
-  @tag_poss_dup_flag "43"
-  @tag_orig_sending_time "122"
+  @msg_type_news "B"
+  @msg_type_execution_report "8"
+  @msg_type_reject "3"
 
-  # InMessage types logon
-  @tag_encrypt_method "98"
-  @tag_heartbeat_interval "108"
-  @tag_raw_data_length "95"
-  @tag_raw_data "96"
-  @tag_reset_seq_num_flag "141"
-  @tag_username "553"
-  @tag_message_handling "25035"
-  @tag_response_mode "25036"
-  @tag_drop_copy_flag "9406"
+  defmodule Tag do
+    @moduledoc "tag enum"
+    def msg_type, do: "35"
+    def seqnum, do: "34"
+    def sender_comp_id, do: "49"
+    def sending_time, do: "52"
+    def target_comp_id, do: "56"
+    def poss_dup_flag, do: "43"
+    def orig_sending_time, do: "122"
+    def encrypt_method, do: "98"
+    def heartbeat_interval, do: "108"
+    def raw_data_length, do: "95"
+    def raw_data, do: "96"
+    def reset_seq_num_flag, do: "141"
+    def username, do: "553"
+    def message_handling, do: "25035"
+    def response_mode, do: "25036"
+    def drop_copy_flag, do: "9406"
+    def cl_order_id, do: "11"
+    def order_type, do: "40"
+    def side, do: "54"
+    def symbol, do: "55"
+    def cash_order_qty, do: "152"
+    def order_status, do: "39"
+    def quantity_base, do: "14"
+    def quantity_quote, do: "25017"
+    def fee_currency, do: "138"
+    def fee_amount, do: "137"
+  end
 
-  @message_handling_unordered 1
-  @response_mode_everything 1
+  defmodule MessageHandling do
+    @moduledoc "Message handling values"
+    def unordered, do: "1"
+  end
+
+  defmodule ResponseMode do
+    @moduledoc "Response mode values"
+    def everything, do: "1"
+  end
+
   @soh 1
 
-  # InMessage types new order entry
-  @tag_cl_order_id "11"
-  @tag_order_type "40"
-  @tag_side "54"
-  @tag_symbol "55"
-  @tag_cash_order_qty "152"
+  defmodule OrderType do
+    @moduledoc "Order type enum"
+    def market, do: "1"
+  end
 
-  @order_type_market "1"
-  @order_side_buy "1"
-  @order_side_sell "2"
+  defmodule OrderSide do
+    @moduledoc "Order side values"
+    def buy, do: "1"
+    def sell, do: "2"
+  end
 
   # dummy defaults
-  @sender "123"
+  defp sender, do: "123"
 
   @doc """
   Construct a logon message
@@ -78,25 +150,25 @@ defmodule BinanceFixApi do
   def logon(seq_num, public_key, private_key) do
     ts = timestamp()
 
-    signature = sign({@msg_type_logon, @sender, "SPOT", seq_num, ts}, private_key)
+    signature = sign({MsgType.logon(), sender(), "SPOT", seq_num, ts}, private_key)
     signature_length = String.length(signature)
 
     serialize(
       %MessageToSend{
         seqnum: seq_num,
-        msg_type: @msg_type_logon,
-        sender: @sender,
+        msg_type: MsgType.logon(),
+        sender: sender(),
         orig_sending_time: nil,
         body: [
-          {@tag_encrypt_method, 0},
-          {@tag_heartbeat_interval, 60},
-          {@tag_raw_data_length, signature_length},
-          {@tag_raw_data, signature},
-          {@tag_reset_seq_num_flag, true},
-          {@tag_username, public_key},
-          {@tag_message_handling, @message_handling_unordered},
-          {@tag_response_mode, @response_mode_everything},
-          {@tag_drop_copy_flag, false}
+          {Tag.encrypt_method(), 0},
+          {Tag.heartbeat_interval(), 60},
+          {Tag.raw_data_length(), signature_length},
+          {Tag.raw_data(), signature},
+          {Tag.reset_seq_num_flag(), true},
+          {Tag.username(), public_key},
+          {Tag.message_handling(), MessageHandling.unordered()},
+          {Tag.response_mode(), ResponseMode.everything()},
+          {Tag.drop_copy_flag(), false}
         ]
       },
       ts
@@ -114,8 +186,8 @@ defmodule BinanceFixApi do
   def market_order_request(seq_num, trading_symbol, quantity) do
     side =
       case trading_symbol do
-        {_, :long} -> @order_side_buy
-        {_, :short} -> @order_side_sell
+        {_, :long} -> OrderSide.buy()
+        {_, :short} -> OrderSide.sell()
       end
 
     {symbol, _} = trading_symbol
@@ -123,15 +195,15 @@ defmodule BinanceFixApi do
     serialize(
       %MessageToSend{
         seqnum: seq_num,
-        msg_type: @msg_type_single_order_entry,
-        sender: @sender,
+        msg_type: MsgType.single_order_entry(),
+        sender: sender(),
         orig_sending_time: nil,
         body: [
-          {@tag_cl_order_id, "123"},
-          {@tag_order_type, @order_type_market},
-          {@tag_side, side},
-          {@tag_symbol, symbol},
-          {@tag_cash_order_qty, quantity}
+          {Tag.cl_order_id(), "123"},
+          {Tag.order_type(), OrderType.market()},
+          {Tag.side(), side},
+          {Tag.symbol(), symbol},
+          {Tag.cash_order_qty(), quantity}
         ]
       },
       timestamp()
@@ -148,8 +220,8 @@ defmodule BinanceFixApi do
     serialize(
       %MessageToSend{
         seqnum: seq_num,
-        msg_type: @msg_type_heartbeat,
-        sender: @sender,
+        msg_type: MsgType.heartbeat(),
+        sender: sender(),
         orig_sending_time: nil,
         body: []
       },
@@ -168,26 +240,45 @@ defmodule BinanceFixApi do
           | {:news}
           | {:execution_report, map()}
           | {:unknown, ExecutionReport.t()}
-  def parse_message(<<"8=FIX.4.4", @soh, "9=", _length :: binary - size(4), @soh, rest::binary>> = message) do
+  def parse_message(
+        <<"8=FIX.4.4", @soh, "9=", _length::binary-size(4), @soh, rest::binary>>) do
     parse_message(rest)
   end
 
-  def parse_message(<<"35=0", rest :: binary>>) do {:heartbeat}
-  def parse_message(<<"35=1", rest :: binary>>) do {:test_request}
-  def parse_message(<<"35=3", rest :: binary>>) do {:reject}
-  def parse_message(<<"35=A", rest :: binary>>) do {:logon}
-  def parse_message(<<"35=B", rest :: binary>>) do {:news}
-  def parse_message(<<"35=8", rest :: binary>>) do {:execution_report, parse_execution_report(rest)}
-  parse_message(msg), do: {:unknown, msg}
+  def parse_message(<<"35=", @msg_type_heartbeat, _rest::binary>>), do: {:heartbeat}
+  def parse_message(<<"35=", @msg_type_test_request, _rest::binary>>), do: {:test_request}
+  def parse_message(<<"35=", @msg_type_reject, _rest::binary>>), do: {:reject}
+  def parse_message(<<"35=", @msg_type_logon, _rest::binary>>), do: {:logon}
+  def parse_message(<<"35=", @msg_type_news, _rest::binary>>), do: {:news}
+
+  def parse_message(<<"35=", @msg_type_execution_report, rest::binary>>),
+    do: {:execution_report, parse_execution_report(rest)}
+
+  def parse_message(msg), do: {:unknown, msg}
 
   # private functions
 
   defp parse_execution_report(message) do
+    pairs = :binary.split(message, <<@soh>>)
+    fields = Enum.map(pairs, fn p -> parse_field(p) end)
 
-    fields = 
+    # convert fields to map
+    fields = Enum.into(fields, %{})
 
-    fields = parse_fields(rest, len)
-    Enum.into(fields, %{})
+    %ExecutionReport{
+      order_status: fields[Tag.order_status()],
+      quantity_base: String.to_integer(fields[Tag.quantity_base()]),
+      quantity_quote: String.to_integer(fields[Tag.quantity_quote()]),
+      symbol: fields[Tag.symbol()],
+      side: fields[Tag.side()],
+      fee_currency: fields[Tag.fee_currency()],
+      fee_amount: String.to_integer(fields[Tag.fee_amount()])
+    }
+  end
+
+  defp parse_field(pair) do
+    [name, value] = :binary.split(pair, <<"=">>)
+    {name, :unicode.characters_to_binary(value, :latin1, :utf8)}
   end
 
   defp sign({msg_type, sender_comp_id, target_comp_id, msg_seq_num, sending_time}, private_key) do
@@ -234,25 +325,25 @@ defmodule BinanceFixApi do
       case resend do
         false ->
           [
-            {@tag_sender_comp_id, sender},
-            {@tag_sending_time, sending_time},
-            {@tag_target_comp_id, "SPOT"}
+            {Tag.sender_comp_id(), sender},
+            {Tag.sending_time(), sending_time},
+            {Tag.target_comp_id(), "SPOT"}
           ]
 
         true ->
           [
-            {@tag_sender_comp_id, sender},
-            {@tag_poss_dup_flag, true},
-            {@tag_sending_time, sending_time},
-            {@tag_orig_sending_time, orig_sending_time},
-            {@tag_target_comp_id, "SPOT"}
+            {Tag.sender_comp_id(), sender},
+            {Tag.poss_dup_flag(), true},
+            {Tag.sending_time(), sending_time},
+            {Tag.orig_sending_time(), orig_sending_time},
+            {Tag.target_comp_id(), "SPOT"}
           ]
       end
 
     fields = header ++ extra_header ++ body
 
     {:ok, body, bin_len, cs_total} =
-      fields_to_bin([{@tag_msg_type, msg_type}, {@tag_seqnum, seqnum} | fields])
+      fields_to_bin([{Tag.msg_type(), msg_type}, {Tag.seqnum(), seqnum} | fields])
 
     head = <<"8=FIX.4.4", 1, "9=", bin_len::binary, 1>>
     checksum_bin = calculate_checksum(cs_total, head)
@@ -290,9 +381,9 @@ defmodule BinanceFixApi do
   defp serialize_value(v) when is_atom(v), do: Atom.to_string(v)
   defp serialize_value(nil), do: ""
 
-  def bin_sum(<<>>, acc), do: acc
+  defp bin_sum(<<>>, acc), do: acc
 
-  def bin_sum(<<value::binary-size(1), rest::binary>>, acc) do
+  defp bin_sum(<<value::binary-size(1), rest::binary>>, acc) do
     bin_sum(rest, acc + :binary.decode_unsigned(value))
   end
 
