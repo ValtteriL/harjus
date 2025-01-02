@@ -240,8 +240,7 @@ defmodule BinanceFixApi do
           | {:news}
           | {:execution_report, map()}
           | {:unknown, ExecutionReport.t()}
-  def parse_message(
-        <<"8=FIX.4.4", @soh, "9=", _length::binary-size(4), @soh, rest::binary>>) do
+  def parse_message(<<"8=FIX.4.4", @soh, "9=", _length::binary-size(4), @soh, rest::binary>>) do
     parse_message(rest)
   end
 
@@ -282,7 +281,8 @@ defmodule BinanceFixApi do
   end
 
   defp sign({msg_type, sender_comp_id, target_comp_id, msg_seq_num, sending_time}, private_key) do
-    # The signature payload is a text string constructed by concatenating the VALUES of the following fields in this exact order, separated by the SOH character
+    # The signature payload is a text string constructed by concatenating the VALUES
+    # of the following fields in this exact order, separated by the SOH character
     # MsgType (35)
     # SenderCompID (49)
     # TargetCompID (56)

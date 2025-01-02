@@ -79,7 +79,10 @@ defmodule BinanceFixClient do
   @impl true
   def handle_cast({:market_order, {trading_symbol, quantity}}, state) do
     :ok =
-      :gen_tcp.send(state.socket, BinanceFixApi.market_order_request(state.seq_num, trading_symbol, quantity))
+      :gen_tcp.send(
+        state.socket,
+        BinanceFixApi.market_order_request(state.seq_num, trading_symbol, quantity)
+      )
 
     {:noreply, %{state | seq_num: state.seq_num + 1}}
   end
@@ -100,7 +103,7 @@ defmodule BinanceFixClient do
             BinanceFixApi.heartbeat(state.seq_num)
           )
 
-          {:noreply, %{state | seq_num: state.seq_num + 1}}
+        {:noreply, %{state | seq_num: state.seq_num + 1}}
 
       {:reject} ->
         # this is fatal - bug in request
