@@ -168,19 +168,17 @@ defmodule BinanceFixApi do
           | {:news}
           | {:execution_report, map()}
           | {:unknown, ExecutionReport.t()}
-  def parse_message(<<"8=FIX.4.4", @soh, "9=", rest::binary>> = message) do
-    [str_len, rest1] = :binary.split(rest, <<@soh>>)
-
-    case rest1 do
-      <<"35=0">> -> {:heartbeat}
-      <<"35=1">> -> {:test_request}
-      <<"35=3">> -> {:reject}
-      <<"35=A">> -> {:logon}
-      <<"35=B">> -> {:news}
-      <<"35=8">> -> {:execution_report, parse_execution_report(rest1)}
-      _ -> {:unknown, message}
-    end
+  def parse_message(<<"8=FIX.4.4", @soh, "9=", _length :: binary - size(4), @soh, rest::binary>> = message) do
+    parse_message(rest)
   end
+
+  def parse_message(<<"35=0", rest :: binary>>) do {:heartbeat}
+  def parse_message(<<"35=1", rest :: binary>>) do {:test_request}
+  def parse_message(<<"35=3", rest :: binary>>) do {:reject}
+  def parse_message(<<"35=A", rest :: binary>>) do {:logon}
+  def parse_message(<<"35=B", rest :: binary>>) do {:news}
+  def parse_message(<<"35=8", rest :: binary>>) do {:execution_report, parse_execution_report(rest)}
+  parse_message(msg), do: {:unknown, msg}
 
   # private functions
 
