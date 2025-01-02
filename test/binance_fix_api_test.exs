@@ -4,7 +4,15 @@ defmodule BinanceFixApiTest do
   doctest BinanceFixApi
 
   test "generates correct heartbeat message" do
-    assert 1 == BinanceFixApi.heartbeat(1, "some_id")
+    id = "some_id"
+    msg_type_part = "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.heartbeat()}"
+
+    # correct msg type
+    <<"8=FIX.4.4", 1, "9=65", 1, ^msg_type_part::binary, rest::binary>> =
+      BinanceFixApi.heartbeat(1, id)
+
+    # rest contains id
+    assert String.contains?(rest, "#{BinanceFixApi.Tag.test_request_id()}=#{id}")
   end
 
   test "generates correct logon request" do
@@ -21,9 +29,14 @@ defmodule BinanceFixApiTest do
   end
 
   test "parses heartbeat message" do
-    assert 1 ==
+    id = "another_id"
+
+    assert {:heartbeat} ==
              BinanceFixApi.parse_message(
-               "8=FIX.4.4|9=000|35=0|34=1|49=binance|56=client|52=20210101-00:00:00.000|10=000|"
+               <<"8=FIX.4.4", 1, "9=1234", 1,
+                 "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.heartbeat()}", 1,
+                 "34=1", 1, "49=binance", 1, "56=client", 1, "112=#{id}", 1,
+                 "52=20210101-00:00:00.000", 1, "10=000", 1>>
              )
   end
 
