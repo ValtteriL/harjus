@@ -18,7 +18,8 @@ defmodule BinanceFixClient do
   @type state() :: %{
           # executor pid
           pid: pid(),
-          socket: any()
+          socket: any(),
+          seq_num: integer()
         }
   @type trading_symbol() :: {charlist(), :long | :short}
 
@@ -55,9 +56,9 @@ defmodule BinanceFixClient do
 
     # logon
     :ok =
-      :gen_tcp.send(tls_socket, BinanceFixApi.logon(public_key, private_key))
+      :gen_tcp.send(tls_socket, BinanceFixApi.logon(0, public_key, private_key))
 
-    {:ok, %{pid: pid, socket: tls_socket}}
+    {:ok, %{pid: pid, socket: tls_socket, seq_num: 1}}
   end
 
   # API
@@ -78,9 +79,9 @@ defmodule BinanceFixClient do
   @impl true
   def handle_cast({:market_order, {trading_symbol, quantity}}, state) do
     :ok =
-      :gen_tcp.send(state.socket, BinanceFixApi.market_order_request(trading_symbol, quantity))
+      :gen_tcp.send(state.socket, BinanceFixApi.market_order_request(state.seq_num, trading_symbol, quantity))
 
-    {:noreply, state}
+    {:noreply, %{state | seq_num: state.seq_num + 1}}
   end
 
   # handle messages from FIX server
@@ -89,17 +90,17 @@ defmodule BinanceFixClient do
     case BinanceFixApi.parse_message(data) do
       {:heartbeat} ->
         # ignore
-        :ok
+        {:noreply, state}
 
       {:test_request} ->
         # Respond with heartbeat
         :ok =
           :gen_tcp.send(
             state.socket,
-            BinanceFixApi.heartbeat()
+            BinanceFixApi.heartbeat(state.seq_num)
           )
 
-        :ok
+          {:noreply, %{state | seq_num: state.seq_num + 1}}
 
       {:reject} ->
         # this is fatal - bug in request
@@ -108,24 +109,22 @@ defmodule BinanceFixClient do
 
       {:logon} ->
         # ignore
-        :ok
+        {:noreply, state}
 
       {:news} ->
         # this is fatal - must reconnect
         raise "FIX connection will be reset"
-        :ok
 
       {:execution_report, execution_report} ->
         # relay to executor
         Executor.send_execution_report(state.pid, execution_report)
-        :ok
+        {:noreply, state}
 
       {:unknown, message} ->
         Logger.error("Unknown message")
         Logger.debug(inspect(message))
+        {:noreply, state}
     end
-
-    {:noreply, state}
   end
 
   def handle_info({:tcp_closed, _}, state), do: {:stop, :connection_closed, state}
