@@ -95,12 +95,12 @@ defmodule BinanceFixClient do
         # ignore
         {:noreply, state}
 
-      {:test_request} ->
+      {:test_request, test_request_id} ->
         # Respond with heartbeat
         :ok =
           :gen_tcp.send(
             state.socket,
-            BinanceFixApi.heartbeat(state.seq_num)
+            BinanceFixApi.heartbeat(state.seq_num, test_request_id)
           )
 
         {:noreply, %{state | seq_num: state.seq_num + 1}}

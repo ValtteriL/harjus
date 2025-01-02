@@ -111,6 +111,7 @@ defmodule BinanceFixApi do
     def quantity_quote, do: "25017"
     def fee_currency, do: "138"
     def fee_amount, do: "137"
+    def test_request_id, do: "112"
   end
 
   defmodule MessageHandling do
@@ -215,15 +216,18 @@ defmodule BinanceFixApi do
 
   ## Parameters
     * `seq_num` - sequence number
+    * `test_request_id` - test request id
   """
-  def heartbeat(seq_num) do
+  def heartbeat(seq_num, test_request_id) do
     serialize(
       %MessageToSend{
         seqnum: seq_num,
         msg_type: MsgType.heartbeat(),
         sender: sender(),
         orig_sending_time: nil,
-        body: []
+        body: [
+          {Tag.test_request_id(), test_request_id}
+        ]
       },
       timestamp()
     )
@@ -234,18 +238,21 @@ defmodule BinanceFixApi do
   """
   @spec parse_message(binary()) ::
           {:heartbeat}
-          | {:test_request}
+          | {:test_request, String.t()}
           | {:reject}
           | {:logon}
           | {:news}
-          | {:execution_report, map()}
-          | {:unknown, ExecutionReport.t()}
+          | {:execution_report, ExecutionReport.t()}
+          | {:unknown, any()}
   def parse_message(<<"8=FIX.4.4", @soh, "9=", _length::binary-size(4), @soh, rest::binary>>) do
     parse_message(rest)
   end
 
   def parse_message(<<"35=", @msg_type_heartbeat, _rest::binary>>), do: {:heartbeat}
-  def parse_message(<<"35=", @msg_type_test_request, _rest::binary>>), do: {:test_request}
+
+  def parse_message(<<"35=", @msg_type_test_request, rest::binary>>),
+    do: {:test_request, parse_test_request(rest)}
+
   def parse_message(<<"35=", @msg_type_reject, _rest::binary>>), do: {:reject}
   def parse_message(<<"35=", @msg_type_logon, _rest::binary>>), do: {:logon}
   def parse_message(<<"35=", @msg_type_news, _rest::binary>>), do: {:news}
@@ -257,12 +264,14 @@ defmodule BinanceFixApi do
 
   # private functions
 
-  defp parse_execution_report(message) do
-    pairs = :binary.split(message, <<@soh>>)
-    fields = Enum.map(pairs, fn p -> parse_field(p) end)
+  # return rest req id
+  defp parse_test_request(message) do
+    fields = parse_message_into_fields(message)
+    fields[Tag.test_request_id()]
+  end
 
-    # convert fields to map
-    fields = Enum.into(fields, %{})
+  defp parse_execution_report(message) do
+    fields = parse_message_into_fields(message)
 
     %ExecutionReport{
       order_status: fields[Tag.order_status()],
@@ -273,6 +282,12 @@ defmodule BinanceFixApi do
       fee_currency: fields[Tag.fee_currency()],
       fee_amount: String.to_integer(fields[Tag.fee_amount()])
     }
+  end
+
+  defp parse_message_into_fields(message) do
+    :binary.split(message, <<@soh>>)
+    |> Enum.map(fn p -> parse_field(p) end)
+    |> Enum.into(%{})
   end
 
   defp parse_field(pair) do
