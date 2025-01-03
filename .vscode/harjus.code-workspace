@@ -13,7 +13,6 @@
 		"files.associations": {
 			"*.heex": "phoenix-heex"
 		},
-		"elixir.credo.enableDebug": true,
-		"files.autoSave": "afterDelay"
+		"files.autoSave": "afterDelay",
 	}
 }
