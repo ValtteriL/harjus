@@ -244,8 +244,13 @@ defmodule BinanceFixApi do
           | {:news}
           | {:execution_report, ExecutionReport.t()}
           | {:unknown, any()}
-  def parse_message(<<"8=FIX.4.4", @soh, "9=", _length::binary-size(4), @soh, rest::binary>>) do
-    parse_message(rest)
+  def parse_message(<<"8=FIX.4.4", @soh, "9=", rest::binary>>) do
+    # remove length
+    [str_len, _] = :binary.split(rest, <<@soh>>)
+    <<^str_len::binary, @soh, rest2::binary>> = rest
+
+    # continue parsing
+    parse_message(rest2)
   end
 
   def parse_message(<<"35=", @msg_type_heartbeat, _rest::binary>>), do: {:heartbeat}

@@ -33,7 +33,7 @@ defmodule BinanceFixApiTest do
 
     assert {:heartbeat} ==
              BinanceFixApi.parse_message(
-               <<"8=FIX.4.4", 1, "9=1234", 1,
+               <<"8=FIX.4.4", 1, "9=12", 1,
                  "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.heartbeat()}", 1,
                  "34=1", 1, "49=binance", 1, "56=client", 1, "112=#{id}", 1,
                  "52=20210101-00:00:00.000", 1, "10=000", 1>>
