@@ -16,7 +16,11 @@ defmodule BinanceFixApiTest do
   end
 
   test "generates correct logon request" do
-    assert 1 ==
+    # practically incorrect, but msg type is correct
+    msg =
+      "8=FIX.4.4|9=12|35=A|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|98=0|108=30|10=000|"
+
+    assert {:logon} ==
              BinanceFixApi.logon(
                1,
                "sBRXrJx2DsOraMXOaUovEhgVRcjOvCtQwnWj8VxkOh1xqboS02SPGfKi2h8spZJb",
@@ -49,23 +53,67 @@ defmodule BinanceFixApiTest do
   end
 
   test "parses reject message" do
-    assert 1 == 0
+    msg =
+      "8=FIX.4.4|9=12|35=3|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|10=000|"
+
+    assert {:reject} == BinanceFixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses logon message" do
-    assert 1 == 0
+    # practically incorrect, but msg type is correct
+    msg =
+      "8=FIX.4.4|9=12|35=A|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|98=0|108=30|10=000|"
+
+    assert {:logon} == BinanceFixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses news message" do
-    assert 1 == 0
+    msg =
+      "8=FIX.4.4|9=12|35=B|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|10=000|"
+
+    assert {:news} == BinanceFixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses execution_report message" do
-    assert 1 == 0
+    status = "1"
+    quantity_base = 2.0
+    quantity_quote = 3.0
+    symbol = "BTCUSDT"
+    side = "4"
+    fee_currency = "USDT"
+    fee_amount = 5.0
+
+    report_fields =
+      [
+        pair(BinanceFixApi.Tag.order_status(), status),
+        pair(BinanceFixApi.Tag.quantity_base(), quantity_base),
+        pair(BinanceFixApi.Tag.quantity_quote(), quantity_quote),
+        pair(BinanceFixApi.Tag.symbol(), symbol),
+        pair(BinanceFixApi.Tag.side(), side),
+        pair(BinanceFixApi.Tag.fee_currency(), fee_currency),
+        pair(BinanceFixApi.Tag.fee_amount(), fee_amount)
+      ]
+      |> Enum.join("|")
+
+    msg =
+      "8=FIX.4.4|9=12|35=8|34=1|49=binance|56=client|#{report_fields}|52=20210101-00:00:00.000|10=000|"
+
+    assert {:execution_report,
+            %BinanceFixApi.ExecutionReport{
+              order_status: status,
+              quantity_base: quantity_base,
+              quantity_quote: quantity_quote,
+              symbol: symbol,
+              side: side,
+              fee_currency: fee_currency,
+              fee_amount: fee_amount
+            }} ==
+             BinanceFixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses unknown message" do
-    assert 1 == 0
+    msg = "whateva"
+    assert {:unknown, msg} == BinanceFixApi.parse_message(msg)
   end
 
   # Converts a string |-delimited FIX message to a binary message delimited with soh (1)
@@ -73,5 +121,10 @@ defmodule BinanceFixApiTest do
     str_message
     |> :binary.split("|", [:global])
     |> Enum.join(<<1>>)
+  end
+
+  # create pair
+  def pair(tag, value) do
+    "#{tag}=#{value}"
   end
 end

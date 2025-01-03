@@ -280,12 +280,12 @@ defmodule BinanceFixApi do
 
     %ExecutionReport{
       order_status: fields[Tag.order_status()],
-      quantity_base: String.to_integer(fields[Tag.quantity_base()]),
-      quantity_quote: String.to_integer(fields[Tag.quantity_quote()]),
+      quantity_base: String.to_float(fields[Tag.quantity_base()]),
+      quantity_quote: String.to_float(fields[Tag.quantity_quote()]),
       symbol: fields[Tag.symbol()],
       side: fields[Tag.side()],
       fee_currency: fields[Tag.fee_currency()],
-      fee_amount: String.to_integer(fields[Tag.fee_amount()])
+      fee_amount: String.to_float(fields[Tag.fee_amount()])
     }
   end
 
