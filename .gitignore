@@ -26,7 +26,6 @@ harjus-*.tar
 /tmp/
 
 
-.vscode/
 .env
 result
 result-*

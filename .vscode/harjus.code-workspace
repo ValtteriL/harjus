@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"emmet.includeLanguages": {
+			"elixir": "html",
+			"phoenix-heex": "html",
+			"html-eex": "html"
+		},
+		"files.associations": {
+			"*.heex": "phoenix-heex"
+		},
+		"elixir.credo.enableDebug": true,
+		"files.autoSave": "afterDelay"
+	}
+}

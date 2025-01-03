@@ -1,0 +1,28 @@
+{
+  "files.autoSave": "afterDelay",
+  "[elixir]": {
+    "editor.defaultFormatter": "JakeBecker.elixir-ls"
+  },
+  "[phoenix-heex]": {
+    "editor.defaultFormatter": "JakeBecker.elixir-ls"
+  },
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "emmet.includeLanguages": {
+    "elixir": "html",
+    "phoenix-heex": "html",
+    "html-eex": "html"
+  },
+  "files.associations": {
+    "*.heex": "phoenix-heex"
+  },
+  "elixirLS.suggestSpecs": false,
+  "elixirLS.mixEnv": "dev",
+  "elixirLS.fetchDeps": false,
+  "elixirLS.dialyzerEnabled": true,
+  "elixir.credo.configurationFile": ".credo.exs",
+  "elixir.credo.credoConfiguration": "default",
+  "elixir.credo.strictMode": true,
+  "elixir.credo.lintEverything": true,
+  "elixir.credo.enableDebug": true
+}
