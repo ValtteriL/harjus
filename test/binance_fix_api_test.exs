@@ -31,13 +31,11 @@ defmodule BinanceFixApiTest do
   test "parses heartbeat message" do
     id = "another_id"
 
+    msg =
+      "8=FIX.4.4|9=12|35=0|34=1|49=binance|56=client|112=#{id}|52=20210101-00:00:00.000|10=000|"
+
     assert {:heartbeat} ==
-             BinanceFixApi.parse_message(
-               <<"8=FIX.4.4", 1, "9=12", 1,
-                 "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.heartbeat()}", 1,
-                 "34=1", 1, "49=binance", 1, "56=client", 1, "112=#{id}", 1,
-                 "52=20210101-00:00:00.000", 1, "10=000", 1>>
-             )
+             BinanceFixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses test_request message" do
@@ -62,5 +60,14 @@ defmodule BinanceFixApiTest do
 
   test "parses unknown message" do
     assert 1 == 0
+  end
+
+  @doc """
+  Converts a string |-delimited FIX message to a binary message delimited with soh (1)
+  """
+  defp str_message_to_binary(str_message) do
+    str_message
+    |> :binary.split("|", [:global])
+    |> Enum.join(<<1>>)
   end
 end
