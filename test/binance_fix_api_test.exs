@@ -39,7 +39,13 @@ defmodule BinanceFixApiTest do
   end
 
   test "parses test_request message" do
-    assert 1 == 0
+    id = "some_id"
+
+    msg =
+      "8=FIX.4.4|9=12|35=1|34=1|49=binance|56=client|112=#{id}|52=20210101-00:00:00.000|10=000|"
+
+    assert {:test_request, id} ==
+             BinanceFixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses reject message" do
@@ -62,9 +68,7 @@ defmodule BinanceFixApiTest do
     assert 1 == 0
   end
 
-  @doc """
-  Converts a string |-delimited FIX message to a binary message delimited with soh (1)
-  """
+  # Converts a string |-delimited FIX message to a binary message delimited with soh (1)
   defp str_message_to_binary(str_message) do
     str_message
     |> :binary.split("|", [:global])

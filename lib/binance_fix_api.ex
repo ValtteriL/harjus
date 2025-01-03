@@ -262,7 +262,7 @@ defmodule BinanceFixApi do
   def parse_message(<<"35=", @msg_type_logon, _rest::binary>>), do: {:logon}
   def parse_message(<<"35=", @msg_type_news, _rest::binary>>), do: {:news}
 
-  def parse_message(<<"35=", @msg_type_execution_report, rest::binary>>),
+  def parse_message(<<"35=", @msg_type_execution_report, @soh, rest::binary>>),
     do: {:execution_report, parse_execution_report(rest)}
 
   def parse_message(msg), do: {:unknown, msg}
@@ -290,7 +290,7 @@ defmodule BinanceFixApi do
   end
 
   defp parse_message_into_fields(message) do
-    :binary.split(message, <<@soh>>)
+    :binary.split(message, <<@soh>>, [:global, :trim_all])
     |> Enum.map(fn p -> parse_field(p) end)
     |> Enum.into(%{})
   end
