@@ -76,12 +76,12 @@ defmodule BinanceFixApi do
     def single_order_entry, do: "D"
   end
 
-  @msg_type_heartbeat "0"
-  @msg_type_test_request "1"
-  @msg_type_logon "A"
-  @msg_type_news "B"
-  @msg_type_execution_report "8"
-  @msg_type_reject "3"
+  @msg_type_heartbeat MsgType.heartbeat()
+  @msg_type_test_request MsgType.test_request()
+  @msg_type_logon MsgType.logon()
+  @msg_type_news MsgType.news()
+  @msg_type_execution_report MsgType.execution_report()
+  @msg_type_reject MsgType.reject()
 
   defmodule Tag do
     @moduledoc "tag enum"
@@ -125,7 +125,12 @@ defmodule BinanceFixApi do
     def everything, do: "1"
   end
 
-  @soh 1
+  defmodule Delimiter do
+    @moduledoc "Delimiter values"
+    def soh, do: 1
+  end
+
+  @soh Delimiter.soh()
 
   defmodule OrderType do
     @moduledoc "Order type enum"
@@ -384,9 +389,9 @@ defmodule BinanceFixApi do
     {:ok, body, bin_len, cs_total} =
       fields_to_bin([{Tag.msg_type(), msg_type}, {Tag.seqnum(), seqnum} | fields])
 
-    head = <<"8=FIX.4.4", 1, "9=", bin_len::binary, 1>>
+    head = <<"8=FIX.4.4", @soh, "9=", bin_len::binary, @soh>>
     checksum_bin = calculate_checksum(cs_total, head)
-    <<head::binary, body::binary, "10=", checksum_bin::binary, 1>>
+    <<head::binary, body::binary, "10=", checksum_bin::binary, @soh>>
   end
 
   defp fields_to_bin(fields), do: fields_to_bin(fields, [], 0, 0)
@@ -402,7 +407,7 @@ defmodule BinanceFixApi do
 
   defp fields_to_bin([{tag, value} | rest], bin, len, cstot) do
     bin_value = serialize_value(value)
-    pair = <<tag::binary, "=", bin_value::binary, 1>>
+    pair = <<tag::binary, "=", bin_value::binary, @soh>>
     fields_to_bin(rest, [pair | bin], len + byte_size(pair), bin_sum(pair, cstot))
   end
 
