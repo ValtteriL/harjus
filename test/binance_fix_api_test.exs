@@ -89,10 +89,12 @@ defmodule BinanceFixApiTest do
   end
 
   test "parses reject message" do
-    msg =
-      "8=FIX.4.4|9=12|35=3|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|10=000|"
+    reason = "some_reason"
 
-    assert {:reject} == BinanceFixApi.parse_message(str_message_to_binary(msg))
+    msg =
+      "8=FIX.4.4|9=12|35=3|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|58=#{reason}|10=000|"
+
+    assert {:reject, reason} == BinanceFixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses logon message" do

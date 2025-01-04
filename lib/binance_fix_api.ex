@@ -112,6 +112,7 @@ defmodule BinanceFixApi do
     def fee_currency, do: "138"
     def fee_amount, do: "137"
     def test_request_id, do: "112"
+    def reject_text, do: "58"
   end
 
   defmodule MessageHandling do
@@ -239,7 +240,7 @@ defmodule BinanceFixApi do
   @spec parse_message(binary()) ::
           {:heartbeat}
           | {:test_request, String.t()}
-          | {:reject}
+          | {:reject, String.t()}
           | {:logon}
           | {:news}
           | {:execution_report, ExecutionReport.t()}
@@ -258,7 +259,9 @@ defmodule BinanceFixApi do
   def parse_message(<<"35=", @msg_type_test_request, rest::binary>>),
     do: {:test_request, parse_test_request(rest)}
 
-  def parse_message(<<"35=", @msg_type_reject, _rest::binary>>), do: {:reject}
+  def parse_message(<<"35=", @msg_type_reject, rest::binary>>),
+    do: {:reject, parse_reject_message(rest)}
+
   def parse_message(<<"35=", @msg_type_logon, _rest::binary>>), do: {:logon}
   def parse_message(<<"35=", @msg_type_news, _rest::binary>>), do: {:news}
 
@@ -268,6 +271,11 @@ defmodule BinanceFixApi do
   def parse_message(msg), do: {:unknown, msg}
 
   # private functions
+
+  defp parse_reject_message(message) do
+    fields = parse_message_into_fields(message)
+    fields[Tag.reject_text()]
+  end
 
   # return rest req id
   defp parse_test_request(message) do
