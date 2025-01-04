@@ -320,8 +320,14 @@ defmodule BinanceFixApi do
     # Sign the payload using your private key. Encode the signature with base64.
 
     payload =
-      <<msg_type::binary, 1, sender_comp_id::binary, 1, target_comp_id::binary, 1, msg_seq_num, 1,
-        sending_time::binary>>
+      [
+        msg_type,
+        sender_comp_id,
+        target_comp_id,
+        msg_seq_num,
+        sending_time
+      ]
+      |> Enum.join(<<@soh>>)
 
     # convert key into usable format
     decoded_key =

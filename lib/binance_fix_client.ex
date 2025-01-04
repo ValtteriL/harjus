@@ -100,10 +100,15 @@ defmodule BinanceFixClient do
     case BinanceFixApi.parse_message(data) do
       {:heartbeat} ->
         # ignore
+
+        Logger.debug("FIX heartbeat")
         {:noreply, state}
 
       {:test_request, test_request_id} ->
         # Respond with heartbeat
+
+        Logger.debug("FIX test request: #{test_request_id}")
+
         :ok =
           :ssl.send(
             state.socket,
@@ -119,6 +124,7 @@ defmodule BinanceFixClient do
 
       {:logon} ->
         # ignore
+        Logger.info("FIX logon successful")
         {:noreply, state}
 
       {:news} ->
