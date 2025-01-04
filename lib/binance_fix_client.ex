@@ -14,12 +14,12 @@ defmodule BinanceFixClient do
     @moduledoc """
     Binance FIX client arguments
     """
-    @enforce_keys [:is_prod, :public_key, :private_key]
-    defstruct [:public_key, :private_key, is_prod: false]
+    @enforce_keys [:is_prod, :api_key, :private_key]
+    defstruct [:api_key, :private_key, is_prod: false]
 
     @type t :: %__MODULE__{
             is_prod: bool(),
-            public_key: String.t(),
+            api_key: String.t(),
             private_key: String.t()
           }
   end
@@ -39,7 +39,7 @@ defmodule BinanceFixClient do
 
   @impl true
   @spec init(Args.t()) :: {:ok, state()}
-  def init(%Args{is_prod: is_prod, public_key: public_key, private_key: private_key}) do
+  def init(%Args{is_prod: is_prod, api_key: api_key, private_key: private_key}) do
     pid = Process.whereis(Executor)
 
     {addr, port} =
@@ -63,7 +63,7 @@ defmodule BinanceFixClient do
 
     # logon
     :ok =
-      :ssl.send(socket, BinanceFixApi.logon(seq_num, public_key, private_key))
+      :ssl.send(socket, BinanceFixApi.logon(seq_num, api_key, private_key))
 
     {:ok, %{pid: pid, socket: socket, seq_num: seq_num + 1}}
   end

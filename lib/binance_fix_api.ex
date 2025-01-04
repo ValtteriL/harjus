@@ -146,10 +146,10 @@ defmodule BinanceFixApi do
 
   ## Parameters
     * `seq_num` - sequence number
-    * `public_key` - public key (in PEM format without "---BEGIN PUBLIC...")
+    * `api_key` - api key received when uploading public key to Binance
     * `private_key` - private key (in PEM format without "---BEGIN PUBLIC...")
   """
-  def logon(seq_num, public_key, private_key) do
+  def logon(seq_num, api_key, private_key) do
     ts = timestamp()
 
     signature = sign({MsgType.logon(), sender(), "SPOT", seq_num, ts}, private_key)
@@ -167,7 +167,7 @@ defmodule BinanceFixApi do
           {Tag.raw_data_length(), signature_length},
           {Tag.raw_data(), signature},
           {Tag.reset_seq_num_flag(), true},
-          {Tag.username(), public_key},
+          {Tag.username(), api_key},
           {Tag.message_handling(), MessageHandling.unordered()},
           {Tag.response_mode(), ResponseMode.everything()},
           {Tag.drop_copy_flag(), false}
