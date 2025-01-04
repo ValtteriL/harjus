@@ -31,7 +31,6 @@ defmodule BinanceFixClient do
           seq_num: integer(),
           sender_comp_id: String.t()
         }
-  @type trading_symbol() :: {charlist(), :long | :short}
 
   @spec start_link(args :: Args.t()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(args) do
@@ -76,7 +75,7 @@ defmodule BinanceFixClient do
 
   @spec market_order(
           pid :: pid(),
-          trading_symbol :: trading_symbol(),
+          trading_symbol :: TradingSymbol.t(),
           quantity :: float()
         ) :: :ok
   def market_order(pid, trading_symbol, quantity) do

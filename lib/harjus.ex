@@ -69,7 +69,7 @@ defmodule Harjus do
         {PortfolioManager, pm_args},
         {OpportunityWatcher, trading_paths},
         {BinanceFixClient,
-         %{
+         %BinanceFixClient.Args{
            api_key: Application.fetch_env!(:harjus, :binance_ed25519_api_key),
            private_key: Application.fetch_env!(:harjus, :binance_ed25519_private_key),
            is_prod: Application.fetch_env!(:harjus, :is_prod)

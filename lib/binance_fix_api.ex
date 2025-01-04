@@ -5,8 +5,6 @@ defmodule BinanceFixApi do
   https://github.com/binance/binance-spot-api-docs/blob/master/fix-api.md
   """
 
-  @type trading_symbol() :: {charlist(), :long | :short}
-
   defmodule MessageToSend do
     @moduledoc "serializer argument map"
     @type t :: %MessageToSend{}
@@ -190,7 +188,7 @@ defmodule BinanceFixApi do
     * `trading_symbol` - trading symbol
     * `quantity` - quantity (in quote asset units)
   """
-  @spec market_order_request(integer(), String.t(), trading_symbol(), float()) :: binary()
+  @spec market_order_request(integer(), String.t(), TradingSymbol.t(), float()) :: binary()
   def market_order_request(seq_num, sender_comp_id, trading_symbol, quantity) do
     side =
       case trading_symbol do

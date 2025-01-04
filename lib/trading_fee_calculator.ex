@@ -3,8 +3,7 @@ defmodule TradingFeeCalculator do
   Functions for calculating trading fees
   """
 
-  @type trading_symbol() :: {charlist(), :long | :short}
-  @type trading_path() :: [trading_symbol()]
+  @type trading_path() :: [TradingSymbol.t()]
 
   @spec total_commission_percentage(
           trading_path :: trading_path(),
