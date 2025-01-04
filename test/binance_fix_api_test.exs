@@ -20,12 +20,23 @@ defmodule BinanceFixApiTest do
     msg =
       "8=FIX.4.4|9=12|35=A|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|98=0|108=30|10=000|"
 
-    assert {:logon} ==
-             BinanceFixApi.logon(
-               1,
-               "sBRXrJx2DsOraMXOaUovEhgVRcjOvCtQwnWj8VxkOh1xqboS02SPGfKi2h8spZJb",
-               "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
-             )
+    pubkey = "sBRXrJx2DsOraMXOaUovEhgVRcjOvCtQwnWj8VxkOh1xqboS02SPGfKi2h8spZJb"
+
+    logon_msg =
+      BinanceFixApi.logon(
+        1,
+        pubkey,
+        "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
+      )
+
+    # correct msg type
+    assert String.contains?(
+             logon_msg,
+             "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.logon()}"
+           )
+
+    # correct user
+    assert String.contains?(logon_msg, "#{BinanceFixApi.Tag.username()}=#{pubkey}")
   end
 
   test "generates correct market order request" do
