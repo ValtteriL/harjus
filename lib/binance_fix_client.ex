@@ -10,11 +10,20 @@ defmodule BinanceFixClient do
   use GenServer
   require Logger
 
-  @type args() :: %{
-          is_prod: bool(),
-          public_key: String.t(),
-          private_key: String.t()
-        }
+  defmodule Args do
+    @moduledoc """
+    Binance FIX client arguments
+    """
+    @enforce_keys [:is_prod, :public_key, :private_key]
+    defstruct [:public_key, :private_key, is_prod: false]
+
+    @type t :: %__MODULE__{
+            is_prod: bool(),
+            public_key: String.t(),
+            private_key: String.t()
+          }
+  end
+
   @type state() :: %{
           # executor pid
           pid: pid(),
@@ -23,42 +32,38 @@ defmodule BinanceFixClient do
         }
   @type trading_symbol() :: {charlist(), :long | :short}
 
-  @spec start_link(is_prod :: bool()) :: :ignore | {:error, any()} | {:ok, pid()}
-  def start_link(is_prod) do
-    GenServer.start_link(__MODULE__, is_prod, name: __MODULE__)
+  @spec start_link(args :: Args.t()) :: :ignore | {:error, any()} | {:ok, pid()}
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   @impl true
-  @spec init(args()) :: {:ok, state()}
-  def init(%{is_prod: is_prod, public_key: public_key, private_key: private_key}) do
+  @spec init(Args.t()) :: {:ok, state()}
+  def init(%Args{is_prod: is_prod, public_key: public_key, private_key: private_key}) do
     pid = Process.whereis(Executor)
 
-    url =
+    {addr, port} =
       if is_prod do
-        "tcp+tls://fix-oe.binance.com:9000"
+        {~c"fix-oe.binance.com", 9000}
       else
-        "tcp+tls://fix-oe.testnet.binance.vision:9000"
+        {~c"fix-oe.testnet.binance.vision", 9000}
       end
 
     # start FIX session
-    {:ok, socket} = :gen_tcp.connect(url, [active: false], 5_000)
+    opts = [
+      :binary,
+      {:active, true},
+      {:verify, :verify_none},
+      {:cacerts, :public_key.cacerts_get()}
+    ]
 
-    # start TLS session
-    {:ok, tls_socket} =
-      :ssl.connect(
-        socket,
-        [{:verify, :verify_peer}, {:cacerts, :public_key.cacerts_get()}],
-        5_000
-      )
-
-    # set socket to active binary mode
-    :ssl.setopts(tls_socket, [{:active, true}, :binary])
+    {:ok, socket} = :ssl.connect(addr, port, opts)
 
     # logon
     :ok =
-      :gen_tcp.send(tls_socket, BinanceFixApi.logon(0, public_key, private_key))
+      :ssl.send(socket, BinanceFixApi.logon(0, public_key, private_key))
 
-    {:ok, %{pid: pid, socket: tls_socket, seq_num: 1}}
+    {:ok, %{pid: pid, socket: socket, seq_num: 1}}
   end
 
   # API
@@ -79,7 +84,7 @@ defmodule BinanceFixClient do
   @impl true
   def handle_cast({:market_order, {trading_symbol, quantity}}, state) do
     :ok =
-      :gen_tcp.send(
+      :ssl.send(
         state.socket,
         BinanceFixApi.market_order_request(state.seq_num, trading_symbol, quantity)
       )
@@ -89,7 +94,7 @@ defmodule BinanceFixClient do
 
   # handle messages from FIX server
   @impl true
-  def handle_info({:tcp, _socket, data}, state) do
+  def handle_info({:ssl, _socket, data}, state) do
     case BinanceFixApi.parse_message(data) do
       {:heartbeat} ->
         # ignore
@@ -98,7 +103,7 @@ defmodule BinanceFixClient do
       {:test_request, test_request_id} ->
         # Respond with heartbeat
         :ok =
-          :gen_tcp.send(
+          :ssl.send(
             state.socket,
             BinanceFixApi.heartbeat(state.seq_num, test_request_id)
           )
@@ -130,6 +135,6 @@ defmodule BinanceFixClient do
     end
   end
 
-  def handle_info({:tcp_closed, _}, state), do: {:stop, :connection_closed, state}
-  def handle_info({:tcp_error, _}, state), do: {:stop, :connection_error, state}
+  def handle_info({:ssl_closed, _}, state), do: {:stop, :connection_closed, state}
+  def handle_info({:ssl_error, _}, state), do: {:stop, :connection_error, state}
 end
