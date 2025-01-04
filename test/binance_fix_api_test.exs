@@ -40,7 +40,31 @@ defmodule BinanceFixApiTest do
   end
 
   test "generates correct market order request" do
-    assert 1 == BinanceFixApi.market_order_request(1, {"BTCUSDT", :long}, 1)
+    quantity = 1
+    symbol = "BTCUSDT"
+
+    msg = BinanceFixApi.market_order_request(1, {symbol, :long}, quantity)
+
+    # correct msg type
+    assert String.contains?(
+             msg,
+             "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.single_order_entry()}"
+           )
+
+    # correct symbol
+    assert String.contains?(msg, "#{BinanceFixApi.Tag.symbol()}=#{symbol}")
+
+    # correct side
+    assert String.contains?(msg, "#{BinanceFixApi.Tag.side()}=#{BinanceFixApi.OrderSide.buy()}")
+
+    # correct quantity
+    assert String.contains?(msg, "#{BinanceFixApi.Tag.cash_order_qty()}=#{quantity}")
+
+    # correct order type
+    assert String.contains?(
+             msg,
+             "#{BinanceFixApi.Tag.order_type()}=#{BinanceFixApi.OrderType.market()}"
+           )
   end
 
   test "parses heartbeat message" do
