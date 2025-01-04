@@ -33,6 +33,21 @@
       ],
       "group": "build",
       "label": "mix: Build"
+    },
+    {
+      "command": "mix",
+      "args": [
+        "quality",
+      ],
+      "problemMatcher": [
+        "$mixCompileError",
+        "$mixCompileWarning"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "label": "mix: Quality"
     }
   ]
 }
