@@ -147,6 +147,7 @@ defmodule BinanceFixApi do
     * `api_key` - api key received when uploading public key to Binance
     * `private_key` - private key (in PEM format without "---BEGIN PUBLIC...")
   """
+  @spec logon(integer(), String.t(), String.t(), String.t()) :: binary()
   def logon(seq_num, sender_comp_id, api_key, private_key) do
     ts = timestamp()
 
@@ -184,6 +185,7 @@ defmodule BinanceFixApi do
     * `trading_symbol` - trading symbol
     * `quantity` - quantity (in quote asset units)
   """
+  @spec market_order_request(integer(), String.t(), trading_symbol(), float()) :: binary()
   def market_order_request(seq_num, sender_comp_id, trading_symbol, quantity) do
     side =
       case trading_symbol do
@@ -219,6 +221,7 @@ defmodule BinanceFixApi do
     * `sender_comp_id` - sender comp id
     * `test_request_id` - test request id
   """
+  @spec heartbeat(integer(), String.t(), String.t()) :: binary()
   def heartbeat(seq_num, sender_comp_id, test_request_id) do
     serialize(
       %MessageToSend{
