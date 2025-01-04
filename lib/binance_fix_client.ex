@@ -59,11 +59,13 @@ defmodule BinanceFixClient do
 
     {:ok, socket} = :ssl.connect(addr, port, opts)
 
+    seq_num = 1
+
     # logon
     :ok =
-      :ssl.send(socket, BinanceFixApi.logon(0, public_key, private_key))
+      :ssl.send(socket, BinanceFixApi.logon(seq_num, public_key, private_key))
 
-    {:ok, %{pid: pid, socket: socket, seq_num: 1}}
+    {:ok, %{pid: pid, socket: socket, seq_num: seq_num + 1}}
   end
 
   # API
@@ -110,9 +112,9 @@ defmodule BinanceFixClient do
 
         {:noreply, %{state | seq_num: state.seq_num + 1}}
 
-      {:reject} ->
+      {:reject, reason} ->
         # this is fatal - bug in request
-        raise "FIX request rejected"
+        raise "FIX request rejected: #{reason}"
         :ok
 
       {:logon} ->
