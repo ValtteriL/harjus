@@ -4,21 +4,23 @@ defmodule BinanceFixApiTest do
   doctest BinanceFixApi
 
   test "generates correct heartbeat message" do
+    sender_comp_id = "asd123"
     id = "some_id"
     msg_type_part = "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.heartbeat()}"
 
     # correct msg type
-    <<"8=FIX.4.4", 1, "9=65", 1, ^msg_type_part::binary, rest::binary>> =
-      BinanceFixApi.heartbeat(1, id)
+    <<"8=FIX.4.4", 1, "9=68", 1, ^msg_type_part::binary, rest::binary>> =
+      BinanceFixApi.heartbeat(1, sender_comp_id, id)
+
+    # correct sender comp id
+    assert String.contains?(rest, "#{BinanceFixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
 
     # rest contains id
     assert String.contains?(rest, "#{BinanceFixApi.Tag.test_request_id()}=#{id}")
   end
 
   test "generates correct logon request" do
-    # practically incorrect, but msg type is correct
-    msg =
-      "8=FIX.4.4|9=12|35=A|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|98=0|108=30|10=000|"
+    sender_comp_id = "asd123"
 
     pubkey = "sBRXrJx2DsOraMXOaUovEhgVRcjOvCtQwnWj8VxkOh1xqboS02SPGfKi2h8spZJb"
     privkey = "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
@@ -26,6 +28,7 @@ defmodule BinanceFixApiTest do
     logon_msg =
       BinanceFixApi.logon(
         1,
+        sender_comp_id,
         pubkey,
         privkey
       )
@@ -38,13 +41,17 @@ defmodule BinanceFixApiTest do
 
     # correct user
     assert String.contains?(logon_msg, "#{BinanceFixApi.Tag.username()}=#{pubkey}")
+
+    # correct sender comp id
+    assert String.contains?(logon_msg, "#{BinanceFixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
   end
 
   test "generates correct market order request" do
+    sender_comp_id = "asd123"
     quantity = 1
     symbol = "BTCUSDT"
 
-    msg = BinanceFixApi.market_order_request(1, {symbol, :long}, quantity)
+    msg = BinanceFixApi.market_order_request(1, sender_comp_id, {symbol, :long}, quantity)
 
     # correct msg type
     assert String.contains?(
@@ -60,6 +67,9 @@ defmodule BinanceFixApiTest do
 
     # correct quantity
     assert String.contains?(msg, "#{BinanceFixApi.Tag.cash_order_qty()}=#{quantity}")
+
+    # correct sender comp id
+    assert String.contains?(msg, "#{BinanceFixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
 
     # correct order type
     assert String.contains?(
@@ -156,18 +166,23 @@ defmodule BinanceFixApiTest do
 
   test "parses own messages" do
     id = "some_id"
+    sender_comp_id = "asd123"
     seq = 1
-    qty = 123
 
     pubkey = "sBRXrJx2DsOraMXOaUovEhgVRcjOvCtQwnWj8VxkOh1xqboS02SPGfKi2h8spZJb"
     privkey = "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
 
-    assert {:heartbeat} == BinanceFixApi.parse_message(BinanceFixApi.heartbeat(seq, id))
-    assert {:logon} == BinanceFixApi.parse_message(BinanceFixApi.logon(seq, pubkey, privkey))
+    assert {:heartbeat} ==
+             BinanceFixApi.parse_message(BinanceFixApi.heartbeat(seq, sender_comp_id, id))
+
+    assert {:logon} ==
+             BinanceFixApi.parse_message(
+               BinanceFixApi.logon(seq, sender_comp_id, pubkey, privkey)
+             )
 
     assert {:unknown, _} =
              BinanceFixApi.parse_message(
-               BinanceFixApi.market_order_request(seq, {"BTCETH", :short}, 1)
+               BinanceFixApi.market_order_request(seq, sender_comp_id, {"BTCETH", :short}, 1)
              )
   end
 

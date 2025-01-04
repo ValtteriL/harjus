@@ -28,7 +28,8 @@ defmodule BinanceFixClient do
           # executor pid
           pid: pid(),
           socket: any(),
-          seq_num: integer()
+          seq_num: integer(),
+          sender_comp_id: String.t()
         }
   @type trading_symbol() :: {charlist(), :long | :short}
 
@@ -61,11 +62,14 @@ defmodule BinanceFixClient do
 
     seq_num = 1
 
+    # generate random sender comp id
+    sender_comp_id = :crypto.strong_rand_bytes(4) |> Base.encode16() |> String.downcase()
+
     # logon
     :ok =
-      :ssl.send(socket, BinanceFixApi.logon(seq_num, api_key, private_key))
+      :ssl.send(socket, BinanceFixApi.logon(seq_num, sender_comp_id, api_key, private_key))
 
-    {:ok, %{pid: pid, socket: socket, seq_num: seq_num + 1}}
+    {:ok, %{pid: pid, socket: socket, seq_num: seq_num + 1, sender_comp_id: sender_comp_id}}
   end
 
   # API
@@ -88,7 +92,12 @@ defmodule BinanceFixClient do
     :ok =
       :ssl.send(
         state.socket,
-        BinanceFixApi.market_order_request(state.seq_num, trading_symbol, quantity)
+        BinanceFixApi.market_order_request(
+          state.seq_num,
+          state.sender_comp_id,
+          trading_symbol,
+          quantity
+        )
       )
 
     {:noreply, %{state | seq_num: state.seq_num + 1}}
@@ -112,7 +121,7 @@ defmodule BinanceFixClient do
         :ok =
           :ssl.send(
             state.socket,
-            BinanceFixApi.heartbeat(state.seq_num, test_request_id)
+            BinanceFixApi.heartbeat(state.seq_num, state.sender_comp_id, test_request_id)
           )
 
         {:noreply, %{state | seq_num: state.seq_num + 1}}

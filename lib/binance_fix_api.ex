@@ -138,28 +138,26 @@ defmodule BinanceFixApi do
     def sell, do: "2"
   end
 
-  # dummy defaults
-  defp sender, do: "123"
-
   @doc """
   Construct a logon message
 
   ## Parameters
     * `seq_num` - sequence number
+    * `sender_comp_id` - sender comp id
     * `api_key` - api key received when uploading public key to Binance
     * `private_key` - private key (in PEM format without "---BEGIN PUBLIC...")
   """
-  def logon(seq_num, api_key, private_key) do
+  def logon(seq_num, sender_comp_id, api_key, private_key) do
     ts = timestamp()
 
-    signature = sign({MsgType.logon(), sender(), "SPOT", seq_num, ts}, private_key)
+    signature = sign({MsgType.logon(), sender_comp_id, "SPOT", seq_num, ts}, private_key)
     signature_length = String.length(signature)
 
     serialize(
       %MessageToSend{
         seqnum: seq_num,
         msg_type: MsgType.logon(),
-        sender: sender(),
+        sender: sender_comp_id,
         orig_sending_time: nil,
         body: [
           {Tag.encrypt_method(), 0},
@@ -182,10 +180,11 @@ defmodule BinanceFixApi do
 
   ## Parameters
     * `seq_num` - sequence number
+    * `sender_comp_id` - sender comp id
     * `trading_symbol` - trading symbol
     * `quantity` - quantity (in quote asset units)
   """
-  def market_order_request(seq_num, trading_symbol, quantity) do
+  def market_order_request(seq_num, sender_comp_id, trading_symbol, quantity) do
     side =
       case trading_symbol do
         {_, :long} -> OrderSide.buy()
@@ -198,7 +197,7 @@ defmodule BinanceFixApi do
       %MessageToSend{
         seqnum: seq_num,
         msg_type: MsgType.single_order_entry(),
-        sender: sender(),
+        sender: sender_comp_id,
         orig_sending_time: nil,
         body: [
           {Tag.cl_order_id(), "123"},
@@ -217,14 +216,15 @@ defmodule BinanceFixApi do
 
   ## Parameters
     * `seq_num` - sequence number
+    * `sender_comp_id` - sender comp id
     * `test_request_id` - test request id
   """
-  def heartbeat(seq_num, test_request_id) do
+  def heartbeat(seq_num, sender_comp_id, test_request_id) do
     serialize(
       %MessageToSend{
         seqnum: seq_num,
         msg_type: MsgType.heartbeat(),
-        sender: sender(),
+        sender: sender_comp_id,
         orig_sending_time: nil,
         body: [
           {Tag.test_request_id(), test_request_id}
