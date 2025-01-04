@@ -21,12 +21,13 @@ defmodule BinanceFixApiTest do
       "8=FIX.4.4|9=12|35=A|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|98=0|108=30|10=000|"
 
     pubkey = "sBRXrJx2DsOraMXOaUovEhgVRcjOvCtQwnWj8VxkOh1xqboS02SPGfKi2h8spZJb"
+    privkey = "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
 
     logon_msg =
       BinanceFixApi.logon(
         1,
         pubkey,
-        "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
+        privkey
       )
 
     # correct msg type
@@ -149,6 +150,23 @@ defmodule BinanceFixApiTest do
   test "parses unknown message" do
     msg = "whateva"
     assert {:unknown, msg} == BinanceFixApi.parse_message(msg)
+  end
+
+  test "parses own messages" do
+    id = "some_id"
+    seq = 1
+    qty = 123
+
+    pubkey = "sBRXrJx2DsOraMXOaUovEhgVRcjOvCtQwnWj8VxkOh1xqboS02SPGfKi2h8spZJb"
+    privkey = "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
+
+    assert {:heartbeat} == BinanceFixApi.parse_message(BinanceFixApi.heartbeat(seq, id))
+    assert {:logon} == BinanceFixApi.parse_message(BinanceFixApi.logon(seq, pubkey, privkey))
+
+    assert {:unknown, _} =
+             BinanceFixApi.parse_message(
+               BinanceFixApi.market_order_request(seq, {"BTCETH", :short}, 1)
+             )
   end
 
   # Converts a string |-delimited FIX message to a binary message delimited with soh (1)
