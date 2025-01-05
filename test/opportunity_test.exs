@@ -4,13 +4,16 @@ defmodule OpportunityTest do
   doctest Opportunity
 
   test "correct profit and capacity with 2 symbols" do
-    path = [{"BTCUSDT", :long}, {"USDTBTC", :long}]
+    path = [
+      %TradingSymbol{symbol: "BTCUSDT", position: :long},
+      %TradingSymbol{symbol: "USDTBTC", position: :long}
+    ]
 
     price_table = %{
-      {"BTCUSDT", :long} => {10_000.0, 1.0},
-      {"USDTBTC", :long} => {0.00005, 1337.1337},
-      {"ETHBTC", :long} => {0.1, 10.0},
-      {"USDTETH", :long} => {0.001, 1.0}
+      %TradingSymbol{symbol: "BTCUSDT", position: :long} => {10_000.0, 1.0},
+      %TradingSymbol{symbol: "USDTBTC", position: :long} => {0.00005, 1337.1337},
+      %TradingSymbol{symbol: "ETHBTC", position: :long} => {0.1, 10.0},
+      %TradingSymbol{symbol: "USDTETH", position: :long} => {0.001, 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -21,11 +24,14 @@ defmodule OpportunityTest do
   end
 
   test "correct profit and capacity with 2 symbols (long + short)" do
-    path = [{"BTCUSDT", :long}, {"BTCUSDT", :short}]
+    path = [
+      %TradingSymbol{symbol: "BTCUSDT", position: :long},
+      %TradingSymbol{symbol: "BTCUSDT", position: :short}
+    ]
 
     price_table = %{
-      {"BTCUSDT", :long} => {1.0, 1.0},
-      {"BTCUSDT", :short} => {2.0 ** -1, 1.0}
+      %TradingSymbol{symbol: "BTCUSDT", position: :long} => {1.0, 1.0},
+      %TradingSymbol{symbol: "BTCUSDT", position: :short} => {2.0 ** -1, 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -36,12 +42,16 @@ defmodule OpportunityTest do
   end
 
   test "correct profit and capacity with 3 symbols" do
-    path = [{"BTCUSDT", :long}, {"ETHBTC", :long}, {"USDTETH", :long}]
+    path = [
+      %TradingSymbol{symbol: "BTCUSDT", position: :long},
+      %TradingSymbol{symbol: "ETHBTC", position: :long},
+      %TradingSymbol{symbol: "USDTETH", position: :long}
+    ]
 
     price_table = %{
-      {"BTCUSDT", :long} => {10_000.0, 1.0},
-      {"ETHBTC", :long} => {0.1, 10.0},
-      {"USDTETH", :long} => {0.001, 1.0}
+      %TradingSymbol{symbol: "BTCUSDT", position: :long} => {10_000.0, 1.0},
+      %TradingSymbol{symbol: "ETHBTC", position: :long} => {0.1, 10.0},
+      %TradingSymbol{symbol: "USDTETH", position: :long} => {0.001, 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -65,10 +75,17 @@ defmodule OpportunityTest do
 
   test "missing symbol in pricing results in ArgumentError" do
     assert_raise ArgumentError, fn ->
-      Opportunity.profit([{"BTCUSDT", :long}, {"ETHBTC", :long}, {"USDTETH", :long}], %{
-        {"BTCUSDT", :long} => {10_000.0, 1.0},
-        {"ETHBTC", :long} => {0.1, 10.0}
-      })
+      Opportunity.profit(
+        [
+          %TradingSymbol{symbol: "BTCUSDT", position: :long},
+          %TradingSymbol{symbol: "ETHBTC", position: :long},
+          %TradingSymbol{symbol: "USDTETH", position: :long}
+        ],
+        %{
+          %TradingSymbol{symbol: "BTCUSDT", position: :long} => {10_000.0, 1.0},
+          %TradingSymbol{symbol: "ETHBTC", position: :long} => {0.1, 10.0}
+        }
+      )
     end
   end
 end
