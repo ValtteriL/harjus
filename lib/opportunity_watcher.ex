@@ -116,8 +116,8 @@ defmodule OpportunityWatcher do
     # update price and quantity on long + short
     new_trading_symbol_to_price_qty_tuple =
       state.trading_symbol_to_price_qty_tuple
-      |> Map.replace!(%TradingSymbol{symbol: symbol, position: :long}, {ask_price, ask_qty})
-      |> Map.replace!(%TradingSymbol{symbol: symbol, position: :short}, {
+      |> Map.replace(%TradingSymbol{symbol: symbol, position: :long}, {ask_price, ask_qty})
+      |> Map.replace(%TradingSymbol{symbol: symbol, position: :short}, {
         bid_price ** -1,
         bid_qty * bid_price
       })
