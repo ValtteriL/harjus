@@ -350,7 +350,7 @@ defmodule BinanceFixApi do
     Calendar.strftime(DateTime.utc_now(), "%Y%m%d-%H:%M:%S.%f")
   end
 
-  @spec serialize(MessageToSend.t(), DateTime.t(), boolean()) :: binary()
+  @spec serialize(MessageToSend.t(), String.t(), boolean()) :: binary()
   defp serialize(
          %MessageToSend{
            seqnum: seqnum,
