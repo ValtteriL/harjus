@@ -8,7 +8,10 @@ defmodule TradingFeeCalculatorTest do
 
     commission =
       TradingFeeCalculator.total_commission_percentage(
-        [{"BTCUSDT", :long}, {"USDTBTC", :long}],
+        [
+          %TradingSymbol{symbol: "BTCUSDT", position: :long},
+          %TradingSymbol{symbol: "USDTBTC", position: :long}
+        ],
         commission_percentage
       )
 
