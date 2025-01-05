@@ -364,23 +364,19 @@ defmodule BinanceFixApi do
          resend \\ false
        ) do
     header =
-      case resend do
-        false ->
-          [
-            {Tag.sender_comp_id(), sender},
-            {Tag.sending_time(), sending_time},
-            {Tag.target_comp_id(), "SPOT"}
-          ]
-
-        true ->
-          [
-            {Tag.sender_comp_id(), sender},
-            {Tag.poss_dup_flag(), true},
-            {Tag.sending_time(), sending_time},
-            {Tag.orig_sending_time(), orig_sending_time},
-            {Tag.target_comp_id(), "SPOT"}
-          ]
-      end
+      if resend,
+        do: [
+          {Tag.sender_comp_id(), sender},
+          {Tag.poss_dup_flag(), true},
+          {Tag.sending_time(), sending_time},
+          {Tag.orig_sending_time(), orig_sending_time},
+          {Tag.target_comp_id(), "SPOT"}
+        ],
+        else: [
+          {Tag.sender_comp_id(), sender},
+          {Tag.sending_time(), sending_time},
+          {Tag.target_comp_id(), "SPOT"}
+        ]
 
     fields = header ++ extra_header ++ body
 
