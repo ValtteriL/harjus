@@ -3,14 +3,13 @@ defmodule Opportunity do
   Functions for calculating arbitrage opportunities.
   """
 
-  @type trading_symbol() :: {charlist(), :long | :short}
-  @type trading_path() :: [trading_symbol()]
+  @type trading_path() :: [TradingSymbol.t()]
   @type price_qty_tuple() :: {price :: float(), quantity :: float()}
 
   @spec profit(
           trading_path :: trading_path(),
           price_quantity_map :: %{
-            trading_symbol() => price_qty_tuple()
+            TradingSymbol.t() => price_qty_tuple()
           }
         ) :: float()
   @doc """
@@ -26,7 +25,7 @@ defmodule Opportunity do
   @spec capacity(
           trading_path :: trading_path(),
           price_quantity_map :: %{
-            trading_symbol() => price_qty_tuple()
+            TradingSymbol.t() => price_qty_tuple()
           },
           profit :: float()
         ) :: float()

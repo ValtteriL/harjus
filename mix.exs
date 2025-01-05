@@ -1,4 +1,7 @@
 defmodule Harjus.MixProject do
+  @moduledoc """
+  Mix project configuration.
+  """
   use Mix.Project
 
   def project do

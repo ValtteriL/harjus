@@ -18,7 +18,10 @@ jobs:
 
       - name: Activate nix-shell and run mix quality.ci
         run: |
-          nix-shell -A devEnv --run "mix quality.ci"
+          nix-shell -A devEnv --run "mix local.hex --force && mix deps.get && mix quality.ci"
+
+      - name: Clean up deps
+        run: rm -rf deps/*
 
       - name: Run nix-build
         run: nix-build

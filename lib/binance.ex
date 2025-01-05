@@ -12,7 +12,7 @@ defmodule Binance do
     get_symbols_from_url("https://testnet.binance.vision/api/v3/exchangeInfo")
   end
 
-  @spec get_symbols_from_url(url :: charlist()) :: [
+  @spec get_symbols_from_url(url :: String.t()) :: [
           %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
         ]
   defp get_symbols_from_url(url) do

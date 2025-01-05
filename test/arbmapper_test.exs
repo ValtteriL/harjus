@@ -15,12 +15,36 @@ defmodule ArbmapperTest do
     assert trading_paths ==
              {
                [
-                 [{"LTCBTC", :long}, {"ETHLTC", :long}, {"BTCETH", :long}],
-                 [{"BTCETH", :short}, {"ETHLTC", :short}, {"LTCBTC", :short}],
-                 [{"LTCBTC", :short}, {"BTCETH", :short}, {"ETHLTC", :short}],
-                 [{"ETHLTC", :long}, {"BTCETH", :long}, {"LTCBTC", :long}],
-                 [{"ETHLTC", :short}, {"LTCBTC", :short}, {"BTCETH", :short}],
-                 [{"BTCETH", :long}, {"LTCBTC", :long}, {"ETHLTC", :long}]
+                 [
+                   %TradingSymbol{symbol: "LTCBTC", position: :long},
+                   %TradingSymbol{symbol: "ETHLTC", position: :long},
+                   %TradingSymbol{symbol: "BTCETH", position: :long}
+                 ],
+                 [
+                   %TradingSymbol{symbol: "BTCETH", position: :short},
+                   %TradingSymbol{symbol: "ETHLTC", position: :short},
+                   %TradingSymbol{symbol: "LTCBTC", position: :short}
+                 ],
+                 [
+                   %TradingSymbol{symbol: "LTCBTC", position: :short},
+                   %TradingSymbol{symbol: "BTCETH", position: :short},
+                   %TradingSymbol{symbol: "ETHLTC", position: :short}
+                 ],
+                 [
+                   %TradingSymbol{symbol: "ETHLTC", position: :long},
+                   %TradingSymbol{symbol: "BTCETH", position: :long},
+                   %TradingSymbol{symbol: "LTCBTC", position: :long}
+                 ],
+                 [
+                   %TradingSymbol{symbol: "ETHLTC", position: :short},
+                   %TradingSymbol{symbol: "LTCBTC", position: :short},
+                   %TradingSymbol{symbol: "BTCETH", position: :short}
+                 ],
+                 [
+                   %TradingSymbol{symbol: "BTCETH", position: :long},
+                   %TradingSymbol{symbol: "LTCBTC", position: :long},
+                   %TradingSymbol{symbol: "ETHLTC", position: :long}
+                 ]
                ],
                ["LTCBTC", "ETHLTC", "BTCETH"]
              }
@@ -37,8 +61,16 @@ defmodule ArbmapperTest do
 
     assert trading_paths ==
              {[
-                [{"LTCBTC", :long}, {"ETHLTC", :long}, {"BTCETH", :long}],
-                [{"BTCETH", :short}, {"ETHLTC", :short}, {"LTCBTC", :short}]
+                [
+                  %TradingSymbol{symbol: "LTCBTC", position: :long},
+                  %TradingSymbol{symbol: "ETHLTC", position: :long},
+                  %TradingSymbol{symbol: "BTCETH", position: :long}
+                ],
+                [
+                  %TradingSymbol{symbol: "BTCETH", position: :short},
+                  %TradingSymbol{symbol: "ETHLTC", position: :short},
+                  %TradingSymbol{symbol: "LTCBTC", position: :short}
+                ]
               ], ["LTCBTC", "ETHLTC", "BTCETH"]}
   end
 

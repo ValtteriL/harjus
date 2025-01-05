@@ -17,8 +17,7 @@ defmodule Executor do
           pid: pid()
         }
 
-  @type trading_symbol() :: {charlist(), :long | :short}
-  @type opportunity() :: {path :: [trading_symbol()], profit :: float(), capacity :: float()}
+  @type opportunity() :: {path :: [TradingSymbol.t()], profit :: float(), capacity :: float()}
 
   # API
 
@@ -33,7 +32,7 @@ defmodule Executor do
   end
 
   @doc """
-  Send opportunities to Portfolio Manager
+  Send opportunities to Executor
   """
   @spec send_opportunities(
           pid :: pid(),
@@ -44,6 +43,14 @@ defmodule Executor do
           :ok
   def send_opportunities(pid, opportunities) do
     GenServer.cast(pid, {:update_opportunities, opportunities})
+  end
+
+  @doc """
+  Send execution report to Executor
+  """
+
+  def send_execution_report(_pid, execution_report) do
+    Logger.debug("Received execution report: #{inspect(execution_report)}")
   end
 
   # Callbacks

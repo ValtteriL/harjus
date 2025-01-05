@@ -22,18 +22,39 @@ defmodule PortfolioManagerTest do
     refute_receive _
 
     # zero capacity
-    PortfolioManager.send_opportunities(pid, [{[{"BTCUSDT", :long}, {"BTCUSDT", :short}], 1, 0}])
+    PortfolioManager.send_opportunities(pid, [
+      {[
+         %TradingSymbol{symbol: "BTCUSDT", position: :long},
+         %TradingSymbol{symbol: "BTCUSDT", position: :short}
+       ], 1, 0}
+    ])
+
     refute_receive _
 
     # zero profitability
-    PortfolioManager.send_opportunities(pid, [{[{"BTCUSDT", :long}, {"BTCUSDT", :short}], 0, 1}])
+    PortfolioManager.send_opportunities(pid, [
+      {[
+         %TradingSymbol{symbol: "BTCUSDT", position: :long},
+         %TradingSymbol{symbol: "BTCUSDT", position: :short}
+       ], 0, 1}
+    ])
+
     refute_receive _
 
     # 2 profitable opportunities, in wrong order
     PortfolioManager.send_opportunities(pid, [
-      {[{"DOGEBTC", :long}, {"BTCDOGE", :short}], 0.0, 0.0},
-      {[{"ETHUSD", :long}, {"USDETH", :short}], 0.5, 0.5},
-      {[{"BTCUSDT", :long}, {"BTCUSDT", :short}], 1.0, 1.0}
+      {[
+         %TradingSymbol{symbol: "DOGEBTC", position: :long},
+         %TradingSymbol{symbol: "BTCDOGE", position: :short}
+       ], 0.0, 0.0},
+      {[
+         %TradingSymbol{symbol: "ETHUSD", position: :long},
+         %TradingSymbol{symbol: "USDETH", position: :short}
+       ], 0.5, 0.5},
+      {[
+         %TradingSymbol{symbol: "BTCUSDT", position: :long},
+         %TradingSymbol{symbol: "BTCUSDT", position: :short}
+       ], 1.0, 1.0}
     ])
 
     assert_receive {:"$gen_cast",
@@ -41,7 +62,10 @@ defmodule PortfolioManagerTest do
       [
         {
           # path
-          [{"BTCUSDT", :long}, {"BTCUSDT", :short}],
+          [
+            %TradingSymbol{symbol: "BTCUSDT", position: :long},
+            %TradingSymbol{symbol: "BTCUSDT", position: :short}
+          ],
           # profit
           1.0,
           # capacity
@@ -49,7 +73,10 @@ defmodule PortfolioManagerTest do
         },
         {
           # path
-          [{"ETHUSD", :long}, {"USDETH", :short}],
+          [
+            %TradingSymbol{symbol: "ETHUSD", position: :long},
+            %TradingSymbol{symbol: "USDETH", position: :short}
+          ],
           # profit
           0.5,
           # capacity

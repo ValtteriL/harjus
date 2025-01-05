@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"emmet.includeLanguages": {
+			"elixir": "html",
+			"phoenix-heex": "html",
+			"html-eex": "html"
+		},
+		"files.associations": {
+			"*.heex": "phoenix-heex"
+		},
+		"files.autoSave": "afterDelay",
+	}
+}

@@ -4,7 +4,13 @@ defmodule OpportunityWatcherTest do
   doctest OpportunityWatcher
 
   setup do
-    trading_paths = [[{"BTCUSDT", :long}, {"BTCUSDT", :short}]]
+    trading_paths = [
+      [
+        %TradingSymbol{symbol: "BTCUSDT", position: :long},
+        %TradingSymbol{symbol: "BTCUSDT", position: :short}
+      ]
+    ]
+
     # pass self -> receive msgs meant for portfolio manager
     Process.register(self(), PortfolioManager)
     {:ok, pid} = OpportunityWatcher.start_link(trading_paths)
@@ -27,7 +33,10 @@ defmodule OpportunityWatcherTest do
       [
         {
           # path
-          [{"BTCUSDT", :long}, {"BTCUSDT", :short}],
+          [
+            %TradingSymbol{symbol: "BTCUSDT", position: :long},
+            %TradingSymbol{symbol: "BTCUSDT", position: :short}
+          ],
           # profit
           1.0,
           # capacity

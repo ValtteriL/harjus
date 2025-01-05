@@ -23,8 +23,7 @@ defmodule PortfolioManager do
           commission: float()
         }
 
-  @type trading_symbol() :: {charlist(), :long | :short}
-  @type opportunity() :: {path :: [trading_symbol()], profit :: float(), capacity :: float()}
+  @type opportunity() :: {path :: [TradingSymbol.t()], profit :: float(), capacity :: float()}
 
   # API
 

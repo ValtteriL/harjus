@@ -1,0 +1,53 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "mix test",
+      "type": "shell",
+      "command": "mix",
+      "args": [
+        "test",
+        "--no-start",
+        "--color",
+        "--trace"
+      ],
+      "options": {
+        "cwd": "${workspaceRoot}",
+        "requireFiles": [
+          "test/**/test_helper.exs",
+          "test/**/*_test.exs"
+        ]
+      },
+      "problemMatcher": "$mixTestFailure",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "type": "mix",
+      "task": "Build",
+      "problemMatcher": [
+        "$mixCompileError",
+        "$mixCompileWarning"
+      ],
+      "group": "build",
+      "label": "mix: Build"
+    },
+    {
+      "command": "mix",
+      "args": [
+        "quality",
+      ],
+      "problemMatcher": [
+        "$mixCompileError",
+        "$mixCompileWarning"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "label": "mix: Quality"
+    }
+  ]
+}
