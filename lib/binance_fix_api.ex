@@ -191,12 +191,12 @@ defmodule BinanceFixApi do
   @spec market_order_request(integer(), String.t(), TradingSymbol.t(), float()) :: binary()
   def market_order_request(seq_num, sender_comp_id, trading_symbol, quantity) do
     side =
-      case trading_symbol do
-        {_, :long} -> OrderSide.buy()
-        {_, :short} -> OrderSide.sell()
+      case trading_symbol.position do
+        :long -> OrderSide.buy()
+        :short -> OrderSide.sell()
       end
 
-    {symbol, _} = trading_symbol
+    symbol = trading_symbol.symbol
 
     serialize(
       %MessageToSend{

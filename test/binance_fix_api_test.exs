@@ -51,7 +51,13 @@ defmodule BinanceFixApiTest do
     quantity = 1
     symbol = "BTCUSDT"
 
-    msg = BinanceFixApi.market_order_request(1, sender_comp_id, {symbol, :long}, quantity)
+    msg =
+      BinanceFixApi.market_order_request(
+        1,
+        sender_comp_id,
+        %TradingSymbol{symbol: symbol, position: :long},
+        quantity
+      )
 
     # correct msg type
     assert String.contains?(
@@ -182,7 +188,12 @@ defmodule BinanceFixApiTest do
 
     assert {:unknown, _} =
              BinanceFixApi.parse_message(
-               BinanceFixApi.market_order_request(seq, sender_comp_id, {"BTCETH", :short}, 1)
+               BinanceFixApi.market_order_request(
+                 seq,
+                 sender_comp_id,
+                 %TradingSymbol{symbol: "BTCETH", position: :short},
+                 1
+               )
              )
   end
 
