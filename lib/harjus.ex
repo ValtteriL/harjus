@@ -15,9 +15,6 @@ defmodule Harjus do
     Logger.info("Requesting symbols")
     symbols = Binance.get_symbols(Application.fetch_env!(:harjus, :is_prod))
 
-    Logger.debug("Symbols: #{inspect(symbols)}")
-    Logger.debug("Number of symbols: #{length(symbols)}")
-
     Logger.info("Generating trading paths")
 
     {trading_paths, symbol_list} =
@@ -33,10 +30,11 @@ defmodule Harjus do
       "Max trading path length: #{inspect(Application.fetch_env!(:harjus, :max_trading_path_length))}"
     )
 
-    Logger.debug("Trading paths: #{inspect(trading_paths)}")
-    Logger.debug("Symbol list: #{inspect(symbol_list)}")
     Logger.debug("Number of trading paths: #{length(trading_paths)}")
     Logger.debug("Number of symbols: #{length(symbol_list)}")
+
+    Logger.info("Requesting balances")
+    balances = Binance.get_balances(Application.fetch_env!(:harjus, :is_prod))
 
     # multiple book streamers with 200 symbols each
     book_streamers =
@@ -65,6 +63,7 @@ defmodule Harjus do
         # {HelloWorld.Worker, arg}
 
         # processes are started in order
+        {BalanceTracker, balances},
         {Executor, []},
         {PortfolioManager, pm_args},
         {OpportunityWatcher, trading_paths},
