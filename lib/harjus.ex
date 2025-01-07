@@ -11,6 +11,7 @@ defmodule Harjus do
     # discover trading paths
     Logger.info("Starting Harjus")
     Logger.info("Running in production: #{Application.fetch_env!(:harjus, :is_prod)}")
+    Logger.info("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
 
     Logger.info("Requesting symbols")
 
@@ -25,8 +26,6 @@ defmodule Harjus do
         starting_symbols: Application.fetch_env!(:harjus, :start_symbols),
         depth: Application.fetch_env!(:harjus, :max_trading_path_length)
       )
-
-    Logger.debug("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
 
     Logger.debug(
       "Max trading path length: #{inspect(Application.fetch_env!(:harjus, :max_trading_path_length))}"
