@@ -13,7 +13,6 @@ defmodule BookStreamer do
   Start the book streamer
 
   Args:
-    pid: pid of the process to send book updates
     symbols: list of trading symbols to subscribe updates on
     url: websocket url to connect to
   """
@@ -29,8 +28,7 @@ defmodule BookStreamer do
         "wss://testnet.binance.vision/ws/kek"
       end
 
-    pid = Process.whereis(OpportunityWatcher)
-    {:ok, ws_pid} = WebSockex.start_link(url, __MODULE__, %{pid: pid})
+    {:ok, ws_pid} = WebSockex.start_link(url, __MODULE__, %{})
 
     Logger.debug("Subscribing to #{length(symbols)} symbols...")
 
@@ -60,7 +58,6 @@ defmodule BookStreamer do
 
       {:book_ticker_update, {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}} ->
         OpportunityWatcher.update_symbol(
-          state.pid,
           {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}
         )
 

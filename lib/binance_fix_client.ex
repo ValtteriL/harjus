@@ -25,8 +25,6 @@ defmodule BinanceFixClient do
   end
 
   @type state() :: %{
-          # executor pid
-          pid: pid(),
           socket: any(),
           seq_num: integer(),
           sender_comp_id: String.t()
@@ -40,8 +38,6 @@ defmodule BinanceFixClient do
   @impl true
   @spec init(Args.t()) :: {:ok, state()}
   def init(%Args{is_prod: is_prod, api_key: api_key, private_key: private_key}) do
-    pid = Process.whereis(Executor)
-
     {addr, port} =
       if is_prod do
         {~c"fix-oe.binance.com", 9000}
@@ -68,19 +64,18 @@ defmodule BinanceFixClient do
     :ok =
       :ssl.send(socket, BinanceFixApi.logon(seq_num, sender_comp_id, api_key, private_key))
 
-    {:ok, %{pid: pid, socket: socket, seq_num: seq_num + 1, sender_comp_id: sender_comp_id}}
+    {:ok, %{socket: socket, seq_num: seq_num + 1, sender_comp_id: sender_comp_id}}
   end
 
   # API
 
   @spec market_order(
-          pid :: pid(),
           trading_symbol :: TradingSymbol.t(),
           quantity :: float()
         ) :: :ok
-  def market_order(pid, trading_symbol, quantity) do
+  def market_order(trading_symbol, quantity) do
     Logger.debug("Market order: #{trading_symbol} #{quantity}")
-    GenServer.cast(pid, {:market_order, {trading_symbol, quantity}})
+    GenServer.cast(__MODULE__, {:market_order, {trading_symbol, quantity}})
   end
 
   # Callbacks
@@ -141,7 +136,7 @@ defmodule BinanceFixClient do
 
       {:execution_report, execution_report} ->
         # relay to executor
-        Executor.send_execution_report(state.pid, execution_report)
+        Executor.send_execution_report(execution_report)
         {:noreply, state}
 
       {:unknown, message} ->

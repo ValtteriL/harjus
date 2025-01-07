@@ -13,10 +13,6 @@ defmodule Executor do
   require Logger
 
   # TODO
-  @type state() :: %{
-          pid: pid()
-        }
-
   @type opportunity() :: {path :: [TradingSymbol.t()], profit :: float(), capacity :: float()}
 
   # API
@@ -35,63 +31,41 @@ defmodule Executor do
   Send opportunities to Executor
   """
   @spec send_opportunities(
-          pid :: pid(),
           opportunities :: [
             opportunity()
           ]
         ) ::
           :ok
-  def send_opportunities(pid, opportunities) do
-    GenServer.cast(pid, {:update_opportunities, opportunities})
+  def send_opportunities(opportunities) do
+    GenServer.cast(__MODULE__, {:update_opportunities, opportunities})
   end
 
   @doc """
   Send execution report to Executor
   """
 
-  def send_execution_report(_pid, execution_report) do
+  def send_execution_report(execution_report) do
     Logger.debug("Received execution report: #{inspect(execution_report)}")
   end
 
   # Callbacks
 
   @impl true
-  @spec init({pid()}) ::
-          {:ok,
-           %{
-             pid: pid()
-           }}
-  def init(pid) do
-    initial_state = %{
-      pid: pid
-    }
-
+  @spec init(any()) :: {:ok, %{}}
+  def init(_args) do
+    initial_state = %{}
     {:ok, initial_state}
   end
 
   @impl true
-  @spec handle_cast(
-          {:update_opportunities, [opportunity()]},
-          %{
-            pid: pid()
-          }
-        ) ::
-          {:noreply,
-           %{
-             pid: pid()
-           }}
+  @spec handle_cast({:update_opportunities, [opportunity()]}, %{}) :: {:noreply, %{}}
   def handle_cast(
         {:update_opportunities, opportunities},
         state
       ) do
-    # update state
-    new_state = %{
-      pid: state.pid
-    }
-
     # TODO
     Logger.notice("Portfolio Manager: received opportunities #{inspect(opportunities)}")
 
-    {:noreply, new_state}
+    {:noreply, state}
   end
 end
