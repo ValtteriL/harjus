@@ -13,7 +13,9 @@ defmodule Harjus do
     Logger.info("Running in production: #{Application.fetch_env!(:harjus, :is_prod)}")
 
     Logger.info("Requesting symbols")
-    symbols = Binance.get_symbols(Application.fetch_env!(:harjus, :is_prod))
+
+    symbols =
+      Binance.get_symbols(Application.fetch_env!(:harjus, :is_prod))
 
     Logger.info("Generating trading paths")
 
@@ -34,7 +36,13 @@ defmodule Harjus do
     Logger.debug("Number of symbols: #{length(symbol_list)}")
 
     Logger.info("Requesting balances")
-    balances = Binance.get_balances(Application.fetch_env!(:harjus, :is_prod))
+
+    balances =
+      Binance.get_balances(
+        Application.fetch_env!(:harjus, :is_prod),
+        Application.fetch_env!(:harjus, :binance_ed25519_api_key),
+        Application.fetch_env!(:harjus, :binance_ed25519_private_key)
+      )
 
     # multiple book streamers with 200 symbols each
     book_streamers =

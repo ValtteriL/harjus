@@ -335,15 +335,7 @@ defmodule BinanceFixApi do
       ]
       |> Enum.join(<<@soh>>)
 
-    # convert key into usable format
-    decoded_key =
-      Enum.join(["-----BEGIN PRIVATE KEY-----\n", private_key, "\n-----END PRIVATE KEY-----\n"])
-      |> :public_key.pem_decode()
-      |> hd()
-      |> :public_key.pem_entry_decode()
-
-    signature = :public_key.sign(payload, :sha256, decoded_key)
-    Base.encode64(signature)
+    Binance.ed25519_sign(private_key, payload)
   end
 
   defp timestamp do

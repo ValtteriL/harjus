@@ -60,17 +60,26 @@ defmodule Binance do
     # https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#ed25519-keys
 
     # timestamp = unix timestamp in milliseconds
-    timestamp = TODO
+    timestamp = System.os_time(:millisecond)
     params = Map.put(payload, :timestamp, timestamp)
-
     payload = URI.encode_query(params)
+    signature = ed25519_sign(private_key, payload)
 
-    # TODO:
-    signature = base64.b64encode(private_key.sign(payload))
+    URI.encode_query(Map.put(params, :signature, signature))
+  end
 
-    params_with_signature = Map.put(params, :signature, signature)
+  @doc """
+  Sign a payload with the ed25519 private key
+  """
+  @spec ed25519_sign(private_key :: String.t(), payload :: String.t()) :: String.t()
+  def ed25519_sign(private_key, payload) do
+    decoded_key =
+      Enum.join(["-----BEGIN PRIVATE KEY-----\n", private_key, "\n-----END PRIVATE KEY-----\n"])
+      |> :public_key.pem_decode()
+      |> hd()
+      |> :public_key.pem_entry_decode()
 
-    # return
-    URI.encode_query(params_with_signature)
+    signature = :public_key.sign(payload, :sha256, decoded_key)
+    Base.encode64(signature)
   end
 end
