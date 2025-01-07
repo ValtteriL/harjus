@@ -15,7 +15,6 @@ defmodule OpportunityWatcher do
   @type price_qty_tuple() :: {price :: float(), quantity :: float()}
   @type profit_cap_tuple() :: {profit :: float(), capacity :: float()}
   @type state() :: %{
-          pid: pid,
           pathid_to_path_map: %{integer() => trading_path()},
           trading_symbol_to_price_qty_tuple: %{TradingSymbol.t() => price_qty_tuple()},
           symbol_to_pathids_map: %{charlist() => [integer()]},
@@ -28,7 +27,6 @@ defmodule OpportunityWatcher do
   Start the opportunity watcher
 
   Args:
-    pid: pid of the process to send opportunity messages
     trading_paths: list of trading symbol lists to watch for arbitrage opportunities
   """
   @spec start_link(trading_paths :: [trading_path()]) ::
@@ -42,12 +40,9 @@ defmodule OpportunityWatcher do
 
   This triggers a recalculation of arbitrage opportunities
   """
-  @spec update_symbol(
-          pid :: pid(),
-          update :: update()
-        ) :: :ok
-  def update_symbol(pid, update) do
-    GenServer.cast(pid, {:update_symbol, update})
+  @spec update_symbol(update :: update()) :: :ok
+  def update_symbol(update) do
+    GenServer.cast(__MODULE__, {:update_symbol, update})
   end
 
   # Callbacks
@@ -56,8 +51,6 @@ defmodule OpportunityWatcher do
   @spec init(trading_paths :: [trading_path()]) ::
           {:ok, state()}
   def init(trading_paths) do
-    pid = Process.whereis(PortfolioManager)
-
     # initialize pathid to path map
     pathid_to_path_map =
       trading_paths
@@ -96,7 +89,6 @@ defmodule OpportunityWatcher do
       |> Map.new()
 
     initial_state = %{
-      pid: pid,
       pathid_to_path_map: pathid_to_path_map,
       trading_symbol_to_price_qty_tuple: trading_symbol_to_price_qty_tuple,
       symbol_to_pathids_map: symbol_to_pathids_map,
@@ -143,7 +135,6 @@ defmodule OpportunityWatcher do
 
     # update state
     new_state = %{
-      pid: state.pid,
       pathid_to_path_map: state.pathid_to_path_map,
       symbol_to_pathids_map: state.symbol_to_pathids_map,
       trading_symbol_to_price_qty_tuple: new_trading_symbol_to_price_qty_tuple,
@@ -162,7 +153,7 @@ defmodule OpportunityWatcher do
 
     # send any opportunities to Portfolio Manager
     if length(opportunities) > 0 do
-      PortfolioManager.send_opportunities(new_state.pid, opportunities)
+      PortfolioManager.send_opportunities(opportunities)
     end
 
     {:noreply, new_state}

@@ -16,13 +16,13 @@ defmodule PortfolioManagerTest do
     %{pid: pid}
   end
 
-  test "profitable opportunities passed to executor", %{pid: pid} do
+  test "profitable opportunities passed to executor", %{pid: _pid} do
     # empty opportunities
-    PortfolioManager.send_opportunities(pid, [])
+    PortfolioManager.send_opportunities([])
     refute_receive _
 
     # zero capacity
-    PortfolioManager.send_opportunities(pid, [
+    PortfolioManager.send_opportunities([
       {[
          %TradingSymbol{symbol: "BTCUSDT", position: :long},
          %TradingSymbol{symbol: "BTCUSDT", position: :short}
@@ -32,7 +32,7 @@ defmodule PortfolioManagerTest do
     refute_receive _
 
     # zero profitability
-    PortfolioManager.send_opportunities(pid, [
+    PortfolioManager.send_opportunities([
       {[
          %TradingSymbol{symbol: "BTCUSDT", position: :long},
          %TradingSymbol{symbol: "BTCUSDT", position: :short}
@@ -42,7 +42,7 @@ defmodule PortfolioManagerTest do
     refute_receive _
 
     # 2 profitable opportunities, in wrong order
-    PortfolioManager.send_opportunities(pid, [
+    PortfolioManager.send_opportunities([
       {[
          %TradingSymbol{symbol: "DOGEBTC", position: :long},
          %TradingSymbol{symbol: "BTCDOGE", position: :short}

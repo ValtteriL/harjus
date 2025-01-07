@@ -11,12 +11,12 @@ defmodule Harjus do
     # discover trading paths
     Logger.info("Starting Harjus")
     Logger.info("Running in production: #{Application.fetch_env!(:harjus, :is_prod)}")
+    Logger.info("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
 
     Logger.info("Requesting symbols")
-    symbols = Binance.get_symbols(Application.fetch_env!(:harjus, :is_prod))
 
-    Logger.debug("Symbols: #{inspect(symbols)}")
-    Logger.debug("Number of symbols: #{length(symbols)}")
+    symbols =
+      Binance.get_symbols(Application.fetch_env!(:harjus, :is_prod))
 
     Logger.info("Generating trading paths")
 
@@ -27,16 +27,21 @@ defmodule Harjus do
         depth: Application.fetch_env!(:harjus, :max_trading_path_length)
       )
 
-    Logger.debug("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
-
     Logger.debug(
       "Max trading path length: #{inspect(Application.fetch_env!(:harjus, :max_trading_path_length))}"
     )
 
-    Logger.debug("Trading paths: #{inspect(trading_paths)}")
-    Logger.debug("Symbol list: #{inspect(symbol_list)}")
     Logger.debug("Number of trading paths: #{length(trading_paths)}")
     Logger.debug("Number of symbols: #{length(symbol_list)}")
+
+    Logger.info("Requesting balances")
+
+    balances =
+      Binance.get_balances(
+        Application.fetch_env!(:harjus, :is_prod),
+        Application.fetch_env!(:harjus, :binance_ed25519_api_key),
+        Application.fetch_env!(:harjus, :binance_ed25519_private_key)
+      )
 
     # multiple book streamers with 200 symbols each
     book_streamers =
@@ -65,6 +70,7 @@ defmodule Harjus do
         # {HelloWorld.Worker, arg}
 
         # processes are started in order
+        {BalanceTracker, balances},
         {Executor, []},
         {PortfolioManager, pm_args},
         {OpportunityWatcher, trading_paths},

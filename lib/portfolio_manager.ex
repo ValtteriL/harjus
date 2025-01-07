@@ -16,8 +16,6 @@ defmodule PortfolioManager do
           commission: float()
         }
   @type state() :: %{
-          # executor pid
-          pid: pid(),
           min_profit_percentage: float(),
           min_capacity: float(),
           commission: float()
@@ -44,14 +42,13 @@ defmodule PortfolioManager do
   Send opportunities to Portfolio Manager
   """
   @spec send_opportunities(
-          pid :: pid(),
           opportunities :: [
             opportunity()
           ]
         ) ::
           :ok
-  def send_opportunities(pid, opportunities) do
-    GenServer.cast(pid, {:update_opportunities, opportunities})
+  def send_opportunities(opportunities) do
+    GenServer.cast(__MODULE__, {:update_opportunities, opportunities})
   end
 
   # Callbacks
@@ -60,10 +57,7 @@ defmodule PortfolioManager do
   @spec init(args :: pm_args()) ::
           {:ok, state()}
   def init(args) do
-    pid = Process.whereis(Executor)
-
     initial_state = %{
-      pid: pid,
       min_profit_percentage: args.min_profit_percentage,
       min_capacity: args.min_capacity,
       commission: args.commission
@@ -103,7 +97,7 @@ defmodule PortfolioManager do
 
     # send any profitable opportunities to Executor
     if length(profitable_opportunities) > 0 do
-      Executor.send_opportunities(state.pid, profitable_opportunities)
+      Executor.send_opportunities(profitable_opportunities)
     end
 
     {:noreply, state}
