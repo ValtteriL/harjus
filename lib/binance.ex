@@ -5,7 +5,7 @@ defmodule Binance do
           %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
         ]
   def get_symbols(true) do
-    get_symbols_from_url("https://api.binance.com/api/v3/exchangeInfo")
+    get_symbols_from_url("https://data-api.binance.vision/api/v3/exchangeInfo")
   end
 
   def get_symbols(false) do
