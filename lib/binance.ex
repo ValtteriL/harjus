@@ -38,6 +38,16 @@ defmodule Binance do
     get_balances_from_url("https://testnet.binance.vision/api/v3/account", api_key, private_key)
   end
 
+  # get symbol prices from Binance
+  @spec get_symbol_prices() :: %{String.t() => float()}
+  def get_symbol_prices do
+    {:ok, resp} = Req.get("https://data-api.binance.vision/api/v3/ticker/price")
+
+    resp.body
+    |> Enum.map(fn x -> {x["symbol"], String.to_float(x["price"])} end)
+    |> Enum.into(%{})
+  end
+
   @spec get_balances_from_url(url :: String.t(), api_key :: String.t(), private_key :: String.t()) ::
           %{String.t() => float()}
   defp get_balances_from_url(url, api_key, private_key) do

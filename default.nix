@@ -18,7 +18,7 @@ let
       # environment variables
       ELIXIR_ERL_OPTIONS = "+fnu";
       LC_ALL = "C";
-      ERL_AFLAGS = "-kernel shell_history enabled";
+      ERL_AFLAGS = "-kernel shell_history enabled -enable-feature maybe_expr";
 
       # packages to be installed in env
       packages = with pkgs; [
@@ -56,7 +56,7 @@ let
           Env = [
             "ELIXIR_ERL_OPTIONS=+fnu"
             "LC_ALL=C"
-            "ERL_AFLAGS='-kernel shell_history enabled'"
+            "ERL_AFLAGS='-kernel shell_history enabled -enable-feature maybe_expr'"
           ];
         };
 
