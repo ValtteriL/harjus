@@ -18,6 +18,11 @@ defmodule Harjus do
     symbols =
       Binance.get_symbols(Application.fetch_env!(:harjus, :is_prod))
 
+    Logger.info("Requesting prices")
+
+    prices =
+      Binance.get_symbol_prices()
+
     Logger.info("Generating trading paths")
 
     {trading_paths, symbol_list} =
@@ -61,7 +66,8 @@ defmodule Harjus do
     pm_args = %{
       min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
       min_capacity: Application.fetch_env!(:harjus, :min_capacity),
-      commission: Application.fetch_env!(:harjus, :commission)
+      commission: Application.fetch_env!(:harjus, :commission),
+      relative_asset_values: AssetComparer.calculate_relative_values(symbols, prices, "BTC")
     }
 
     children =

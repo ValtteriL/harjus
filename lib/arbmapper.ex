@@ -67,12 +67,16 @@ defmodule Arbmapper do
     for s <- symbols do
       :digraph.add_edge(graph, s[:baseAsset], s[:quoteAsset], %TradingSymbol{
         symbol: s[:symbol],
-        position: :long
+        position: :long,
+        base_asset: s[:baseAsset],
+        quote_asset: s[:quoteAsset]
       })
 
       :digraph.add_edge(graph, s[:quoteAsset], s[:baseAsset], %TradingSymbol{
         symbol: s[:symbol],
-        position: :short
+        position: :short,
+        base_asset: s[:quoteAsset],
+        quote_asset: s[:baseAsset]
       })
     end
 

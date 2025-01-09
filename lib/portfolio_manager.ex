@@ -13,13 +13,10 @@ defmodule PortfolioManager do
   @type pm_args() :: %{
           min_profit_percentage: float(),
           min_capacity: float(),
-          commission: float()
+          commission: float(),
+          relative_asset_values: %{String.t() => float()}
         }
-  @type state() :: %{
-          min_profit_percentage: float(),
-          min_capacity: float(),
-          commission: float()
-        }
+  @type state() :: pm_args()
 
   @type opportunity() :: {path :: [TradingSymbol.t()], profit :: float(), capacity :: float()}
 
@@ -54,16 +51,9 @@ defmodule PortfolioManager do
   # Callbacks
 
   @impl true
-  @spec init(args :: pm_args()) ::
-          {:ok, state()}
+  @spec init(args :: pm_args()) :: {:ok, state()}
   def init(args) do
-    initial_state = %{
-      min_profit_percentage: args.min_profit_percentage,
-      min_capacity: args.min_capacity,
-      commission: args.commission
-    }
-
-    {:ok, initial_state}
+    {:ok, args}
   end
 
   @impl true
@@ -90,9 +80,12 @@ defmodule PortfolioManager do
         profit - commission >= state.min_profit_percentage &&
           capacity >= state.min_capacity
       end)
-      # sort by profit * capacity
-      |> Enum.sort(fn {_, profit1, cap1}, {_, profit2, cap2} ->
-        profit2 * cap2 < profit1 * cap1
+      # sort by profit * capacity in relative asset value
+      |> Enum.sort(fn {[firstsymbol1 | _], profit1, cap1}, {[firstsymbol2 | _], profit2, cap2} ->
+        value1 = state.relative_asset_values[firstsymbol1.quote_asset]
+        value2 = state.relative_asset_values[firstsymbol2.quote_asset]
+
+        value2 * profit2 * cap2 < value1 * profit1 * cap1
       end)
 
     # send any profitable opportunities to Executor
