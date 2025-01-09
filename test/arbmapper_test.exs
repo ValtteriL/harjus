@@ -16,6 +16,16 @@ defmodule ArbmapperTest do
              {
                [
                  [
+                   %TradingSymbol{symbol: "LTCBTC", position: :long},
+                   %TradingSymbol{symbol: "ETHLTC", position: :long},
+                   %TradingSymbol{symbol: "BTCETH", position: :long}
+                 ],
+                 [
+                   %TradingSymbol{symbol: "BTCETH", position: :short},
+                   %TradingSymbol{symbol: "ETHLTC", position: :short},
+                   %TradingSymbol{symbol: "LTCBTC", position: :short}
+                 ],
+                 [
                    %TradingSymbol{symbol: "LTCBTC", position: :short},
                    %TradingSymbol{symbol: "BTCETH", position: :short},
                    %TradingSymbol{symbol: "ETHLTC", position: :short}
@@ -25,16 +35,6 @@ defmodule ArbmapperTest do
                    %TradingSymbol{symbol: "BTCETH", position: :long},
                    %TradingSymbol{symbol: "LTCBTC", position: :long}
                  ],
-                 [
-                  %TradingSymbol{symbol: "LTCBTC", position: :long},
-                  %TradingSymbol{symbol: "ETHLTC", position: :long},
-                  %TradingSymbol{symbol: "BTCETH", position: :long}
-                ],
-                [
-                  %TradingSymbol{symbol: "BTCETH", position: :short},
-                  %TradingSymbol{symbol: "ETHLTC", position: :short},
-                  %TradingSymbol{symbol: "LTCBTC", position: :short}
-                ],
                  [
                    %TradingSymbol{symbol: "ETHLTC", position: :short},
                    %TradingSymbol{symbol: "LTCBTC", position: :short},
@@ -46,7 +46,7 @@ defmodule ArbmapperTest do
                    %TradingSymbol{symbol: "ETHLTC", position: :long}
                  ]
                ],
-               ["LTCBTC", "BTCETH", "ETHLTC"]
+               ["LTCBTC", "ETHLTC", "BTCETH"]
              }
   end
 
