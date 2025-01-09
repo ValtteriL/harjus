@@ -1,7 +1,7 @@
 { pkgs ? import
     (fetchTarball {
-      url = "https://github.com/NixOS/nixpkgs/archive/b30f97d8c32d804d2d832ee837d0f1ca0695faa5.tar.gz";
-      sha256 = "sha256:11af9sclvfq1477khps9g9anra5x2xnhl7527c99j1ld01wg33jk";
+      url = "https://github.com/NixOS/nixpkgs/archive/3f0a8ac25fb674611b98089ca3a5dd6480175751.tar.gz";
+      sha256 = "sha256:10i7fllqjzq171afzhdf2d9r1pk9irvmq5n55h92rc47vlaabvr4";
     })
     { }
 }:
@@ -45,7 +45,7 @@ let
 
     # docker packaging derivation
     docker = pkgs.dockerTools.buildLayeredImage {
-      name = "charlie.koti.kontu:32000/harjus";
+      name = "harjus";
       created = "now";
       config =
         {

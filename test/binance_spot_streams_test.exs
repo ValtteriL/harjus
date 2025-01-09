@@ -13,7 +13,7 @@ defmodule BinanceSpotStreamsTest do
     subscription_msg = BinanceSpotStreams.subscribe_message(symbols)
 
     assert subscription_msg ==
-             "{\"method\":\"SUBSCRIBE\",\"params\":[\"btceth@bookTicker\",\"ethltc@bookTicker\",\"ltcbtc@bookTicker\"],\"id\":\"sub_id\"}"
+             "{\"params\":[\"btceth@bookTicker\",\"ethltc@bookTicker\",\"ltcbtc@bookTicker\"],\"method\":\"SUBSCRIBE\",\"id\":\"sub_id\"}"
   end
 
   test "parses subscription ack" do

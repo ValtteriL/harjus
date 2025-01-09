@@ -56,3 +56,9 @@ docker image push $IMAGE
 # run in k8s
 kubectl run -i -t harjus --image=$IMAGE --restart=Never --env "START_SYMBOLS=BNB" --env "PROD=true"
 ```
+
+### Deploy QA (testnet, home lab k8s)
+
+```bash
+./scripts/build-and-release-on-k8s.sh
+```
