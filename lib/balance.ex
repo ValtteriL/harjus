@@ -1,4 +1,4 @@
-defmodule BalanceTracker do
+defmodule Balance do
   @moduledoc """
   This process is responsible for tracking the balance of all assets
   """
@@ -6,7 +6,7 @@ defmodule BalanceTracker do
   use Agent
 
   @doc """
-  Starts the balance tracker process
+  Starts the balance process
   """
 
   @spec start_link(balance_map :: %{String.t() => float()}) :: {:ok, pid}

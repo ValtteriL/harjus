@@ -70,7 +70,7 @@ defmodule Harjus do
         # {HelloWorld.Worker, arg}
 
         # processes are started in order
-        {BalanceTracker, balances},
+        {Balance, balances},
         {Executor, []},
         {PortfolioManager, pm_args},
         {OpportunityWatcher, trading_paths},
