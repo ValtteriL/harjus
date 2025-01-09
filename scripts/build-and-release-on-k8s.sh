@@ -9,6 +9,8 @@ nix-build
 
 IMAGE=`docker image load -q < result-2|awk '{print $3}'`
 
+docker tag $IMAGE charlie.koti.kontu:32000/harjus:`git describe --match=NeVeRmAtCh --always --abbrev=12 --dirty`
+
 # push to k8s registry
 docker image push $IMAGE
 
