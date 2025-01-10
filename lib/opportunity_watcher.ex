@@ -18,7 +18,10 @@ defmodule OpportunityWatcher do
           pathid_to_path_map: %{integer() => trading_path()},
           trading_symbol_to_price_qty_tuple: %{TradingSymbol.t() => price_qty_tuple()},
           symbol_to_pathids_map: %{charlist() => [integer()]},
-          pathid_to_profit_cap_tuple: %{integer() => profit_cap_tuple()}
+          pathid_to_profit_cap_tuple: %{integer() => profit_cap_tuple()},
+          symbol_to_trading_symbol_map: %{
+            charlist() => %{long: TradingSymbol.t(), short: TradingSymbol.t()}
+          }
         }
 
   # API
@@ -66,6 +69,30 @@ defmodule OpportunityWatcher do
       |> Enum.map(fn x -> {x, {1.0, 0.0}} end)
       |> Map.new()
 
+    # initialize symbol to trading symbol map
+    symbol_to_trading_symbol_map =
+      trading_paths
+      |> List.flatten()
+      |> Enum.uniq()
+      |> Enum.map(fn x ->
+        {x.symbol,
+         %{
+           long: %TradingSymbol{
+             symbol: x.symbol,
+             position: :long,
+             base_asset: x.base_asset,
+             quote_asset: x.quote_asset
+           },
+           short: %TradingSymbol{
+             symbol: x.symbol,
+             position: :short,
+             base_asset: x.quote_asset,
+             quote_asset: x.base_asset
+           }
+         }}
+      end)
+      |> Map.new()
+
     # initialize symbol to pathids map
     symbol_to_pathids_map =
       trading_paths
@@ -92,7 +119,8 @@ defmodule OpportunityWatcher do
       pathid_to_path_map: pathid_to_path_map,
       trading_symbol_to_price_qty_tuple: trading_symbol_to_price_qty_tuple,
       symbol_to_pathids_map: symbol_to_pathids_map,
-      pathid_to_profit_cap_tuple: pathid_to_profit_cap_tuple
+      pathid_to_profit_cap_tuple: pathid_to_profit_cap_tuple,
+      symbol_to_trading_symbol_map: symbol_to_trading_symbol_map
     }
 
     {:ok, initial_state}
@@ -108,8 +136,8 @@ defmodule OpportunityWatcher do
     # update price and quantity on long + short
     new_trading_symbol_to_price_qty_tuple =
       state.trading_symbol_to_price_qty_tuple
-      |> Map.replace(%TradingSymbol{symbol: symbol, position: :long}, {ask_price, ask_qty})
-      |> Map.replace(%TradingSymbol{symbol: symbol, position: :short}, {
+      |> Map.replace(state.symbol_to_trading_symbol_map[symbol].long, {ask_price, ask_qty})
+      |> Map.replace(state.symbol_to_trading_symbol_map[symbol].short, {
         bid_price ** -1,
         bid_qty * bid_price
       })
