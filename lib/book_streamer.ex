@@ -57,7 +57,7 @@ defmodule BookStreamer do
         :ok
 
       {:book_ticker_update, {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}} ->
-        OpportunityWatcher.update_symbol(
+        OpportunityWatcher.price_update(
           {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}
         )
 
