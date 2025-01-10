@@ -131,7 +131,7 @@ defmodule OpportunityWatcher.Impl do
 
     # send any opportunities to Portfolio Manager
     if length(opportunities) > 0 do
-      PortfolioManager.send_opportunities(opportunities)
+      PortfolioManager.opportunity_update(opportunities)
     end
 
     new_state
