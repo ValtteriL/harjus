@@ -55,7 +55,7 @@ defmodule BinanceFixApiTest do
       BinanceFixApi.market_order_request(
         1,
         sender_comp_id,
-        %TradingSymbol{symbol: symbol, position: :long},
+        %TradingSymbol{symbol: symbol, position: :long, base_asset: "BTC", quote_asset: "USDT"},
         quantity
       )
 
@@ -191,7 +191,12 @@ defmodule BinanceFixApiTest do
                BinanceFixApi.market_order_request(
                  seq,
                  sender_comp_id,
-                 %TradingSymbol{symbol: "BTCETH", position: :short},
+                 %TradingSymbol{
+                   symbol: "BTCETH",
+                   position: :short,
+                   base_asset: "ETH",
+                   quote_asset: "BTC"
+                 },
                  1
                )
              )

@@ -19,7 +19,7 @@ defmodule BinanceFixApi do
   defmodule ExecutionReport do
     @moduledoc "execution report type"
 
-    @type t :: %ExecutionReport{}
+    @type t :: %__MODULE__{}
 
     @enforce_keys [
       :order_status,

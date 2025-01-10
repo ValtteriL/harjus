@@ -6,8 +6,18 @@ defmodule OpportunityWatcherTest do
   setup do
     trading_paths = [
       [
-        %TradingSymbol{symbol: "BTCUSDT", position: :long},
-        %TradingSymbol{symbol: "BTCUSDT", position: :short}
+        %TradingSymbol{
+          symbol: "BTCUSDT",
+          position: :long,
+          base_asset: "BTC",
+          quote_asset: "USDT"
+        },
+        %TradingSymbol{
+          symbol: "BTCUSDT",
+          position: :short,
+          base_asset: "USDT",
+          quote_asset: "BTC"
+        }
       ]
     ]
 

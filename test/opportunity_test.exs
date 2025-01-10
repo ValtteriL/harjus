@@ -5,15 +5,19 @@ defmodule OpportunityTest do
 
   test "correct profit and capacity with 2 symbols" do
     path = [
-      %TradingSymbol{symbol: "BTCUSDT", position: :long},
-      %TradingSymbol{symbol: "USDTBTC", position: :long}
+      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"},
+      %TradingSymbol{symbol: "USDTBTC", position: :long, base_asset: "USDT", quote_asset: "BTC"}
     ]
 
     price_table = %{
-      %TradingSymbol{symbol: "BTCUSDT", position: :long} => {10_000.0, 1.0},
-      %TradingSymbol{symbol: "USDTBTC", position: :long} => {0.00005, 1337.1337},
-      %TradingSymbol{symbol: "ETHBTC", position: :long} => {0.1, 10.0},
-      %TradingSymbol{symbol: "USDTETH", position: :long} => {0.001, 1.0}
+      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"} =>
+        {10_000.0, 1.0},
+      %TradingSymbol{symbol: "USDTBTC", position: :long, base_asset: "USDT", quote_asset: "BTC"} =>
+        {0.00005, 1337.1337},
+      %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"} =>
+        {0.1, 10.0},
+      %TradingSymbol{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"} =>
+        {0.001, 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -25,13 +29,15 @@ defmodule OpportunityTest do
 
   test "correct profit and capacity with 2 symbols (long + short)" do
     path = [
-      %TradingSymbol{symbol: "BTCUSDT", position: :long},
-      %TradingSymbol{symbol: "BTCUSDT", position: :short}
+      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"},
+      %TradingSymbol{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"}
     ]
 
     price_table = %{
-      %TradingSymbol{symbol: "BTCUSDT", position: :long} => {1.0, 1.0},
-      %TradingSymbol{symbol: "BTCUSDT", position: :short} => {2.0 ** -1, 1.0}
+      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"} =>
+        {1.0, 1.0},
+      %TradingSymbol{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"} =>
+        {2.0 ** -1, 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -43,15 +49,18 @@ defmodule OpportunityTest do
 
   test "correct profit and capacity with 3 symbols" do
     path = [
-      %TradingSymbol{symbol: "BTCUSDT", position: :long},
-      %TradingSymbol{symbol: "ETHBTC", position: :long},
-      %TradingSymbol{symbol: "USDTETH", position: :long}
+      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"},
+      %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"},
+      %TradingSymbol{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"}
     ]
 
     price_table = %{
-      %TradingSymbol{symbol: "BTCUSDT", position: :long} => {10_000.0, 1.0},
-      %TradingSymbol{symbol: "ETHBTC", position: :long} => {0.1, 10.0},
-      %TradingSymbol{symbol: "USDTETH", position: :long} => {0.001, 1.0}
+      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"} =>
+        {10_000.0, 1.0},
+      %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"} =>
+        {0.1, 10.0},
+      %TradingSymbol{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"} =>
+        {0.001, 1.0}
     }
 
     profit = Opportunity.profit(path, price_table)
@@ -77,13 +86,34 @@ defmodule OpportunityTest do
     assert_raise ArgumentError, fn ->
       Opportunity.profit(
         [
-          %TradingSymbol{symbol: "BTCUSDT", position: :long},
-          %TradingSymbol{symbol: "ETHBTC", position: :long},
-          %TradingSymbol{symbol: "USDTETH", position: :long}
+          %TradingSymbol{
+            symbol: "BTCUSDT",
+            position: :long,
+            base_asset: "BTC",
+            quote_asset: "USDT"
+          },
+          %TradingSymbol{
+            symbol: "ETHBTC",
+            position: :long,
+            base_asset: "ETH",
+            quote_asset: "BTC"
+          },
+          %TradingSymbol{
+            symbol: "USDTETH",
+            position: :long,
+            base_asset: "USDT",
+            quote_asset: "ETH"
+          }
         ],
         %{
-          %TradingSymbol{symbol: "BTCUSDT", position: :long} => {10_000.0, 1.0},
-          %TradingSymbol{symbol: "ETHBTC", position: :long} => {0.1, 10.0}
+          %TradingSymbol{
+            symbol: "BTCUSDT",
+            position: :long,
+            base_asset: "BTC",
+            quote_asset: "USDT"
+          } => {10_000.0, 1.0},
+          %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"} =>
+            {0.1, 10.0}
         }
       )
     end

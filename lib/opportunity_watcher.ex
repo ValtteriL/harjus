@@ -74,6 +74,8 @@ defmodule OpportunityWatcher do
       trading_paths
       |> List.flatten()
       |> Enum.uniq()
+      # take only longs, otherwise we'll have duplicates
+      |> Enum.filter(fn x -> x.position == :long end)
       |> Enum.map(fn x ->
         {x.symbol,
          %{
@@ -166,7 +168,8 @@ defmodule OpportunityWatcher do
       pathid_to_path_map: state.pathid_to_path_map,
       symbol_to_pathids_map: state.symbol_to_pathids_map,
       trading_symbol_to_price_qty_tuple: new_trading_symbol_to_price_qty_tuple,
-      pathid_to_profit_cap_tuple: new_pathid_to_profit_cap_tuple
+      pathid_to_profit_cap_tuple: new_pathid_to_profit_cap_tuple,
+      symbol_to_trading_symbol_map: state.symbol_to_trading_symbol_map
     }
 
     # calculate arbitrage opportunities

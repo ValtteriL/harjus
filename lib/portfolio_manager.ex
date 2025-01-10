@@ -10,13 +10,25 @@ defmodule PortfolioManager do
   use GenServer
   require Logger
 
-  @type pm_args() :: %{
-          min_profit_percentage: float(),
-          min_capacity: float(),
-          commission: float(),
-          relative_asset_values: %{String.t() => float()}
-        }
-  @type state() :: pm_args()
+  defmodule Args do
+    @moduledoc """
+    Struct for PortfolioManager arguments
+    """
+    @enforce_keys [:min_profit_percentage, :min_capacity, :commission, :relative_asset_values]
+    defstruct [
+      :min_profit_percentage,
+      :min_capacity,
+      :commission,
+      :relative_asset_values
+    ]
+
+    @type t :: %__MODULE__{
+            min_profit_percentage: float(),
+            min_capacity: float(),
+            commission: float(),
+            relative_asset_values: %{String.t() => float()}
+          }
+  end
 
   @type opportunity() :: {path :: [TradingSymbol.t()], profit :: float(), capacity :: float()}
 
@@ -30,7 +42,7 @@ defmodule PortfolioManager do
     min_capacity : minimum capacity to consider an opportunity
     commission : standard trading commission
   """
-  @spec start_link(args :: pm_args()) :: :ignore | {:error, any()} | {:ok, pid()}
+  @spec start_link(args :: Args.t()) :: :ignore | {:error, any()} | {:ok, pid()}
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
@@ -51,7 +63,7 @@ defmodule PortfolioManager do
   # Callbacks
 
   @impl true
-  @spec init(args :: pm_args()) :: {:ok, state()}
+  @spec init(args :: Args.t()) :: {:ok, Args.t()}
   def init(args) do
     {:ok, args}
   end
@@ -59,9 +71,9 @@ defmodule PortfolioManager do
   @impl true
   @spec handle_cast(
           {:update_opportunities, [opportunity()]},
-          state()
+          Args.t()
         ) ::
-          {:noreply, state()}
+          {:noreply, Args.t()}
   def handle_cast(
         {:update_opportunities, opportunities},
         state
@@ -82,8 +94,8 @@ defmodule PortfolioManager do
       end)
       # sort by profit * capacity in relative asset value
       |> Enum.sort(fn {[firstsymbol1 | _], profit1, cap1}, {[firstsymbol2 | _], profit2, cap2} ->
-        value1 = state.relative_asset_values[firstsymbol1.quote_asset]
-        value2 = state.relative_asset_values[firstsymbol2.quote_asset]
+        value1 = Map.get(state.relative_asset_values, firstsymbol1.quote_asset, 0.0)
+        value2 = Map.get(state.relative_asset_values, firstsymbol2.quote_asset, 0.0)
 
         value2 * profit2 * cap2 < value1 * profit1 * cap1
       end)

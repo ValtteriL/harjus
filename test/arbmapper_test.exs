@@ -16,34 +16,124 @@ defmodule ArbmapperTest do
              {
                [
                  [
-                   %TradingSymbol{symbol: "LTCBTC", position: :long},
-                   %TradingSymbol{symbol: "ETHLTC", position: :long},
-                   %TradingSymbol{symbol: "BTCETH", position: :long}
+                   %TradingSymbol{
+                     symbol: "LTCBTC",
+                     position: :long,
+                     base_asset: "LTC",
+                     quote_asset: "BTC"
+                   },
+                   %TradingSymbol{
+                     symbol: "ETHLTC",
+                     position: :long,
+                     base_asset: "ETH",
+                     quote_asset: "LTC"
+                   },
+                   %TradingSymbol{
+                     symbol: "BTCETH",
+                     position: :long,
+                     base_asset: "BTC",
+                     quote_asset: "ETH"
+                   }
                  ],
                  [
-                   %TradingSymbol{symbol: "BTCETH", position: :short},
-                   %TradingSymbol{symbol: "ETHLTC", position: :short},
-                   %TradingSymbol{symbol: "LTCBTC", position: :short}
+                   %TradingSymbol{
+                     symbol: "BTCETH",
+                     position: :short,
+                     base_asset: "ETH",
+                     quote_asset: "BTC"
+                   },
+                   %TradingSymbol{
+                     symbol: "ETHLTC",
+                     position: :short,
+                     base_asset: "LTC",
+                     quote_asset: "ETH"
+                   },
+                   %TradingSymbol{
+                     symbol: "LTCBTC",
+                     position: :short,
+                     base_asset: "BTC",
+                     quote_asset: "LTC"
+                   }
                  ],
                  [
-                   %TradingSymbol{symbol: "LTCBTC", position: :short},
-                   %TradingSymbol{symbol: "BTCETH", position: :short},
-                   %TradingSymbol{symbol: "ETHLTC", position: :short}
+                   %TradingSymbol{
+                     symbol: "LTCBTC",
+                     position: :short,
+                     base_asset: "BTC",
+                     quote_asset: "LTC"
+                   },
+                   %TradingSymbol{
+                     symbol: "BTCETH",
+                     position: :short,
+                     base_asset: "ETH",
+                     quote_asset: "BTC"
+                   },
+                   %TradingSymbol{
+                     symbol: "ETHLTC",
+                     position: :short,
+                     base_asset: "LTC",
+                     quote_asset: "ETH"
+                   }
                  ],
                  [
-                   %TradingSymbol{symbol: "ETHLTC", position: :long},
-                   %TradingSymbol{symbol: "BTCETH", position: :long},
-                   %TradingSymbol{symbol: "LTCBTC", position: :long}
+                   %TradingSymbol{
+                     symbol: "ETHLTC",
+                     position: :long,
+                     base_asset: "ETH",
+                     quote_asset: "LTC"
+                   },
+                   %TradingSymbol{
+                     symbol: "BTCETH",
+                     position: :long,
+                     base_asset: "BTC",
+                     quote_asset: "ETH"
+                   },
+                   %TradingSymbol{
+                     symbol: "LTCBTC",
+                     position: :long,
+                     base_asset: "LTC",
+                     quote_asset: "BTC"
+                   }
                  ],
                  [
-                   %TradingSymbol{symbol: "ETHLTC", position: :short},
-                   %TradingSymbol{symbol: "LTCBTC", position: :short},
-                   %TradingSymbol{symbol: "BTCETH", position: :short}
+                   %TradingSymbol{
+                     symbol: "ETHLTC",
+                     position: :short,
+                     base_asset: "LTC",
+                     quote_asset: "ETH"
+                   },
+                   %TradingSymbol{
+                     symbol: "LTCBTC",
+                     position: :short,
+                     base_asset: "BTC",
+                     quote_asset: "LTC"
+                   },
+                   %TradingSymbol{
+                     symbol: "BTCETH",
+                     position: :short,
+                     base_asset: "ETH",
+                     quote_asset: "BTC"
+                   }
                  ],
                  [
-                   %TradingSymbol{symbol: "BTCETH", position: :long},
-                   %TradingSymbol{symbol: "LTCBTC", position: :long},
-                   %TradingSymbol{symbol: "ETHLTC", position: :long}
+                   %TradingSymbol{
+                     symbol: "BTCETH",
+                     position: :long,
+                     base_asset: "BTC",
+                     quote_asset: "ETH"
+                   },
+                   %TradingSymbol{
+                     symbol: "LTCBTC",
+                     position: :long,
+                     base_asset: "LTC",
+                     quote_asset: "BTC"
+                   },
+                   %TradingSymbol{
+                     symbol: "ETHLTC",
+                     position: :long,
+                     base_asset: "ETH",
+                     quote_asset: "LTC"
+                   }
                  ]
                ],
                ["LTCBTC", "ETHLTC", "BTCETH"]
@@ -62,14 +152,44 @@ defmodule ArbmapperTest do
     assert trading_paths ==
              {[
                 [
-                  %TradingSymbol{symbol: "LTCBTC", position: :long},
-                  %TradingSymbol{symbol: "ETHLTC", position: :long},
-                  %TradingSymbol{symbol: "BTCETH", position: :long}
+                  %TradingSymbol{
+                    symbol: "LTCBTC",
+                    position: :long,
+                    base_asset: "LTC",
+                    quote_asset: "BTC"
+                  },
+                  %TradingSymbol{
+                    symbol: "ETHLTC",
+                    position: :long,
+                    base_asset: "ETH",
+                    quote_asset: "LTC"
+                  },
+                  %TradingSymbol{
+                    symbol: "BTCETH",
+                    position: :long,
+                    base_asset: "BTC",
+                    quote_asset: "ETH"
+                  }
                 ],
                 [
-                  %TradingSymbol{symbol: "BTCETH", position: :short},
-                  %TradingSymbol{symbol: "ETHLTC", position: :short},
-                  %TradingSymbol{symbol: "LTCBTC", position: :short}
+                  %TradingSymbol{
+                    symbol: "BTCETH",
+                    position: :short,
+                    base_asset: "ETH",
+                    quote_asset: "BTC"
+                  },
+                  %TradingSymbol{
+                    symbol: "ETHLTC",
+                    position: :short,
+                    base_asset: "LTC",
+                    quote_asset: "ETH"
+                  },
+                  %TradingSymbol{
+                    symbol: "LTCBTC",
+                    position: :short,
+                    base_asset: "BTC",
+                    quote_asset: "LTC"
+                  }
                 ]
               ], ["LTCBTC", "ETHLTC", "BTCETH"]}
   end
