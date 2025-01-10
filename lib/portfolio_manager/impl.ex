@@ -41,9 +41,9 @@ defmodule PortfolioManager.Impl do
         value2 * profit2 * cap2 < value1 * profit1 * cap1
       end)
 
-    # send any profitable opportunities to Executor
+    # send best profitable opportunity to Executor
     if length(profitable_opportunities) > 0 do
-      Executor.send_opportunities(profitable_opportunities)
+      Executor.execute_opportunity(hd(profitable_opportunities))
     end
 
     state

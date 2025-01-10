@@ -99,50 +99,27 @@ defmodule PortfolioManagerTest do
     ])
 
     assert_receive {:"$gen_cast",
-     {:update_opportunities,
-      [
-        {
-          # path
-          [
-            %TradingSymbol{
-              symbol: "BTCUSDT",
-              position: :long,
-              base_asset: "BTC",
-              quote_asset: "USDT"
-            },
-            %TradingSymbol{
-              symbol: "BTCUSDT",
-              position: :short,
-              base_asset: "USDT",
-              quote_asset: "BTC"
-            }
-          ],
-          # profit
-          1.0,
-          # capacity
-          1.0
-        },
-        {
-          # path
-          [
-            %TradingSymbol{
-              symbol: "ETHUSD",
-              position: :long,
-              base_asset: "ETH",
-              quote_asset: "USD"
-            },
-            %TradingSymbol{
-              symbol: "USDETH",
-              position: :short,
-              base_asset: "USD",
-              quote_asset: "ETH"
-            }
-          ],
-          # profit
-          0.5,
-          # capacity
-          0.5
-        }
-      ]}}
+     {:execute_opportunity,
+      {
+        # path
+        [
+          %TradingSymbol{
+            symbol: "BTCUSDT",
+            position: :long,
+            base_asset: "BTC",
+            quote_asset: "USDT"
+          },
+          %TradingSymbol{
+            symbol: "BTCUSDT",
+            position: :short,
+            base_asset: "USDT",
+            quote_asset: "BTC"
+          }
+        ],
+        # profit
+        1.0,
+        # capacity
+        1.0
+      }}}
   end
 end
