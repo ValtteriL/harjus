@@ -3,7 +3,9 @@ defmodule OpportunityWatcher.Impl do
   Opportunity watcher implementation.
   """
 
+  alias OpportunityWatcher.Opportunity
   alias OpportunityWatcher.State
+
   @type update() :: OpportunityWatcher.update()
 
   @spec new(trading_paths :: [TradingSymbol.t()]) :: State.t()

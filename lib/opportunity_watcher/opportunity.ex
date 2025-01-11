@@ -1,4 +1,4 @@
-defmodule Opportunity do
+defmodule OpportunityWatcher.Opportunity do
   @moduledoc """
   Functions for calculating arbitrage opportunities.
   """

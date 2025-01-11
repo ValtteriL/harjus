@@ -1,5 +1,8 @@
-defmodule OpportunityTest do
+defmodule OpportunityWatcher.OpportunityTest do
   @moduledoc "Tests for Opportunity"
+
+  alias OpportunityWatcher.Opportunity
+
   use ExUnit.Case, async: true
   doctest Opportunity
 
