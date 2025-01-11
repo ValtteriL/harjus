@@ -9,6 +9,7 @@ defmodule PortfolioManager.Impl do
 
   require Logger
   alias PortfolioManager.Args
+  alias PortfolioManager.TradingFeeCalculator
 
   @type opportunity() :: PortfolioManager.opportunity()
 

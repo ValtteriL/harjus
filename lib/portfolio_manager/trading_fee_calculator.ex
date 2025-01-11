@@ -1,4 +1,4 @@
-defmodule TradingFeeCalculator do
+defmodule PortfolioManager.TradingFeeCalculator do
   @moduledoc """
   Functions for calculating trading fees
   """

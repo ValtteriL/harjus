@@ -1,5 +1,8 @@
-defmodule TradingFeeCalculatorTest do
+defmodule PortfolioManager.TradingFeeCalculatorTest do
   @moduledoc "Tests for TradingFeeCalculator"
+
+  alias PortfolioManager.TradingFeeCalculator
+
   use ExUnit.Case
   doctest TradingFeeCalculator
 
