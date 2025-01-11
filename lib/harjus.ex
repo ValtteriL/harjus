@@ -22,15 +22,6 @@ defmodule Harjus do
         Application.fetch_env!(:harjus, :max_trading_path_length)
       )
 
-    Logger.info("Requesting balances")
-
-    balances =
-      Binance.get_balances(
-        Application.fetch_env!(:harjus, :is_prod),
-        Application.fetch_env!(:harjus, :binance_ed25519_api_key),
-        Application.fetch_env!(:harjus, :binance_ed25519_private_key)
-      )
-
     # multiple book streamers with 200 symbols each
     book_streamers =
       symbol_list
@@ -43,16 +34,13 @@ defmodule Harjus do
       end)
       |> elem(0)
 
-    Logger.debug("Book streamers: #{inspect(book_streamers)}")
-    Logger.debug("Number of book streamers: #{length(book_streamers)}")
-
     children =
       [
         # Starts a worker by calling: HelloWorld.Worker.start_link(arg)
         # {HelloWorld.Worker, arg}
 
         # processes are started in order
-        {Balance, balances},
+        {Balance, AccountData.get_balances()},
         {Executor, []},
         {PortfolioManager,
          %PortfolioManager.Args{

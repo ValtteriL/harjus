@@ -1,4 +1,4 @@
-defmodule Binance do
+defmodule AccountData.Binance do
   @moduledoc "Binance specific api calls"
 
   # Get account balances from Binance
@@ -43,11 +43,8 @@ defmodule Binance do
     URI.encode_query(Map.put(params, :signature, signature))
   end
 
-  @doc """
-  Sign a payload with the ed25519 private key
-  """
   @spec ed25519_sign(private_key :: String.t(), payload :: String.t()) :: String.t()
-  def ed25519_sign(private_key, payload) do
+  defp ed25519_sign(private_key, payload) do
     decoded_key =
       Enum.join(["-----BEGIN PRIVATE KEY-----\n", private_key, "\n-----END PRIVATE KEY-----\n"])
       |> :public_key.pem_decode()

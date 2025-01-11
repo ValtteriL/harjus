@@ -335,7 +335,19 @@ defmodule BinanceFixApi do
       ]
       |> Enum.join(<<@soh>>)
 
-    Binance.ed25519_sign(private_key, payload)
+    ed25519_sign(private_key, payload)
+  end
+
+  @spec ed25519_sign(private_key :: String.t(), payload :: String.t()) :: String.t()
+  defp ed25519_sign(private_key, payload) do
+    decoded_key =
+      Enum.join(["-----BEGIN PRIVATE KEY-----\n", private_key, "\n-----END PRIVATE KEY-----\n"])
+      |> :public_key.pem_decode()
+      |> hd()
+      |> :public_key.pem_entry_decode()
+
+    signature = :public_key.sign(payload, :sha256, decoded_key)
+    Base.encode64(signature)
   end
 
   defp timestamp do
