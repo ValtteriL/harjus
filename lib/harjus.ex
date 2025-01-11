@@ -46,13 +46,6 @@ defmodule Harjus do
     Logger.debug("Book streamers: #{inspect(book_streamers)}")
     Logger.debug("Number of book streamers: #{length(book_streamers)}")
 
-    pm_args = %{
-      min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
-      min_capacity: Application.fetch_env!(:harjus, :min_capacity),
-      commission: Application.fetch_env!(:harjus, :commission),
-      relative_asset_values: MarketData.relative_values(market_data)
-    }
-
     children =
       [
         # Starts a worker by calling: HelloWorld.Worker.start_link(arg)
@@ -61,7 +54,13 @@ defmodule Harjus do
         # processes are started in order
         {Balance, balances},
         {Executor, []},
-        {PortfolioManager, pm_args},
+        {PortfolioManager,
+         %PortfolioManager.Args{
+           min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
+           min_capacity: Application.fetch_env!(:harjus, :min_capacity),
+           commission: Application.fetch_env!(:harjus, :commission),
+           relative_asset_values: MarketData.relative_values(market_data)
+         }},
         {OpportunityWatcher, trading_paths},
         {BinanceFixClient,
          %BinanceFixClient.Args{
