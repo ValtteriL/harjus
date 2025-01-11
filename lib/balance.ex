@@ -3,6 +3,8 @@ defmodule Balance do
   This process is responsible for tracking the balance of all assets
   """
 
+  alias Balance.Impl
+
   use Agent
 
   @doc """
@@ -11,7 +13,7 @@ defmodule Balance do
 
   @spec start_link(balance_map :: %{String.t() => float()}) :: {:ok, pid}
   def start_link(balance_map) do
-    Agent.start_link(fn -> balance_map end, name: __MODULE__)
+    Agent.start_link(fn -> Impl.new(balance_map) end, name: __MODULE__)
   end
 
   @doc """
@@ -19,7 +21,7 @@ defmodule Balance do
   """
   @spec get_balance(asset :: String.t()) :: float()
   def get_balance(asset) do
-    Agent.get(__MODULE__, fn state -> Map.get(state, asset, 0) end)
+    Agent.get(__MODULE__, fn state -> Impl.get_balance(state, asset) end)
   end
 
   @doc """
@@ -27,6 +29,6 @@ defmodule Balance do
   """
   @spec update_balance(asset :: String.t(), amount :: float()) :: :ok
   def update_balance(asset, amount) do
-    Agent.update(__MODULE__, fn state -> Map.update(state, asset, amount, &(&1 + amount)) end)
+    Agent.update(__MODULE__, fn state -> Impl.update_balance(state, asset, amount) end)
   end
 end
