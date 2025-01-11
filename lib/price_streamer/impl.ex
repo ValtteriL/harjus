@@ -6,6 +6,8 @@ defmodule PriceStreamer.Impl do
   Relays the best ask price and quantity for each symbol to opportunity watcher
   """
 
+  alias PriceStreamer.BinanceSpotStreams
+
   use WebSockex
   require Logger
 

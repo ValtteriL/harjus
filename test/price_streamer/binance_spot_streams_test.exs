@@ -1,5 +1,8 @@
-defmodule BinanceSpotStreamsTest do
+defmodule PriceStreamer.BinanceSpotStreamsTest do
   @moduledoc "Tests for BinanceSpotStreams"
+
+  alias PriceStreamer.BinanceSpotStreams
+
   use ExUnit.Case
   doctest BinanceSpotStreams
 

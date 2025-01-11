@@ -1,4 +1,4 @@
-defmodule BinanceSpotStreams do
+defmodule PriceStreamer.BinanceSpotStreams do
   @moduledoc """
   Functions for parsing and constructing Binance Spot Websocket messages.
 
