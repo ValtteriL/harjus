@@ -4,6 +4,7 @@ defmodule ReservedSymbols do
   """
 
   use Agent
+  alias ReservedSymbols.Impl
 
   @doc """
   Starts the reserved symbols process
@@ -11,7 +12,7 @@ defmodule ReservedSymbols do
 
   @spec start_link() :: {:ok, pid}
   def start_link do
-    Agent.start_link(fn -> MapSet.new() end, name: __MODULE__)
+    Agent.start_link(fn -> Impl.new() end, name: __MODULE__)
   end
 
   @doc """
@@ -19,7 +20,7 @@ defmodule ReservedSymbols do
   """
   @spec reserved?(symbol :: String.t()) :: boolean()
   def reserved?(symbol) do
-    Agent.get(__MODULE__, fn state -> MapSet.member?(state, symbol) end)
+    Agent.get(__MODULE__, fn state -> Impl.reserved?(state, symbol) end)
   end
 
   @doc """
@@ -27,7 +28,7 @@ defmodule ReservedSymbols do
   """
   @spec reserve(symbol :: String.t()) :: :ok
   def reserve(symbol) do
-    Agent.update(__MODULE__, fn state -> MapSet.put(state, symbol) end)
+    Agent.update(__MODULE__, fn state -> Impl.reserve(state, symbol) end)
   end
 
   @doc """
@@ -35,6 +36,6 @@ defmodule ReservedSymbols do
   """
   @spec release(symbol :: String.t()) :: :ok
   def release(symbol) do
-    Agent.update(__MODULE__, fn state -> MapSet.delete(state, symbol) end)
+    Agent.update(__MODULE__, fn state -> Impl.release(state, symbol) end)
   end
 end
