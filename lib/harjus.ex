@@ -54,7 +54,7 @@ defmodule Harjus do
       |> Enum.chunk_every(200)
       |> Enum.map_reduce(1, fn partial_list, acc ->
         {Supervisor.child_spec(
-           {BookStreamer, {partial_list, Application.fetch_env!(:harjus, :is_prod)}},
+           {PriceStreamer, {partial_list, Application.fetch_env!(:harjus, :is_prod)}},
            id: String.to_atom("book_streamer_#{acc}")
          ), acc + 1}
       end)

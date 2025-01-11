@@ -1,4 +1,4 @@
-defmodule BookStreamer do
+defmodule PriceStreamer.Impl do
   @moduledoc """
   Process for streaming order book updates for trading symbols
 
@@ -11,15 +11,7 @@ defmodule BookStreamer do
 
   @doc """
   Start the book streamer
-
-  Args:
-    symbols: list of trading symbols to subscribe updates on
-    url: websocket url to connect to
   """
-  @spec start_link({
-          symbols :: [String.t()],
-          is_prod :: bool()
-        }) :: {:ok, pid()}
   def start_link({symbols, is_prod}) do
     url =
       if is_prod do
