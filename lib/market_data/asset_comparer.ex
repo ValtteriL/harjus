@@ -1,4 +1,4 @@
-defmodule AssetComparer do
+defmodule MarketData.AssetComparer do
   @moduledoc """
   Module for calculating relative value for assets
 

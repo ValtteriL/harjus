@@ -1,5 +1,8 @@
-defmodule ArbmapperTest do
+defmodule MarketData.ArbmapperTest do
   @moduledoc "Tests for Arbmapper"
+
+  alias MarketData.Arbmapper
+
   use ExUnit.Case
   doctest Arbmapper
 

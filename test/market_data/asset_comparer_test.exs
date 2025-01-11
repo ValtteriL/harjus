@@ -1,7 +1,9 @@
-defmodule AssetComparerTest do
+defmodule MarketData.AssetComparerTest do
   @moduledoc """
   Tests for the Balance module
   """
+  alias MarketData.AssetComparer
+
   use ExUnit.Case
   doctest AssetComparer
 

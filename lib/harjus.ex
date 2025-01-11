@@ -13,31 +13,14 @@ defmodule Harjus do
     Logger.info("Running in production: #{Application.fetch_env!(:harjus, :is_prod)}")
     Logger.info("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
 
-    Logger.info("Requesting symbols")
-
-    symbols =
-      Binance.get_symbols(Application.fetch_env!(:harjus, :is_prod))
-
-    Logger.info("Requesting prices")
-
-    prices =
-      Binance.get_symbol_prices()
-
-    Logger.info("Generating trading paths")
+    market_data = MarketData.new(Application.fetch_env!(:harjus, :is_prod))
 
     {trading_paths, symbol_list} =
-      Arbmapper.generate_trading_paths(
-        symbols,
-        starting_symbols: Application.fetch_env!(:harjus, :start_symbols),
-        depth: Application.fetch_env!(:harjus, :max_trading_path_length)
+      MarketData.trading_paths(
+        market_data,
+        Application.fetch_env!(:harjus, :start_symbols),
+        Application.fetch_env!(:harjus, :max_trading_path_length)
       )
-
-    Logger.debug(
-      "Max trading path length: #{inspect(Application.fetch_env!(:harjus, :max_trading_path_length))}"
-    )
-
-    Logger.debug("Number of trading paths: #{length(trading_paths)}")
-    Logger.debug("Number of symbols: #{length(symbol_list)}")
 
     Logger.info("Requesting balances")
 
@@ -67,7 +50,7 @@ defmodule Harjus do
       min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
       min_capacity: Application.fetch_env!(:harjus, :min_capacity),
       commission: Application.fetch_env!(:harjus, :commission),
-      relative_asset_values: AssetComparer.calculate_relative_values(symbols, prices, "BTC")
+      relative_asset_values: MarketData.relative_values(market_data)
     }
 
     children =
@@ -88,14 +71,10 @@ defmodule Harjus do
          }}
       ] ++ book_streamers
 
-    Logger.debug("Children: #{inspect(children)}")
-    Logger.debug("Number of children: #{length(children)}")
-
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :rest_for_one, name: Harjus]
 
-    Logger.info("Starting child processes")
     Supervisor.start_link(children, opts)
   end
 end

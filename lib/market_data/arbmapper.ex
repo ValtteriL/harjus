@@ -1,4 +1,4 @@
-defmodule Arbmapper do
+defmodule MarketData.Arbmapper do
   @moduledoc """
   Module for finding arbitrage opportunities.
   """
