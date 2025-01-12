@@ -1,5 +1,8 @@
-defmodule BinanceFixApiTest do
+defmodule TradeClient.BinanceFixApiTest do
   @moduledoc "Tests for BinanceFixApi"
+
+  alias TradeClient.BinanceFixApi
+
   use ExUnit.Case
   doctest BinanceFixApi
 

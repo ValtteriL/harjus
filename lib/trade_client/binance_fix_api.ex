@@ -1,4 +1,4 @@
-defmodule BinanceFixApi do
+defmodule TradeClient.BinanceFixApi do
   @moduledoc """
   Functions for constructing & parsing Binance FIX API messages
 

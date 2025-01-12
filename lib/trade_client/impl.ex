@@ -1,28 +1,14 @@
-defmodule BinanceFixClient do
+defmodule TradeClient.Impl do
   @moduledoc """
-  Binance FIX client
+  Implementation of the trade client
 
   Manages FIX session state, makes Trade requests, relays executionreports to executor
 
   https://github.com/binance/binance-spot-api-docs/blob/master/fix-api.md
   """
 
-  use GenServer
   require Logger
-
-  defmodule Args do
-    @moduledoc """
-    Binance FIX client arguments
-    """
-    @enforce_keys [:is_prod, :api_key, :private_key]
-    defstruct [:api_key, :private_key, is_prod: false]
-
-    @type t :: %__MODULE__{
-            is_prod: bool(),
-            api_key: String.t(),
-            private_key: String.t()
-          }
-  end
+  alias TradeClient.BinanceFixApi
 
   @type state() :: %{
           socket: any(),
@@ -30,14 +16,11 @@ defmodule BinanceFixClient do
           sender_comp_id: String.t()
         }
 
-  @spec start_link(args :: Args.t()) :: :ignore | {:error, any()} | {:ok, pid()}
-  def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: __MODULE__)
-  end
+  def new do
+    is_prod = Application.fetch_env!(:harjus, :is_prod)
+    api_key = Application.fetch_env!(:harjus, :binance_ed25519_api_key)
+    private_key = Application.fetch_env!(:harjus, :binance_ed25519_private_key)
 
-  @impl true
-  @spec init(Args.t()) :: {:ok, state()}
-  def init(%Args{is_prod: is_prod, api_key: api_key, private_key: private_key}) do
     {addr, port} =
       if is_prod do
         {~c"fix-oe.binance.com", 9000}
@@ -67,22 +50,9 @@ defmodule BinanceFixClient do
     {:ok, %{socket: socket, seq_num: seq_num + 1, sender_comp_id: sender_comp_id}}
   end
 
-  # API
-
-  @spec market_order(
-          trading_symbol :: TradingSymbol.t(),
-          quantity :: float()
-        ) :: :ok
-  def market_order(trading_symbol, quantity) do
-    Logger.debug("Market order: #{trading_symbol} #{quantity}")
-    GenServer.cast(__MODULE__, {:market_order, {trading_symbol, quantity}})
-  end
-
-  # Callbacks
-
-  # send market order
-  @impl true
-  def handle_cast({:market_order, {trading_symbol, quantity}}, state) do
+  @spec market_order(state :: state(), trading_symbol :: TradingSymbol.t(), quantity :: float()) ::
+          state()
+  def market_order(state, trading_symbol, quantity) do
     :ok =
       :ssl.send(
         state.socket,
@@ -94,18 +64,16 @@ defmodule BinanceFixClient do
         )
       )
 
-    {:noreply, %{state | seq_num: state.seq_num + 1}}
+    %{state | seq_num: state.seq_num + 1}
   end
 
-  # handle messages from FIX server
-  @impl true
-  def handle_info({:ssl, _socket, data}, state) do
+  def handle_fix_message(state, data) do
     case BinanceFixApi.parse_message(data) do
       {:heartbeat} ->
         # ignore
 
         Logger.debug("FIX heartbeat")
-        {:noreply, state}
+        state
 
       {:test_request, test_request_id} ->
         # Respond with heartbeat
@@ -118,17 +86,16 @@ defmodule BinanceFixClient do
             BinanceFixApi.heartbeat(state.seq_num, state.sender_comp_id, test_request_id)
           )
 
-        {:noreply, %{state | seq_num: state.seq_num + 1}}
+        %{state | seq_num: state.seq_num + 1}
 
       {:reject, reason} ->
         # this is fatal - bug in request
         raise "FIX request rejected: #{reason}"
-        :ok
 
       {:logon} ->
         # ignore
         Logger.info("FIX logon successful")
-        {:noreply, state}
+        state
 
       {:news} ->
         # this is fatal - must reconnect
@@ -137,15 +104,12 @@ defmodule BinanceFixClient do
       {:execution_report, execution_report} ->
         # relay to executor
         Executor.send_execution_report(execution_report)
-        {:noreply, state}
+        state
 
       {:unknown, message} ->
         Logger.error("Unknown message")
         Logger.debug(inspect(message))
-        {:noreply, state}
+        state
     end
   end
-
-  def handle_info({:ssl_closed, _}, state), do: {:stop, :connection_closed, state}
-  def handle_info({:ssl_error, _}, state), do: {:stop, :connection_error, state}
 end

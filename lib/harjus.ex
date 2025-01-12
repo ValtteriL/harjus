@@ -50,12 +50,7 @@ defmodule Harjus do
            relative_asset_values: MarketData.relative_values(market_data)
          }},
         {OpportunityWatcher, trading_paths},
-        {BinanceFixClient,
-         %BinanceFixClient.Args{
-           api_key: Application.fetch_env!(:harjus, :binance_ed25519_api_key),
-           private_key: Application.fetch_env!(:harjus, :binance_ed25519_private_key),
-           is_prod: Application.fetch_env!(:harjus, :is_prod)
-         }}
+        {TradeClient, []}
       ] ++ book_streamers
 
     # See https://hexdocs.pm/elixir/Supervisor.html
