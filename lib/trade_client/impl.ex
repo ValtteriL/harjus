@@ -10,16 +10,26 @@ defmodule TradeClient.Impl do
   require Logger
   alias TradeClient.BinanceFixApi
 
-  @order_filled BinanceFixApi.ExecutionReport.OrderStatus.filled()
+  defmodule State do
+    @moduledoc """
+    State of the trade client
+    """
 
-  @type state() :: %{
-          socket: any(),
-          seq_num: integer(),
-          sender_comp_id: String.t(),
-          outstanding_execution_reports: %{
-            (client_order_id :: String.t()) => from :: any()
+    @enforce_keys [:socket, :seq_num, :sender_comp_id, :outstanding_execution_reports]
+
+    @type t :: %{
+            socket: any(),
+            seq_num: integer(),
+            sender_comp_id: String.t(),
+            outstanding_execution_reports: %{
+              (client_order_id :: String.t()) => from :: any()
+            }
           }
-        }
+
+    defstruct [:socket, :seq_num, :sender_comp_id, :outstanding_execution_reports]
+  end
+
+  @order_filled BinanceFixApi.ExecutionReport.OrderStatus.filled()
 
   def new do
     is_prod = Application.fetch_env!(:harjus, :is_prod)
@@ -52,16 +62,21 @@ defmodule TradeClient.Impl do
     :ok =
       :ssl.send(socket, BinanceFixApi.logon(seq_num, sender_comp_id, api_key, private_key))
 
-    {:ok, %{socket: socket, seq_num: seq_num + 1, sender_comp_id: sender_comp_id}}
+    %State{
+      socket: socket,
+      seq_num: seq_num + 1,
+      sender_comp_id: sender_comp_id,
+      outstanding_execution_reports: %{}
+    }
   end
 
   @spec market_order(
-          state :: state(),
+          state :: State.t(),
           from :: any(),
           trading_symbol :: TradingSymbol.t(),
           quantity :: float()
         ) ::
-          state()
+          State.t()
   def market_order(state, from, trading_symbol, quantity) do
     client_order_id = :crypto.strong_rand_bytes(8) |> Base.encode16() |> String.downcase()
 
@@ -78,7 +93,7 @@ defmodule TradeClient.Impl do
       )
 
     # store request id with from to be able to relay execution report
-    %{
+    %State{
       state
       | seq_num: state.seq_num + 1,
         outstanding_execution_reports:
