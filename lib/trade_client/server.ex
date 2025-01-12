@@ -7,18 +7,18 @@ defmodule TradeClient.Server do
 
   alias TradeClient.Impl
 
-  @impl true
+  @impl GenServer
   def init(args) do
     {:ok, args}
   end
 
-  @impl true
-  def handle_cast({:market_order, {trading_symbol, quantity}}, state) do
-    {:noreply, Impl.market_order(state, trading_symbol, quantity)}
+  @impl GenServer
+  def handle_call({:market_order, {trading_symbol, quantity}}, from, state) do
+    {:noreply, Impl.market_order(state, from, trading_symbol, quantity)}
   end
 
   # handle messages from FIX server
-  @impl true
+  @impl GenServer
   def handle_info({:ssl, _socket, data}, state) do
     {:noreply, Impl.handle_fix_message(state, data)}
   end

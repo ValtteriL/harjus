@@ -3,6 +3,7 @@ defmodule TradeClient do
   Client for placing trades
   """
 
+  alias TradeClient.BinanceFixApi.ExecutionReport
   alias TradeClient.Impl
   alias TradeClient.Server
 
@@ -13,8 +14,8 @@ defmodule TradeClient do
   @spec market_order(
           trading_symbol :: TradingSymbol.t(),
           quantity :: float()
-        ) :: :ok
+        ) :: execution_report :: ExecutionReport.t()
   def market_order(trading_symbol, quantity) do
-    GenServer.cast(__MODULE__, {:market_order, {trading_symbol, quantity}})
+    GenServer.call(__MODULE__, {:market_order, {trading_symbol, quantity}})
   end
 end

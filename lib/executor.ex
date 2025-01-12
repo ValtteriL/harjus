@@ -28,11 +28,4 @@ defmodule Executor do
   def execute_opportunity(opportunity) do
     GenServer.cast(__MODULE__, {:execute_opportunity, opportunity})
   end
-
-  @doc """
-  Send execution report to Executor
-  """
-  def send_execution_report(execution_report) do
-    GenServer.cast(__MODULE__, {:send_execution_report, execution_report})
-  end
 end

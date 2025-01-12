@@ -27,11 +27,4 @@ defmodule Executor.Server do
   def handle_cast({:execute_opportunity, opportunity}, state) do
     {:noreply, Impl.execute_opportunity(state, opportunity)}
   end
-
-  @impl true
-  @spec handle_cast({:send_execution_report, report :: any()}, state :: any()) ::
-          {:noreply, any()}
-  def handle_cast({:send_execution_report, report}, state) do
-    {:noreply, Impl.send_execution_report(state, report)}
-  end
 end

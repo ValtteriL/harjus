@@ -53,13 +53,15 @@ defmodule TradeClient.BinanceFixApiTest do
     sender_comp_id = "asd123"
     quantity = 1
     symbol = "BTCUSDT"
+    client_order_id = "some_id"
 
     msg =
       BinanceFixApi.market_order_request(
         1,
         sender_comp_id,
         %TradingSymbol{symbol: symbol, position: :long, base_asset: "BTC", quote_asset: "USDT"},
-        quantity
+        quantity,
+        client_order_id
       )
 
     # correct msg type
@@ -139,6 +141,7 @@ defmodule TradeClient.BinanceFixApiTest do
     side = "4"
     fee_currency = "USDT"
     fee_amount = 5.0
+    client_order_id = "some_id"
 
     report_fields =
       [
@@ -148,7 +151,8 @@ defmodule TradeClient.BinanceFixApiTest do
         pair(BinanceFixApi.Tag.symbol(), symbol),
         pair(BinanceFixApi.Tag.side(), side),
         pair(BinanceFixApi.Tag.fee_currency(), fee_currency),
-        pair(BinanceFixApi.Tag.fee_amount(), fee_amount)
+        pair(BinanceFixApi.Tag.fee_amount(), fee_amount),
+        pair(BinanceFixApi.Tag.cl_order_id(), client_order_id)
       ]
       |> Enum.join("|")
 
@@ -163,7 +167,8 @@ defmodule TradeClient.BinanceFixApiTest do
               symbol: symbol,
               side: side,
               fee_currency: fee_currency,
-              fee_amount: fee_amount
+              fee_amount: fee_amount,
+              client_order_id: client_order_id
             }} ==
              BinanceFixApi.parse_message(str_message_to_binary(msg))
   end
@@ -177,6 +182,7 @@ defmodule TradeClient.BinanceFixApiTest do
     id = "some_id"
     sender_comp_id = "asd123"
     seq = 1
+    client_order_id = "some_client_id"
 
     pubkey = "sBRXrJx2DsOraMXOaUovEhgVRcjOvCtQwnWj8VxkOh1xqboS02SPGfKi2h8spZJb"
     privkey = "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
@@ -200,7 +206,8 @@ defmodule TradeClient.BinanceFixApiTest do
                    base_asset: "ETH",
                    quote_asset: "BTC"
                  },
-                 1
+                 1,
+                 client_order_id
                )
              )
   end

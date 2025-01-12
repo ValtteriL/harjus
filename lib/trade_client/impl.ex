@@ -10,10 +10,15 @@ defmodule TradeClient.Impl do
   require Logger
   alias TradeClient.BinanceFixApi
 
+  @order_filled BinanceFixApi.ExecutionReport.OrderStatus.filled()
+
   @type state() :: %{
           socket: any(),
           seq_num: integer(),
-          sender_comp_id: String.t()
+          sender_comp_id: String.t(),
+          outstanding_execution_reports: %{
+            (client_order_id :: String.t()) => from :: any()
+          }
         }
 
   def new do
@@ -50,9 +55,16 @@ defmodule TradeClient.Impl do
     {:ok, %{socket: socket, seq_num: seq_num + 1, sender_comp_id: sender_comp_id}}
   end
 
-  @spec market_order(state :: state(), trading_symbol :: TradingSymbol.t(), quantity :: float()) ::
+  @spec market_order(
+          state :: state(),
+          from :: any(),
+          trading_symbol :: TradingSymbol.t(),
+          quantity :: float()
+        ) ::
           state()
-  def market_order(state, trading_symbol, quantity) do
+  def market_order(state, from, trading_symbol, quantity) do
+    client_order_id = :crypto.strong_rand_bytes(8) |> Base.encode16() |> String.downcase()
+
     :ok =
       :ssl.send(
         state.socket,
@@ -60,56 +72,71 @@ defmodule TradeClient.Impl do
           state.seq_num,
           state.sender_comp_id,
           trading_symbol,
-          quantity
+          quantity,
+          client_order_id
         )
+      )
+
+    # store request id with from to be able to relay execution report
+    %{
+      state
+      | seq_num: state.seq_num + 1,
+        outstanding_execution_reports:
+          Map.put(state.outstanding_execution_reports, client_order_id, from)
+    }
+  end
+
+  def handle_fix_message(state, data) do
+    react_to_fix_message(state, BinanceFixApi.parse_message(data))
+  end
+
+  defp react_to_fix_message(state, {:heartbeat}), do: state
+
+  defp react_to_fix_message(state, {:test_request, test_request_id}) do
+    :ok =
+      :ssl.send(
+        state.socket,
+        BinanceFixApi.heartbeat(state.seq_num, state.sender_comp_id, test_request_id)
       )
 
     %{state | seq_num: state.seq_num + 1}
   end
 
-  def handle_fix_message(state, data) do
-    case BinanceFixApi.parse_message(data) do
-      {:heartbeat} ->
-        # ignore
+  defp react_to_fix_message(_s, {:reject, reason}), do: raise("FIX request rejected: #{reason}")
+  defp react_to_fix_message(_s, {:news}), do: raise("FIX connection will be reset")
 
-        Logger.debug("FIX heartbeat")
-        state
+  defp react_to_fix_message(state, {:logon}) do
+    Logger.info("FIX logon successful")
+    state
+  end
 
-      {:test_request, test_request_id} ->
-        # Respond with heartbeat
+  defp react_to_fix_message(state, {:execution_report, execution_report}) do
+    # if complete, reply to executor
+    Logger.info("Execution report: #{execution_report}")
 
-        Logger.debug("FIX test request: #{test_request_id}")
+    # if order is filled, relay to executor
+    case execution_report.order_status do
+      @order_filled ->
+        from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)
+        GenServer.reply(from, execution_report)
 
-        :ok =
-          :ssl.send(
-            state.socket,
-            BinanceFixApi.heartbeat(state.seq_num, state.sender_comp_id, test_request_id)
-          )
+        %{
+          state
+          | outstanding_execution_reports:
+              Map.delete(
+                state.outstanding_execution_reports,
+                execution_report.client_order_id
+              )
+        }
 
-        %{state | seq_num: state.seq_num + 1}
-
-      {:reject, reason} ->
-        # this is fatal - bug in request
-        raise "FIX request rejected: #{reason}"
-
-      {:logon} ->
-        # ignore
-        Logger.info("FIX logon successful")
-        state
-
-      {:news} ->
-        # this is fatal - must reconnect
-        raise "FIX connection will be reset"
-
-      {:execution_report, execution_report} ->
-        # relay to executor
-        Executor.send_execution_report(execution_report)
-        state
-
-      {:unknown, message} ->
-        Logger.error("Unknown message")
-        Logger.debug(inspect(message))
+      _ ->
         state
     end
+  end
+
+  defp react_to_fix_message(state, {:unknown, message}) do
+    Logger.error("Unknown message")
+    Logger.debug(inspect(message))
+    state
   end
 end

@@ -22,13 +22,4 @@ defmodule Executor.Impl do
     Logger.debug("Received opportunity: #{inspect(opportunity)}")
     state
   end
-
-  @doc """
-  Act on execution report
-  """
-  @spec send_execution_report(state :: any(), execution_report :: any()) :: :ok
-  def send_execution_report(state, execution_report) do
-    Logger.debug("Received execution report: #{inspect(execution_report)}")
-    state
-  end
 end

@@ -28,7 +28,8 @@ defmodule TradeClient.BinanceFixApi do
       :symbol,
       :side,
       :fee_currency,
-      :fee_amount
+      :fee_amount,
+      :client_order_id
     ]
     defstruct [
       :order_status,
@@ -37,7 +38,8 @@ defmodule TradeClient.BinanceFixApi do
       :symbol,
       :side,
       :fee_currency,
-      :fee_amount
+      :fee_amount,
+      :client_order_id
     ]
 
     defmodule ExecutionType do
@@ -188,8 +190,9 @@ defmodule TradeClient.BinanceFixApi do
     * `trading_symbol` - trading symbol
     * `quantity` - quantity (in quote asset units)
   """
-  @spec market_order_request(integer(), String.t(), TradingSymbol.t(), float()) :: binary()
-  def market_order_request(seq_num, sender_comp_id, trading_symbol, quantity) do
+  @spec market_order_request(integer(), String.t(), TradingSymbol.t(), float(), String.t()) ::
+          binary()
+  def market_order_request(seq_num, sender_comp_id, trading_symbol, quantity, client_order_id) do
     side =
       case trading_symbol.position do
         :long -> OrderSide.buy()
@@ -205,7 +208,7 @@ defmodule TradeClient.BinanceFixApi do
         sender: sender_comp_id,
         orig_sending_time: nil,
         body: [
-          {Tag.cl_order_id(), "123"},
+          {Tag.cl_order_id(), client_order_id},
           {Tag.order_type(), OrderType.market()},
           {Tag.side(), side},
           {Tag.symbol(), symbol},
@@ -299,7 +302,8 @@ defmodule TradeClient.BinanceFixApi do
       symbol: fields[Tag.symbol()],
       side: fields[Tag.side()],
       fee_currency: fields[Tag.fee_currency()],
-      fee_amount: String.to_float(fields[Tag.fee_amount()])
+      fee_amount: String.to_float(fields[Tag.fee_amount()]),
+      client_order_id: fields[Tag.cl_order_id()]
     }
   end
 
