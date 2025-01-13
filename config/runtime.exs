@@ -18,3 +18,6 @@ config :harjus,
   binance_fix_api_hostname: ConfigHelper.get_env("BINANCE_FIX_API_HOSTNAME", "", :str),
   binance_fix_api_port: ConfigHelper.get_env("BINANCE_FIX_API_PORT", 9000, :int),
   binance_market_data_api_uri: ConfigHelper.get_env("BINANCE_MARKET_DATA_API_URI", "", :str)
+
+# configure logger verbosity
+config :logger, level: ConfigHelper.get_env("VERBOSITY", :debug, :atom)
