@@ -10,9 +10,9 @@ defmodule MarketData do
   @doc """
   Create a new instance of the market data
   """
-  @spec new(is_prod :: boolean()) :: any()
-  def new(is_prod) do
-    Impl.new(is_prod)
+  @spec new() :: any()
+  def new do
+    Impl.new()
   end
 
   @doc """

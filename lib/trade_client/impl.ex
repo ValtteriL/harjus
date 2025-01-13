@@ -33,16 +33,10 @@ defmodule TradeClient.Impl do
   @order_filled BinanceFixApi.ExecutionReport.OrderStatus.filled()
 
   def new do
-    is_prod = Application.fetch_env!(:harjus, :is_prod)
     api_key = Application.fetch_env!(:harjus, :binance_ed25519_api_key)
     private_key = Application.fetch_env!(:harjus, :binance_ed25519_private_key)
-
-    {addr, port} =
-      if is_prod do
-        {~c"fix-oe.binance.com", 9000}
-      else
-        {~c"fix-oe.testnet.binance.vision", 9000}
-      end
+    hostname = Application.fetch_env!(:harjus, :binance_fix_api_hostname)
+    port = Application.fetch_env!(:harjus, :binance_fix_api_port)
 
     # start FIX session
     opts = [
@@ -52,7 +46,7 @@ defmodule TradeClient.Impl do
       {:cacerts, :public_key.cacerts_get()}
     ]
 
-    {:ok, socket} = :ssl.connect(addr, port, opts)
+    {:ok, socket} = :ssl.connect(hostname, port, opts)
 
     seq_num = 1
 

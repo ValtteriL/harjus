@@ -7,7 +7,6 @@ defmodule AccountData.Impl do
 
   def get_balances do
     Binance.get_balances(
-      Application.fetch_env!(:harjus, :is_prod),
       Application.fetch_env!(:harjus, :binance_ed25519_api_key),
       Application.fetch_env!(:harjus, :binance_ed25519_private_key)
     )

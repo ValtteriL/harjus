@@ -9,10 +9,10 @@ defmodule MarketData.Impl do
 
   require Logger
 
-  def new(is_prod) do
+  def new do
     %{
-      symbols: Binance.get_symbols(is_prod),
-      symbol_prices: Binance.get_symbol_prices(is_prod)
+      symbols: Binance.get_symbols(),
+      symbol_prices: Binance.get_symbol_prices()
     }
   end
 

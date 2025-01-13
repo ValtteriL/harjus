@@ -10,10 +10,9 @@ defmodule Harjus do
   def start(_type, _args) do
     # discover trading paths
     Logger.info("Starting Harjus")
-    Logger.info("Running in production: #{Application.fetch_env!(:harjus, :is_prod)}")
     Logger.info("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
 
-    market_data = MarketData.new(Application.fetch_env!(:harjus, :is_prod))
+    market_data = MarketData.new()
 
     {trading_paths, symbol_list} =
       MarketData.trading_paths(
@@ -28,7 +27,7 @@ defmodule Harjus do
       |> Enum.chunk_every(200)
       |> Enum.map_reduce(1, fn partial_list, acc ->
         {Supervisor.child_spec(
-           {PriceStreamer, {partial_list, Application.fetch_env!(:harjus, :is_prod)}},
+           {PriceStreamer, partial_list},
            id: String.to_atom("book_streamer_#{acc}")
          ), acc + 1}
       end)

@@ -2,21 +2,13 @@ defmodule MarketData.Binance do
   @moduledoc "Binance specific api calls on market data"
 
   # Get all trading pairs from Binance
-  @spec get_symbols(is_prod :: bool()) :: [
+  @spec get_symbols() :: [
           %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
         ]
-  def get_symbols(true) do
-    get_symbols_from_url("https://data-api.binance.vision/api/v3/exchangeInfo")
-  end
+  def get_symbols do
+    base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
+    url = "#{base_url}/api/v3/exchangeInfo"
 
-  def get_symbols(false) do
-    get_symbols_from_url("https://testnet.binance.vision/api/v3/exchangeInfo")
-  end
-
-  @spec get_symbols_from_url(url :: String.t()) :: [
-          %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
-        ]
-  defp get_symbols_from_url(url) do
     {:ok, resp} = Req.get(url)
 
     resp.body["symbols"]
@@ -28,16 +20,11 @@ defmodule MarketData.Binance do
   end
 
   # get symbol prices from Binance
-  @spec get_symbol_prices(is_prod :: bool()) :: %{String.t() => float()}
-  def get_symbol_prices(true) do
-    get_symbol_prices_from_url("https://data-api.binance.vision/api/v3/ticker/price")
-  end
+  @spec get_symbol_prices() :: %{String.t() => float()}
+  def get_symbol_prices do
+    base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
+    url = "#{base_url}/api/v3/ticker/price"
 
-  def get_symbol_prices(false) do
-    get_symbol_prices_from_url("https://testnet.binance.vision/api/v3/ticker/price")
-  end
-
-  defp get_symbol_prices_from_url(url) do
     {:ok, resp} = Req.get(url)
 
     resp.body

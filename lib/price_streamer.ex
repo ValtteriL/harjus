@@ -13,8 +13,7 @@ defmodule PriceStreamer do
 
   Args:
     symbols: list of trading symbols to subscribe updates on
-    is_prod: whether to connect to production or testnet
   """
-  @spec start_link({symbols :: [String.t()], is_prod :: bool()}) :: {:ok, pid()}
+  @spec start_link(symbols :: [String.t()]) :: {:ok, pid()}
   defdelegate start_link(args), to: Impl
 end

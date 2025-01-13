@@ -2,24 +2,14 @@ defmodule AccountData.Binance do
   @moduledoc "Binance specific api calls"
 
   # Get account balances from Binance
-  @spec get_balances(is_prod :: bool(), api_key :: String.t(), private_key :: String.t()) :: %{
-          String.t() => float()
-        }
-  def get_balances(true, api_key, private_key) do
-    get_balances_from_url("https://api.binance.com/api/v3/account", api_key, private_key)
-  end
-
-  def get_balances(false, api_key, private_key) do
-    get_balances_from_url("https://testnet.binance.vision/api/v3/account", api_key, private_key)
-  end
-
-  @spec get_balances_from_url(url :: String.t(), api_key :: String.t(), private_key :: String.t()) ::
+  @spec get_balances(api_key :: String.t(), private_key :: String.t()) ::
           %{String.t() => float()}
-  defp get_balances_from_url(url, api_key, private_key) do
+  def get_balances(api_key, private_key) do
+    uri = Application.fetch_env!(:harjus, :binance_rest_api_uri)
     signature = sign_request(private_key)
 
     {:ok, resp} =
-      Req.get("#{url}?#{signature}", headers: ["X-MBX-APIKEY": api_key])
+      Req.get("#{uri}/api/v3/account?#{signature}", headers: ["X-MBX-APIKEY": api_key])
 
     resp.body["balances"]
     |> Enum.map(fn x -> {x["asset"], String.to_float(x["free"])} end)

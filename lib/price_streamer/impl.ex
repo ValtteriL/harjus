@@ -14,15 +14,10 @@ defmodule PriceStreamer.Impl do
   @doc """
   Start the book streamer
   """
-  def start_link({symbols, is_prod}) do
-    url =
-      if is_prod do
-        "wss://stream.binance.com:443/ws/kek"
-      else
-        "wss://testnet.binance.vision/ws/kek"
-      end
+  def start_link(symbols) do
+    uri = Application.fetch_env!(:harjus, :binance_websocket_stream_uri)
 
-    {:ok, ws_pid} = WebSockex.start_link(url, __MODULE__, %{})
+    {:ok, ws_pid} = WebSockex.start_link(uri, __MODULE__, %{})
 
     Logger.debug("Subscribing to #{length(symbols)} symbols...")
 
