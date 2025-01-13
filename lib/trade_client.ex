@@ -3,9 +3,9 @@ defmodule TradeClient do
   Client for placing trades
   """
 
-  alias TradeClient.BinanceFixApi.ExecutionReport
   alias TradeClient.Impl
   alias TradeClient.Server
+  alias Types.TradeReport
 
   def start_link do
     GenServer.start_link(Server, Impl.new(), name: __MODULE__)
@@ -14,7 +14,7 @@ defmodule TradeClient do
   @spec market_order(
           trading_symbol :: TradingSymbol.t(),
           quantity :: float()
-        ) :: execution_report :: ExecutionReport.t()
+        ) :: trade_report :: TradeReport.t()
   def market_order(trading_symbol, quantity) do
     GenServer.call(__MODULE__, {:market_order, {trading_symbol, quantity}})
   end

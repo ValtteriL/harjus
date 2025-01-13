@@ -9,6 +9,7 @@ defmodule TradeClient.Impl do
 
   require Logger
   alias TradeClient.BinanceFixApi
+  alias Types.TradeReport
 
   defmodule State do
     @moduledoc """
@@ -133,7 +134,7 @@ defmodule TradeClient.Impl do
     case execution_report.order_status do
       @order_filled ->
         from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)
-        GenServer.reply(from, execution_report)
+        GenServer.reply(from, executionreport_to_tradereport(execution_report))
 
         %{
           state
@@ -153,5 +154,25 @@ defmodule TradeClient.Impl do
     Logger.error("Unknown message")
     Logger.debug(inspect(message))
     state
+  end
+
+  @buy_side BinanceFixApi.OrderSide.buy()
+  @sell_side BinanceFixApi.OrderSide.sell()
+
+  defp executionreport_to_tradereport(execution_report) do
+    position =
+      case execution_report.side do
+        @buy_side -> :long
+        @sell_side -> :short
+      end
+
+    %TradeReport{
+      symbol: execution_report.symbol,
+      position: position,
+      quantity_base: execution_report.quantity_base,
+      quantity_quote: execution_report.quantity_quote,
+      quantity_fee: execution_report.fee_amount,
+      fee_currency: execution_report.fee_currency
+    }
   end
 end
