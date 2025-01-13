@@ -53,7 +53,8 @@ defmodule Harjus.MixProject do
       {:dotenv_parser, "~> 2.0"},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:castore, "~> 1.0"},
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:gen_stage, "~> 1.2.1"}
     ]
   end
 
