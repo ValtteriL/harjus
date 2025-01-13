@@ -2,6 +2,7 @@ defmodule MarketData.ArbmapperTest do
   @moduledoc "Tests for Arbmapper"
 
   alias MarketData.Arbmapper
+  alias Types.TradingSymbol
 
   use ExUnit.Case
   doctest Arbmapper

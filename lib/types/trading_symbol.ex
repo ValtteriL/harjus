@@ -1,4 +1,4 @@
-defmodule TradingSymbol do
+defmodule Types.TradingSymbol do
   @moduledoc """
   Trading symbol module
   """

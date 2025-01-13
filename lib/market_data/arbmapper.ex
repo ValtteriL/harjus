@@ -3,6 +3,8 @@ defmodule MarketData.Arbmapper do
   Module for finding arbitrage opportunities.
   """
 
+  alias Types.TradingSymbol
+
   @doc """
   Generate trading paths and symbols to subscribe to from symbols
 

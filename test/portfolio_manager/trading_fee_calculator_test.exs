@@ -5,6 +5,7 @@ defmodule PortfolioManager.TradingFeeCalculatorTest do
 
   use ExUnit.Case
   doctest TradingFeeCalculator
+  alias Types.TradingSymbol
 
   test "calculates correct trading fee" do
     commission_percentage = 0.1

@@ -5,6 +5,7 @@ defmodule OpportunityWatcher.Impl do
 
   alias OpportunityWatcher.Opportunity
   alias OpportunityWatcher.State
+  alias Types.TradingSymbol
 
   @type update() :: OpportunityWatcher.update()
 

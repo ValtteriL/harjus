@@ -2,6 +2,7 @@ defmodule OpportunityWatcher.OpportunityTest do
   @moduledoc "Tests for Opportunity"
 
   alias OpportunityWatcher.Opportunity
+  alias Types.TradingSymbol
 
   use ExUnit.Case, async: true
   doctest Opportunity

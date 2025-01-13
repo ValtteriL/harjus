@@ -3,6 +3,8 @@ defmodule PortfolioManagerTest do
   use ExUnit.Case, async: false
   doctest PortfolioManager
 
+  alias Types.TradingSymbol
+
   setup do
     pm_args = %PortfolioManager.Args{
       min_profit_percentage: 0.01,
