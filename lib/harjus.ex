@@ -6,7 +6,7 @@ defmodule Harjus do
 
   use Application
 
-  @impl true
+  @impl Application
   def start(_type, _args) do
     # discover trading paths
     Logger.info("Starting Harjus")

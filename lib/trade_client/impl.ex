@@ -10,6 +10,7 @@ defmodule TradeClient.Impl do
   require Logger
   alias TradeClient.BinanceFixApi
   alias Types.TradeReport
+  alias Types.TradingSymbol
 
   defmodule State do
     @moduledoc """

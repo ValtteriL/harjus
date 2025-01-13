@@ -6,6 +6,7 @@ defmodule MarketData do
   """
 
   alias MarketData.Impl
+  alias Types.TradingSymbol
 
   @doc """
   Create a new instance of the market data

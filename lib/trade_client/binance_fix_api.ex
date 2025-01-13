@@ -5,6 +5,8 @@ defmodule TradeClient.BinanceFixApi do
   https://github.com/binance/binance-spot-api-docs/blob/master/fix-api.md
   """
 
+  alias Types.TradingSymbol
+
   defmodule MessageToSend do
     @moduledoc "serializer argument map"
     @type t :: %MessageToSend{}

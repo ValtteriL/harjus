@@ -14,13 +14,13 @@ defmodule PortfolioManager.Server do
 
   @type opportunity() :: PortfolioManager.opportunity()
 
-  @impl true
+  @impl GenServer
   @spec init(args :: Args.t()) :: {:ok, Args.t()}
   def init(args) do
     {:ok, args}
   end
 
-  @impl true
+  @impl GenServer
   @spec handle_cast(
           {:opportunity_update, opportunities :: [opportunity()]},
           state :: Args.t()

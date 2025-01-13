@@ -3,6 +3,7 @@ defmodule PortfolioManager.TradingFeeCalculator do
   Functions for calculating trading fees
   """
 
+  alias Types.TradingSymbol
   @type trading_path() :: [TradingSymbol.t()]
 
   @spec total_commission_percentage(

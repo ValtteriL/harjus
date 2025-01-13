@@ -13,12 +13,12 @@ defmodule OpportunityWatcher.Server do
 
   @type update() :: OpportunityWatcher.update()
 
-  @impl true
+  @impl GenServer
   def init(state) do
     {:ok, state}
   end
 
-  @impl true
+  @impl GenServer
   @spec handle_cast({:price_update, update :: update()}, state :: State.t()) ::
           {:noreply, State.t()}
   def handle_cast({:price_update, update}, state) do

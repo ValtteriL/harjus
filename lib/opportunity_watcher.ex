@@ -2,6 +2,7 @@ defmodule OpportunityWatcher do
   @moduledoc """
   Look for arbitrage opportunities in trading paths.
   """
+  alias Types.TradingSymbol
 
   @type update() ::
           {symbol :: charlist(), ask_price :: float(), ask_qty :: float(), bid_price :: float(),

@@ -8,9 +8,9 @@ defmodule Executor do
   While executing a trade, discards all new opportunities.
   """
 
-  @type opportunity() :: {path :: [TradingSymbol.t()], profit :: float(), capacity :: float()}
-
   alias Executor.Impl
+  alias Types.TradingSymbol
+  @type opportunity() :: {path :: [TradingSymbol.t()], profit :: float(), capacity :: float()}
 
   @doc """
   Start the executor

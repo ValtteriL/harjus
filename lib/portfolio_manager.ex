@@ -7,6 +7,8 @@ defmodule PortfolioManager do
   and sends the most profitable to Executor, if any.
   """
 
+  alias Types.TradingSymbol
+
   defmodule Args do
     @moduledoc """
     Struct for PortfolioManager arguments

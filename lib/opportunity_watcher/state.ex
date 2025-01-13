@@ -3,6 +3,8 @@ defmodule OpportunityWatcher.State do
   State of the opportunity watcher.
   """
 
+  alias Types.TradingSymbol
+
   @enforce_keys [
     :pathid_to_path_map,
     :trading_symbol_to_price_qty_tuple,

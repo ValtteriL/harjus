@@ -16,13 +16,13 @@ defmodule Executor.Server do
 
   alias Executor.Impl
 
-  @impl true
+  @impl GenServer
   @spec init(any()) :: {:ok, %{}}
   def init(state) do
     {:ok, state}
   end
 
-  @impl true
+  @impl GenServer
   @spec handle_cast({:execute_opportunity, opportunity()}, state :: any()) :: {:noreply, any()}
   def handle_cast({:execute_opportunity, opportunity}, state) do
     {:noreply, Impl.execute_opportunity(state, opportunity)}

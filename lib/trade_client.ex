@@ -6,6 +6,7 @@ defmodule TradeClient do
   alias TradeClient.Impl
   alias TradeClient.Server
   alias Types.TradeReport
+  alias Types.TradingSymbol
 
   def start_link do
     GenServer.start_link(Server, Impl.new(), name: __MODULE__)
