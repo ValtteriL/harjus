@@ -72,7 +72,7 @@ defmodule TradeClient.Impl do
 
   @spec market_order(
           state :: State.t(),
-          from :: any(),
+          from :: term(),
           trading_symbol :: TradingSymbol.t(),
           quantity :: float()
         ) ::
@@ -93,12 +93,12 @@ defmodule TradeClient.Impl do
       )
 
     # store request id with from to be able to relay execution report
-    %State{
-      state
-      | seq_num: state.seq_num + 1,
-        outstanding_execution_reports:
-          Map.put(state.outstanding_execution_reports, client_order_id, from)
-    }
+    state
+    |> Map.put(
+      :outstanding_execution_reports,
+      Map.put(state.outstanding_execution_reports, client_order_id, from)
+    )
+    |> Map.put(:seq_num, state.seq_num + 1)
   end
 
   def handle_fix_message(state, data) do
