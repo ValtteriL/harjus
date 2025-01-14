@@ -122,21 +122,21 @@ defmodule OpportunityWatcher.Impl do
       symbol_to_trading_symbol_map: state.symbol_to_trading_symbol_map
     }
 
+    new_state
+  end
+
+  @spec get_opportunities(state :: State.t()) :: [Types.Opportunity.t()]
+  def get_opportunities(state) do
     # calculate arbitrage opportunities
     opportunities =
-      new_pathid_to_profit_cap_tuple
+      state.pathid_to_profit_cap_tuple
       # filter nonprofitable, insufficient capacity
       |> Enum.filter(fn {_, {profit, capacity}} -> profit > 0.0 and capacity > 0.0 end)
       |> Enum.map(fn {pathid, {profit, capacity}} ->
         path = state.pathid_to_path_map[pathid]
-        {path, profit, capacity}
+        %Types.Opportunity{path: path, profit: profit, capacity: capacity}
       end)
 
-    # send any opportunities to Portfolio Manager
-    if length(opportunities) > 0 do
-      PortfolioManager.opportunity_update(opportunities)
-    end
-
-    new_state
+    opportunities
   end
 end

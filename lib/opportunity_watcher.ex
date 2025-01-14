@@ -14,7 +14,7 @@ defmodule OpportunityWatcher do
   @spec start_link(trading_paths :: [TradingSymbol.t()]) :: {:ok, pid()}
   def start_link(trading_paths) do
     initial_state = OpportunityWatcher.Impl.new(trading_paths)
-    GenServer.start_link(OpportunityWatcher.Server, initial_state, name: __MODULE__)
+    GenStage.start_link(OpportunityWatcher.Stage, initial_state, name: __MODULE__)
   end
 
   @doc """
@@ -24,6 +24,6 @@ defmodule OpportunityWatcher do
   """
   @spec price_update(update :: update()) :: :ok
   def price_update(update) do
-    GenServer.cast(__MODULE__, {:price_update, update})
+    GenStage.cast(__MODULE__, {:price_update, update})
   end
 end
