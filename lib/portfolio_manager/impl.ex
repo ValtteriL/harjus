@@ -10,29 +10,28 @@ defmodule PortfolioManager.Impl do
   require Logger
   alias PortfolioManager.Args
   alias PortfolioManager.TradingFeeCalculator
-
-  @type opportunity() :: PortfolioManager.opportunity()
+  alias Types.Opportunity
 
   @spec new(args :: Args.t()) :: Args.t()
-  def new(args) do
-    args
-  end
+  def new(args), do: args
 
-  @spec opportunity_update(state :: Args.t(), opportunities :: [opportunity()]) :: Args.t()
-  def opportunity_update(state, opportunities) do
+  @spec filter_opportunities(state :: Args.t(), opportunities :: [Opportunity.t()]) :: [
+          Opportunity.t()
+        ]
+  def filter_opportunities(state, opportunities) do
     profitable_opportunities =
       opportunities
-      |> Enum.filter(fn {path, profit, capacity} ->
+      |> Enum.filter(fn x ->
         # filter unprofitable, too low capacity opportunities
 
         commission =
           TradingFeeCalculator.total_commission_percentage(
-            path,
+            x.path,
             state.commission
           )
 
-        profit - commission >= state.min_profit_percentage &&
-          capacity >= state.min_capacity
+        x.profit - commission >= state.min_profit_percentage &&
+          x.capacity >= state.min_capacity
       end)
       # sort by profit * capacity in relative asset value
       |> Enum.sort(fn {[firstsymbol1 | _], profit1, cap1}, {[firstsymbol2 | _], profit2, cap2} ->
@@ -42,11 +41,6 @@ defmodule PortfolioManager.Impl do
         value2 * profit2 * cap2 < value1 * profit1 * cap1
       end)
 
-    # send best profitable opportunity to Executor
-    if length(profitable_opportunities) > 0 do
-      Executor.execute_opportunity(hd(profitable_opportunities))
-    end
-
-    state
+    profitable_opportunities
   end
 end

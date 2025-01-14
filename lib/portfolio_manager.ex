@@ -7,7 +7,7 @@ defmodule PortfolioManager do
   and sends the most profitable to Executor, if any.
   """
 
-  alias Types.TradingSymbol
+  alias Types.Opportunity
 
   defmodule Args do
     @moduledoc """
@@ -31,21 +31,19 @@ defmodule PortfolioManager do
 
   alias PortfolioManager.Impl
 
-  @type opportunity() :: {path :: [TradingSymbol.t()], profit :: float(), capacity :: float()}
-
   @doc """
   Start the portfolio manager
   """
   @spec start_link(args :: Args.t()) :: {:ok, pid()}
   def start_link(args) do
-    GenServer.start_link(PortfolioManager.Server, Impl.new(args), name: __MODULE__)
+    GenStage.start_link(PortfolioManager.Stage, Impl.new(args), name: __MODULE__)
   end
 
   @doc """
   Send opportunities to Portfolio Manager
   """
-  @spec opportunity_update(opportunities :: [opportunity()]) :: :ok
+  @spec opportunity_update(opportunities :: [Opportunity.t()]) :: :ok
   def opportunity_update(opportunities) do
-    GenServer.cast(__MODULE__, {:opportunity_update, opportunities})
+    GenStage.cast(__MODULE__, {:opportunity_update, opportunities})
   end
 end
