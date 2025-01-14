@@ -30,5 +30,10 @@ defmodule PortfolioManager.Stage do
   @spec handle_events([event :: [Opportunity.t()]], _from :: any(), state :: Args.t()) ::
           {:noreply, [Opportunity.t()], Args.t()}
   def handle_events(events, _from, state),
+    # Dispatch immediately
     do: {:noreply, Impl.filter_opportunities(state, events), state}
+
+  @impl GenStage
+  # silence logging of discarded events
+  def format_discarded(_discarded, _state), do: false
 end

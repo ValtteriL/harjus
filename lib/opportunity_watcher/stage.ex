@@ -35,9 +35,6 @@ defmodule OpportunityWatcher.Stage do
   end
 
   @impl GenStage
-  @spec format_discarded(discarded :: non_neg_integer(), state :: term()) :: boolean()
-  def format_discarded(_discarded, _state) do
-    # silence logging of discarded events
-    false
-  end
+  # silence logging of discarded events
+  def format_discarded(_discarded, _state), do: false
 end
