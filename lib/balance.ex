@@ -19,16 +19,16 @@ defmodule Balance do
   @doc """
   Gets the balance of an asset
   """
-  @spec get_balance(asset :: String.t()) :: float()
-  def get_balance(asset) do
-    Agent.get(__MODULE__, fn state -> Impl.get_balance(state, asset) end)
+  @spec get(asset :: String.t()) :: float()
+  def get(asset) do
+    Agent.get(__MODULE__, fn state -> Impl.get(state, asset) end)
   end
 
   @doc """
   Updates the balance of an asset
   """
-  @spec update_balance(asset :: String.t(), amount :: float()) :: :ok
-  def update_balance(asset, amount) do
-    Agent.update(__MODULE__, fn state -> Impl.update_balance(state, asset, amount) end)
+  @spec update(asset :: String.t(), amount :: float()) :: :ok
+  def update(asset, amount) do
+    Agent.update(__MODULE__, fn state -> Impl.update(state, asset, amount) end)
   end
 end

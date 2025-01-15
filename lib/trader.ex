@@ -13,5 +13,5 @@ defmodule Trader do
   Start the trader
   """
   @spec start_link(arg :: any()) :: {:ok, pid()}
-  def start_link(arg), do: GenStage.start_link(Stage, Impl.new(arg), name: __MODULE__)
+  def start_link(_arg), do: GenStage.start_link(Stage, Impl.new(), name: __MODULE__)
 end

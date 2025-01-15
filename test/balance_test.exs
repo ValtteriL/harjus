@@ -16,21 +16,21 @@ defmodule BalanceTest do
   end
 
   test "balances initialized correctly", %{pid: _pid} do
-    assert Balance.get_balance("USDT") == 100.0
-    assert Balance.get_balance("BTC") == 1.0
+    assert Balance.get("USDT") == 100.0
+    assert Balance.get("BTC") == 1.0
   end
 
   test "updates balances correctly", %{pid: _pid} do
     # add
-    Balance.update_balance("USDT", 50.0)
-    assert Balance.get_balance("USDT") == 150.0
+    Balance.update("USDT", 50.0)
+    assert Balance.get("USDT") == 150.0
 
     # subtract
-    Balance.update_balance("BTC", -0.5)
-    assert Balance.get_balance("BTC") == 0.5
+    Balance.update("BTC", -0.5)
+    assert Balance.get("BTC") == 0.5
   end
 
   test "non-existent asset returns 0", %{pid: _pid} do
-    assert Balance.get_balance("ETH") == 0
+    assert Balance.get("ETH") == 0
   end
 end
