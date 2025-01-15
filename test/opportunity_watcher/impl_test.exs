@@ -27,12 +27,12 @@ defmodule OpportunityWatcher.ImplTest do
 
     state = Impl.new(trading_paths)
 
-    state = Impl.price_update(state, {"BTCUSDT", 10_000.0, 1.0, 10_000.0, 1.0})
-    assert Impl.get_opportunities(state) == []
+    {state, opportunities} = Impl.price_update(state, {"BTCUSDT", 10_000.0, 1.0, 10_000.0, 1.0})
+    assert opportunities == []
 
-    state = Impl.price_update(state, {"BTCUSDT", 1.0, 1.0, 2.0, 1.0})
+    {_state, opportunities} = Impl.price_update(state, {"BTCUSDT", 1.0, 1.0, 2.0, 1.0})
 
-    assert Impl.get_opportunities(state) == [
+    assert opportunities == [
              %Opportunity{
                path: [
                  %TradingSymbol{

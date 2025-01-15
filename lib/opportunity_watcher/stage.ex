@@ -19,18 +19,15 @@ defmodule OpportunityWatcher.Stage do
   def init(state), do: {:producer, state, [buffer_size: 1]}
 
   @impl GenStage
-  def handle_demand(_demand, state) do
-    # We don't care about the demand
-    {:noreply, [], state}
-  end
+  # We don't care about the demand
+  def handle_demand(_demand, state), do: {:noreply, [], state}
 
   @impl GenStage
   @spec handle_cast({:price_update, update :: update()}, state :: State.t()) ::
           {:noreply, [Opportunity.t()], State.t()}
   def handle_cast({:price_update, update}, state) do
-    # Dispatch immediately
-    new_state = Impl.price_update(state, update)
-    opportunities = Impl.get_opportunities(new_state)
+    # Dispatch newly appeared opportunities immediately
+    {new_state, opportunities} = Impl.price_update(state, update)
     {:noreply, opportunities, new_state}
   end
 

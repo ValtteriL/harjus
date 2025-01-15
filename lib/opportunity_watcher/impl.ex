@@ -83,7 +83,8 @@ defmodule OpportunityWatcher.Impl do
     }
   end
 
-  @spec price_update(state :: State.t(), update :: update()) :: State.t()
+  @spec price_update(state :: State.t(), update :: update()) ::
+          {State.t(), [Types.Opportunity.t()]}
   def price_update(state, {symbol, ask_price, ask_qty, bid_price, bid_qty}) do
     # update price and quantity on long + short
     new_trading_symbol_to_price_qty_tuple =
@@ -122,14 +123,9 @@ defmodule OpportunityWatcher.Impl do
       symbol_to_trading_symbol_map: state.symbol_to_trading_symbol_map
     }
 
-    new_state
-  end
-
-  @spec get_opportunities(state :: State.t()) :: [Types.Opportunity.t()]
-  def get_opportunities(state) do
-    # calculate arbitrage opportunities
-    opportunities =
-      state.pathid_to_profit_cap_tuple
+    # get newly appeared opportunities
+    new_opportunities =
+      new_pathid_profit_cap
       # filter nonprofitable, insufficient capacity
       |> Enum.filter(fn {_, {profit, capacity}} -> profit > 0.0 and capacity > 0.0 end)
       |> Enum.map(fn {pathid, {profit, capacity}} ->
@@ -137,6 +133,6 @@ defmodule OpportunityWatcher.Impl do
         %Types.Opportunity{path: path, profit: profit, capacity: capacity}
       end)
 
-    opportunities
+    {new_state, new_opportunities}
   end
 end
