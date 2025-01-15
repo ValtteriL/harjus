@@ -7,8 +7,6 @@ defmodule PortfolioManager do
   and sends the most profitable to Executor, if any.
   """
 
-  alias Types.Opportunity
-
   defmodule Args do
     @moduledoc """
     Struct for PortfolioManager arguments
@@ -37,13 +35,5 @@ defmodule PortfolioManager do
   @spec start_link(args :: Args.t()) :: {:ok, pid()}
   def start_link(args) do
     GenStage.start_link(PortfolioManager.Stage, Impl.new(args), name: __MODULE__)
-  end
-
-  @doc """
-  Send opportunities to Portfolio Manager
-  """
-  @spec opportunity_update(opportunities :: [Opportunity.t()]) :: :ok
-  def opportunity_update(opportunities) do
-    GenStage.cast(__MODULE__, {:opportunity_update, opportunities})
   end
 end
