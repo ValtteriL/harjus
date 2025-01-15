@@ -1,9 +1,9 @@
-defmodule Executor.Impl do
+defmodule Trader.Impl do
   @moduledoc """
-  Implementation for executor
+  Implementation for trader
   """
 
-  @type opportunity() :: Executor.opportunity()
+  @type opportunity() :: Trader.opportunity()
 
   require Logger
 

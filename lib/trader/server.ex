@@ -1,4 +1,4 @@
-defmodule Executor.Server do
+defmodule Trader.Server do
   @moduledoc """
   Process for executing trades.
 
@@ -12,9 +12,9 @@ defmodule Executor.Server do
   use GenServer
   require Logger
 
-  @type opportunity() :: Executor.opportunity()
+  @type opportunity() :: Trader.opportunity()
 
-  alias Executor.Impl
+  alias Trader.Impl
 
   @impl GenServer
   @spec init(any()) :: {:ok, %{}}

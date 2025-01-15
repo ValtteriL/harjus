@@ -4,7 +4,7 @@ defmodule PortfolioManager do
 
   Gets opportunities from the OpportunityWatcher,
   filters out unprofitable ones,
-  and sends the most profitable to Executor, if any.
+  and sends the most profitable to Trader, if any.
   """
 
   defmodule Args do

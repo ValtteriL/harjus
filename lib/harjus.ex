@@ -40,7 +40,7 @@ defmodule Harjus do
 
         # processes are started in order
         {Balance, AccountData.get_balances()},
-        {Executor, []},
+        {Trader, []},
         {PortfolioManager,
          %PortfolioManager.Args{
            min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),

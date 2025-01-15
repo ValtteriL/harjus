@@ -2,7 +2,7 @@ defmodule TradeClient.Impl do
   @moduledoc """
   Implementation of the trade client
 
-  Manages FIX session state, makes Trade requests, relays executionreports to executor
+  Manages FIX session state, makes Trade requests, returns Trade reports
 
   https://github.com/binance/binance-spot-api-docs/blob/master/fix-api.md
   """
@@ -122,10 +122,10 @@ defmodule TradeClient.Impl do
   end
 
   defp react_to_fix_message(state, {:execution_report, execution_report}) do
-    # if complete, reply to executor
+    # if complete, reply to trader
     Logger.info("Execution report: #{execution_report}")
 
-    # if order is filled, relay to executor
+    # if order is filled, relay to trader
     case execution_report.order_status do
       @order_filled ->
         from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)

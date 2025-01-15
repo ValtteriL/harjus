@@ -1,10 +1,6 @@
 defmodule PortfolioManager.Stage do
   @moduledoc """
-  Process for filtering, and prioritizing opportunities.
-
-  Gets opportunities from the OpportunityWatcher,
-  filters out unprofitable ones,
-  and sends the most profitable to Executor, if any.
+  GenStage for PortfolioManager
   """
 
   use GenStage
