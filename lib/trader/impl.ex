@@ -8,6 +8,8 @@ defmodule Trader.Impl do
   alias Types.TradingSymbol
   require Logger
 
+  @type balance_delta() :: %{String.t() => float()}
+
   @doc """
   Create initial state
   """
@@ -20,35 +22,60 @@ defmodule Trader.Impl do
   def execute_opportunity(opportunity) do
     Logger.info("Executing opportunity: #{inspect(opportunity)}")
 
-    # TODO: make reservation atomic - if one fails, release all
-    # TODO: PM cannot do reservation because it does not react to demand but just shoots out opportunities
+    pairs = opportunity.path |> Enum.map(& &1.symbol)
 
-    # reserve the symbols
-    reserve_symbols(opportunity.path)
+    # reserve the trading pairs
+    case ReservedSymbols.reserve(pairs) do
+      :ok -> execute_opportunity_after_reserving_symbols(opportunity)
+      _ -> Logger.info("Failed to reserve trading pairs")
+    end
 
-    # execute the trades
-    trade(opportunity.path, opportunity.quantity)
-
-    # release the symbols
-    release_symbols(opportunity.path)
+    # release the trading pairs
+    ReservedSymbols.release(pairs)
 
     :ok
   end
 
-  @spec trade([TradingSymbol.t()], float()) :: :ok
-  defp trade([trading_symbol | rest], quantity) do
+  defp execute_opportunity_after_reserving_symbols(opportunity) do
+    # reserve budget
+    budget = Balance.reserve_upto(opportunity.path[0].quote_asset, opportunity.capacity)
+
+    case budget do
+      +0.0 -> Logger.info("No budget available to reserve")
+      _ -> execute_opportunity_after_reserving_budget(opportunity, budget)
+    end
+  end
+
+  defp execute_opportunity_after_reserving_budget(opportunity, budget) do
+    # execute trades
+    balance_delta = trade(opportunity.path, budget)
+
+    # update balances
+    balance_delta |> Enum.each(&Balance.update(&1, balance_delta[&1]))
+  end
+
+  @spec trade([TradingSymbol.t()], float()) :: balance_delta()
+  defp trade(path, quantity) do
+    trade(path, quantity, %{})
+  end
+
+  defp trade([trading_symbol | rest], quantity, balance_delta) do
     Logger.debug("Trading #{trading_symbol.symbol}")
 
     report = TradeClient.market_order(trading_symbol, quantity)
     Logger.debug(report)
 
-    update_balances(trading_symbol, report)
+    # update fee balance right away
+    Balance.update(report.fee_currency, -report.quantity_fee)
+
+    # store other balance changes in delta
+    new_balance_delta = update_balance_delta(balance_delta, trading_symbol, report)
 
     # continue with the next trade using the money from the previous
-    trade(rest, received_quantity(report))
+    trade(rest, received_quantity(report), new_balance_delta)
   end
 
-  defp trade([], _), do: :ok
+  defp trade([], _, balance_delta), do: balance_delta
 
   defp received_quantity(trade_report) do
     case trade_report.position do
@@ -64,25 +91,21 @@ defmodule Trader.Impl do
     end
   end
 
-  @spec update_balances(TradingSymbol.t(), TradeReport.t()) :: :ok
-  defp update_balances(trading_symbol, trade_report) do
-    # received, used, fee
-    Balance.update(trading_symbol.base_asset, received_quantity(trade_report))
-    Balance.update(trading_symbol.quote_asset, -used_quantity(trade_report))
-    Balance.update(trade_report.fee_currency, -trade_report.quantity_fee)
+  @spec update_balance_delta(balance_delta(), TradingSymbol.t(), TradeReport.t()) ::
+          balance_delta()
+  defp update_balance_delta(delta, trading_symbol, trade_report) do
+    delta
+    # received
+    |> Map.update(
+      trading_symbol.base_asset,
+      received_quantity(trade_report),
+      &(&1 + received_quantity(trade_report))
+    )
+    # used
+    |> Map.update(
+      trading_symbol.quote_asset,
+      used_quantity(trade_report),
+      &(&1 - used_quantity(trade_report))
+    )
   end
-
-  defp reserve_symbols([trading_symbol | rest]) do
-    ReservedSymbols.reserve(trading_symbol.symbol)
-    reserve_symbols(rest)
-  end
-
-  defp reserve_symbols([]), do: :ok
-
-  defp release_symbols([trading_symbol | rest]) do
-    ReservedSymbols.release(trading_symbol.symbol)
-    release_symbols(rest)
-  end
-
-  defp release_symbols([]), do: :ok
 end

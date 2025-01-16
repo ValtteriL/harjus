@@ -29,6 +29,14 @@ defmodule PortfolioManager.Impl do
         x.profit - commission >= state.min_profit_percentage &&
           x.capacity >= state.min_capacity
       end)
+      # credo:disable-for-next-line
+      |> Enum.filter(fn x ->
+        # filter opportunities with reserved trading pairs
+
+        pairs = x.path |> Enum.map(& &1.symbol)
+
+        !ReservedSymbols.reserved?(pairs)
+      end)
       # sort by profit * capacity in relative asset value
       |> Enum.sort(fn %{path: [firstsymbol1 | _], profit: profit1, capacity: cap1},
                       %{path: [firstsymbol2 | _], profit: profit2, capacity: cap2} ->

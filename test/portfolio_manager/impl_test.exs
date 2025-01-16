@@ -8,6 +8,12 @@ defmodule PortfolioManager.ImplTest do
 
   use ExUnit.Case, async: true
 
+  setup do
+    # ReservedSymbols used by PortfolioManager
+    {:ok, _pid} = ReservedSymbols.start_link()
+    :ok
+  end
+
   test "filters out unprofitable opportunities" do
     state =
       Impl.new(%Args{

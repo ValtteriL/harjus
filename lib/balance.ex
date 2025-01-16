@@ -31,4 +31,12 @@ defmodule Balance do
   def update(asset, amount) do
     Agent.update(__MODULE__, fn state -> Impl.update(state, asset, amount) end)
   end
+
+  @doc """
+  Reserves the balance of an asset upto a certain amount
+  """
+  @spec reserve_upto(asset :: String.t(), amount :: float()) :: float()
+  def reserve_upto(asset, amount) do
+    Agent.get_and_update(__MODULE__, fn state -> Impl.reserve_upto(state, asset, amount) end)
+  end
 end

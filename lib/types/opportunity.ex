@@ -3,6 +3,8 @@ defmodule Types.Opportunity do
   Trade report struct
   """
 
+  alias Types.TradingSymbol
+
   @enforce_keys [
     :path,
     :profit,
@@ -15,7 +17,7 @@ defmodule Types.Opportunity do
   ]
 
   @type t :: %__MODULE__{
-          path: String.t(),
+          path: [TradingSymbol.t()],
           profit: float(),
           capacity: float()
         }

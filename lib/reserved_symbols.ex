@@ -16,26 +16,26 @@ defmodule ReservedSymbols do
   end
 
   @doc """
-  Checks if symbol is reserved
+  Checks if any symbol in list is reserved
   """
-  @spec reserved?(symbol :: String.t()) :: boolean()
-  def reserved?(symbol) do
-    Agent.get(__MODULE__, fn state -> Impl.reserved?(state, symbol) end)
+  @spec reserved?(symbols :: [String.t()]) :: boolean()
+  def reserved?(symbols) do
+    Agent.get(__MODULE__, fn state -> Impl.reserved?(state, symbols) end)
   end
 
   @doc """
-  Reserves a symbol
+  Reserves a list of symbols
   """
-  @spec reserve(symbol :: String.t()) :: :ok
-  def reserve(symbol) do
-    Agent.update(__MODULE__, fn state -> Impl.reserve(state, symbol) end)
+  @spec reserve(symbols :: [String.t()]) :: :ok | :error
+  def reserve(symbols) do
+    Agent.get_and_update(__MODULE__, fn state -> Impl.reserve(state, symbols) end)
   end
 
   @doc """
-  Releses a symbol
+  Releses a list of symbols
   """
-  @spec release(symbol :: String.t()) :: :ok
-  def release(symbol) do
-    Agent.update(__MODULE__, fn state -> Impl.release(state, symbol) end)
+  @spec release(symbols :: [String.t()]) :: :ok
+  def release(symbols) do
+    Agent.update(__MODULE__, fn state -> Impl.release(state, symbols) end)
   end
 end

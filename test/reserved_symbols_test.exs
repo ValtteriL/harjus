@@ -11,17 +11,17 @@ defmodule ReservedSymbolsTest do
   end
 
   test "symbol can be reserved", %{pid: _pid} do
-    symbol = "BTC"
+    symbol = ["BTCUSDT"]
     ReservedSymbols.reserve(symbol)
     assert ReservedSymbols.reserved?(symbol)
   end
 
   test "non-reserved symbols are free", %{pid: _pid} do
-    assert !ReservedSymbols.reserved?("ETH")
+    assert !ReservedSymbols.reserved?(["ETHBTC"])
   end
 
   test "symbol can be released", %{pid: _pid} do
-    symbol = "DOGE"
+    symbol = ["DOGEUSDT"]
     ReservedSymbols.reserve(symbol)
     ReservedSymbols.release(symbol)
     assert !ReservedSymbols.reserved?(symbol)
