@@ -9,6 +9,12 @@ defmodule ConfigHelperTest do
     assert ConfigHelper.get_env(env_name, :no_default, :int) == 42
   end
 
+  test "parses atom" do
+    env_name = "test_env"
+    System.put_env(env_name, "this_should_become_an_atom")
+    assert ConfigHelper.get_env(env_name, :no_default, :atom) == :this_should_become_an_atom
+  end
+
   test "parses float" do
     env_name = "test_env"
     System.put_env(env_name, "42.42")

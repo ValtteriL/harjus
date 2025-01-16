@@ -1,6 +1,6 @@
-defmodule ExecutorTest do
+defmodule TraderTest do
   @moduledoc """
-  Tests for Executor
+  Tests for Trader
   """
   use ExUnit.Case
 end
