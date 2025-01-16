@@ -33,12 +33,6 @@ defmodule Harjus do
       end)
       |> elem(0)
 
-    # multiple traders based on config
-    traders =
-      for n <- 1..Application.fetch_env!(:harjus, :number_of_traders) do
-        Supervisor.child_spec({Trader, []}, id: String.to_atom("trader_#{n}"))
-      end
-
     children =
       [
         # Starts a worker by calling: HelloWorld.Worker.start_link(arg)
@@ -59,8 +53,9 @@ defmodule Harjus do
            min_capacity: Application.fetch_env!(:harjus, :min_capacity),
            commission: Application.fetch_env!(:harjus, :commission),
            relative_asset_values: MarketData.relative_values(market_data)
-         }}
-      ] ++ traders ++ price_streamers
+         }},
+        {Trader, Application.fetch_env!(:harjus, :number_of_traders)}
+      ] ++ price_streamers
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
