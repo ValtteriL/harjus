@@ -22,7 +22,7 @@ defmodule Harjus do
       )
 
     # multiple book streamers with 200 symbols each
-    book_streamers =
+    price_streamers =
       symbol_list
       |> Enum.chunk_every(200)
       |> Enum.map_reduce(1, fn partial_list, acc ->
@@ -33,24 +33,34 @@ defmodule Harjus do
       end)
       |> elem(0)
 
+    # multiple traders based on config
+    traders =
+      for n <- 1..Application.fetch_env!(:harjus, :number_of_traders) do
+        Supervisor.child_spec({Trader, []}, id: String.to_atom("trader_#{n}"))
+      end
+
     children =
       [
         # Starts a worker by calling: HelloWorld.Worker.start_link(arg)
         # {HelloWorld.Worker, arg}
 
         # processes are started in order
+
+        # utilities
         {Balance, AccountData.get_balances()},
-        {Trader, []},
+        {ReservedSymbols, []},
+        {TradeClient, []},
+
+        # pipeline + price streamers
+        {OpportunityWatcher, trading_paths},
         {PortfolioManager,
          %PortfolioManager.Args{
            min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
            min_capacity: Application.fetch_env!(:harjus, :min_capacity),
            commission: Application.fetch_env!(:harjus, :commission),
            relative_asset_values: MarketData.relative_values(market_data)
-         }},
-        {OpportunityWatcher, trading_paths},
-        {TradeClient, []}
-      ] ++ book_streamers
+         }}
+      ] ++ traders ++ price_streamers
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
