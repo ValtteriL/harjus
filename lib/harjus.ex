@@ -42,7 +42,7 @@ defmodule Harjus do
 
         # utilities
         {Balance, AccountData.get_balances()},
-        {ReservedSymbols, []},
+        {Mutex, name: ReservedSymbols},
         {TradeClient, []},
 
         # pipeline + price streamers
