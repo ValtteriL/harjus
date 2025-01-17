@@ -177,6 +177,19 @@ let
       beamDeps = [ castore hpax ];
     };
 
+    mutex = buildMix rec {
+      name = "mutex";
+      version = "3.0.0";
+
+      src = fetchHex {
+        pkg = "mutex";
+        version = "${version}";
+        sha256 = "ad5e0035b2f230e5048304bfba7bc746e614cb2a0f92054300532283ed53261d";
+      };
+
+      beamDeps = [];
+    };
+
     nimble_options = buildMix rec {
       name = "nimble_options";
       version = "1.1.1";
