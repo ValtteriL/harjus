@@ -11,18 +11,12 @@ defmodule PortfolioManager do
     @moduledoc """
     Struct for PortfolioManager arguments
     """
-    @enforce_keys [:min_profit_percentage, :min_capacity, :commission, :relative_asset_values]
+    @enforce_keys [:relative_asset_values]
     defstruct [
-      :min_profit_percentage,
-      :min_capacity,
-      :commission,
       :relative_asset_values
     ]
 
     @type t :: %__MODULE__{
-            min_profit_percentage: float(),
-            min_capacity: float(),
-            commission: float(),
             relative_asset_values: %{String.t() => float()}
           }
   end

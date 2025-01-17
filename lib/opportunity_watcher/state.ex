@@ -10,13 +10,19 @@ defmodule OpportunityWatcher.State do
     :trading_symbol_to_price_qty_tuple,
     :symbol_to_pathids_map,
     :pathid_to_profit_cap_tuple,
-    :symbol_to_trading_symbol_map
+    :symbol_to_trading_symbol_map,
+    :min_capacity,
+    :min_profit_percentage,
+    :commission
   ]
   defstruct pathid_to_path_map: %{},
             trading_symbol_to_price_qty_tuple: %{},
             symbol_to_pathids_map: %{},
             pathid_to_profit_cap_tuple: %{},
-            symbol_to_trading_symbol_map: %{}
+            symbol_to_trading_symbol_map: %{},
+            min_capacity: 0.0,
+            min_profit_percentage: 0.0,
+            commission: 0.0
 
   @type trading_path() :: [TradingSymbol.t()]
   @type price_qty_tuple() :: {price :: float(), quantity :: float()}
@@ -29,6 +35,9 @@ defmodule OpportunityWatcher.State do
           pathid_to_profit_cap_tuple: %{integer() => profit_cap_tuple()},
           symbol_to_trading_symbol_map: %{
             charlist() => %{long: TradingSymbol.t(), short: TradingSymbol.t()}
-          }
+          },
+          min_capacity: float(),
+          min_profit_percentage: float(),
+          commission: float()
         }
 end

@@ -12,12 +12,14 @@ defmodule OpportunityWatcher.Opportunity do
           trading_path :: trading_path(),
           price_quantity_map :: %{
             TradingSymbol.t() => price_qty_tuple()
-          }
+          },
+          commissing_percentage :: float()
         ) :: float()
   @doc """
   Calculate triangular arbitrage profit percentage for a trading path given symbol prices
   """
-  def profit(trading_path, price_quantity_map) do
+  def profit(trading_path, price_quantity_map, commission_percentage) do
+    # TODO: implement commission
     trading_path
     |> Enum.map(fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
     |> Enum.reduce(1, fn price, acc -> acc / price end)

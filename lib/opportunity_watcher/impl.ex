@@ -6,21 +6,22 @@ defmodule OpportunityWatcher.Impl do
   alias OpportunityWatcher.Opportunity
   alias OpportunityWatcher.State
   alias Types.TradingSymbol
+  alias OpportunityWatcher.Args
 
   @type update() :: OpportunityWatcher.update()
 
-  @spec new(trading_paths :: [TradingSymbol.t()]) :: State.t()
-  def new(trading_paths) do
+  @spec new(args :: Args.t()) :: State.t()
+  def new(args) do
     # initialize pathid to path map
     pathid_to_path_map =
-      trading_paths
+      args.trading_paths
       |> Enum.with_index()
       |> Enum.map(fn {path, index} -> {index, path} end)
       |> Map.new()
 
     # initialize current prices and quantities for each trading symbol
     trading_symbol_to_price_qty_tuple =
-      trading_paths
+      args.trading_paths
       |> List.flatten()
       |> Enum.uniq()
       |> Enum.map(fn x -> {x, {1.0, 0.0}} end)
@@ -28,7 +29,7 @@ defmodule OpportunityWatcher.Impl do
 
     # initialize symbol to trading symbol map
     symbol_to_trading_symbol_map =
-      trading_paths
+      args.trading_paths
       |> List.flatten()
       |> Enum.uniq()
       # take only longs, otherwise we'll have duplicates
@@ -54,7 +55,7 @@ defmodule OpportunityWatcher.Impl do
 
     # initialize symbol to pathids map
     symbol_to_pathids_map =
-      trading_paths
+      args.trading_paths
       |> Enum.with_index()
       |> Enum.flat_map(fn {path, index} ->
         Enum.map(path, fn trading_symbol -> {trading_symbol, index} end)
@@ -67,7 +68,7 @@ defmodule OpportunityWatcher.Impl do
 
     # initialize pathid to profit cap tuple
     pathid_to_profit_cap_tuple =
-      trading_paths
+      args.trading_paths
       |> Enum.with_index()
       |> Enum.map(fn {_path, index} ->
         {index, {0.0, 0.0}}
@@ -79,7 +80,10 @@ defmodule OpportunityWatcher.Impl do
       trading_symbol_to_price_qty_tuple: trading_symbol_to_price_qty_tuple,
       symbol_to_pathids_map: symbol_to_pathids_map,
       pathid_to_profit_cap_tuple: pathid_to_profit_cap_tuple,
-      symbol_to_trading_symbol_map: symbol_to_trading_symbol_map
+      symbol_to_trading_symbol_map: symbol_to_trading_symbol_map,
+      min_capacity: args.min_capacity,
+      min_profit_percentage: args.min_profit_percentage,
+      commission: args.commission
     }
   end
 
@@ -102,7 +106,7 @@ defmodule OpportunityWatcher.Impl do
       affected_pathids
       |> Enum.map(fn pathid ->
         path = state.pathid_to_path_map[pathid]
-        profit = Opportunity.profit(path, new_trading_symbol_to_price_qty_tuple)
+        profit = Opportunity.profit(path, new_trading_symbol_to_price_qty_tuple, state.commission)
         capacity = Opportunity.capacity(path, new_trading_symbol_to_price_qty_tuple, profit)
         {pathid, {profit, capacity}}
       end)
@@ -120,14 +124,19 @@ defmodule OpportunityWatcher.Impl do
       symbol_to_pathids_map: state.symbol_to_pathids_map,
       trading_symbol_to_price_qty_tuple: new_trading_symbol_to_price_qty_tuple,
       pathid_to_profit_cap_tuple: new_pathid_to_profit_cap_tuple,
-      symbol_to_trading_symbol_map: state.symbol_to_trading_symbol_map
+      symbol_to_trading_symbol_map: state.symbol_to_trading_symbol_map,
+      min_capacity: state.min_capacity,
+      min_profit_percentage: state.min_profit_percentage,
+      commission: state.commission
     }
 
     # get newly appeared opportunities
     new_opportunities =
       new_pathid_profit_cap
       # filter nonprofitable, insufficient capacity
-      |> Enum.filter(fn {_, {profit, capacity}} -> profit > 0.0 and capacity > 0.0 end)
+      |> Enum.filter(fn {_, {profit, capacity}} ->
+        profit > state.min_profit_percentage and capacity > state.min_capacity
+      end)
       |> Enum.map(fn {pathid, {profit, capacity}} ->
         path = state.pathid_to_path_map[pathid]
         %Types.Opportunity{path: path, profit: profit, capacity: capacity}
