@@ -10,7 +10,7 @@ defmodule PortfolioManager.ImplTest do
 
   setup do
     # ReservedSymbols used by PortfolioManager
-    {:ok, _pid} = ReservedSymbols.start_link()
+    {:ok, _pid} = Mutex.start_link(name: ReservedSymbols)
     :ok
   end
 

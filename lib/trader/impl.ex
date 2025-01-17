@@ -25,13 +25,9 @@ defmodule Trader.Impl do
     pairs = opportunity.path |> Enum.map(& &1.symbol)
 
     # reserve the trading pairs
-    case ReservedSymbols.reserve(pairs) do
-      :ok -> execute_opportunity_after_reserving_symbols(opportunity)
-      _ -> Logger.info("Failed to reserve trading pairs")
-    end
+    reserve_symbols(pairs)
 
-    # release the trading pairs
-    ReservedSymbols.release(pairs)
+    execute_opportunity_after_reserving_symbols(opportunity)
 
     :ok
   end
@@ -107,5 +103,10 @@ defmodule Trader.Impl do
       used_quantity(trade_report),
       &(&1 - used_quantity(trade_report))
     )
+  end
+
+  defp reserve_symbols(pairs) do
+    pairs
+    |> Enum.each(&Mutex.await(MyApp.Mutex, &1))
   end
 end
