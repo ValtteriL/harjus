@@ -10,7 +10,7 @@ defmodule Trader.Consumer do
 
   @impl ConsumerSupervisor
   def init(max_number_workers) do
-    children = [%{id: Impl, start: {__MODULE__, :handle_event, []}, restart: :transient}]
+    children = [%{id: Impl, start: {__MODULE__, :handle_event, []}, restart: :temporary}]
 
     opts = [
       strategy: :one_for_one,
