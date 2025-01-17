@@ -37,6 +37,8 @@ defmodule PortfolioManager.Impl do
 
         value2 * profit2 * cap2 < value1 * profit1 * cap1
       end)
+      # take only the best (all others will have overlapping pairs and can be ignored)
+      |> List.first()
 
     profitable_opportunities
   end

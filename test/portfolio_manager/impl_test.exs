@@ -25,7 +25,7 @@ defmodule PortfolioManager.ImplTest do
 
     opportunities = [opportunity("USDT", "BTC", 0.1, 0.1)]
 
-    assert Impl.filter_opportunities(state, opportunities) == []
+    assert Impl.filter_opportunities(state, opportunities) == nil
   end
 
   test "prioritizes by relative asset value" do
@@ -39,13 +39,10 @@ defmodule PortfolioManager.ImplTest do
 
     opportunities = [
       usdbtc = opportunity("USDT", "BTC", 1.0, 1.0),
-      btceth = opportunity("BTC", "ETH", 1.0, 1.0)
+      _btceth = opportunity("BTC", "ETH", 1.0, 1.0)
     ]
 
-    assert Impl.filter_opportunities(state, opportunities) == [
-             usdbtc,
-             btceth
-           ]
+    assert Impl.filter_opportunities(state, opportunities) == usdbtc
   end
 
   test "prioritizes by capacity" do
@@ -58,14 +55,11 @@ defmodule PortfolioManager.ImplTest do
       })
 
     opportunities = [
-      smallercap = opportunity("USDT", "BTC", 1.0, 1.0),
+      _smallercap = opportunity("USDT", "BTC", 1.0, 1.0),
       biggercap = opportunity("USDT", "BTC", 1.0, 2.0)
     ]
 
-    assert Impl.filter_opportunities(state, opportunities) == [
-             biggercap,
-             smallercap
-           ]
+    assert Impl.filter_opportunities(state, opportunities) == biggercap
   end
 
   test "prioritizes by profit" do
@@ -78,14 +72,11 @@ defmodule PortfolioManager.ImplTest do
       })
 
     opportunities = [
-      smallerprofit = opportunity("USDT", "BTC", 1.0, 1.0),
+      _smallerprofit = opportunity("USDT", "BTC", 1.0, 1.0),
       biggerprofit = opportunity("USDT", "BTC", 2.0, 1.0)
     ]
 
-    assert Impl.filter_opportunities(state, opportunities) == [
-             biggerprofit,
-             smallerprofit
-           ]
+    assert Impl.filter_opportunities(state, opportunities) == biggerprofit
   end
 
   test "prioritizes by profit * capacity" do
@@ -99,13 +90,10 @@ defmodule PortfolioManager.ImplTest do
 
     opportunities = [
       bigger = opportunity("USDT", "BTC", 1.0, 5.0),
-      smaller = opportunity("USDT", "BTC", 2.0, 2.0)
+      _smaller = opportunity("USDT", "BTC", 2.0, 2.0)
     ]
 
-    assert Impl.filter_opportunities(state, opportunities) == [
-             bigger,
-             smaller
-           ]
+    assert Impl.filter_opportunities(state, opportunities) == bigger
   end
 
   defp opportunity(base_asset, quote_asset, profit, capacity) do
