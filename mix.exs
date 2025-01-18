@@ -55,7 +55,8 @@ defmodule Harjus.MixProject do
       {:castore, "~> 1.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:gen_stage, "~> 1.2.1"},
-      {:mutex, "~> 3.0"}
+      {:mutex, "~> 3.0"},
+      {:decimal, "~> 2.0"}
     ]
   end
 
