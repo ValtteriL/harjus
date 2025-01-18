@@ -70,7 +70,7 @@ defmodule TradeClient.Impl do
           state :: State.t(),
           from :: term(),
           trading_symbol :: TradingSymbol.t(),
-          quantity :: float()
+          quantity :: Decimal.t()
         ) ::
           State.t()
   def market_order(state, from, trading_symbol, quantity) do

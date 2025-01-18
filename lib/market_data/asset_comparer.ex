@@ -12,10 +12,10 @@ defmodule MarketData.AssetComparer do
           symbols :: [
             %{symbol: String.t(), baseAsset: charlist(), quoteAsset: charlist()}
           ],
-          symbol_prices :: %{String.t() => float()},
+          symbol_prices :: %{String.t() => Decimal.t()},
           comparison_asset :: String.t()
         ) ::
-          %{symbol: String.t(), value: float()}
+          %{symbol: String.t(), value: Decimal.t()}
   def calculate_relative_values(symbols, symbol_prices, comparison_asset) do
     # find price of every asset in comparison_asset
 

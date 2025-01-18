@@ -18,7 +18,7 @@ defmodule Types.Opportunity do
 
   @type t :: %__MODULE__{
           path: [TradingSymbol.t()],
-          profit: float(),
-          capacity: float()
+          profit: Decimal.t(),
+          capacity: Decimal.t()
         }
 end

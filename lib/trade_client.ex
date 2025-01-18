@@ -14,7 +14,7 @@ defmodule TradeClient do
 
   @spec market_order(
           trading_symbol :: TradingSymbol.t(),
-          quantity :: float()
+          quantity :: Decimal.t()
         ) :: trade_report :: TradeReport.t()
   def market_order(trading_symbol, quantity) do
     GenServer.call(__MODULE__, {:market_order, {trading_symbol, quantity}})

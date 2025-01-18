@@ -47,6 +47,19 @@ let
       beamDeps = [ bunt file_system jason ];
     };
 
+    decimal = buildMix rec {
+      name = "decimal";
+      version = "2.3.0";
+
+      src = fetchHex {
+        pkg = "decimal";
+        version = "${version}";
+        sha256 = "a4d66355cb29cb47c3cf30e71329e58361cfcb37c34235ef3bf1d7bf3773aeac";
+      };
+
+      beamDeps = [];
+    };
+
     dialyxir = buildMix rec {
       name = "dialyxir";
       version = "1.4.5";
@@ -148,7 +161,7 @@ let
         sha256 = "c5eb0cab91f094599f94d55bc63409236a8ec69a21a67814529e8d5f6cc90b3b";
       };
 
-      beamDeps = [];
+      beamDeps = [ decimal ];
     };
 
     mime = buildMix rec {
@@ -226,7 +239,7 @@ let
         sha256 = "bb9064632b94775a3964642d6a78281c07b7be1319e0016e1643790704e739a2";
       };
 
-      beamDeps = [];
+      beamDeps = [ decimal ];
     };
 
     req = buildMix rec {

@@ -28,7 +28,7 @@ defmodule MarketData do
   @doc """
   Get the relative values of all assets in the market data
   """
-  @spec relative_values(data :: any()) :: %{symbol: String.t(), value: float()}
+  @spec relative_values(data :: any()) :: %{symbol: String.t(), value: Decimal.t()}
   def relative_values(data) do
     Impl.relative_values(data)
   end

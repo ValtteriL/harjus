@@ -17,7 +17,7 @@ defmodule PortfolioManager do
     ]
 
     @type t :: %__MODULE__{
-            relative_asset_values: %{String.t() => float()}
+            relative_asset_values: %{String.t() => Decimal.t()}
           }
   end
 

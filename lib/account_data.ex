@@ -8,7 +8,7 @@ defmodule AccountData do
   @doc """
   Get account balances
   """
-  @spec get_balances() :: %{String.t() => float()}
+  @spec get_balances() :: %{String.t() => Decimal.t()}
   def get_balances do
     Impl.get_balances()
   end

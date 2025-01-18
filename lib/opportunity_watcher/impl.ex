@@ -95,8 +95,8 @@ defmodule OpportunityWatcher.Impl do
       state.trading_symbol_to_price_qty_tuple
       |> Map.replace(state.symbol_to_trading_symbol_map[symbol].long, {ask_price, ask_qty})
       |> Map.replace(state.symbol_to_trading_symbol_map[symbol].short, {
-        bid_price ** -1,
-        bid_qty * bid_price
+        Decimal.div(1, bid_price),
+        Decimal.mult(bid_qty, bid_price)
       })
 
     # recalculate profit and capacity for affected paths
@@ -141,7 +141,8 @@ defmodule OpportunityWatcher.Impl do
       new_pathid_profit_cap
       # filter nonprofitable, insufficient capacity
       |> Enum.filter(fn {_, {profit, capacity}} ->
-        profit > state.min_profit_percentage and capacity > state.min_capacity
+        Decimal.gt?(profit, state.min_profit_percentage) and
+          Decimal.gt?(capacity, state.min_capacity)
       end)
       |> Enum.map(fn {pathid, {profit, capacity}} ->
         path = state.pathid_to_path_map[pathid]

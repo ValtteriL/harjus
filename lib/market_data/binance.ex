@@ -20,7 +20,7 @@ defmodule MarketData.Binance do
   end
 
   # get symbol prices from Binance
-  @spec get_symbol_prices() :: %{String.t() => float()}
+  @spec get_symbol_prices() :: %{String.t() => Decimal.t()}
   def get_symbol_prices do
     base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
     url = "#{base_url}/api/v3/ticker/price"

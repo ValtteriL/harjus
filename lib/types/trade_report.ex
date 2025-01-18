@@ -23,9 +23,9 @@ defmodule Types.TradeReport do
   @type t :: %__MODULE__{
           symbol: String.t(),
           position: :long | :short,
-          quantity_base: float(),
-          quantity_quote: float(),
-          quantity_fee: float(),
+          quantity_base: Decimal.t(),
+          quantity_quote: Decimal.t(),
+          quantity_fee: Decimal.t(),
           fee_currency: String.t()
         }
 end

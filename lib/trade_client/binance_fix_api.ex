@@ -192,7 +192,7 @@ defmodule TradeClient.BinanceFixApi do
     * `trading_symbol` - trading symbol
     * `quantity` - quantity (in quote asset units)
   """
-  @spec market_order_request(integer(), String.t(), TradingSymbol.t(), float(), String.t()) ::
+  @spec market_order_request(integer(), String.t(), TradingSymbol.t(), Decimal.t(), String.t()) ::
           binary()
   def market_order_request(seq_num, sender_comp_id, trading_symbol, quantity, client_order_id) do
     side =
@@ -214,7 +214,7 @@ defmodule TradeClient.BinanceFixApi do
           {Tag.order_type(), OrderType.market()},
           {Tag.side(), side},
           {Tag.symbol(), symbol},
-          {Tag.cash_order_qty(), quantity}
+          {Tag.cash_order_qty(), Decimal.to_float(quantity)}
         ]
       },
       timestamp()
@@ -299,12 +299,12 @@ defmodule TradeClient.BinanceFixApi do
 
     %ExecutionReport{
       order_status: fields[Tag.order_status()],
-      quantity_base: String.to_float(fields[Tag.quantity_base()]),
-      quantity_quote: String.to_float(fields[Tag.quantity_quote()]),
+      quantity_base: Decimal.new(fields[Tag.quantity_base()]),
+      quantity_quote: Decimal.new(fields[Tag.quantity_quote()]),
       symbol: fields[Tag.symbol()],
       side: fields[Tag.side()],
       fee_currency: fields[Tag.fee_currency()],
-      fee_amount: String.to_float(fields[Tag.fee_amount()]),
+      fee_amount: Decimal.new(fields[Tag.fee_amount()]),
       client_order_id: fields[Tag.cl_order_id()]
     }
   end
