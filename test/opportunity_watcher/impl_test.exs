@@ -10,9 +10,9 @@ defmodule OpportunityWatcher.ImplTest do
 
   test "returns opportunities" do
     args = %Args{
-      min_profit_percentage: 0.0,
-      min_capacity: 0.0,
-      commission: 0.0,
+      min_profit_percentage: Decimal.new(0),
+      min_capacity: Decimal.new(0),
+      commission: Decimal.new(0),
       trading_paths: [
         [
           %TradingSymbol{
@@ -33,10 +33,21 @@ defmodule OpportunityWatcher.ImplTest do
 
     state = Impl.new(args)
 
-    {state, opportunities} = Impl.price_update(state, {"BTCUSDT", 10_000.0, 1.0, 10_000.0, 1.0})
+    {state, opportunities} =
+      Impl.price_update(
+        state,
+        {"BTCUSDT", Decimal.new("10000.0"), Decimal.new("1.0"), Decimal.new("10000.0"),
+         Decimal.new("1.0")}
+      )
+
     assert opportunities == []
 
-    {_state, opportunities} = Impl.price_update(state, {"BTCUSDT", 1.0, 1.0, 2.0, 1.0})
+    {_state, opportunities} =
+      Impl.price_update(
+        state,
+        {"BTCUSDT", Decimal.new("1.0"), Decimal.new("1.0"), Decimal.new("2.0"),
+         Decimal.new("1.0")}
+      )
 
     assert opportunities == [
              %Opportunity{
@@ -54,8 +65,8 @@ defmodule OpportunityWatcher.ImplTest do
                    quote_asset: "BTC"
                  }
                ],
-               profit: 1.0,
-               capacity: 1.0
+               profit: Decimal.new("1"),
+               capacity: Decimal.new("1.00")
              }
            ]
   end

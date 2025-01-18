@@ -37,7 +37,9 @@ defmodule PriceStreamer.BinanceSpotStreamsTest do
       })
 
     assert BinanceSpotStreams.parse_message(bookticker_update) ==
-             {:book_ticker_update, {"BTCETH", 0.1, 1.0, 0.2, 3.0}}
+             {:book_ticker_update,
+              {"BTCETH", Decimal.new("0.1"), Decimal.new("1.0"), Decimal.new("0.2"),
+               Decimal.new("3.0")}}
   end
 
   test "unknown message results in unknown" do

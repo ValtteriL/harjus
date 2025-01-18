@@ -7,8 +7,8 @@ defmodule BalanceTest do
 
   setup do
     balance_map = %{
-      "USDT" => 100.0,
-      "BTC" => 1.0
+      "USDT" => Decimal.new("100.0"),
+      "BTC" => Decimal.new("1.0")
     }
 
     {:ok, pid} = Balance.start_link(balance_map)
@@ -16,21 +16,21 @@ defmodule BalanceTest do
   end
 
   test "balances initialized correctly", %{pid: _pid} do
-    assert Balance.get("USDT") == 100.0
-    assert Balance.get("BTC") == 1.0
+    assert Balance.get("USDT") == Decimal.new("100.0")
+    assert Balance.get("BTC") == Decimal.new("1.0")
   end
 
   test "updates balances correctly", %{pid: _pid} do
     # add
-    Balance.update("USDT", 50.0)
-    assert Balance.get("USDT") == 150.0
+    Balance.update("USDT", Decimal.new("50.0"))
+    assert Balance.get("USDT") == Decimal.new("150.0")
 
     # subtract
-    Balance.update("BTC", -0.5)
-    assert Balance.get("BTC") == 0.5
+    Balance.update("BTC", Decimal.new("-0.5"))
+    assert Balance.get("BTC") == Decimal.new("0.5")
   end
 
   test "non-existent asset returns 0", %{pid: _pid} do
-    assert Balance.get("ETH") == 0
+    assert Balance.get("ETH") == Decimal.new(0)
   end
 end

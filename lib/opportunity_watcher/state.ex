@@ -25,8 +25,8 @@ defmodule OpportunityWatcher.State do
             commission: 0.0
 
   @type trading_path() :: [TradingSymbol.t()]
-  @type price_qty_tuple() :: {price :: float(), quantity :: float()}
-  @type profit_cap_tuple() :: {profit :: float(), capacity :: float()}
+  @type price_qty_tuple() :: {price :: Decimal.t(), quantity :: Decimal.t()}
+  @type profit_cap_tuple() :: {profit :: Decimal.t(), capacity :: Decimal.t()}
 
   @type t() :: %__MODULE__{
           pathid_to_path_map: %{integer() => trading_path()},
@@ -36,8 +36,8 @@ defmodule OpportunityWatcher.State do
           symbol_to_trading_symbol_map: %{
             charlist() => %{long: TradingSymbol.t(), short: TradingSymbol.t()}
           },
-          min_capacity: float(),
-          min_profit_percentage: float(),
-          commission: float()
+          min_capacity: Decimal.t(),
+          min_profit_percentage: Decimal.t(),
+          commission: Decimal.t()
         }
 end

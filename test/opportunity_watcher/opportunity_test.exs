@@ -8,7 +8,7 @@ defmodule OpportunityWatcher.OpportunityTest do
   doctest Opportunity
 
   test "correct profit and capacity with 2 symbols" do
-    commission = 0.0
+    commission = Decimal.new(0)
 
     path = [
       %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"},
@@ -17,24 +17,24 @@ defmodule OpportunityWatcher.OpportunityTest do
 
     price_table = %{
       %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"} =>
-        {10_000.0, 1.0},
+        {Decimal.new("10000.0"), Decimal.new("1.0")},
       %TradingSymbol{symbol: "USDTBTC", position: :long, base_asset: "USDT", quote_asset: "BTC"} =>
-        {0.00005, 1337.1337},
+        {Decimal.new("0.00005"), Decimal.new("1337.1337")},
       %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"} =>
-        {0.1, 10.0},
+        {Decimal.new("0.1"), Decimal.new("10.0")},
       %TradingSymbol{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"} =>
-        {0.001, 1.0}
+        {Decimal.new("0.001"), Decimal.new("1.0")}
     }
 
     profit = Opportunity.profit(path, price_table, commission)
     capacity = Opportunity.capacity(path, price_table)
 
-    assert profit == 1.0
-    assert capacity == 1337.1337 / (1 + profit)
+    assert Decimal.eq?(profit, 1)
+    assert Decimal.eq?(capacity, Decimal.div(Decimal.new("1337.1337"), Decimal.add(1, profit)))
   end
 
   test "correct profit and capacity with 2 symbols (long + short)" do
-    commission = 0.0
+    commission = Decimal.new(0)
 
     path = [
       %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"},
@@ -43,20 +43,20 @@ defmodule OpportunityWatcher.OpportunityTest do
 
     price_table = %{
       %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"} =>
-        {1.0, 1.0},
+        {Decimal.new("1.0"), Decimal.new("1.0")},
       %TradingSymbol{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"} =>
-        {2.0 ** -1, 1.0}
+        {Decimal.div(Decimal.new("1"), Decimal.new("2")), Decimal.new("1.0")}
     }
 
     profit = Opportunity.profit(path, price_table, commission)
     capacity = Opportunity.capacity(path, price_table)
 
-    assert profit == 1.0
-    assert capacity == 0.5
+    assert Decimal.eq?(profit, 1)
+    assert Decimal.eq?(capacity, "0.5")
   end
 
   test "correct profit and capacity with 3 symbols" do
-    commission = 0.01
+    commission = Decimal.new("0.01")
 
     path = [
       %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"},
@@ -66,24 +66,28 @@ defmodule OpportunityWatcher.OpportunityTest do
 
     price_table = %{
       %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"} =>
-        {10_000.0, 1.0},
+        {Decimal.new("10000"), Decimal.new("1.0")},
       %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"} =>
-        {0.1, 10.0},
+        {Decimal.new("0.1"), Decimal.new("10")},
       %TradingSymbol{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"} =>
-        {0.001, 1.0}
+        {Decimal.new("0.001"), Decimal.new("1.0")}
     }
 
     profit = Opportunity.profit(path, price_table, commission)
     capacity = Opportunity.capacity(path, price_table)
 
-    assert Float.round(profit, 4) == Float.round((1 - commission) ** length(path) - 1, 4)
-    assert capacity == 1.0
+    assert Decimal.eq?(profit, Decimal.sub(pow(Decimal.sub(1, commission), length(path)), 1))
+    assert Decimal.eq?(capacity, Decimal.new("1.0"))
+  end
+
+  defp pow(x, n) do
+    Enum.reduce(1..(n - 1), x, fn _, acc -> Decimal.mult(acc, x) end)
   end
 
   test "empty path results in 0 profit" do
-    profit = Opportunity.profit([], %{}, 0.1)
+    profit = Opportunity.profit([], %{}, Decimal.new("0.1"))
 
-    assert profit == 0.0
+    assert Decimal.eq?(profit, 0)
   end
 
   test "empty price_quantity_map results in ArgumentError on capacity" do
@@ -121,11 +125,11 @@ defmodule OpportunityWatcher.OpportunityTest do
             position: :long,
             base_asset: "BTC",
             quote_asset: "USDT"
-          } => {10_000.0, 1.0},
+          } => {Decimal.new("10000"), Decimal.new("1.0")},
           %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"} =>
-            {0.1, 10.0}
+            {Decimal.new("0.1"), Decimal.new("10")}
         },
-        0.01
+        Decimal.new("0.01")
       )
     end
   end

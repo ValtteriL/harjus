@@ -20,16 +20,16 @@ defmodule OpportunityWatcher do
     ]
 
     @type t :: %__MODULE__{
-            min_profit_percentage: float(),
-            min_capacity: float(),
-            commission: float(),
+            min_profit_percentage: Decimal.t(),
+            min_capacity: Decimal.t(),
+            commission: Decimal.t(),
             trading_paths: [TradingSymbol.t()]
           }
   end
 
   @type update() ::
-          {symbol :: charlist(), ask_price :: float(), ask_qty :: float(), bid_price :: float(),
-           bid_qty :: float()}
+          {symbol :: charlist(), ask_price :: Decimal.t(), ask_qty :: Decimal.t(),
+           bid_price :: Decimal.t(), bid_qty :: Decimal.t()}
 
   @doc """
   Create new opportunity watcher

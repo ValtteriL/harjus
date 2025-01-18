@@ -19,8 +19,8 @@ defmodule PriceStreamer.BinanceSpotStreams do
           {:error, any()}
           | {:sub_ack}
           | {:book_ticker_update,
-             {symbol :: charlist(), best_ask_price :: float(), best_ask_qty :: float(),
-              best_bid_price :: float(), best_bid_qty :: float()}}
+             {symbol :: charlist(), best_ask_price :: Decimal.t(), best_ask_qty :: Decimal.t(),
+              best_bid_price :: Decimal.t(), best_bid_qty :: Decimal.t()}}
           | {:unknown, map()}
   def parse_message(msg) do
     case Poison.decode(msg) do
@@ -35,10 +35,10 @@ defmodule PriceStreamer.BinanceSpotStreams do
 
           has_keys?(message, ["u", "s", "b", "B", "a", "A"]) ->
             symbol = message["s"]
-            best_ask_price = String.to_float(message["a"])
-            best_ask_qty = String.to_float(message["A"])
-            best_bid_price = String.to_float(message["b"])
-            best_bid_qty = String.to_float(message["B"])
+            best_ask_price = Decimal.new(message["a"])
+            best_ask_qty = Decimal.new(message["A"])
+            best_bid_price = Decimal.new(message["b"])
+            best_bid_qty = Decimal.new(message["B"])
 
             {:book_ticker_update,
              {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}}

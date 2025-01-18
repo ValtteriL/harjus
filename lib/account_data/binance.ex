@@ -3,7 +3,7 @@ defmodule AccountData.Binance do
 
   # Get account balances from Binance
   @spec get_balances(api_key :: String.t(), private_key :: String.t()) ::
-          %{String.t() => float()}
+          %{String.t() => Decimal.t()}
   def get_balances(api_key, private_key) do
     uri = Application.fetch_env!(:harjus, :binance_rest_api_uri)
     signature = sign_request(private_key)

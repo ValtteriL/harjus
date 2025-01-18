@@ -52,7 +52,7 @@ defmodule TradeClient.BinanceFixApiTest do
 
   test "generates correct market order request" do
     sender_comp_id = "asd123"
-    quantity = 1
+    quantity = Decimal.new("1")
     symbol = "BTCUSDT"
     client_order_id = "some_id"
 
@@ -136,12 +136,12 @@ defmodule TradeClient.BinanceFixApiTest do
 
   test "parses execution_report message" do
     status = "1"
-    quantity_base = 2.0
-    quantity_quote = 3.0
+    quantity_base = Decimal.new("2.0")
+    quantity_quote = Decimal.new("3.0")
     symbol = "BTCUSDT"
     side = "4"
     fee_currency = "USDT"
-    fee_amount = 5.0
+    fee_amount = Decimal.new("5.0")
     client_order_id = "some_id"
 
     report_fields =
@@ -207,7 +207,7 @@ defmodule TradeClient.BinanceFixApiTest do
                    base_asset: "ETH",
                    quote_asset: "BTC"
                  },
-                 1,
+                 Decimal.new("1"),
                  client_order_id
                )
              )
