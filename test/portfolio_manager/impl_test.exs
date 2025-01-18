@@ -14,26 +14,9 @@ defmodule PortfolioManager.ImplTest do
     :ok
   end
 
-  test "filters out unprofitable opportunities" do
-    state =
-      Impl.new(%Args{
-        min_profit_percentage: 0.1,
-        min_capacity: 0.1,
-        commission: 0.01,
-        relative_asset_values: %{"BTC" => 1.0, "USDT" => 1.0}
-      })
-
-    opportunities = [opportunity("USDT", "BTC", 0.1, 0.1)]
-
-    assert Impl.filter_opportunities(state, opportunities) == nil
-  end
-
   test "prioritizes by relative asset value" do
     state =
       Impl.new(%Args{
-        min_profit_percentage: 0.1,
-        min_capacity: 0.1,
-        commission: 0.01,
         relative_asset_values: %{"BTC" => 1.0, "ETH" => 0.1, "USDT" => 0.01}
       })
 
@@ -42,15 +25,12 @@ defmodule PortfolioManager.ImplTest do
       _btceth = opportunity("BTC", "ETH", 1.0, 1.0)
     ]
 
-    assert Impl.filter_opportunities(state, opportunities) == usdbtc
+    assert Impl.filter_opportunities(state, opportunities) == [usdbtc]
   end
 
   test "prioritizes by capacity" do
     state =
       Impl.new(%Args{
-        min_profit_percentage: 0.1,
-        min_capacity: 0.1,
-        commission: 0.01,
         relative_asset_values: %{"BTC" => 1.0, "ETH" => 0.1, "USDT" => 0.01}
       })
 
@@ -59,15 +39,12 @@ defmodule PortfolioManager.ImplTest do
       biggercap = opportunity("USDT", "BTC", 1.0, 2.0)
     ]
 
-    assert Impl.filter_opportunities(state, opportunities) == biggercap
+    assert Impl.filter_opportunities(state, opportunities) == [biggercap]
   end
 
   test "prioritizes by profit" do
     state =
       Impl.new(%Args{
-        min_profit_percentage: 0.1,
-        min_capacity: 0.1,
-        commission: 0.01,
         relative_asset_values: %{"BTC" => 1.0, "ETH" => 0.1, "USDT" => 0.01}
       })
 
@@ -76,15 +53,12 @@ defmodule PortfolioManager.ImplTest do
       biggerprofit = opportunity("USDT", "BTC", 2.0, 1.0)
     ]
 
-    assert Impl.filter_opportunities(state, opportunities) == biggerprofit
+    assert Impl.filter_opportunities(state, opportunities) == [biggerprofit]
   end
 
   test "prioritizes by profit * capacity" do
     state =
       Impl.new(%Args{
-        min_profit_percentage: 0.1,
-        min_capacity: 0.1,
-        commission: 0.01,
         relative_asset_values: %{"BTC" => 1.0, "ETH" => 0.1, "USDT" => 0.01}
       })
 
@@ -93,7 +67,7 @@ defmodule PortfolioManager.ImplTest do
       _smaller = opportunity("USDT", "BTC", 2.0, 2.0)
     ]
 
-    assert Impl.filter_opportunities(state, opportunities) == bigger
+    assert Impl.filter_opportunities(state, opportunities) == [bigger]
   end
 
   defp opportunity(base_asset, quote_asset, profit, capacity) do

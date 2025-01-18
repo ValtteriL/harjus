@@ -46,12 +46,15 @@ defmodule Harjus do
         {TradeClient, []},
 
         # pipeline + price streamers
-        {OpportunityWatcher, trading_paths},
-        {PortfolioManager,
-         %PortfolioManager.Args{
+        {OpportunityWatcher,
+         %OpportunityWatcher.Args{
            min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
            min_capacity: Application.fetch_env!(:harjus, :min_capacity),
            commission: Application.fetch_env!(:harjus, :commission),
+           trading_paths: trading_paths
+         }},
+        {PortfolioManager,
+         %PortfolioManager.Args{
            relative_asset_values: MarketData.relative_values(market_data)
          }},
         {Trader, Application.fetch_env!(:harjus, :number_of_traders)}
