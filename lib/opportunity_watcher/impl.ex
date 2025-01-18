@@ -3,10 +3,10 @@ defmodule OpportunityWatcher.Impl do
   Opportunity watcher implementation.
   """
 
+  alias OpportunityWatcher.Args
   alias OpportunityWatcher.Opportunity
   alias OpportunityWatcher.State
   alias Types.TradingSymbol
-  alias OpportunityWatcher.Args
 
   @type update() :: OpportunityWatcher.update()
 
@@ -107,7 +107,13 @@ defmodule OpportunityWatcher.Impl do
       |> Enum.map(fn pathid ->
         path = state.pathid_to_path_map[pathid]
         profit = Opportunity.profit(path, new_trading_symbol_to_price_qty_tuple, state.commission)
-        capacity = Opportunity.capacity(path, new_trading_symbol_to_price_qty_tuple, profit)
+
+        capacity =
+          Opportunity.capacity(
+            path,
+            new_trading_symbol_to_price_qty_tuple
+          )
+
         {pathid, {profit, capacity}}
       end)
 
