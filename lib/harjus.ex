@@ -30,7 +30,6 @@ defmodule Harjus do
 
         # utilities
         {Balance, AccountData.get_balances()},
-        {Mutex, name: ReservedSymbols},
         {TradeClient, []},
 
         # pipeline

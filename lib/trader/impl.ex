@@ -13,7 +13,10 @@ defmodule Trader.Impl do
   @doc """
   Create initial state
   """
-  def new, do: :does_not_matter
+  def new do
+    Mutex.start_link(name: ReservedSymbols)
+    :does_not_matter
+  end
 
   @doc """
   Execute opportunity
@@ -108,6 +111,6 @@ defmodule Trader.Impl do
 
   defp reserve_symbols(pairs) do
     pairs
-    |> Enum.each(&Mutex.await(MyApp.Mutex, &1))
+    |> Enum.each(&Mutex.lock!(ReservedSymbols, &1))
   end
 end

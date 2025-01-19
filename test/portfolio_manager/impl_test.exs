@@ -9,8 +9,6 @@ defmodule PortfolioManager.ImplTest do
   use ExUnit.Case, async: true
 
   setup do
-    # ReservedSymbols used by PortfolioManager
-    {:ok, _pid} = Mutex.start_link(name: ReservedSymbols)
     :ok
   end
 
