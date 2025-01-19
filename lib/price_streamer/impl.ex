@@ -7,6 +7,7 @@ defmodule PriceStreamer.Impl do
   """
 
   alias PriceStreamer.BinanceSpotStreams
+  alias Types.PriceUpdate
 
   use WebSockex
   require Logger
@@ -14,10 +15,17 @@ defmodule PriceStreamer.Impl do
   @doc """
   Start the book streamer
   """
+  def new(symbols) do
+    # start book streamers with 200 symbols each
+    symbols
+    |> Enum.chunk_every(200)
+    |> Enum.map(fn partial_list -> start_link(partial_list) end)
+  end
+
   def start_link(symbols) do
     uri = Application.fetch_env!(:harjus, :binance_websocket_stream_uri)
 
-    {:ok, ws_pid} = WebSockex.start_link(uri, __MODULE__, %{})
+    {:ok, ws_pid} = WebSockex.start_link(uri, __MODULE__, %{parent_pid: self()})
 
     Logger.debug("Subscribing to #{length(symbols)} symbols...")
 
@@ -46,8 +54,15 @@ defmodule PriceStreamer.Impl do
         :ok
 
       {:book_ticker_update, {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}} ->
-        OpportunityWatcher.price_update(
-          {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}
+        PriceStreamer.price_update(
+          state.parent_pid,
+          %PriceUpdate{
+            symbol: symbol,
+            ask_price: best_ask_price,
+            ask_qty: best_ask_qty,
+            bid_price: best_bid_price,
+            bid_qty: best_bid_qty
+          }
         )
 
         :ok

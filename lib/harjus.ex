@@ -21,18 +21,6 @@ defmodule Harjus do
         Application.fetch_env!(:harjus, :max_trading_path_length)
       )
 
-    # multiple book streamers with 200 symbols each
-    price_streamers =
-      symbol_list
-      |> Enum.chunk_every(200)
-      |> Enum.map_reduce(1, fn partial_list, acc ->
-        {Supervisor.child_spec(
-           {PriceStreamer, partial_list},
-           id: String.to_atom("book_streamer_#{acc}")
-         ), acc + 1}
-      end)
-      |> elem(0)
-
     children =
       [
         # Starts a worker by calling: HelloWorld.Worker.start_link(arg)
@@ -45,7 +33,8 @@ defmodule Harjus do
         {Mutex, name: ReservedSymbols},
         {TradeClient, []},
 
-        # pipeline + price streamers
+        # pipeline
+        {PriceStreamer, symbol_list},
         {OpportunityWatcher,
          %OpportunityWatcher.Args{
            min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
@@ -58,11 +47,11 @@ defmodule Harjus do
            relative_asset_values: MarketData.relative_values(market_data)
          }},
         {Trader, Application.fetch_env!(:harjus, :number_of_traders)}
-      ] ++ price_streamers
+      ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :rest_for_one, name: Harjus]
+    # If a child process terminates, all other child processes are terminated
+    # and then all child processes (including the terminated one) are restarted
+    opts = [strategy: :one_for_all, name: Harjus]
 
     Supervisor.start_link(children, opts)
   end

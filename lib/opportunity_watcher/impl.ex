@@ -6,9 +6,8 @@ defmodule OpportunityWatcher.Impl do
   alias OpportunityWatcher.Args
   alias OpportunityWatcher.Opportunity
   alias OpportunityWatcher.State
+  alias Types.PriceUpdate
   alias Types.TradingSymbol
-
-  @type update() :: OpportunityWatcher.update()
 
   @spec new(args :: Args.t()) :: State.t()
   def new(args) do
@@ -87,9 +86,15 @@ defmodule OpportunityWatcher.Impl do
     }
   end
 
-  @spec price_update(state :: State.t(), update :: update()) ::
+  @spec price_update(state :: State.t(), update :: PriceUpdate.t()) ::
           {State.t(), [Types.Opportunity.t()]}
-  def price_update(state, {symbol, ask_price, ask_qty, bid_price, bid_qty}) do
+  def price_update(state, %{
+        symbol: symbol,
+        ask_price: ask_price,
+        ask_qty: ask_qty,
+        bid_price: bid_price,
+        bid_qty: bid_qty
+      }) do
     # update price and quantity on long + short
     new_trading_symbol_to_price_qty_tuple =
       state.trading_symbol_to_price_qty_tuple
