@@ -3,6 +3,7 @@ defmodule Trader.Impl do
   Implementation for trader
   """
 
+  alias Trader.TradeClient
   alias Types.Opportunity
   alias Types.TradeReport
   alias Types.TradingSymbol
@@ -15,6 +16,7 @@ defmodule Trader.Impl do
   """
   def new do
     Mutex.start_link(name: ReservedSymbols)
+    TradeClient.start_link()
     :does_not_matter
   end
 

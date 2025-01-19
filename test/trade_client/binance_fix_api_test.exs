@@ -1,7 +1,7 @@
 defmodule TradeClient.BinanceFixApiTest do
   @moduledoc "Tests for BinanceFixApi"
 
-  alias TradeClient.BinanceFixApi
+  alias Trader.TradeClient.BinanceFixApi
   alias Types.TradingSymbol
 
   use ExUnit.Case

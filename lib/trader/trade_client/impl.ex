@@ -1,4 +1,4 @@
-defmodule TradeClient.Impl do
+defmodule Trader.TradeClient.Impl do
   @moduledoc """
   Implementation of the trade client
 
@@ -8,7 +8,7 @@ defmodule TradeClient.Impl do
   """
 
   require Logger
-  alias TradeClient.BinanceFixApi
+  alias Trader.TradeClient.BinanceFixApi
   alias Types.TradeReport
   alias Types.TradingSymbol
 

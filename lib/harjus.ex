@@ -30,7 +30,6 @@ defmodule Harjus do
 
         # utilities
         {Balance, AccountData.get_balances()},
-        {TradeClient, []},
 
         # pipeline
         {PriceStreamer, symbol_list},

@@ -1,10 +1,10 @@
-defmodule TradeClient do
+defmodule Trader.TradeClient do
   @moduledoc """
   Client for placing trades
   """
 
-  alias TradeClient.Impl
-  alias TradeClient.Server
+  alias Trader.TradeClient.Impl
+  alias Trader.TradeClient.Server
   alias Types.TradeReport
   alias Types.TradingSymbol
 

@@ -1,11 +1,11 @@
-defmodule TradeClient.Server do
+defmodule Trader.TradeClient.Server do
   @moduledoc """
   Server for the trade client
   """
 
   use GenServer
 
-  alias TradeClient.Impl
+  alias Trader.TradeClient.Impl
 
   @impl GenServer
   def init(args) do
