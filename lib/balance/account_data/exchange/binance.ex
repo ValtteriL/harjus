@@ -1,10 +1,18 @@
-defmodule AccountData.Binance do
+defmodule Balance.AccountData.Binance do
   @moduledoc "Binance specific api calls"
 
+  @behaviour Balance.Exchange
+
+  @spec get_balances() :: %{String.t() => Decimal.t()}
+  def get_balances do
+    get_balances(
+      Application.fetch_env!(:harjus, :binance_ed25519_api_key),
+      Application.fetch_env!(:harjus, :binance_ed25519_private_key)
+    )
+  end
+
   # Get account balances from Binance
-  @spec get_balances(api_key :: String.t(), private_key :: String.t()) ::
-          %{String.t() => Decimal.t()}
-  def get_balances(api_key, private_key) do
+  defp get_balances(api_key, private_key) do
     uri = Application.fetch_env!(:harjus, :binance_rest_api_uri)
     signature = sign_request(private_key)
 

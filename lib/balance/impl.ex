@@ -3,10 +3,12 @@ defmodule Balance.Impl do
   Implementation of the balance process
   """
 
+  @exchange Application.compile_env(:harjus, :balance_exchange)
+
   use Agent
 
-  def new(balance_map) do
-    balance_map
+  def new do
+    @exchange.get_balances()
   end
 
   def get(state, asset) do

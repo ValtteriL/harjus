@@ -29,7 +29,7 @@ defmodule Harjus do
         # processes are started in order
 
         # utilities
-        {Balance, AccountData.get_balances()},
+        {Balance, []},
 
         # pipeline
         {PriceStreamer, symbol_list},
