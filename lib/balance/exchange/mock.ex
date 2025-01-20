@@ -1,4 +1,4 @@
-defmodule Balance.AccountData.Mock do
+defmodule Balance.Exchange.Mock do
   @moduledoc "Mock for api calls on account balance"
 
   def get_balances do

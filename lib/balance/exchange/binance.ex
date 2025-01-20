@@ -1,4 +1,4 @@
-defmodule Balance.AccountData.Binance do
+defmodule Balance.Exchange.Binance do
   @moduledoc "Binance specific api calls"
 
   @behaviour Balance.Exchange
