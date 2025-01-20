@@ -27,10 +27,6 @@ defmodule OpportunityWatcher do
           }
   end
 
-  @type update() ::
-          {symbol :: charlist(), ask_price :: Decimal.t(), ask_qty :: Decimal.t(),
-           bid_price :: Decimal.t(), bid_qty :: Decimal.t()}
-
   @doc """
   Create new opportunity watcher
   """
@@ -39,13 +35,10 @@ defmodule OpportunityWatcher do
     GenStage.start_link(Stage, Impl.new(args), name: __MODULE__)
   end
 
-  @doc """
-  Update trading symbol price and quantity
-
-  This triggers a recalculation of arbitrage opportunities
-  """
-  @spec price_update(update :: update()) :: :ok
-  def price_update(update) do
-    GenStage.cast(__MODULE__, {:price_update, update})
+  def child_spec(opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [opts]}
+    }
   end
 end

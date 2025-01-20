@@ -1,4 +1,4 @@
-defmodule TradeClient.Impl do
+defmodule Trader.TradeClient.Exchange.Binance.Impl do
   @moduledoc """
   Implementation of the trade client
 
@@ -8,30 +8,13 @@ defmodule TradeClient.Impl do
   """
 
   require Logger
-  alias TradeClient.BinanceFixApi
+  alias Trader.TradeClient.Exchange.Binance.FixApi
+  alias Trader.TradeClient.Exchange.Binance.State
+
   alias Types.TradeReport
   alias Types.TradingSymbol
 
-  defmodule State do
-    @moduledoc """
-    State of the trade client
-    """
-
-    @enforce_keys [:socket, :seq_num, :sender_comp_id, :outstanding_execution_reports]
-
-    @type t :: %{
-            socket: any(),
-            seq_num: integer(),
-            sender_comp_id: String.t(),
-            outstanding_execution_reports: %{
-              (client_order_id :: String.t()) => from :: any()
-            }
-          }
-
-    defstruct [:socket, :seq_num, :sender_comp_id, :outstanding_execution_reports]
-  end
-
-  @order_filled BinanceFixApi.ExecutionReport.OrderStatus.filled()
+  @order_filled FixApi.ExecutionReport.OrderStatus.filled()
 
   def new do
     api_key = Application.fetch_env!(:harjus, :binance_ed25519_api_key)
@@ -56,7 +39,7 @@ defmodule TradeClient.Impl do
 
     # logon
     :ok =
-      :ssl.send(socket, BinanceFixApi.logon(seq_num, sender_comp_id, api_key, private_key))
+      :ssl.send(socket, FixApi.logon(seq_num, sender_comp_id, api_key, private_key))
 
     %State{
       socket: socket,
@@ -79,7 +62,7 @@ defmodule TradeClient.Impl do
     :ok =
       :ssl.send(
         state.socket,
-        BinanceFixApi.market_order_request(
+        FixApi.market_order_request(
           state.seq_num,
           state.sender_comp_id,
           trading_symbol,
@@ -98,7 +81,7 @@ defmodule TradeClient.Impl do
   end
 
   def handle_fix_message(state, data) do
-    react_to_fix_message(state, BinanceFixApi.parse_message(data))
+    react_to_fix_message(state, FixApi.parse_message(data))
   end
 
   defp react_to_fix_message(state, {:heartbeat}), do: state
@@ -107,7 +90,7 @@ defmodule TradeClient.Impl do
     :ok =
       :ssl.send(
         state.socket,
-        BinanceFixApi.heartbeat(state.seq_num, state.sender_comp_id, test_request_id)
+        FixApi.heartbeat(state.seq_num, state.sender_comp_id, test_request_id)
       )
 
     %{state | seq_num: state.seq_num + 1}
@@ -151,8 +134,8 @@ defmodule TradeClient.Impl do
     state
   end
 
-  @buy_side BinanceFixApi.OrderSide.buy()
-  @sell_side BinanceFixApi.OrderSide.sell()
+  @buy_side FixApi.OrderSide.buy()
+  @sell_side FixApi.OrderSide.sell()
 
   defp executionreport_to_tradereport(execution_report) do
     position =

@@ -1,15 +1,15 @@
-defmodule TradeClient do
+defmodule Trader.TradeClient.Impl do
   @moduledoc """
-  Client for placing trades
+  Implementation of the trade client
   """
 
-  alias TradeClient.Impl
-  alias TradeClient.Server
+  @exchange Application.compile_env(:harjus, :trade_client_exchange)
+
   alias Types.TradeReport
   alias Types.TradingSymbol
 
-  def start_link do
-    GenServer.start_link(Server, Impl.new(), name: __MODULE__)
+  def new do
+    @exchange.new()
   end
 
   @spec market_order(
@@ -17,6 +17,6 @@ defmodule TradeClient do
           quantity :: Decimal.t()
         ) :: trade_report :: TradeReport.t()
   def market_order(trading_symbol, quantity) do
-    GenServer.call(__MODULE__, {:market_order, {trading_symbol, quantity}})
+    @exchange.market_order(trading_symbol, quantity)
   end
 end

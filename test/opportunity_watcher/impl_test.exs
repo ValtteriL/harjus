@@ -4,6 +4,7 @@ defmodule OpportunityWatcher.ImplTest do
   alias OpportunityWatcher.Args
   alias OpportunityWatcher.Impl
   alias Types.Opportunity
+  alias Types.PriceUpdate
   alias Types.TradingSymbol
 
   use ExUnit.Case, async: true
@@ -36,8 +37,13 @@ defmodule OpportunityWatcher.ImplTest do
     {state, opportunities} =
       Impl.price_update(
         state,
-        {"BTCUSDT", Decimal.new("10000.0"), Decimal.new("1.0"), Decimal.new("10000.0"),
-         Decimal.new("1.0")}
+        %PriceUpdate{
+          symbol: "BTCUSDT",
+          ask_price: Decimal.new("10000.0"),
+          ask_qty: Decimal.new("1.0"),
+          bid_price: Decimal.new("10000.0"),
+          bid_qty: Decimal.new("1.0")
+        }
       )
 
     assert opportunities == []
@@ -45,8 +51,13 @@ defmodule OpportunityWatcher.ImplTest do
     {_state, opportunities} =
       Impl.price_update(
         state,
-        {"BTCUSDT", Decimal.new("1.0"), Decimal.new("1.0"), Decimal.new("2.0"),
-         Decimal.new("1.0")}
+        %PriceUpdate{
+          symbol: "BTCUSDT",
+          ask_price: Decimal.new("1.0"),
+          ask_qty: Decimal.new("1.0"),
+          bid_price: Decimal.new("2.0"),
+          bid_qty: Decimal.new("1.0")
+        }
       )
 
     assert opportunities == [

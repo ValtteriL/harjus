@@ -11,9 +11,13 @@ defmodule Balance do
   Starts the balance process
   """
 
-  @spec start_link(balance_map :: %{String.t() => Decimal.t()}) :: {:ok, pid}
-  def start_link(balance_map) do
-    Agent.start_link(fn -> Impl.new(balance_map) end, name: __MODULE__)
+  def start_link do
+    start_link([])
+  end
+
+  @spec start_link(args :: any()) :: {:ok, pid}
+  def start_link(_args) do
+    Agent.start_link(fn -> Impl.new() end, name: __MODULE__)
   end
 
   @doc """

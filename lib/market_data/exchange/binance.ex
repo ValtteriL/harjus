@@ -1,10 +1,9 @@
-defmodule MarketData.Binance do
+defmodule MarketData.Exchange.Binance do
   @moduledoc "Binance specific api calls on market data"
 
+  @behaviour MarketData.Exchange
+
   # Get all trading pairs from Binance
-  @spec get_symbols() :: [
-          %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
-        ]
   def get_symbols do
     base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
     url = "#{base_url}/api/v3/exchangeInfo"
@@ -20,7 +19,6 @@ defmodule MarketData.Binance do
   end
 
   # get symbol prices from Binance
-  @spec get_symbol_prices() :: %{String.t() => Decimal.t()}
   def get_symbol_prices do
     base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
     url = "#{base_url}/api/v3/ticker/price"

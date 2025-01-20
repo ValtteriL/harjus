@@ -7,6 +7,7 @@ defmodule PriceStreamer do
   """
 
   alias PriceStreamer.Impl
+  alias PriceStreamer.Stage
 
   @doc """
   Start the book streamer
@@ -15,5 +16,26 @@ defmodule PriceStreamer do
     symbols: list of trading symbols to subscribe updates on
   """
   @spec start_link(symbols :: [String.t()]) :: {:ok, pid()}
-  defdelegate start_link(args), to: Impl
+  def start_link(symbols) do
+    GenStage.start_link(Stage, Impl.new(symbols))
+  end
+
+  @doc """
+  Send a price update to the price streamer
+
+  Args:
+    pid: pid of the price streamer
+    update: price update to send
+  """
+  @spec price_update(pid :: pid(), update :: Types.PriceUpdate.t()) :: :ok
+  def price_update(pid, update) do
+    GenStage.cast(pid, {:price_update, update})
+  end
+
+  def child_spec(opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [opts]}
+    }
+  end
 end
