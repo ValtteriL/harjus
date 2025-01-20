@@ -3,7 +3,7 @@ defmodule MarketData.Impl do
   Market data implementation
   """
 
-  @exchange Application.compile_env(:harjus, :exchange)
+  @exchange Application.compile_env(:harjus, :marketdata_exchange)
 
   alias MarketData.Arbmapper
   alias MarketData.AssetComparer
