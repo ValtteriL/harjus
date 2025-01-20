@@ -11,8 +11,12 @@ defmodule Balance do
   Starts the balance process
   """
 
-  @spec start_link() :: {:ok, pid}
   def start_link do
+    start_link([])
+  end
+
+  @spec start_link(args :: any()) :: {:ok, pid}
+  def start_link(_args) do
     Agent.start_link(fn -> Impl.new() end, name: __MODULE__)
   end
 

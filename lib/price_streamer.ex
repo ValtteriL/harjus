@@ -31,4 +31,11 @@ defmodule PriceStreamer do
   def price_update(pid, update) do
     GenStage.cast(pid, {:price_update, update})
   end
+
+  def child_spec(opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [opts]}
+    }
+  end
 end

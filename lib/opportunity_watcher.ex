@@ -34,4 +34,11 @@ defmodule OpportunityWatcher do
   def start_link(args) do
     GenStage.start_link(Stage, Impl.new(args), name: __MODULE__)
   end
+
+  def child_spec(opts) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [opts]}
+    }
+  end
 end
