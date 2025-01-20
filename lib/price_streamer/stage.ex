@@ -7,8 +7,6 @@ defmodule PriceStreamer.Stage do
 
   use GenStage
 
-  alias OpportunityWatcher.Impl
-  alias OpportunityWatcher.State
   alias Types.Opportunity
   alias Types.PriceUpdate
 
@@ -21,11 +19,10 @@ defmodule PriceStreamer.Stage do
   def handle_demand(_demand, state), do: {:noreply, [], state}
 
   @impl GenStage
-  @spec handle_cast({:price_update, update :: PriceUpdate.t()}, state :: State.t()) ::
-          {:noreply, [Opportunity.t()], State.t()}
+  @spec handle_cast({:price_update, update :: PriceUpdate.t()}, state :: any()) ::
+          {:noreply, [Opportunity.t()], any()}
   def handle_cast({:price_update, update}, state) do
     # Dispatch newly appeared opportunities immediately
-    {new_state, opportunities} = Impl.price_update(state, update)
-    {:noreply, opportunities, new_state}
+    {:noreply, [update], state}
   end
 end

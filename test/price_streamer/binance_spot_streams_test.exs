@@ -1,10 +1,10 @@
-defmodule PriceStreamer.BinanceSpotStreamsTest do
-  @moduledoc "Tests for BinanceSpotStreams"
+defmodule PriceStreamer.Exchange.Binance.SpotStreamTest do
+  @moduledoc "Tests for SpotStream"
 
-  alias PriceStreamer.BinanceSpotStreams
+  alias PriceStreamer.Exchange.Binance.SpotStream
 
   use ExUnit.Case
-  doctest BinanceSpotStreams
+  doctest SpotStream
 
   test "generates correct subscription message" do
     symbols = [
@@ -13,7 +13,7 @@ defmodule PriceStreamer.BinanceSpotStreamsTest do
       "LTCBTC"
     ]
 
-    subscription_msg = BinanceSpotStreams.subscribe_message(symbols)
+    subscription_msg = SpotStream.subscribe_message(symbols)
 
     assert subscription_msg ==
              "{\"params\":[\"btceth@bookTicker\",\"ethltc@bookTicker\",\"ltcbtc@bookTicker\"],\"method\":\"SUBSCRIBE\",\"id\":\"sub_id\"}"
@@ -22,7 +22,7 @@ defmodule PriceStreamer.BinanceSpotStreamsTest do
   test "parses subscription ack" do
     subscription_ack = Poison.encode!(%{id: "sub_id", result: nil})
 
-    assert BinanceSpotStreams.parse_message(subscription_ack) == {:sub_ack}
+    assert SpotStream.parse_message(subscription_ack) == {:sub_ack}
   end
 
   test "parses bookticker update" do
@@ -36,7 +36,7 @@ defmodule PriceStreamer.BinanceSpotStreamsTest do
         u: 123_456
       })
 
-    assert BinanceSpotStreams.parse_message(bookticker_update) ==
+    assert SpotStream.parse_message(bookticker_update) ==
              {:book_ticker_update,
               {"BTCETH", Decimal.new("0.1"), Decimal.new("1.0"), Decimal.new("0.2"),
                Decimal.new("3.0")}}
@@ -45,13 +45,13 @@ defmodule PriceStreamer.BinanceSpotStreamsTest do
   test "unknown message results in unknown" do
     unknown_message = Poison.encode!(%{hello: "world"})
 
-    assert BinanceSpotStreams.parse_message(unknown_message) ==
+    assert SpotStream.parse_message(unknown_message) ==
              {:unknown, Poison.decode!(unknown_message)}
   end
 
   test "invalid json results in error" do
     invalid_message = "invalid message"
 
-    assert {:error, _} = BinanceSpotStreams.parse_message(invalid_message)
+    assert {:error, _} = SpotStream.parse_message(invalid_message)
   end
 end
