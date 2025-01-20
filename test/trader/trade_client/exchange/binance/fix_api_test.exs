@@ -1,26 +1,26 @@
-defmodule TradeClient.BinanceFixApiTest do
-  @moduledoc "Tests for BinanceFixApi"
+defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
+  @moduledoc "Tests for FixApi"
 
-  alias Trader.TradeClient.BinanceFixApi
+  alias Trader.TradeClient.Exchange.Binance.FixApi
   alias Types.TradingSymbol
 
   use ExUnit.Case
-  doctest BinanceFixApi
+  doctest FixApi
 
   test "generates correct heartbeat message" do
     sender_comp_id = "asd123"
     id = "some_id"
-    msg_type_part = "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.heartbeat()}"
+    msg_type_part = "#{FixApi.Tag.msg_type()}=#{FixApi.MsgType.heartbeat()}"
 
     # correct msg type
     <<"8=FIX.4.4", 1, "9=68", 1, ^msg_type_part::binary, rest::binary>> =
-      BinanceFixApi.heartbeat(1, sender_comp_id, id)
+      FixApi.heartbeat(1, sender_comp_id, id)
 
     # correct sender comp id
-    assert String.contains?(rest, "#{BinanceFixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
+    assert String.contains?(rest, "#{FixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
 
     # rest contains id
-    assert String.contains?(rest, "#{BinanceFixApi.Tag.test_request_id()}=#{id}")
+    assert String.contains?(rest, "#{FixApi.Tag.test_request_id()}=#{id}")
   end
 
   test "generates correct logon request" do
@@ -30,7 +30,7 @@ defmodule TradeClient.BinanceFixApiTest do
     privkey = "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
 
     logon_msg =
-      BinanceFixApi.logon(
+      FixApi.logon(
         1,
         sender_comp_id,
         pubkey,
@@ -40,14 +40,14 @@ defmodule TradeClient.BinanceFixApiTest do
     # correct msg type
     assert String.contains?(
              logon_msg,
-             "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.logon()}"
+             "#{FixApi.Tag.msg_type()}=#{FixApi.MsgType.logon()}"
            )
 
     # correct user
-    assert String.contains?(logon_msg, "#{BinanceFixApi.Tag.username()}=#{pubkey}")
+    assert String.contains?(logon_msg, "#{FixApi.Tag.username()}=#{pubkey}")
 
     # correct sender comp id
-    assert String.contains?(logon_msg, "#{BinanceFixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
+    assert String.contains?(logon_msg, "#{FixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
   end
 
   test "generates correct market order request" do
@@ -57,7 +57,7 @@ defmodule TradeClient.BinanceFixApiTest do
     client_order_id = "some_id"
 
     msg =
-      BinanceFixApi.market_order_request(
+      FixApi.market_order_request(
         1,
         sender_comp_id,
         %TradingSymbol{symbol: symbol, position: :long, base_asset: "BTC", quote_asset: "USDT"},
@@ -68,25 +68,25 @@ defmodule TradeClient.BinanceFixApiTest do
     # correct msg type
     assert String.contains?(
              msg,
-             "#{BinanceFixApi.Tag.msg_type()}=#{BinanceFixApi.MsgType.single_order_entry()}"
+             "#{FixApi.Tag.msg_type()}=#{FixApi.MsgType.single_order_entry()}"
            )
 
     # correct symbol
-    assert String.contains?(msg, "#{BinanceFixApi.Tag.symbol()}=#{symbol}")
+    assert String.contains?(msg, "#{FixApi.Tag.symbol()}=#{symbol}")
 
     # correct side
-    assert String.contains?(msg, "#{BinanceFixApi.Tag.side()}=#{BinanceFixApi.OrderSide.buy()}")
+    assert String.contains?(msg, "#{FixApi.Tag.side()}=#{FixApi.OrderSide.buy()}")
 
     # correct quantity
-    assert String.contains?(msg, "#{BinanceFixApi.Tag.cash_order_qty()}=#{quantity}")
+    assert String.contains?(msg, "#{FixApi.Tag.cash_order_qty()}=#{quantity}")
 
     # correct sender comp id
-    assert String.contains?(msg, "#{BinanceFixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
+    assert String.contains?(msg, "#{FixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
 
     # correct order type
     assert String.contains?(
              msg,
-             "#{BinanceFixApi.Tag.order_type()}=#{BinanceFixApi.OrderType.market()}"
+             "#{FixApi.Tag.order_type()}=#{FixApi.OrderType.market()}"
            )
   end
 
@@ -97,7 +97,7 @@ defmodule TradeClient.BinanceFixApiTest do
       "8=FIX.4.4|9=12|35=0|34=1|49=binance|56=client|112=#{id}|52=20210101-00:00:00.000|10=000|"
 
     assert {:heartbeat} ==
-             BinanceFixApi.parse_message(str_message_to_binary(msg))
+             FixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses test_request message" do
@@ -107,7 +107,7 @@ defmodule TradeClient.BinanceFixApiTest do
       "8=FIX.4.4|9=12|35=1|34=1|49=binance|56=client|112=#{id}|52=20210101-00:00:00.000|10=000|"
 
     assert {:test_request, id} ==
-             BinanceFixApi.parse_message(str_message_to_binary(msg))
+             FixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses reject message" do
@@ -116,7 +116,7 @@ defmodule TradeClient.BinanceFixApiTest do
     msg =
       "8=FIX.4.4|9=12|35=3|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|58=#{reason}|10=000|"
 
-    assert {:reject, reason} == BinanceFixApi.parse_message(str_message_to_binary(msg))
+    assert {:reject, reason} == FixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses logon message" do
@@ -124,14 +124,14 @@ defmodule TradeClient.BinanceFixApiTest do
     msg =
       "8=FIX.4.4|9=12|35=A|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|98=0|108=30|10=000|"
 
-    assert {:logon} == BinanceFixApi.parse_message(str_message_to_binary(msg))
+    assert {:logon} == FixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses news message" do
     msg =
       "8=FIX.4.4|9=12|35=B|34=1|49=binance|56=client|112=another_id|52=20210101-00:00:00.000|10=000|"
 
-    assert {:news} == BinanceFixApi.parse_message(str_message_to_binary(msg))
+    assert {:news} == FixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses execution_report message" do
@@ -146,14 +146,14 @@ defmodule TradeClient.BinanceFixApiTest do
 
     report_fields =
       [
-        pair(BinanceFixApi.Tag.order_status(), status),
-        pair(BinanceFixApi.Tag.quantity_base(), quantity_base),
-        pair(BinanceFixApi.Tag.quantity_quote(), quantity_quote),
-        pair(BinanceFixApi.Tag.symbol(), symbol),
-        pair(BinanceFixApi.Tag.side(), side),
-        pair(BinanceFixApi.Tag.fee_currency(), fee_currency),
-        pair(BinanceFixApi.Tag.fee_amount(), fee_amount),
-        pair(BinanceFixApi.Tag.cl_order_id(), client_order_id)
+        pair(FixApi.Tag.order_status(), status),
+        pair(FixApi.Tag.quantity_base(), quantity_base),
+        pair(FixApi.Tag.quantity_quote(), quantity_quote),
+        pair(FixApi.Tag.symbol(), symbol),
+        pair(FixApi.Tag.side(), side),
+        pair(FixApi.Tag.fee_currency(), fee_currency),
+        pair(FixApi.Tag.fee_amount(), fee_amount),
+        pair(FixApi.Tag.cl_order_id(), client_order_id)
       ]
       |> Enum.join("|")
 
@@ -161,7 +161,7 @@ defmodule TradeClient.BinanceFixApiTest do
       "8=FIX.4.4|9=12|35=8|34=1|49=binance|56=client|#{report_fields}|52=20210101-00:00:00.000|10=000|"
 
     assert {:execution_report,
-            %BinanceFixApi.ExecutionReport{
+            %FixApi.ExecutionReport{
               order_status: status,
               quantity_base: quantity_base,
               quantity_quote: quantity_quote,
@@ -171,12 +171,12 @@ defmodule TradeClient.BinanceFixApiTest do
               fee_amount: fee_amount,
               client_order_id: client_order_id
             }} ==
-             BinanceFixApi.parse_message(str_message_to_binary(msg))
+             FixApi.parse_message(str_message_to_binary(msg))
   end
 
   test "parses unknown message" do
     msg = "whateva"
-    assert {:unknown, msg} == BinanceFixApi.parse_message(msg)
+    assert {:unknown, msg} == FixApi.parse_message(msg)
   end
 
   test "parses own messages" do
@@ -189,16 +189,14 @@ defmodule TradeClient.BinanceFixApiTest do
     privkey = "MC4CAQAwBQYDK2VwBCIEIIJEYWtGBrhACmb9Dvy+qa8WEf0lQOl1s4CLIAB9m89u"
 
     assert {:heartbeat} ==
-             BinanceFixApi.parse_message(BinanceFixApi.heartbeat(seq, sender_comp_id, id))
+             FixApi.parse_message(FixApi.heartbeat(seq, sender_comp_id, id))
 
     assert {:logon} ==
-             BinanceFixApi.parse_message(
-               BinanceFixApi.logon(seq, sender_comp_id, pubkey, privkey)
-             )
+             FixApi.parse_message(FixApi.logon(seq, sender_comp_id, pubkey, privkey))
 
     assert {:unknown, _} =
-             BinanceFixApi.parse_message(
-               BinanceFixApi.market_order_request(
+             FixApi.parse_message(
+               FixApi.market_order_request(
                  seq,
                  sender_comp_id,
                  %TradingSymbol{

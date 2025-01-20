@@ -16,7 +16,7 @@ defmodule Trader.Impl do
   """
   def new do
     Mutex.start_link(name: ReservedSymbols)
-    TradeClient.start_link()
+    TradeClient.new()
     :does_not_matter
   end
 
