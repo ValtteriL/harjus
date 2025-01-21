@@ -37,5 +37,9 @@ defmodule MarketData.AssetComparer do
     Map.merge(btc_prices_quote, btc_prices_base)
     # add the comparison_asset itself
     |> Map.put(comparison_asset, 1.0)
+
+    # convert floats to decimals
+    |> Enum.map(fn {k, v} -> {k, Decimal.from_float(v)} end)
+    |> Enum.into(%{})
   end
 end

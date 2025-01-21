@@ -16,7 +16,7 @@ defmodule OpportunityWatcher.Stage do
   @impl GenStage
   # Buffer of one - MOST events discarded if no demand available
   def init(state),
-    do: {:producer_consumer, state, subscribe_to: [{PriceStreamer}]}
+    do: {:producer_consumer, state, subscribe_to: [PriceStreamer]}
 
   @impl GenStage
   # silence logging of discarded events

@@ -1,6 +1,6 @@
 defmodule ConfigHelper do
   @moduledoc "Functions for reading config values in correct type"
-  @type config_type :: :str | :int | :bool | :float | :list | :atom
+  @type config_type :: :str | :int | :bool | :decimal | :list | :atom
 
   @doc """
   Get value from environment variable, converting it to the given type if needed.
@@ -31,7 +31,7 @@ defmodule ConfigHelper do
   defp get_with_type(val, :int), do: String.to_integer(val)
   defp get_with_type("true", :bool), do: true
   defp get_with_type("false", :bool), do: false
-  defp get_with_type(val, :float), do: String.to_float(val)
+  defp get_with_type(val, :decimal), do: Decimal.new(val)
   defp get_with_type(val, :list), do: String.split(val, ",")
   defp get_with_type(val, type), do: raise("Cannot convert to #{inspect(type)}: #{inspect(val)}")
 end

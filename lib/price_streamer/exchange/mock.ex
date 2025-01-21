@@ -6,13 +6,13 @@ defmodule PriceStreamer.Exchange.Mock do
   @spec new([String.t()]) :: :ok
   def new(symbols) do
     Task.start_link(fn ->
-      simulate_updates(symbols, self())
+      simulate_updates(symbols)
     end)
 
     :ok
   end
 
-  def simulate_updates(symbols, pid) do
+  def simulate_updates(symbols) do
     # choose a random symbol every 1 second
 
     symbol = Enum.random(symbols)
@@ -23,7 +23,7 @@ defmodule PriceStreamer.Exchange.Mock do
 
     bid_price = ask_price - 1
 
-    PriceStreamer.price_update(pid, %PriceUpdate{
+    PriceStreamer.price_update(%PriceUpdate{
       symbol: symbol,
       ask_price: Decimal.new(ask_price),
       ask_qty: Decimal.new(ask_qty),
@@ -31,7 +31,7 @@ defmodule PriceStreamer.Exchange.Mock do
       bid_qty: Decimal.new(bid_qty)
     })
 
-    :timer.sleep(1000)
-    simulate_updates(symbols, pid)
+    :timer.sleep(100)
+    simulate_updates(symbols)
   end
 end

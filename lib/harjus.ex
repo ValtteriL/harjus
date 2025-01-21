@@ -8,10 +8,11 @@ defmodule Harjus do
 
   @impl Application
   def start(_type, _args) do
-    # discover trading paths
-    Logger.info("Starting Harjus")
-    Logger.info("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
+    IO.puts(banner())
 
+    Logger.info("Starting Harjus")
+
+    # discover trading paths
     market_data = MarketData.new()
 
     {trading_paths, symbol_list} =
@@ -20,6 +21,9 @@ defmodule Harjus do
         Application.fetch_env!(:harjus, :start_symbols),
         Application.fetch_env!(:harjus, :max_trading_path_length)
       )
+
+    Logger.info("Trading symbols: #{length(symbol_list)}")
+    Logger.info("Trading paths: #{length(trading_paths)}")
 
     children =
       [
@@ -32,23 +36,19 @@ defmodule Harjus do
         {Balance, []},
 
         # pipeline
-        {PriceStreamer, [symbol_list]},
+        {PriceStreamer, symbol_list},
         {OpportunityWatcher,
-         [
-           %OpportunityWatcher.Args{
-             min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
-             min_capacity: Application.fetch_env!(:harjus, :min_capacity),
-             commission: Application.fetch_env!(:harjus, :commission),
-             trading_paths: trading_paths
-           }
-         ]},
+         %OpportunityWatcher.Args{
+           min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
+           min_capacity: Application.fetch_env!(:harjus, :min_capacity),
+           commission: Application.fetch_env!(:harjus, :commission),
+           trading_paths: trading_paths
+         }},
         {PortfolioManager,
-         [
-           %PortfolioManager.Args{
-             relative_asset_values: MarketData.relative_values(market_data)
-           }
-         ]},
-        {Trader, [Application.fetch_env!(:harjus, :number_of_traders)]}
+         %PortfolioManager.Args{
+           relative_asset_values: MarketData.relative_values(market_data)
+         }},
+        {Trader, Application.fetch_env!(:harjus, :number_of_traders)}
       ]
 
     # If a child process terminates, all other child processes are terminated
@@ -56,5 +56,29 @@ defmodule Harjus do
     opts = [strategy: :one_for_all, name: Harjus]
 
     Supervisor.start_link(children, opts)
+  end
+
+  defp banner do
+    """
+
+                      :=======:.
+                    :============.
+                  .-==+++=++======-
+              .:==========++*+++==+=.
+           :==-=--=---===+=====++=:
+        :=**=::--=====Harjus======+=:.
+      :++++=:-:=-=-==-==============+++=:
+     ==+=::-:-=-=========+=====+===++===+*=:
+    :=++=:::==:-=====-::::::-========+*+++++=.
+    :++--:-:-:::::::..    .=+==+=::--==++++++=.
+     ..                     :.  .    :=*+-+++***=:
+                                       :+:.=**+*=:
+                                           :***.
+                                            =++:
+                                            .*+:
+                                             =+:
+                                             :=
+
+    """
   end
 end

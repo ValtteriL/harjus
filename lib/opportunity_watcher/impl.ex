@@ -3,6 +3,7 @@ defmodule OpportunityWatcher.Impl do
   Opportunity watcher implementation.
   """
 
+  require Logger
   alias OpportunityWatcher.Args
   alias OpportunityWatcher.Opportunity
   alias OpportunityWatcher.State
@@ -23,7 +24,7 @@ defmodule OpportunityWatcher.Impl do
       args.trading_paths
       |> List.flatten()
       |> Enum.uniq()
-      |> Enum.map(fn x -> {x, {1.0, 0.0}} end)
+      |> Enum.map(fn x -> {x, {Decimal.new(1), Decimal.new(0)}} end)
       |> Map.new()
 
     # initialize symbol to trading symbol map
@@ -153,6 +154,8 @@ defmodule OpportunityWatcher.Impl do
         path = state.pathid_to_path_map[pathid]
         %Types.Opportunity{path: path, profit: profit, capacity: capacity}
       end)
+
+    Logger.debug("Opportunities: #{inspect(new_opportunities)}")
 
     {new_state, new_opportunities}
   end

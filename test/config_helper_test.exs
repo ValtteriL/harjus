@@ -15,10 +15,11 @@ defmodule ConfigHelperTest do
     assert ConfigHelper.get_env(env_name, :no_default, :atom) == :this_should_become_an_atom
   end
 
-  test "parses float" do
+  test "parses decimal" do
     env_name = "test_env"
-    System.put_env(env_name, "42.42")
-    assert ConfigHelper.get_env(env_name, :no_default, :float) == 42.42
+    dec = "42.42"
+    System.put_env(env_name, dec)
+    assert ConfigHelper.get_env(env_name, :no_default, :decimal) == Decimal.new(dec)
   end
 
   test "parses bool" do

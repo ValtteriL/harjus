@@ -23,9 +23,9 @@ defmodule MarketData.AssetComparerTest do
     }
 
     expected = %{
-      "BTC" => 1.0,
-      "USDT" => 1 / 50_000.0,
-      "ETH" => 0.05
+      "BTC" => Decimal.new("1.0"),
+      "ETH" => Decimal.new("0.05"),
+      "USDT" => Decimal.new("0.00002")
     }
 
     assert AssetComparer.calculate_relative_values(symbols, symbol_prices, symbol) == expected
