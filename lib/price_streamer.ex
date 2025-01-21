@@ -17,7 +17,7 @@ defmodule PriceStreamer do
   """
   @spec start_link(symbols :: [String.t()]) :: {:ok, pid()}
   def start_link(symbols) do
-    GenStage.start_link(Stage, Impl.new(symbols))
+    GenStage.start_link(Stage, Impl.new(symbols), name: __MODULE__)
   end
 
   @doc """
