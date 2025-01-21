@@ -8,6 +8,9 @@ defmodule Harjus do
 
   @impl Application
   def start(_type, _args) do
+
+    IO.puts(banner())
+
     # discover trading paths
     Logger.info("Starting Harjus")
     Logger.info("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
@@ -56,5 +59,29 @@ defmodule Harjus do
     opts = [strategy: :one_for_all, name: Harjus]
 
     Supervisor.start_link(children, opts)
+  end
+
+  defp banner do
+    """
+
+                      :=======:.
+                    :============.
+                  .-==+++=++======-
+              .:==========++*+++==+=.
+           :==-=--=---===+=====++=:
+        :=**=::--=====Harjus======+=:.
+      :++++=:-:=-=-==-==============+++=:
+     ==+=::-:-=-=========+=====+===++===+*=:
+    :=++=:::==:-=====-::::::-========+*+++++=.
+    :++--:-:-:::::::..    .=+==+=::--==++++++=.
+     ..                     :.  .    :=*+-+++***=:
+                                       :+:.=**+*=:
+                                           :***.
+                                            =++:
+                                            .*+:
+                                             =+:
+                                             :=
+
+    """
   end
 end
