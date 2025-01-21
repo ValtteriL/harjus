@@ -3,6 +3,7 @@ defmodule OpportunityWatcher.Impl do
   Opportunity watcher implementation.
   """
 
+  require Logger
   alias OpportunityWatcher.Args
   alias OpportunityWatcher.Opportunity
   alias OpportunityWatcher.State
@@ -153,6 +154,8 @@ defmodule OpportunityWatcher.Impl do
         path = state.pathid_to_path_map[pathid]
         %Types.Opportunity{path: path, profit: profit, capacity: capacity}
       end)
+
+    Logger.debug("Opportunities: #{inspect(new_opportunities)}")
 
     {new_state, new_opportunities}
   end

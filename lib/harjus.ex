@@ -8,13 +8,11 @@ defmodule Harjus do
 
   @impl Application
   def start(_type, _args) do
-
     IO.puts(banner())
 
-    # discover trading paths
     Logger.info("Starting Harjus")
-    Logger.info("Start symbols: #{inspect(Application.fetch_env!(:harjus, :start_symbols))}")
 
+    # discover trading paths
     market_data = MarketData.new()
 
     {trading_paths, symbol_list} =
@@ -23,6 +21,9 @@ defmodule Harjus do
         Application.fetch_env!(:harjus, :start_symbols),
         Application.fetch_env!(:harjus, :max_trading_path_length)
       )
+
+    Logger.info("Trading symbols: #{length(symbol_list)}")
+    Logger.info("Trading paths: #{length(trading_paths)}")
 
     children =
       [

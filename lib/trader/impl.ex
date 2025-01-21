@@ -25,7 +25,7 @@ defmodule Trader.Impl do
   """
   @spec execute_opportunity(opportunity :: Opportunity.t()) :: :ok
   def execute_opportunity(opportunity) do
-    Logger.info("Executing opportunity: #{inspect(opportunity)}")
+    Logger.debug("Attempting execution with: #{inspect(opportunity)}")
 
     pairs = opportunity.path |> Enum.map(& &1.symbol)
 
@@ -49,8 +49,14 @@ defmodule Trader.Impl do
   end
 
   defp execute_opportunity_after_reserving_budget(opportunity, budget) do
+    Logger.notice("Executing opportunity #{opportunity} with budget: #{budget}")
+
     # execute trades
     balance_delta = trade(opportunity.path, budget)
+
+    Logger.notice(
+      "Opportunity #{opportunity} executed successfully. Balance delta: #{balance_delta}"
+    )
 
     # update balances
     balance_delta |> Enum.each(&Balance.update(&1, balance_delta[&1]))
@@ -62,10 +68,8 @@ defmodule Trader.Impl do
   end
 
   defp trade([trading_symbol | rest], quantity, balance_delta) do
-    Logger.debug("Trading #{trading_symbol.symbol}")
-
     report = TradeClient.market_order(trading_symbol, quantity)
-    Logger.debug(report)
+    Logger.debug("Trade #{trading_symbol} completed. Report: #{report}")
 
     # update fee balance right away
     Balance.update(report.fee_currency, Decimal.negate(report.quantity_fee))
