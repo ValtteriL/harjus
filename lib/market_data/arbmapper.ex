@@ -58,7 +58,8 @@ defmodule MarketData.Arbmapper do
     graph = :digraph.new()
 
     # Add symbols as vertices
-    uniq_base_symbols = symbols |> Enum.map(fn x -> x[:baseAsset] end) |> Enum.uniq()
+    uniq_base_symbols =
+      symbols |> Enum.flat_map(fn x -> [x[:baseAsset], x[:quoteAsset]] end) |> Enum.uniq()
 
     for s <- uniq_base_symbols do
       :digraph.add_vertex(graph, s)

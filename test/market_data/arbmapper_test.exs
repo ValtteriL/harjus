@@ -142,6 +142,56 @@ defmodule MarketData.ArbmapperTest do
                ],
                ["LTCBTC", "ETHLTC", "BTCETH"]
              }
+
+    symbols = [
+      %{symbol: "BTCUSDT", baseAsset: "BTC", quoteAsset: "USDT"},
+      %{symbol: "ETHBTC", baseAsset: "ETH", quoteAsset: "BTC"},
+      %{symbol: "ETHUSDT", baseAsset: "ETH", quoteAsset: "USDT"}
+    ]
+
+    assert Arbmapper.generate_trading_paths(symbols, starting_symbols: ["BTC"]) ==
+             {[
+                [
+                  %Types.TradingSymbol{
+                    base_asset: "ETH",
+                    position: :long,
+                    quote_asset: "BTC",
+                    symbol: "ETHBTC"
+                  },
+                  %Types.TradingSymbol{
+                    base_asset: "USDT",
+                    position: :short,
+                    quote_asset: "ETH",
+                    symbol: "ETHUSDT"
+                  },
+                  %Types.TradingSymbol{
+                    base_asset: "BTC",
+                    position: :long,
+                    quote_asset: "USDT",
+                    symbol: "BTCUSDT"
+                  }
+                ],
+                [
+                  %Types.TradingSymbol{
+                    symbol: "BTCUSDT",
+                    position: :short,
+                    base_asset: "USDT",
+                    quote_asset: "BTC"
+                  },
+                  %Types.TradingSymbol{
+                    symbol: "ETHUSDT",
+                    position: :long,
+                    base_asset: "ETH",
+                    quote_asset: "USDT"
+                  },
+                  %Types.TradingSymbol{
+                    symbol: "ETHBTC",
+                    position: :short,
+                    base_asset: "BTC",
+                    quote_asset: "ETH"
+                  }
+                ]
+              ], ["ETHBTC", "ETHUSDT", "BTCUSDT"]}
   end
 
   test "filters paths and symbols correctly using starting symbols" do
