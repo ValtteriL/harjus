@@ -15,12 +15,16 @@ defmodule PortfolioManager.ImplTest do
   test "prioritizes by relative asset value" do
     state =
       Impl.new(%Args{
-        relative_asset_values: %{"BTC" => 1.0, "ETH" => 0.1, "USDT" => 0.01}
+        relative_asset_values: %{
+          "BTC" => Decimal.new(1),
+          "ETH" => Decimal.from_float(0.1),
+          "USDT" => Decimal.from_float(0.01)
+        }
       })
 
     opportunities = [
-      usdbtc = opportunity("USDT", "BTC", 1.0, 1.0),
-      _btceth = opportunity("BTC", "ETH", 1.0, 1.0)
+      usdbtc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(1)),
+      _btceth = opportunity("BTC", "ETH", Decimal.new(1), Decimal.new(1))
     ]
 
     assert Impl.filter_opportunities(state, opportunities) == [usdbtc]
@@ -29,12 +33,16 @@ defmodule PortfolioManager.ImplTest do
   test "prioritizes by capacity" do
     state =
       Impl.new(%Args{
-        relative_asset_values: %{"BTC" => 1.0, "ETH" => 0.1, "USDT" => 0.01}
+        relative_asset_values: %{
+          "BTC" => Decimal.new(1),
+          "ETH" => Decimal.from_float(0.1),
+          "USDT" => Decimal.from_float(0.01)
+        }
       })
 
     opportunities = [
-      _smallercap = opportunity("USDT", "BTC", 1.0, 1.0),
-      biggercap = opportunity("USDT", "BTC", 1.0, 2.0)
+      _smallercap = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(1)),
+      biggercap = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(2))
     ]
 
     assert Impl.filter_opportunities(state, opportunities) == [biggercap]
@@ -43,12 +51,16 @@ defmodule PortfolioManager.ImplTest do
   test "prioritizes by profit" do
     state =
       Impl.new(%Args{
-        relative_asset_values: %{"BTC" => 1.0, "ETH" => 0.1, "USDT" => 0.01}
+        relative_asset_values: %{
+          "BTC" => Decimal.new(1),
+          "ETH" => Decimal.from_float(0.1),
+          "USDT" => Decimal.from_float(0.01)
+        }
       })
 
     opportunities = [
-      _smallerprofit = opportunity("USDT", "BTC", 1.0, 1.0),
-      biggerprofit = opportunity("USDT", "BTC", 2.0, 1.0)
+      _smallerprofit = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(1)),
+      biggerprofit = opportunity("USDT", "BTC", Decimal.new(2), Decimal.new(1))
     ]
 
     assert Impl.filter_opportunities(state, opportunities) == [biggerprofit]
@@ -57,12 +69,16 @@ defmodule PortfolioManager.ImplTest do
   test "prioritizes by profit * capacity" do
     state =
       Impl.new(%Args{
-        relative_asset_values: %{"BTC" => 1.0, "ETH" => 0.1, "USDT" => 0.01}
+        relative_asset_values: %{
+          "BTC" => Decimal.new(1),
+          "ETH" => Decimal.from_float(0.1),
+          "USDT" => Decimal.from_float(0.01)
+        }
       })
 
     opportunities = [
-      bigger = opportunity("USDT", "BTC", 1.0, 5.0),
-      _smaller = opportunity("USDT", "BTC", 2.0, 2.0)
+      bigger = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(5)),
+      _smaller = opportunity("USDT", "BTC", Decimal.new(2), Decimal.new(2))
     ]
 
     assert Impl.filter_opportunities(state, opportunities) == [bigger]
