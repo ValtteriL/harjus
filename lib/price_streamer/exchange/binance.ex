@@ -30,7 +30,7 @@ defmodule PriceStreamer.Exchange.Binance do
   def start_link(symbols) do
     uri = Application.fetch_env!(:harjus, :binance_websocket_stream_uri)
 
-    {:ok, ws_pid} = WebSockex.start_link(uri, __MODULE__, %{parent_pid: self()})
+    {:ok, ws_pid} = WebSockex.start_link(uri, __MODULE__, %{})
 
     Logger.debug("Subscribing to #{length(symbols)} symbols...")
 
@@ -59,16 +59,13 @@ defmodule PriceStreamer.Exchange.Binance do
         :ok
 
       {:book_ticker_update, {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}} ->
-        PriceStreamer.price_update(
-          state.parent_pid,
-          %PriceUpdate{
-            symbol: symbol,
-            ask_price: best_ask_price,
-            ask_qty: best_ask_qty,
-            bid_price: best_bid_price,
-            bid_qty: best_bid_qty
-          }
-        )
+        PriceStreamer.price_update(%PriceUpdate{
+          symbol: symbol,
+          ask_price: best_ask_price,
+          ask_qty: best_ask_qty,
+          bid_price: best_bid_price,
+          bid_qty: best_bid_qty
+        })
 
         :ok
 

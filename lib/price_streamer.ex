@@ -27,9 +27,9 @@ defmodule PriceStreamer do
     pid: pid of the price streamer
     update: price update to send
   """
-  @spec price_update(pid :: pid(), update :: Types.PriceUpdate.t()) :: :ok
-  def price_update(pid, update) do
-    GenStage.cast(pid, {:price_update, update})
+  @spec price_update(update :: Types.PriceUpdate.t()) :: :ok
+  def price_update(update) do
+    GenStage.cast(__MODULE__, {:price_update, update})
   end
 
   def child_spec(opts) do
