@@ -24,7 +24,7 @@ defmodule OpportunityWatcher.Impl do
       args.trading_paths
       |> List.flatten()
       |> Enum.uniq()
-      |> Enum.map(fn x -> {x, {1.0, 0.0}} end)
+      |> Enum.map(fn x -> {x, {Decimal.new(1), Decimal.new(0)}} end)
       |> Map.new()
 
     # initialize symbol to trading symbol map

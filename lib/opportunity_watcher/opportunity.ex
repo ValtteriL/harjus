@@ -21,8 +21,14 @@ defmodule OpportunityWatcher.Opportunity do
   def profit(trading_path, price_quantity_map, commission_percentage) do
     trading_path
     |> Enum.map(fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
-    |> Enum.reduce(1, fn price, acc ->
-      Decimal.div(Decimal.mult(acc, Decimal.sub(1, commission_percentage)), price)
+    |> Enum.reduce(Decimal.new(1), fn price, acc ->
+      Decimal.div(
+        Decimal.mult(
+          acc,
+          Decimal.sub(1, commission_percentage)
+        ),
+        price
+      )
     end)
     |> Decimal.sub(1)
   end

@@ -15,14 +15,16 @@ defmodule OpportunityWatcher.State do
     :min_profit_percentage,
     :commission
   ]
-  defstruct pathid_to_path_map: %{},
-            trading_symbol_to_price_qty_tuple: %{},
-            symbol_to_pathids_map: %{},
-            pathid_to_profit_cap_tuple: %{},
-            symbol_to_trading_symbol_map: %{},
-            min_capacity: 0.0,
-            min_profit_percentage: 0.0,
-            commission: 0.0
+  defstruct [
+    :pathid_to_path_map,
+    :trading_symbol_to_price_qty_tuple,
+    :symbol_to_pathids_map,
+    :pathid_to_profit_cap_tuple,
+    :symbol_to_trading_symbol_map,
+    :min_capacity,
+    :min_profit_percentage,
+    :commission
+  ]
 
   @type trading_path() :: [TradingSymbol.t()]
   @type price_qty_tuple() :: {price :: Decimal.t(), quantity :: Decimal.t()}
