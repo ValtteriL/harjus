@@ -32,6 +32,9 @@ defmodule Harjus do
 
         # processes are started in order
 
+        # prometheus metric reporter
+        {TelemetryMetricsPrometheus, [metrics: Metrics.metrics()]},
+
         # utilities
         {Balance, []},
 
