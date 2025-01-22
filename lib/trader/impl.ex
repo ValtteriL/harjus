@@ -39,7 +39,7 @@ defmodule Trader.Impl do
 
   defp execute_opportunity_after_reserving_symbols(opportunity) do
     # reserve budget
-    budget = Balance.reserve_upto(opportunity.path[0].quote_asset, opportunity.capacity)
+    budget = Balance.reserve_upto(Enum.at(opportunity.path, 0).quote_asset, opportunity.capacity)
 
     if Decimal.eq?(budget, 0) do
       raise "No budget available to reserve"
