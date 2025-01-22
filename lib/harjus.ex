@@ -32,6 +32,9 @@ defmodule Harjus do
 
         # processes are started in order
 
+        # erlang VM telemetry poller
+        {:telemetry_poller, measurements: [], period: :timer.seconds(10)},
+
         # prometheus metric reporter
         {TelemetryMetricsPrometheus, [metrics: Metrics.metrics()]},
 

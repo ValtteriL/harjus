@@ -30,7 +30,13 @@ defmodule Metrics.Impl do
         tags: [:asset],
         description: "Change in asset balance after execution",
         reporter_options: [buckets: [0.05, 0.1, 0.2, 0.5, 1]]
-      )
+      ),
+
+      # VM Metrics
+      last_value("vm.memory.total", unit: :byte),
+      last_value("vm.total_run_queue_lengths.total"),
+      last_value("vm.total_run_queue_lengths.cpu"),
+      last_value("vm.total_run_queue_lengths.io")
     ]
   end
 end

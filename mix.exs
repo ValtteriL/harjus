@@ -58,7 +58,8 @@ defmodule Harjus.MixProject do
       {:mutex, "~> 3.0"},
       {:decimal, "~> 2.0"},
       {:telemetry_metrics, "~> 1.0.0"},
-      {:telemetry_metrics_prometheus, "~> 1.1.0"}
+      {:telemetry_metrics_prometheus, "~> 1.1.0"},
+      {:telemetry_poller, "~> 1.1.0"}
     ]
   end
 

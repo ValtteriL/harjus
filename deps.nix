@@ -398,6 +398,19 @@ let
       beamDeps = [ telemetry telemetry_metrics ];
     };
 
+    telemetry_poller = buildRebar3 rec {
+      name = "telemetry_poller";
+      version = "1.1.0";
+
+      src = fetchHex {
+        pkg = "telemetry_poller";
+        version = "${version}";
+        sha256 = "9eb9d9cbfd81cbd7cdd24682f8711b6e2b691289a0de6826e58452f28c103c8f";
+      };
+
+      beamDeps = [ telemetry ];
+    };
+
     websockex = buildMix rec {
       name = "websockex";
       version = "0.4.3";
