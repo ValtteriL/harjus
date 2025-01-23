@@ -26,6 +26,7 @@ defmodule Trader.Impl do
   @spec execute_opportunity(opportunity :: Opportunity.t()) :: :ok
   def execute_opportunity(opportunity) do
     Logger.debug("Attempting execution with: #{inspect(opportunity)}")
+    Metrics.report_trade_attempted()
 
     pairs = opportunity.path |> Enum.map(& &1.symbol)
 
@@ -39,7 +40,7 @@ defmodule Trader.Impl do
 
   defp execute_opportunity_after_reserving_symbols(opportunity) do
     # reserve budget
-    budget = Balance.reserve_upto(opportunity.path[0].quote_asset, opportunity.capacity)
+    budget = Balance.reserve_upto(Enum.at(opportunity.path, 0).quote_asset, opportunity.capacity)
 
     if Decimal.eq?(budget, 0) do
       raise "No budget available to reserve"
@@ -49,17 +50,28 @@ defmodule Trader.Impl do
   end
 
   defp execute_opportunity_after_reserving_budget(opportunity, budget) do
-    Logger.notice("Executing opportunity #{opportunity} with budget: #{budget}")
+    Logger.notice("Executing opportunity #{inspect(opportunity)} with budget: #{budget}")
 
     # execute trades
     balance_delta = trade(opportunity.path, budget)
 
     Logger.notice(
-      "Opportunity #{opportunity} executed successfully. Balance delta: #{balance_delta}"
+      "Opportunity #{inspect(opportunity)} executed successfully. Balance delta: #{inspect(balance_delta)}"
     )
 
+    Metrics.report_trade_executed()
+    Metrics.report_trade_report_delta(balance_delta)
+
+    starting_balance_delta =
+      Decimal.to_float(balance_delta[Enum.at(opportunity.path, 0).quote_asset])
+
+    case starting_balance_delta do
+      x when x > 0 -> Metrics.report_trade_winning()
+      _ -> Metrics.report_trade_losing()
+    end
+
     # update balances
-    balance_delta |> Enum.each(&Balance.update(&1, balance_delta[&1]))
+    balance_delta |> Enum.each(fn {symbol, qty_change} -> Balance.update(symbol, qty_change) end)
   end
 
   @spec trade([TradingSymbol.t()], Decimal.t()) :: balance_delta()
@@ -69,7 +81,7 @@ defmodule Trader.Impl do
 
   defp trade([trading_symbol | rest], quantity, balance_delta) do
     report = TradeClient.market_order(trading_symbol, quantity)
-    Logger.debug("Trade #{trading_symbol} completed. Report: #{report}")
+    Logger.debug("Trade #{inspect(trading_symbol)} completed. Report: #{inspect(report)}")
 
     # update fee balance right away
     Balance.update(report.fee_currency, Decimal.negate(report.quantity_fee))

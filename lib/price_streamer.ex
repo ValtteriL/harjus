@@ -29,6 +29,7 @@ defmodule PriceStreamer do
   """
   @spec price_update(update :: Types.PriceUpdate.t()) :: :ok
   def price_update(update) do
+    Metrics.report_price_update()
     GenStage.cast(__MODULE__, {:price_update, update})
   end
 

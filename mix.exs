@@ -56,7 +56,10 @@ defmodule Harjus.MixProject do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:gen_stage, "~> 1.2.1"},
       {:mutex, "~> 3.0"},
-      {:decimal, "~> 2.0"}
+      {:decimal, "~> 2.0"},
+      {:telemetry_metrics, "~> 1.0.0"},
+      {:telemetry_metrics_prometheus, "~> 1.1.0"},
+      {:telemetry_poller, "~> 1.1.0"}
     ]
   end
 

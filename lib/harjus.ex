@@ -25,12 +25,21 @@ defmodule Harjus do
     Logger.info("Trading symbols: #{length(symbol_list)}")
     Logger.info("Trading paths: #{length(trading_paths)}")
 
+    Metrics.report_trading_symbol_count(length(symbol_list))
+    Metrics.report_trading_path_count(length(trading_paths))
+
     children =
       [
         # Starts a worker by calling: HelloWorld.Worker.start_link(arg)
         # {HelloWorld.Worker, arg}
 
         # processes are started in order
+
+        # erlang VM telemetry poller
+        {:telemetry_poller, measurements: [], period: :timer.seconds(10)},
+
+        # prometheus metric reporter
+        {TelemetryMetricsPrometheus, [metrics: Metrics.metrics()]},
 
         # utilities
         {Balance, []},
