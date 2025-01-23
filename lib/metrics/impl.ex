@@ -26,6 +26,8 @@ defmodule Metrics.Impl do
       # trader metrics
       counter("harjus.trader.trade.executed.count", description: "Number of trades executed"),
       counter("harjus.trader.trade.attempted.count", description: "Number of trades attempted"),
+      counter("harjus.trader.trade.losing.count", description: "Number of losing trades"),
+      counter("harjus.trader.trade.winning.count", description: "Number of winning trades"),
       distribution("harjus.trader.trade.report.delta",
         tags: [:asset],
         description: "Change in asset balance after execution",
