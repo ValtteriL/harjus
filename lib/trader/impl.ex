@@ -26,6 +26,7 @@ defmodule Trader.Impl do
   @spec execute_opportunity(opportunity :: Opportunity.t()) :: :ok
   def execute_opportunity(opportunity) do
     Logger.debug("Attempting execution with: #{inspect(opportunity)}")
+    Metrics.report_trade_attempted()
 
     pairs = opportunity.path |> Enum.map(& &1.symbol)
 
@@ -57,6 +58,17 @@ defmodule Trader.Impl do
     Logger.notice(
       "Opportunity #{opportunity} executed successfully. Balance delta: #{balance_delta}"
     )
+
+    Metrics.report_trade_executed()
+    Metrics.report_trade_report_delta(balance_delta)
+
+    starting_balance_delta =
+      Decimal.to_float(balance_delta[Enum.at(opportunity.path, 0).quote_asset])
+
+    case starting_balance_delta do
+      x when x > 0 -> Metrics.report_trade_winning()
+      _ -> Metrics.report_trade_losing()
+    end
 
     # update balances
     balance_delta |> Enum.each(&Balance.update(&1, balance_delta[&1]))
