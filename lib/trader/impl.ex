@@ -71,7 +71,7 @@ defmodule Trader.Impl do
     end
 
     # update balances
-    balance_delta |> Enum.each(&Balance.update(&1, balance_delta[&1]))
+    balance_delta |> Enum.each(fn {symbol, qty_change} -> Balance.update(symbol, qty_change) end)
   end
 
   @spec trade([TradingSymbol.t()], Decimal.t()) :: balance_delta()
