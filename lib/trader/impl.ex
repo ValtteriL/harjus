@@ -50,13 +50,13 @@ defmodule Trader.Impl do
   end
 
   defp execute_opportunity_after_reserving_budget(opportunity, budget) do
-    Logger.notice("Executing opportunity #{opportunity} with budget: #{budget}")
+    Logger.notice("Executing opportunity #{inspect(opportunity)} with budget: #{budget}")
 
     # execute trades
     balance_delta = trade(opportunity.path, budget)
 
     Logger.notice(
-      "Opportunity #{opportunity} executed successfully. Balance delta: #{balance_delta}"
+      "Opportunity #{inspect(opportunity)} executed successfully. Balance delta: #{inspect(balance_delta)}"
     )
 
     Metrics.report_trade_executed()
@@ -81,7 +81,7 @@ defmodule Trader.Impl do
 
   defp trade([trading_symbol | rest], quantity, balance_delta) do
     report = TradeClient.market_order(trading_symbol, quantity)
-    Logger.debug("Trade #{trading_symbol} completed. Report: #{report}")
+    Logger.debug("Trade #{inspect(trading_symbol)} completed. Report: #{inspect(report)}")
 
     # update fee balance right away
     Balance.update(report.fee_currency, Decimal.negate(report.quantity_fee))
