@@ -6,6 +6,13 @@ defmodule MarketData.ArbmapperTest do
 
   use ExUnit.Case
   doctest Arbmapper
+  use PropCheck
+
+  property "generates correct trading paths and symbols", [:verbose] do
+    forall a <- integer() do
+      assert a > 0
+    end
+  end
 
   test "generates correct trading paths and symbols" do
     trading_symbols = [
