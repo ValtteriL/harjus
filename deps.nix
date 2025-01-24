@@ -203,6 +203,19 @@ let
       beamDeps = [ decimal ];
     };
 
+    libgraph = buildMix rec {
+      name = "libgraph";
+      version = "0.16.0";
+
+      src = fetchHex {
+        pkg = "libgraph";
+        version = "${version}";
+        sha256 = "41ca92240e8a4138c30a7e06466acc709b0cbb795c643e9e17174a178982d6bf";
+      };
+
+      beamDeps = [];
+    };
+
     mime = buildMix rec {
       name = "mime";
       version = "2.0.6";
@@ -318,6 +331,32 @@ let
       };
 
       beamDeps = [ decimal ];
+    };
+
+    propcheck = buildMix rec {
+      name = "propcheck";
+      version = "1.4.1";
+
+      src = fetchHex {
+        pkg = "propcheck";
+        version = "${version}";
+        sha256 = "e1b088f574785c3c7e864da16f39082d5599b3aaf89086d3f9be6adb54464b19";
+      };
+
+      beamDeps = [ libgraph proper ];
+    };
+
+    proper = buildRebar3 rec {
+      name = "proper";
+      version = "1.4.0";
+
+      src = fetchHex {
+        pkg = "proper";
+        version = "${version}";
+        sha256 = "18285842185bd33efbda97d134a5cb5a0884384db36119fee0e3cfa488568cbb";
+      };
+
+      beamDeps = [];
     };
 
     ranch = buildRebar3 rec {

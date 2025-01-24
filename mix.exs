@@ -59,7 +59,8 @@ defmodule Harjus.MixProject do
       {:decimal, "~> 2.0"},
       {:telemetry_metrics, "~> 1.0.0"},
       {:telemetry_metrics_prometheus, "~> 1.1.0"},
-      {:telemetry_poller, "~> 1.1.0"}
+      {:telemetry_poller, "~> 1.1.0"},
+      {:propcheck, "~> 1.4", only: [:test, :dev]}
     ]
   end
 
