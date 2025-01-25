@@ -15,7 +15,11 @@ defmodule MarketData.Arbmapper.Impl do
           ]
         ) ::
           {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [charlist()]}
-  def generate_trading_paths(symbols, opts \\ []) do
+  def generate_trading_paths(
+        symbols = [%{symbol: _, baseAsset: _, quoteAsset: _} | _],
+        opts \\ []
+      )
+      when is_list(opts) do
     starting_symbols = Keyword.get(opts, :starting_symbols, [])
     depth = Keyword.get(opts, :depth, 2)
 
