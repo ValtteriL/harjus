@@ -9,10 +9,78 @@ defmodule MarketData.ArbmapperTest do
   use PropCheck
 
   property "generates correct trading paths and symbols", [:verbose] do
-    forall a <- integer() do
-      assert a > 0
+    forall [trading_symbols, starting_symbols, depth] <- [
+             trading_symbols(),
+             non_empty(list(non_empty_string())),
+             positive_integer()
+           ] do
+      {paths, symbols} =
+        Arbmapper.generate_trading_paths(trading_symbols,
+          starting_symbols: starting_symbols,
+          depth: depth
+        )
+
+      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
+
+      # symbol list cannot have more symbols than in input
+      assert length(symbols) <= length(input_symbols)
+
+      # symbol list cannot have other symbols than in input
+      assert Enum.all?(symbols, fn x -> Enum.member?(input_symbols, x) end)
+
+      # symbol list symbols must be unique
+      assert Enum.uniq(symbols) == symbols
+
+      # trading paths must be unique
+      assert Enum.uniq(paths) == paths
+
+      # trading paths can only contain symbols from symbol list
+      assert Enum.all?(paths, fn x -> Enum.member?(symbols, x.symbol) end)
+
+      # trading paths must start with starting symbols if defined
+      assert Enum.all?(paths, fn x -> Enum.member?(starting_symbols, hd(x)) end)
+
+      # trading paths must be of length depth or less if defined
+      assert Enum.all?(paths, fn x -> length(x) <= depth end)
+
+      # trading path can contain a single trading symbol only once
+      assert Enum.all?(paths, fn x -> Enum.uniq(x) == x end)
     end
   end
+
+  ## Generators ##
+
+  defp trading_symbols do
+    let symbol <- non_empty_string() do
+      let base_asset <- non_empty_string() do
+        let quote_asset <- non_empty_string() do
+          let a <-
+                non_empty(list(%{symbol: symbol, baseAsset: base_asset, quoteAsset: quote_asset})) do
+            a
+          end
+        end
+      end
+    end
+  end
+
+  defp non_empty_string do
+    let charlist <- non_empty(elements(textdata())) do
+      to_string(charlist)
+    end
+  end
+
+  defp textdata do
+    ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
+      ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
+  end
+
+  defp positive_integer do
+    let integer <- non_neg_integer() do
+      integer
+    end
+  end
+
+  ## Unit tests ##
 
   test "generates correct trading paths and symbols" do
     trading_symbols = [
@@ -27,123 +95,123 @@ defmodule MarketData.ArbmapperTest do
              {
                [
                  [
-                   %TradingSymbol{
-                     symbol: "LTCBTC",
-                     position: :long,
+                   %Types.TradingSymbol{
                      base_asset: "LTC",
-                     quote_asset: "BTC"
-                   },
-                   %TradingSymbol{
-                     symbol: "ETHLTC",
                      position: :long,
+                     quote_asset: "BTC",
+                     symbol: "LTCBTC"
+                   },
+                   %Types.TradingSymbol{
                      base_asset: "ETH",
+                     position: :long,
+                     quote_asset: "LTC",
+                     symbol: "ETHLTC"
+                   },
+                   %Types.TradingSymbol{
+                     base_asset: "BTC",
+                     position: :long,
+                     quote_asset: "ETH",
+                     symbol: "BTCETH"
+                   }
+                 ],
+                 [
+                   %Types.TradingSymbol{
+                     base_asset: "ETH",
+                     position: :short,
+                     quote_asset: "BTC",
+                     symbol: "BTCETH"
+                   },
+                   %Types.TradingSymbol{
+                     base_asset: "LTC",
+                     position: :short,
+                     quote_asset: "ETH",
+                     symbol: "ETHLTC"
+                   },
+                   %Types.TradingSymbol{
+                     base_asset: "BTC",
+                     position: :short,
+                     quote_asset: "LTC",
+                     symbol: "LTCBTC"
+                   }
+                 ],
+                 [
+                   %Types.TradingSymbol{
+                     symbol: "LTCBTC",
+                     position: :short,
+                     base_asset: "BTC",
                      quote_asset: "LTC"
                    },
-                   %TradingSymbol{
+                   %Types.TradingSymbol{
                      symbol: "BTCETH",
-                     position: :long,
-                     base_asset: "BTC",
+                     position: :short,
+                     base_asset: "ETH",
+                     quote_asset: "BTC"
+                   },
+                   %Types.TradingSymbol{
+                     symbol: "ETHLTC",
+                     position: :short,
+                     base_asset: "LTC",
                      quote_asset: "ETH"
                    }
                  ],
                  [
-                   %TradingSymbol{
-                     symbol: "BTCETH",
-                     position: :short,
+                   %Types.TradingSymbol{
                      base_asset: "ETH",
-                     quote_asset: "BTC"
+                     position: :long,
+                     quote_asset: "LTC",
+                     symbol: "ETHLTC"
                    },
-                   %TradingSymbol{
-                     symbol: "ETHLTC",
-                     position: :short,
-                     base_asset: "LTC",
-                     quote_asset: "ETH"
-                   },
-                   %TradingSymbol{
-                     symbol: "LTCBTC",
-                     position: :short,
+                   %Types.TradingSymbol{
                      base_asset: "BTC",
-                     quote_asset: "LTC"
+                     position: :long,
+                     quote_asset: "ETH",
+                     symbol: "BTCETH"
+                   },
+                   %Types.TradingSymbol{
+                     base_asset: "LTC",
+                     position: :long,
+                     quote_asset: "BTC",
+                     symbol: "LTCBTC"
                    }
                  ],
                  [
-                   %TradingSymbol{
-                     symbol: "LTCBTC",
-                     position: :short,
-                     base_asset: "BTC",
-                     quote_asset: "LTC"
-                   },
-                   %TradingSymbol{
-                     symbol: "BTCETH",
-                     position: :short,
-                     base_asset: "ETH",
-                     quote_asset: "BTC"
-                   },
-                   %TradingSymbol{
-                     symbol: "ETHLTC",
-                     position: :short,
+                   %Types.TradingSymbol{
                      base_asset: "LTC",
-                     quote_asset: "ETH"
+                     position: :short,
+                     quote_asset: "ETH",
+                     symbol: "ETHLTC"
+                   },
+                   %Types.TradingSymbol{
+                     base_asset: "BTC",
+                     position: :short,
+                     quote_asset: "LTC",
+                     symbol: "LTCBTC"
+                   },
+                   %Types.TradingSymbol{
+                     base_asset: "ETH",
+                     position: :short,
+                     quote_asset: "BTC",
+                     symbol: "BTCETH"
                    }
                  ],
                  [
-                   %TradingSymbol{
-                     symbol: "ETHLTC",
-                     position: :long,
-                     base_asset: "ETH",
-                     quote_asset: "LTC"
-                   },
-                   %TradingSymbol{
-                     symbol: "BTCETH",
-                     position: :long,
+                   %Types.TradingSymbol{
                      base_asset: "BTC",
-                     quote_asset: "ETH"
-                   },
-                   %TradingSymbol{
-                     symbol: "LTCBTC",
                      position: :long,
-                     base_asset: "LTC",
-                     quote_asset: "BTC"
-                   }
-                 ],
-                 [
-                   %TradingSymbol{
-                     symbol: "ETHLTC",
-                     position: :short,
-                     base_asset: "LTC",
-                     quote_asset: "ETH"
+                     quote_asset: "ETH",
+                     symbol: "BTCETH"
                    },
-                   %TradingSymbol{
-                     symbol: "LTCBTC",
-                     position: :short,
-                     base_asset: "BTC",
-                     quote_asset: "LTC"
+                   %Types.TradingSymbol{
+                     base_asset: "LTC",
+                     position: :long,
+                     quote_asset: "BTC",
+                     symbol: "LTCBTC"
                    },
-                   %TradingSymbol{
-                     symbol: "BTCETH",
-                     position: :short,
+                   %Types.TradingSymbol{
                      base_asset: "ETH",
-                     quote_asset: "BTC"
-                   }
-                 ],
-                 [
-                   %TradingSymbol{
-                     symbol: "BTCETH",
                      position: :long,
-                     base_asset: "BTC",
-                     quote_asset: "ETH"
-                   },
-                   %TradingSymbol{
-                     symbol: "LTCBTC",
-                     position: :long,
-                     base_asset: "LTC",
-                     quote_asset: "BTC"
-                   },
-                   %TradingSymbol{
-                     symbol: "ETHLTC",
-                     position: :long,
-                     base_asset: "ETH",
-                     quote_asset: "LTC"
+                     quote_asset: "LTC",
+                     symbol: "ETHLTC"
                    }
                  ]
                ],
@@ -159,133 +227,37 @@ defmodule MarketData.ArbmapperTest do
     assert Arbmapper.generate_trading_paths(symbols, starting_symbols: ["BTC"]) ==
              {[
                 [
-                  %Types.TradingSymbol{
-                    base_asset: "ETH",
-                    position: :long,
-                    quote_asset: "BTC",
-                    symbol: "ETHBTC"
-                  },
-                  %Types.TradingSymbol{
-                    base_asset: "USDT",
-                    position: :short,
-                    quote_asset: "ETH",
-                    symbol: "ETHUSDT"
-                  },
-                  %Types.TradingSymbol{
-                    base_asset: "BTC",
-                    position: :long,
-                    quote_asset: "USDT",
-                    symbol: "BTCUSDT"
-                  }
+                  ts("ETH", "BTC", :long),
+                  ts("USDT", "ETH", :short),
+                  ts("BTC", "USDT", :long)
                 ],
                 [
-                  %Types.TradingSymbol{
-                    symbol: "BTCUSDT",
-                    position: :short,
-                    base_asset: "USDT",
-                    quote_asset: "BTC"
-                  },
-                  %Types.TradingSymbol{
-                    symbol: "ETHUSDT",
-                    position: :long,
-                    base_asset: "ETH",
-                    quote_asset: "USDT"
-                  },
-                  %Types.TradingSymbol{
-                    symbol: "ETHBTC",
-                    position: :short,
-                    base_asset: "BTC",
-                    quote_asset: "ETH"
-                  }
+                  ts("USDT", "BTC", :short),
+                  ts("ETH", "USDT", :long),
+                  ts("BTC", "ETH", :short)
                 ]
               ], ["ETHBTC", "ETHUSDT", "BTCUSDT"]}
   end
 
-  test "filters paths and symbols correctly using starting symbols" do
-    trading_symbols = [
-      %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH"},
-      %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC"},
-      %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC"}
-    ]
-
-    trading_paths = Arbmapper.generate_trading_paths(trading_symbols, starting_symbols: ["BTC"])
-
-    assert trading_paths ==
-             {[
-                [
-                  %TradingSymbol{
-                    symbol: "LTCBTC",
-                    position: :long,
-                    base_asset: "LTC",
-                    quote_asset: "BTC"
-                  },
-                  %TradingSymbol{
-                    symbol: "ETHLTC",
-                    position: :long,
-                    base_asset: "ETH",
-                    quote_asset: "LTC"
-                  },
-                  %TradingSymbol{
-                    symbol: "BTCETH",
-                    position: :long,
-                    base_asset: "BTC",
-                    quote_asset: "ETH"
-                  }
-                ],
-                [
-                  %TradingSymbol{
-                    symbol: "BTCETH",
-                    position: :short,
-                    base_asset: "ETH",
-                    quote_asset: "BTC"
-                  },
-                  %TradingSymbol{
-                    symbol: "ETHLTC",
-                    position: :short,
-                    base_asset: "LTC",
-                    quote_asset: "ETH"
-                  },
-                  %TradingSymbol{
-                    symbol: "LTCBTC",
-                    position: :short,
-                    base_asset: "BTC",
-                    quote_asset: "LTC"
-                  }
-                ]
-              ], ["LTCBTC", "ETHLTC", "BTCETH"]}
+  test "throws error if empty symbols" do
+    assert_raise(FunctionClauseError, fn -> Arbmapper.generate_trading_paths([]) end)
   end
 
-  test "filters paths and symbols correctly using depth" do
-    trading_symbols = [
-      %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH"},
-      %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC"},
-      %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC"}
-    ]
-
-    trading_paths =
-      Arbmapper.generate_trading_paths(trading_symbols, starting_symbols: [], depth: 1)
-
-    # arbmapper skips paths of length 1, thus now should be compeltely empty
-    assert trading_paths ==
-             {
-               [],
-               []
-             }
+  defp ts(base_asset, quote_asset, :short) do
+    %TradingSymbol{
+      symbol: "#{quote_asset}#{base_asset}",
+      position: :short,
+      base_asset: base_asset,
+      quote_asset: quote_asset
+    }
   end
 
-  test "generates empty paths if no paths" do
-    trading_symbols = []
-
-    trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
-
-    assert trading_paths == {[], []}
-  end
-
-  test "generates empty paths if empty symbols" do
-    trading_symbols = []
-
-    trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
-
-    assert trading_paths == {[], []}
+  defp ts(base_asset, quote_asset, :long) do
+    %TradingSymbol{
+      symbol: "#{base_asset}#{quote_asset}",
+      position: :long,
+      base_asset: base_asset,
+      quote_asset: quote_asset
+    }
   end
 end
