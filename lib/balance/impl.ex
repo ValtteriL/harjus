@@ -11,15 +11,19 @@ defmodule Balance.Impl do
     @exchange.get_balances()
   end
 
-  def get(state, asset) do
+  @spec get(state :: map(), asset :: String.t()) :: Decimal.t()
+  def get(state = %{}, asset = "" <> _) do
     Map.get(state, asset, Decimal.new(0))
   end
 
-  def update(state, asset, amount) do
+  @spec update(state :: map(), asset :: String.t(), amount :: Decimal.t()) :: map()
+  def update(state = %{}, asset = "" <> _, amount) when is_struct(amount) do
     Map.update(state, asset, amount, &Decimal.add(&1, amount))
   end
 
-  def reserve_upto(state, asset, amount) do
+  @spec reserve_upto(state :: map(), asset :: String.t(), amount :: Decimal.t()) ::
+          {Decimal.t(), map()}
+  def reserve_upto(state = %{}, asset = "" <> _, amount) when is_struct(amount) do
     current_balance = get(state, asset)
 
     cond do
