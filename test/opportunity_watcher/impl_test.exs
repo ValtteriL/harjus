@@ -8,6 +8,23 @@ defmodule OpportunityWatcher.ImplTest do
   alias Types.TradingSymbol
 
   use ExUnit.Case, async: true
+  use PropCheck
+
+  property "emits opportunities", [:verbose] do
+    forall do
+    end
+  end
+
+  property "does not emit false opportunities", [:verbose] do
+    forall do
+    end
+  end
+
+  ## Generators ##
+
+  # TODO: Implement generators
+
+  ## Unit tests ##
 
   test "returns opportunities" do
     args = %Args{
