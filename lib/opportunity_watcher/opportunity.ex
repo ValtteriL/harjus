@@ -4,6 +4,7 @@ defmodule OpportunityWatcher.Opportunity do
   """
 
   alias Types.TradingSymbol
+  alias OpportunityWatcher.Opportunity.Impl
 
   @type trading_path() :: [TradingSymbol.t()]
   @type price_qty_tuple() :: {price :: Decimal.t(), quantity :: Decimal.t()}
@@ -18,20 +19,7 @@ defmodule OpportunityWatcher.Opportunity do
   @doc """
   Calculate triangular arbitrage profit percentage for a trading path given symbol prices
   """
-  def profit(trading_path, price_quantity_map, commission_percentage) do
-    trading_path
-    |> Enum.map(fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
-    |> Enum.reduce(Decimal.new(1), fn price, acc ->
-      Decimal.div(
-        Decimal.mult(
-          acc,
-          Decimal.sub(1, commission_percentage)
-        ),
-        price
-      )
-    end)
-    |> Decimal.sub(1)
-  end
+  defdelegate profit(trading_path, price_quantity_map, commissing_percentage), to: Impl
 
   @spec capacity(
           trading_path :: trading_path(),
@@ -45,23 +33,5 @@ defmodule OpportunityWatcher.Opportunity do
   The capacity is the amount of the first trading pair currency that can be traded in the path.
   Taking into accound only best ask prices and quantities.
   """
-  def capacity(trading_path, price_quantity_map) do
-    first_symbol_qty = elem(Map.get(price_quantity_map, Enum.at(trading_path, 0)), 1)
-
-    trading_path
-    |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol) end)
-    # skip first symbol
-    |> Enum.drop(1)
-    |> Enum.reduce(first_symbol_qty, fn price_quantity, acc ->
-      Decimal.min(Decimal.div(acc, elem(price_quantity, 0)), elem(price_quantity, 1))
-    end)
-    |> Decimal.div(Decimal.add(1, profit_without_commission(trading_path, price_quantity_map)))
-  end
-
-  defp profit_without_commission(trading_path, price_quantity_map) do
-    trading_path
-    |> Enum.map(fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
-    |> Enum.reduce(1, fn price, acc -> Decimal.div(acc, price) end)
-    |> Decimal.sub(1)
-  end
+  defdelegate capacity(trading_path, price_quantity_map), to: Impl
 end
