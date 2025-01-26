@@ -19,7 +19,7 @@ defmodule Types.PriceUpdate do
   ]
 
   @type t :: %__MODULE__{
-          symbol: charlist(),
+          symbol: String.t(),
           ask_price: Decimal.t(),
           ask_qty: Decimal.t(),
           bid_price: Decimal.t(),

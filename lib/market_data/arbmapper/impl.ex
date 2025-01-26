@@ -7,14 +7,14 @@ defmodule MarketData.Arbmapper.Impl do
 
   @spec generate_trading_paths(
           symbols :: [
-            %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
+            %{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}
           ],
           opts :: [
-            starting_symbols: [charlist()],
+            starting_symbols: [String.t()],
             depth: integer()
           ]
         ) ::
-          {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [charlist()]}
+          {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [String.t()]}
   def generate_trading_paths(
         symbols = [%{symbol: _, baseAsset: _, quoteAsset: _} | _],
         opts \\ []
@@ -45,7 +45,7 @@ defmodule MarketData.Arbmapper.Impl do
 
   # generate graph from symbols
   @spec generate_graph(
-          symbols :: [%{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}]
+          symbols :: [%{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}]
         ) ::
           :digraph.graph()
   defp generate_graph(symbols) do

@@ -1,28 +1,31 @@
 defmodule MarketDataTest do
   @moduledoc "Tests for MarketData"
 
-  alias Types.TradingSymbol
-
-  use ExUnit.Case
-  doctest MarketData
+  use ExUnit.Case, async: true
   use PropCheck
+  import Mox
+
+  doctest MarketData
+
+  # Make sure mocks are verified when the test exits
+  setup :verify_on_exit!
 
   property "generates correct trading paths and symbols", [:verbose] do
-    forall [trading_symbols, starting_symbols, depth] <- [
-             trading_symbols(),
+    forall [{symbols, symbol_prices, comparison_asset}, starting_symbols, depth] <- [
+             gen_symbols_prices_asset(),
              non_empty(list(non_empty_string())),
              positive_integer()
            ] do
+      # setup mock
+      MarketData.Exchange.TestMock
+      |> expect(:get_symbols, fn -> symbols end)
+      |> expect(:get_symbol_prices, fn -> symbol_prices end)
+
       md = MarketData.new()
       {paths, symbols} = MarketData.trading_paths(md, starting_symbols, depth)
-      relative_prices = MarketData.relative_values(md)
+      relative_prices = MarketData.relative_values(md, comparison_asset)
 
-      # test types
-      assert is_list(paths)
-      assert is_list(symbols)
-      assert is_map(relative_prices)
-
-      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
+      input_symbols = symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
 
       # symbol list cannot have more symbols than in input
       assert length(symbols) <= length(input_symbols)
@@ -59,6 +62,22 @@ defmodule MarketDataTest do
   end
 
   ## Generators ##
+
+  defp gen_symbols_prices_asset do
+    let symbols <- trading_symbols() do
+      let price <- non_neg_float() do
+        let symbol_prices <-
+              symbols
+              |> Enum.map(fn x -> x[:symbol] end)
+              |> Enum.map(fn x -> {x, Decimal.from_float(price)} end)
+              |> Enum.into(%{}) do
+          let comparison_asset <- symbols |> Enum.random() |> Map.fetch!(:baseAsset) do
+            {symbols, symbol_prices, comparison_asset}
+          end
+        end
+      end
+    end
+  end
 
   defp trading_symbols do
     let symbol <- non_empty_string() do

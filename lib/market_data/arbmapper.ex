@@ -18,13 +18,13 @@ defmodule MarketData.Arbmapper do
   """
   @spec generate_trading_paths(
           symbols :: [
-            %{symbol: charlist(), baseAsset: charlist(), quoteAsset: charlist()}
+            %{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}
           ],
           opts :: [
-            starting_symbols: [charlist()],
+            starting_symbols: [String.t()],
             depth: integer()
           ]
         ) ::
-          {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [charlist()]}
+          {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [String.t()]}
   defdelegate generate_trading_paths(symbols, opts \\ []), to: Impl
 end

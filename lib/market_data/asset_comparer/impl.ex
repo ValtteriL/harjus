@@ -8,7 +8,7 @@ defmodule MarketData.AssetComparer.Impl do
   """
   @spec calculate_relative_values(
           symbols :: [
-            %{symbol: String.t(), baseAsset: charlist(), quoteAsset: charlist()}
+            %{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}
           ],
           symbol_prices :: %{String.t() => Decimal.t()},
           comparison_asset :: String.t()
