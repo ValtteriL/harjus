@@ -11,17 +11,22 @@ defmodule OpportunityWatcher.Impl do
   alias Types.TradingSymbol
 
   @spec new(args :: Args.t()) :: State.t()
-  def new(args) do
+  def new(%Args{
+        trading_paths: trading_paths,
+        min_capacity: min_capacity,
+        min_profit_percentage: min_profit_percentage,
+        commission: commission
+      }) do
     # initialize pathid to path map
     pathid_to_path_map =
-      args.trading_paths
+      trading_paths
       |> Enum.with_index()
       |> Enum.map(fn {path, index} -> {index, path} end)
       |> Map.new()
 
     # initialize current prices and quantities for each trading symbol
     trading_symbol_to_price_qty_tuple =
-      args.trading_paths
+      trading_paths
       |> List.flatten()
       |> Enum.uniq()
       |> Enum.map(fn x -> {x, {Decimal.new(1), Decimal.new(0)}} end)
@@ -29,7 +34,7 @@ defmodule OpportunityWatcher.Impl do
 
     # initialize symbol to trading symbol map
     symbol_to_trading_symbol_map =
-      args.trading_paths
+      trading_paths
       |> List.flatten()
       |> Enum.uniq()
       # take only longs, otherwise we'll have duplicates
@@ -55,7 +60,7 @@ defmodule OpportunityWatcher.Impl do
 
     # initialize symbol to pathids map
     symbol_to_pathids_map =
-      args.trading_paths
+      trading_paths
       |> Enum.with_index()
       |> Enum.flat_map(fn {path, index} ->
         Enum.map(path, fn trading_symbol -> {trading_symbol, index} end)
@@ -68,7 +73,7 @@ defmodule OpportunityWatcher.Impl do
 
     # initialize pathid to profit cap tuple
     pathid_to_profit_cap_tuple =
-      args.trading_paths
+      trading_paths
       |> Enum.with_index()
       |> Enum.map(fn {_path, index} ->
         {index, {0.0, 0.0}}
@@ -81,15 +86,15 @@ defmodule OpportunityWatcher.Impl do
       symbol_to_pathids_map: symbol_to_pathids_map,
       pathid_to_profit_cap_tuple: pathid_to_profit_cap_tuple,
       symbol_to_trading_symbol_map: symbol_to_trading_symbol_map,
-      min_capacity: args.min_capacity,
-      min_profit_percentage: args.min_profit_percentage,
-      commission: args.commission
+      min_capacity: min_capacity,
+      min_profit_percentage: min_profit_percentage,
+      commission: commission
     }
   end
 
   @spec price_update(state :: State.t(), update :: PriceUpdate.t()) ::
           {State.t(), [Types.Opportunity.t()]}
-  def price_update(state, %{
+  def price_update(state = %State{}, %{
         symbol: symbol,
         ask_price: ask_price,
         ask_qty: ask_qty,
