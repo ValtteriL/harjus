@@ -3,18 +3,17 @@ defmodule MarketData.Impl do
   Market data implementation
   """
 
-  @exchange Application.compile_env(:harjus, :marketdata_exchange)
-
   alias MarketData.Arbmapper
   alias MarketData.AssetComparer
+  alias MarketData.Exchange
   alias Types.TradingSymbol
 
   require Logger
 
   def new do
     %{
-      symbols: @exchange.get_symbols(),
-      symbol_prices: @exchange.get_symbol_prices()
+      symbols: Exchange.get_symbols(),
+      symbol_prices: Exchange.get_symbol_prices()
     }
   end
 
