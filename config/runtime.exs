@@ -21,7 +21,9 @@ config :harjus,
   binance_fix_api_port: ConfigHelper.get_env("BINANCE_FIX_API_PORT", 9000, :int),
   binance_market_data_api_uri: ConfigHelper.get_env("BINANCE_MARKET_DATA_API_URI", "", :str),
   market_data_exchange:
-    ConfigHelper.get_env("MARKET_DATA_EXCHANGE", MarketData.Exchange.Mock, :module)
+    ConfigHelper.get_env("MARKET_DATA_EXCHANGE", MarketData.Exchange.Mock, :module),
+  price_streamer_exchange:
+    ConfigHelper.get_env("PRICE_STREAMER_EXCHANGE", PriceStreamer.Exchange.Mock, :module)
 
 # configure logger verbosity
 config :logger, level: ConfigHelper.get_env("VERBOSITY", :debug, :atom)

@@ -3,12 +3,12 @@ defmodule PriceStreamer.Impl do
   Implementation of the price streamer
   """
 
-  @exchange Application.compile_env(:harjus, :price_streamer_exchange)
+  alias PriceStreamer.Exchange
 
   @doc """
   Initiate starting state
   """
-  def new(symbols) do
-    @exchange.new(symbols)
+  def new(symbols = ["" <> _ | _]) do
+    Exchange.new(symbols)
   end
 end
