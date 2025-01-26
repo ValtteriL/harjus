@@ -242,6 +242,19 @@ let
       beamDeps = [ castore hpax ];
     };
 
+    mox = buildMix rec {
+      name = "mox";
+      version = "1.2.0";
+
+      src = fetchHex {
+        pkg = "mox";
+        version = "${version}";
+        sha256 = "c7b92b3cc69ee24a7eeeaf944cd7be22013c52fcb580c1f33f50845ec821089a";
+      };
+
+      beamDeps = [ nimble_ownership ];
+    };
+
     mutex = buildMix rec {
       name = "mutex";
       version = "3.0.0";
@@ -263,6 +276,19 @@ let
         pkg = "nimble_options";
         version = "${version}";
         sha256 = "821b2470ca9442c4b6984882fe9bb0389371b8ddec4d45a9504f00a66f650b44";
+      };
+
+      beamDeps = [];
+    };
+
+    nimble_ownership = buildMix rec {
+      name = "nimble_ownership";
+      version = "1.0.1";
+
+      src = fetchHex {
+        pkg = "nimble_ownership";
+        version = "${version}";
+        sha256 = "3825e461025464f519f3f3e4a1f9b68c47dc151369611629ad08b636b73bb22d";
       };
 
       beamDeps = [];
