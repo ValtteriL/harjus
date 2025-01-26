@@ -26,7 +26,7 @@ defmodule MarketData.Exchange.Binance do
     {:ok, resp} = Req.get(url)
 
     resp.body
-    |> Enum.map(fn x -> {x["symbol"], Decimal.new(x["price"])} end)
+    |> Enum.map(fn x -> {x["symbol"], Decimal.from_float(x["price"])} end)
     |> Enum.into(%{})
   end
 end

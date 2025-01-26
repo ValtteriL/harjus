@@ -7,6 +7,7 @@ defmodule MarketData.Impl do
 
   alias MarketData.Arbmapper
   alias MarketData.AssetComparer
+  alias Types.TradingSymbol
 
   require Logger
 
@@ -17,20 +18,21 @@ defmodule MarketData.Impl do
     }
   end
 
-  def trading_paths(state, starting_symbols, depth) do
+  def trading_paths(%{symbols: symbols}, starting_symbols = ["" <> _ | _], depth)
+      when is_integer(depth) do
     # discover trading paths
 
     Arbmapper.generate_trading_paths(
-      state.symbols,
+      symbols,
       starting_symbols: starting_symbols,
       depth: depth
     )
   end
 
-  def relative_values(state) do
+  def relative_values(%{symbols: symbols, symbol_prices: symbol_prices}) do
     AssetComparer.calculate_relative_values(
-      state.symbols,
-      state.symbol_prices,
+      symbols,
+      symbol_prices,
       "BTC"
     )
   end
