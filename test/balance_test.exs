@@ -14,20 +14,20 @@ defmodule BalanceTest do
   property "balance behaves correctly", [:verbose] do
     forall [symbol, update_value] <- [non_empty_string(), float()] do
       # starting balance is 0
-      assert Balance.get(symbol) == Decimal.new(0)
+      assert Decimal.eq?(Balance.get(symbol), Decimal.from_float(0.0))
 
       # balance is updated correctly
       :ok = Balance.update(symbol, Decimal.from_float(update_value))
-      assert Balance.get(symbol) == Decimal.from_float(update_value)
+      assert Decimal.eq?(Balance.get(symbol), Decimal.from_float(update_value))
 
       # reserve upto the current balance
-      {reserved, _} = Balance.reserve_upto(symbol, Decimal.from_float(update_value))
+      reserved = Balance.reserve_upto(symbol, Decimal.from_float(update_value))
 
       # reserved amount is the same as the current balance
-      assert reserved == Decimal.from_float(update_value)
+      assert Decimal.eq?(reserved, Decimal.from_float(update_value))
 
       # balance is now 0
-      assert Balance.get(symbol) == Decimal.new(0)
+      assert Decimal.eq?(Balance.get(symbol), Decimal.from_float(0.0))
     end
   end
 
