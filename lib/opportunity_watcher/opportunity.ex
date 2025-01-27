@@ -3,8 +3,8 @@ defmodule OpportunityWatcher.Opportunity do
   Functions for calculating arbitrage opportunities.
   """
 
-  alias Types.TradingSymbol
   alias OpportunityWatcher.Opportunity.Impl
+  alias Types.TradingSymbol
 
   @type trading_path() :: [TradingSymbol.t()]
   @type price_qty_tuple() :: {price :: Decimal.t(), quantity :: Decimal.t()}

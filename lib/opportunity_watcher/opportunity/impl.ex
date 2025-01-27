@@ -5,6 +5,8 @@ defmodule OpportunityWatcher.Opportunity.Impl do
 
   alias Types.TradingSymbol
 
+  require Decimal
+
   @type trading_path() :: [TradingSymbol.t()]
   @type price_qty_tuple() :: {price :: Decimal.t(), quantity :: Decimal.t()}
 
@@ -20,7 +22,7 @@ defmodule OpportunityWatcher.Opportunity.Impl do
         price_quantity_map = %{},
         commission_percentage
       )
-      when is_struct(commission_percentage) do
+      when Decimal.is_decimal(commission_percentage) do
     trading_path
     |> Enum.map(fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
     |> Enum.reduce(Decimal.new(1), fn price, acc ->

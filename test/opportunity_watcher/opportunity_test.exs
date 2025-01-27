@@ -6,6 +6,84 @@ defmodule OpportunityWatcher.OpportunityTest do
 
   use ExUnit.Case, async: true
   doctest Opportunity
+  use PropCheck
+
+  property "profit behaves correctly", [:verbose] do
+    forall [{trading_path, price_qty_map}, commission_percentage] <- [
+             trading_path_and_price_map(),
+             float(0.0, 1.0)
+           ] do
+      commission = Decimal.from_float(commission_percentage)
+
+      profit =
+        Opportunity.profit(trading_path, price_qty_map, commission)
+
+      # profit cannot be less than -1
+      assert Decimal.gte?(profit, -1)
+    end
+  end
+
+  property "capacity behaves correctly", [:verbose] do
+    forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
+      capacity = Opportunity.capacity(trading_path, price_qty_map)
+
+      # capacity is always greater than or equal to 0
+      assert Decimal.gte?(capacity, 0)
+    end
+  end
+
+  ## Generators ##
+
+  defp trading_path_and_price_map do
+    let trading_path <- non_empty(list(trading_symbol())) do
+      let price_qty_tuples <- non_empty(list(price_qty_tuple())) do
+        # limit to at most 10 hops, as more unrealistic and will cause divisions by zero
+        let price_qty_map <-
+              Enum.zip(Enum.take(trading_path, 10), price_qty_tuples)
+              |> Enum.into(%{}) do
+          {elem(Enum.unzip(price_qty_map), 0), price_qty_map}
+        end
+      end
+    end
+  end
+
+  defp price_qty_tuple do
+    let price <- non_neg_float() do
+      let qty <- non_neg_float() do
+        {Decimal.from_float(price), Decimal.from_float(qty)}
+      end
+    end
+  end
+
+  defp trading_symbol do
+    let symbol <- non_empty_string() do
+      let position <- union([:long, :short]) do
+        let base_asset <- non_empty_string() do
+          let quote_asset <- non_empty_string() do
+            %TradingSymbol{
+              symbol: symbol,
+              position: position,
+              base_asset: base_asset,
+              quote_asset: quote_asset
+            }
+          end
+        end
+      end
+    end
+  end
+
+  defp non_empty_string do
+    let charlist <- non_empty(elements(textdata())) do
+      to_string(charlist)
+    end
+  end
+
+  defp textdata do
+    ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
+      ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
+  end
+
+  ## Unit tests ##
 
   test "correct profit and capacity with 2 symbols" do
     commission = Decimal.new(0)

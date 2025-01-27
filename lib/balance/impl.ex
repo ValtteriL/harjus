@@ -6,6 +6,7 @@ defmodule Balance.Impl do
   @exchange Application.compile_env(:harjus, :balance_exchange)
 
   use Agent
+  require Decimal
 
   def new do
     @exchange.get_balances()
@@ -17,13 +18,13 @@ defmodule Balance.Impl do
   end
 
   @spec update(state :: map(), asset :: String.t(), amount :: Decimal.t()) :: map()
-  def update(state = %{}, asset = "" <> _, amount) when is_struct(amount) do
+  def update(state = %{}, asset = "" <> _, amount) when Decimal.is_decimal(amount) do
     Map.update(state, asset, amount, &Decimal.add(&1, amount))
   end
 
   @spec reserve_upto(state :: map(), asset :: String.t(), amount :: Decimal.t()) ::
           {Decimal.t(), map()}
-  def reserve_upto(state = %{}, asset = "" <> _, amount) when is_struct(amount) do
+  def reserve_upto(state = %{}, asset = "" <> _, amount) when Decimal.is_decimal(amount) do
     current_balance = get(state, asset)
 
     cond do
