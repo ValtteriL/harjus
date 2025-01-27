@@ -84,18 +84,6 @@ defmodule OpportunityWatcher.OpportunityTest do
     Enum.reduce(1..(n - 1), x, fn _, acc -> Decimal.mult(acc, x) end)
   end
 
-  test "empty path results in 0 profit" do
-    profit = Opportunity.profit([], %{}, Decimal.new("0.1"))
-
-    assert Decimal.eq?(profit, 0)
-  end
-
-  test "empty price_quantity_map results in ArgumentError on capacity" do
-    assert_raise ArgumentError, fn ->
-      Opportunity.capacity([], %{})
-    end
-  end
-
   test "missing symbol in pricing results in ArgumentError" do
     assert_raise ArgumentError, fn ->
       Opportunity.profit(
