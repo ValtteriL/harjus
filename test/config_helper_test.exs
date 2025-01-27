@@ -15,6 +15,12 @@ defmodule ConfigHelperTest do
     assert ConfigHelper.get_env(env_name, :no_default, :atom) == :this_should_become_an_atom
   end
 
+  test "parses module" do
+    env_name = "test_env"
+    System.put_env(env_name, "Kernel")
+    assert ConfigHelper.get_env(env_name, :no_default, :module) == Kernel
+  end
+
   test "parses decimal" do
     env_name = "test_env"
     dec = "42.42"

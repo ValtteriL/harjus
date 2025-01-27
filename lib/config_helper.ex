@@ -33,6 +33,6 @@ defmodule ConfigHelper do
   defp get_with_type("false", :bool), do: false
   defp get_with_type(val, :decimal), do: Decimal.new(val)
   defp get_with_type(val, :list), do: String.split(val, ",")
-  defp get_with_type(val, :module), do: Code.ensure_loaded!(String.to_existing_atom(val))
+  defp get_with_type(val, :module), do: String.to_existing_atom("Elixir.#{val}")
   defp get_with_type(val, type), do: raise("Cannot convert to #{inspect(type)}: #{inspect(val)}")
 end
