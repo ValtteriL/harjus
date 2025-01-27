@@ -55,7 +55,7 @@ defmodule OpportunityWatcher.OpportunityTest do
     end
   end
 
-  defp trading_symbol do
+  def trading_symbol do
     let symbol <- non_empty_string() do
       let position <- union([:long, :short]) do
         let base_asset <- non_empty_string() do
@@ -72,7 +72,7 @@ defmodule OpportunityWatcher.OpportunityTest do
     end
   end
 
-  defp non_empty_string do
+  def non_empty_string do
     let charlist <- non_empty(elements(textdata())) do
       to_string(charlist)
     end
