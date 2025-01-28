@@ -12,8 +12,8 @@ defmodule Trader.TradeClient.Exchange.Mock do
       symbol: trading_symbol,
       position: [:long, :short] |> Enum.random(),
       quantity_base: quantity,
-      quantity_quote: Decimal.new("1"),
-      quantity_fee: Decimal.new("0.1"),
+      quantity_quote: Decimal.from_float(1.0),
+      quantity_fee: Decimal.from_float(0.1),
       fee_currency: "BNB"
     }
   end

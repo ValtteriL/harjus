@@ -23,7 +23,9 @@ config :harjus,
   market_data_exchange:
     ConfigHelper.get_env("MARKET_DATA_EXCHANGE", MarketData.Exchange.Mock, :module),
   price_streamer_exchange:
-    ConfigHelper.get_env("PRICE_STREAMER_EXCHANGE", PriceStreamer.Exchange.Mock, :module)
+    ConfigHelper.get_env("PRICE_STREAMER_EXCHANGE", PriceStreamer.Exchange.Mock, :module),
+  trade_client_exchange:
+    ConfigHelper.get_env("TRADE_CLIENT_EXCHANGE", Trader.TradeClient.Exchange.Mock, :module)
 
 # configure logger verbosity
 config :logger, level: ConfigHelper.get_env("VERBOSITY", :debug, :atom)
