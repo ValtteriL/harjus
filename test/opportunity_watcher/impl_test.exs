@@ -11,6 +11,9 @@ defmodule OpportunityWatcher.ImplTest do
   use ExUnit.Case, async: true
   use PropCheck
 
+  # turn off logging
+  @moduletag :capture_log
+
   property "opportunity has a profit greater than or equal to min_profit_percentage", [:verbose] do
     forall {args, price_update} <- args_price_update() do
       state = %State{} = Impl.new(args)
