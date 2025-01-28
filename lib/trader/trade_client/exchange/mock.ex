@@ -12,7 +12,7 @@ defmodule Trader.TradeClient.Exchange.Mock do
   def market_order(trading_symbol = %TradingSymbol{}, quantity)
       when Decimal.is_decimal(quantity) do
     %TradeReport{
-      symbol: trading_symbol,
+      symbol: trading_symbol.symbol,
       position: [:long, :short] |> Enum.random(),
       quantity_base: quantity,
       quantity_quote: Decimal.from_float(1.0),
