@@ -8,12 +8,12 @@ defmodule PortfolioManager.Impl do
   alias Types.Opportunity
 
   @spec new(args :: Args.t()) :: Args.t()
-  def new(args), do: args
+  def new(args = %Args{}), do: args
 
   @spec filter_opportunities(state :: Args.t(), opportunities :: [Opportunity.t()]) :: [
           Opportunity.t()
         ]
-  def filter_opportunities(state, opportunities) do
+  def filter_opportunities(state = %Args{}, opportunities = [%Opportunity{} | _]) do
     filtered_opportunities =
       opportunities
       # sort by profit * capacity in relative asset value
