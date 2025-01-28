@@ -4,20 +4,27 @@ defmodule MarketData.AssetComparerTest do
   """
   alias MarketData.AssetComparer
 
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest AssetComparer
   use PropCheck
 
-  property "calculates relative values correctly", [:verbose] do
+  property "output map includes all symbols as keys", [:verbose] do
     forall {symbols, symbol_prices, comparison_asset} <- gen_symbols_prices_asset() do
       relative_prices =
         AssetComparer.calculate_relative_values(symbols, symbol_prices, comparison_asset)
 
       # output map must include all symbols as keys
-      Enum.each(symbols, fn x ->
-        assert Map.has_key?(relative_prices, x[:baseAsset])
-        assert Map.has_key?(relative_prices, x[:quoteAsset])
-      end)
+      assert Enum.all?(symbols, fn x ->
+               Map.has_key?(relative_prices, x[:baseAsset]) and
+                 Map.has_key?(relative_prices, x[:quoteAsset])
+             end)
+    end
+  end
+
+  property "comparison asset has value of 1.0", [:verbose] do
+    forall {symbols, symbol_prices, comparison_asset} <- gen_symbols_prices_asset() do
+      relative_prices =
+        AssetComparer.calculate_relative_values(symbols, symbol_prices, comparison_asset)
 
       # comparison asset must have value 1.0
       assert relative_prices[comparison_asset] == Decimal.new("1.0")

@@ -52,12 +52,10 @@ defmodule MarketDataTest do
       assert Enum.all?(paths, fn x -> Enum.uniq(x) == x end)
 
       # output map must include all symbols as keys
-      Enum.each(symbols, fn x ->
-        assert Map.has_key?(relative_prices, x[:baseAsset])
-        assert Map.has_key?(relative_prices, x[:quoteAsset])
-      end)
-
-      true
+      assert Enum.all?(symbols, fn x ->
+               Map.has_key?(relative_prices, x[:baseAsset]) and
+                 Map.has_key?(relative_prices, x[:quoteAsset])
+             end)
     end
   end
 

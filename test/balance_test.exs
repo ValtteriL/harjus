@@ -2,7 +2,7 @@ defmodule BalanceTest do
   @moduledoc """
   Tests for the Balance module
   """
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Balance
   use PropCheck
 

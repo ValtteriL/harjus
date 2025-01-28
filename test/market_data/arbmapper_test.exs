@@ -4,11 +4,45 @@ defmodule MarketData.ArbmapperTest do
   alias MarketData.Arbmapper
   alias Types.TradingSymbol
 
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Arbmapper
   use PropCheck
 
-  property "generates correct trading paths and symbols", [:verbose] do
+  property "symbol list cannot have more symbols than in input", [:verbose] do
+    forall [trading_symbols, starting_symbols, depth] <- [
+             trading_symbols(),
+             non_empty(list(non_empty_string())),
+             positive_integer()
+           ] do
+      {paths, symbols} =
+        Arbmapper.generate_trading_paths(trading_symbols,
+          starting_symbols: starting_symbols,
+          depth: depth
+        )
+
+      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
+      assert length(symbols) <= length(input_symbols)
+    end
+  end
+
+  property "symbol list cannot have other symbols than in input", [:verbose] do
+    forall [trading_symbols, starting_symbols, depth] <- [
+             trading_symbols(),
+             non_empty(list(non_empty_string())),
+             positive_integer()
+           ] do
+      {paths, symbols} =
+        Arbmapper.generate_trading_paths(trading_symbols,
+          starting_symbols: starting_symbols,
+          depth: depth
+        )
+
+      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
+      assert Enum.all?(symbols, fn x -> Enum.member?(input_symbols, x) end)
+    end
+  end
+
+  property "symbol list symbols must be unique", [:verbose] do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
@@ -22,28 +56,91 @@ defmodule MarketData.ArbmapperTest do
 
       input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
 
-      # symbol list cannot have more symbols than in input
-      assert length(symbols) <= length(input_symbols)
-
-      # symbol list cannot have other symbols than in input
-      assert Enum.all?(symbols, fn x -> Enum.member?(input_symbols, x) end)
-
-      # symbol list symbols must be unique
       assert Enum.uniq(symbols) == symbols
+    end
+  end
 
-      # trading paths must be unique
+  property "trading paths must be unique", [:verbose] do
+    forall [trading_symbols, starting_symbols, depth] <- [
+             trading_symbols(),
+             non_empty(list(non_empty_string())),
+             positive_integer()
+           ] do
+      {paths, symbols} =
+        Arbmapper.generate_trading_paths(trading_symbols,
+          starting_symbols: starting_symbols,
+          depth: depth
+        )
+
+      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.uniq(paths) == paths
+    end
+  end
 
-      # trading paths can only contain symbols from symbol list
+  property "trading paths only contain symbols from symbol list", [:verbose] do
+    forall [trading_symbols, starting_symbols, depth] <- [
+             trading_symbols(),
+             non_empty(list(non_empty_string())),
+             positive_integer()
+           ] do
+      {paths, symbols} =
+        Arbmapper.generate_trading_paths(trading_symbols,
+          starting_symbols: starting_symbols,
+          depth: depth
+        )
+
+      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.all?(paths, fn x -> Enum.member?(symbols, x.symbol) end)
+    end
+  end
 
-      # trading paths must start with starting symbols if defined
+  property "trading paths start with starting symbols if defined", [:verbose] do
+    forall [trading_symbols, starting_symbols, depth] <- [
+             trading_symbols(),
+             non_empty(list(non_empty_string())),
+             positive_integer()
+           ] do
+      {paths, symbols} =
+        Arbmapper.generate_trading_paths(trading_symbols,
+          starting_symbols: starting_symbols,
+          depth: depth
+        )
+
+      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.all?(paths, fn x -> Enum.member?(starting_symbols, hd(x)) end)
+    end
+  end
 
-      # trading paths must be of length depth or less if defined
+  property "trading paths must be of length depth or less if defined", [:verbose] do
+    forall [trading_symbols, starting_symbols, depth] <- [
+             trading_symbols(),
+             non_empty(list(non_empty_string())),
+             positive_integer()
+           ] do
+      {paths, symbols} =
+        Arbmapper.generate_trading_paths(trading_symbols,
+          starting_symbols: starting_symbols,
+          depth: depth
+        )
+
+      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.all?(paths, fn x -> length(x) <= depth end)
+    end
+  end
 
-      # trading path can contain a single trading symbol only once
+  property "trading path contains a single trading symbol only once", [:verbose] do
+    forall [trading_symbols, starting_symbols, depth] <- [
+             trading_symbols(),
+             non_empty(list(non_empty_string())),
+             positive_integer()
+           ] do
+      {paths, symbols} =
+        Arbmapper.generate_trading_paths(trading_symbols,
+          starting_symbols: starting_symbols,
+          depth: depth
+        )
+
+      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.all?(paths, fn x -> Enum.uniq(x) == x end)
     end
   end
