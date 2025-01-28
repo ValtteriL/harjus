@@ -36,9 +36,7 @@ defmodule OpportunityWatcher.Impl do
     symbol_to_trading_symbol_map =
       trading_paths
       |> List.flatten()
-      |> Enum.uniq()
-      # take only longs, otherwise we'll have duplicates
-      |> Enum.filter(fn x -> x.position == :long end)
+      |> Enum.uniq_by(fn x -> x.symbol end)
       |> Enum.map(fn x ->
         {x.symbol,
          %{
