@@ -9,8 +9,19 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   alias Trader.TradeClient.Exchange.Binance.FixApi.Tag
   alias Types.TradingSymbol
 
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest FixApi
+  use PropCheck
+
+  property "generates correct market order request", [:verbose] do
+  end
+
+  property "parses execution_report message", [:verbose] do
+  end
+
+  ## Generators ##
+
+  ## Unit tests ##
 
   test "generates correct heartbeat message" do
     sender_comp_id = "asd123"
