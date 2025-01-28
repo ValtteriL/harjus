@@ -2,7 +2,6 @@ defmodule OpportunityWatcher.ImplTest do
   @moduledoc "Tests for Impl"
 
   alias OpportunityWatcher.Args
-  alias OpportunityWatcher.Generator
   alias OpportunityWatcher.Impl
   alias OpportunityWatcher.State
   alias Types.Opportunity
@@ -17,7 +16,7 @@ defmodule OpportunityWatcher.ImplTest do
       state = %State{} = Impl.new(args)
 
       # collect opportunities from all price updates
-      opportunities =
+      {_, opportunities} =
         Enum.reduce(price_updates, {state, []}, fn x, {state, opportunities} ->
           {new_state, new_opportunities} = Impl.price_update(state, x)
           {new_state, opportunities ++ new_opportunities}
@@ -30,6 +29,8 @@ defmodule OpportunityWatcher.ImplTest do
         # and a capacity greater than or equal to min_capacity
         assert Decimal.gte?(opportunity.capacity, args.min_capacity)
       end)
+
+      true
     end
   end
 
