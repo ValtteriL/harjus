@@ -6,6 +6,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi do
   """
 
   alias Types.TradingSymbol
+  require Decimal
 
   defmodule MessageToSend do
     @moduledoc "serializer argument map"
@@ -155,7 +156,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi do
     * `private_key` - private key (in PEM format without "---BEGIN PUBLIC...")
   """
   @spec logon(integer(), String.t(), String.t(), String.t()) :: binary()
-  def logon(seq_num, sender_comp_id, api_key, private_key) do
+  def logon(seq_num, sender_comp_id = "" <> _, api_key = "" <> _, private_key = "" <> _)
+      when is_integer(seq_num) do
     ts = timestamp()
 
     signature = sign({MsgType.logon(), sender_comp_id, "SPOT", seq_num, ts}, private_key)
@@ -194,7 +196,14 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi do
   """
   @spec market_order_request(integer(), String.t(), TradingSymbol.t(), Decimal.t(), String.t()) ::
           binary()
-  def market_order_request(seq_num, sender_comp_id, trading_symbol, quantity, client_order_id) do
+  def market_order_request(
+        seq_num,
+        sender_comp_id = "" <> _,
+        trading_symbol = %TradingSymbol{},
+        quantity,
+        client_order_id = "" <> _
+      )
+      when Decimal.is_decimal(quantity) and is_integer(seq_num) do
     side =
       case trading_symbol.position do
         :long -> OrderSide.buy()
@@ -230,7 +239,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi do
     * `test_request_id` - test request id
   """
   @spec heartbeat(integer(), String.t(), String.t()) :: binary()
-  def heartbeat(seq_num, sender_comp_id, test_request_id) do
+  def heartbeat(seq_num, sender_comp_id = "" <> _, test_request_id = "" <> _)
+      when is_integer(seq_num) do
     serialize(
       %MessageToSend{
         seqnum: seq_num,
