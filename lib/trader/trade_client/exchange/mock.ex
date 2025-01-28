@@ -4,10 +4,13 @@ defmodule Trader.TradeClient.Exchange.Mock do
   @behaviour Trader.TradeClient.Exchange
 
   alias Types.TradeReport
+  alias Types.TradingSymbol
+  require Decimal
 
   def new, do: :ok
 
-  def market_order(trading_symbol, quantity) do
+  def market_order(trading_symbol = %TradingSymbol{}, quantity)
+      when Decimal.is_decimal(quantity) do
     %TradeReport{
       symbol: trading_symbol,
       position: [:long, :short] |> Enum.random(),
