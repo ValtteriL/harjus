@@ -2,6 +2,11 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   @moduledoc "Tests for FixApi"
 
   alias Trader.TradeClient.Exchange.Binance.FixApi
+  alias Trader.TradeClient.Exchange.Binance.FixApi.ExecutionReport
+  alias Trader.TradeClient.Exchange.Binance.FixApi.MsgType
+  alias Trader.TradeClient.Exchange.Binance.FixApi.OrderSide
+  alias Trader.TradeClient.Exchange.Binance.FixApi.OrderType
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Tag
   alias Types.TradingSymbol
 
   use ExUnit.Case
@@ -10,17 +15,17 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   test "generates correct heartbeat message" do
     sender_comp_id = "asd123"
     id = "some_id"
-    msg_type_part = "#{FixApi.Tag.msg_type()}=#{FixApi.MsgType.heartbeat()}"
+    msg_type_part = "#{Tag.msg_type()}=#{MsgType.heartbeat()}"
 
     # correct msg type
     <<"8=FIX.4.4", 1, "9=68", 1, ^msg_type_part::binary, rest::binary>> =
       FixApi.heartbeat(1, sender_comp_id, id)
 
     # correct sender comp id
-    assert String.contains?(rest, "#{FixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
+    assert String.contains?(rest, "#{Tag.sender_comp_id()}=#{sender_comp_id}")
 
     # rest contains id
-    assert String.contains?(rest, "#{FixApi.Tag.test_request_id()}=#{id}")
+    assert String.contains?(rest, "#{Tag.test_request_id()}=#{id}")
   end
 
   test "generates correct logon request" do
@@ -40,14 +45,14 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     # correct msg type
     assert String.contains?(
              logon_msg,
-             "#{FixApi.Tag.msg_type()}=#{FixApi.MsgType.logon()}"
+             "#{Tag.msg_type()}=#{MsgType.logon()}"
            )
 
     # correct user
-    assert String.contains?(logon_msg, "#{FixApi.Tag.username()}=#{pubkey}")
+    assert String.contains?(logon_msg, "#{Tag.username()}=#{pubkey}")
 
     # correct sender comp id
-    assert String.contains?(logon_msg, "#{FixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
+    assert String.contains?(logon_msg, "#{Tag.sender_comp_id()}=#{sender_comp_id}")
   end
 
   test "generates correct market order request" do
@@ -68,25 +73,25 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     # correct msg type
     assert String.contains?(
              msg,
-             "#{FixApi.Tag.msg_type()}=#{FixApi.MsgType.single_order_entry()}"
+             "#{Tag.msg_type()}=#{MsgType.single_order_entry()}"
            )
 
     # correct symbol
-    assert String.contains?(msg, "#{FixApi.Tag.symbol()}=#{symbol}")
+    assert String.contains?(msg, "#{Tag.symbol()}=#{symbol}")
 
     # correct side
-    assert String.contains?(msg, "#{FixApi.Tag.side()}=#{FixApi.OrderSide.buy()}")
+    assert String.contains?(msg, "#{Tag.side()}=#{OrderSide.buy()}")
 
     # correct quantity
-    assert String.contains?(msg, "#{FixApi.Tag.cash_order_qty()}=#{quantity}")
+    assert String.contains?(msg, "#{Tag.cash_order_qty()}=#{quantity}")
 
     # correct sender comp id
-    assert String.contains?(msg, "#{FixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
+    assert String.contains?(msg, "#{Tag.sender_comp_id()}=#{sender_comp_id}")
 
     # correct order type
     assert String.contains?(
              msg,
-             "#{FixApi.Tag.order_type()}=#{FixApi.OrderType.market()}"
+             "#{Tag.order_type()}=#{OrderType.market()}"
            )
   end
 
@@ -146,14 +151,14 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
 
     report_fields =
       [
-        pair(FixApi.Tag.order_status(), status),
-        pair(FixApi.Tag.quantity_base(), quantity_base),
-        pair(FixApi.Tag.quantity_quote(), quantity_quote),
-        pair(FixApi.Tag.symbol(), symbol),
-        pair(FixApi.Tag.side(), side),
-        pair(FixApi.Tag.fee_currency(), fee_currency),
-        pair(FixApi.Tag.fee_amount(), fee_amount),
-        pair(FixApi.Tag.cl_order_id(), client_order_id)
+        pair(Tag.order_status(), status),
+        pair(Tag.quantity_base(), quantity_base),
+        pair(Tag.quantity_quote(), quantity_quote),
+        pair(Tag.symbol(), symbol),
+        pair(Tag.side(), side),
+        pair(Tag.fee_currency(), fee_currency),
+        pair(Tag.fee_amount(), fee_amount),
+        pair(Tag.cl_order_id(), client_order_id)
       ]
       |> Enum.join("|")
 
@@ -161,7 +166,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
       "8=FIX.4.4|9=12|35=8|34=1|49=binance|56=client|#{report_fields}|52=20210101-00:00:00.000|10=000|"
 
     assert {:execution_report,
-            %FixApi.ExecutionReport{
+            %ExecutionReport{
               order_status: status,
               quantity_base: quantity_base,
               quantity_quote: quantity_quote,
