@@ -11,44 +11,57 @@ defmodule OpportunityWatcher.ImplTest do
   use ExUnit.Case, async: true
   use PropCheck
 
-  property "emits correct opportunities", [:verbose] do
-    forall {args, price_updates} <- args_price_updates() do
+  property "opportunity has a profit greater than or equal to min_profit_percentage", [:verbose] do
+    forall {args, price_update} <- args_price_update() do
       state = %State{} = Impl.new(args)
 
       # collect opportunities from all price updates
-      {_, opportunities} =
-        Enum.reduce(price_updates, {state, []}, fn x, {state, opportunities} ->
-          {new_state, new_opportunities} = Impl.price_update(state, x)
-          {new_state, opportunities ++ new_opportunities}
-        end)
+      {_, opportunities} = Impl.price_update(state, price_update)
 
-      Enum.each(opportunities, fn opportunity ->
-        # any opportunity should have a profit greater than or equal to min_profit_percentage
-        assert Decimal.gte?(opportunity.profit, args.min_profit_percentage)
+      assert Enum.all?(opportunities, fn x ->
+               Decimal.gte?(x.profit, args.min_profit_percentage)
+             end)
+    end
+  end
 
-        # and a capacity greater than or equal to min_capacity
-        assert Decimal.gte?(opportunity.capacity, args.min_capacity)
-      end)
+  property "opportunity has capacity greater than or equal to min_capacity", [:verbose] do
+    forall {args, price_update} <- args_price_update() do
+      state = %State{} = Impl.new(args)
 
-      true
+      # collect opportunities from all price updates
+      {_, opportunities} = Impl.price_update(state, price_update)
+
+      assert Enum.all?(opportunities, fn x ->
+               Decimal.gte?(x.capacity, args.min_capacity)
+             end)
+    end
+  end
+
+  property "opportunity must include symbol that was updated", [:verbose] do
+    forall {args, price_update} <- args_price_update() do
+      state = %State{} = Impl.new(args)
+
+      # collect opportunities from all price updates
+      {_, opportunities} = Impl.price_update(state, price_update)
+
+      assert Enum.all?(opportunities, fn x ->
+               Enum.any?(x.path, fn x -> x.symbol == x.symbol end)
+             end)
     end
   end
 
   ## Generators ##
 
-  defp args_price_updates do
+  defp args_price_update do
     let args <- args() do
-      let price_updates <- non_empty(list(price_update())) do
-        # price updates must have symbols from trading paths
+      let price_update <- price_update() do
+        # price update must have symbols from trading paths
         symbols =
           args.trading_paths |> List.flatten() |> Enum.map(fn x -> x.symbol end) |> Enum.uniq()
 
-        fixed_updates =
-          Enum.map(price_updates, fn x ->
-            Map.replace!(x, :symbol, Enum.random(symbols))
-          end)
+        fixed_update = Map.replace!(price_update, :symbol, Enum.random(symbols))
 
-        {args, fixed_updates}
+        {args, fixed_update}
       end
     end
   end
