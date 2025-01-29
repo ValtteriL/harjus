@@ -3,24 +3,36 @@ defmodule Trader.ImplTest do
 
   use ExUnit.Case, async: true
   use PropCheck
-  alias Types.TradeReport
+
   alias Trader.Impl
+  alias Types.Opportunity
+  alias Types.TradeReport
+  alias Types.TradingSymbol
+
+  import Mox
 
   # Make sure mocks are verified when the test exits
   setup :verify_on_exit!
 
-  property "succeeds when balace and free symbols" do
-    forall {opportunity, balances} <- opportunity_and_balances do
+  setup do
+    {:ok, _pid} = Balance.start_link()
+    :ok
+  end
 
+
+  property "succeeds when balace and free symbols" do
+    forall [{opportunity, balances}, trade_report] <-
+             [
+               opportunity_and_balances(),
+               trade_report()
+             ] do
       # setup mocks
       Balance.Exchange.TestMock
       |> expect(:get_balances, fn -> balances end)
 
       Trader.TradeClient.Exchange.TestMock
       |> expect(:new, fn -> :ok end)
-      |> expect(:market_order, fn trading_symbol, quantity -> %TradeReport{
-        # TODO
-      } end)
+      |> expect(:market_order, fn trading_symbol, quantity -> trade_report end)
 
       # init
       Impl.new()
@@ -30,11 +42,11 @@ defmodule Trader.ImplTest do
   end
 
   property "fails if any symbol in path already reserved" do
-    fails(forall()) do
-    end
+    assert false
   end
 
   property "fails if no balance to reserve" do
+    assert false
   end
 
   ## Generators ##
@@ -56,10 +68,11 @@ defmodule Trader.ImplTest do
   end
 
   defp balances(%Opportunity{path: path}) do
-    assets = path |> Enum.map(fn p -> p.quote_asset end) |> Enum.uniq()
-
-    # TODO: set balances
-
+    let balances <- non_empty(list(pos_decimal())) do
+      assets = path |> Enum.map(fn p -> p.quote_asset end) |> Enum.uniq()
+      # create map of symbol -> balance for all symbols
+      Enum.zip(assets, balances) |> Enum.into(%{})
+    end
   end
 
   defp pos_decimal do
@@ -75,12 +88,37 @@ defmodule Trader.ImplTest do
   end
 
   defp trading_symbol do
-    let [symbol <- non_empty_string(), position <- union([:long, :short]), base_asset <- non_empty_string(), quote_asset <- non_empty_string()] do
+    let [
+      symbol <- non_empty_string(),
+      position <- union([:long, :short]),
+      base_asset <- non_empty_string(),
+      quote_asset <- non_empty_string()
+    ] do
       %TradingSymbol{
         symbol: symbol,
         position: position,
         base_asset: base_asset,
         quote_asset: quote_asset
+      }
+    end
+  end
+
+  defp trade_report do
+    let([
+      symbol <- non_empty_string(),
+      position <- union([:long, :short]),
+      qty_base <- pos_decimal(),
+      qty_quote <- pos_decimal(),
+      qty_fee <- pos_decimal(),
+      fee_currency <- non_empty_string()
+    ]) do
+      %TradeReport{
+        symbol: symbol,
+        position: position,
+        quantity_base: qty_base,
+        quantity_quote: qty_quote,
+        quantity_fee: qty_fee,
+        fee_currency: fee_currency
       }
     end
   end
@@ -95,5 +133,4 @@ defmodule Trader.ImplTest do
     ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
       ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
   end
-
 end
