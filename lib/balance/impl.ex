@@ -3,13 +3,13 @@ defmodule Balance.Impl do
   Implementation of the balance process
   """
 
-  @exchange Application.compile_env(:harjus, :balance_exchange)
+  alias Balance.Exchange
 
   use Agent
   require Decimal
 
   def new do
-    @exchange.get_balances()
+    Exchange.get_balances()
   end
 
   @spec get(state :: map(), asset :: String.t()) :: Decimal.t()

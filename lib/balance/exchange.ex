@@ -8,4 +8,7 @@ defmodule Balance.Exchange do
   """
 
   @callback get_balances() :: %{String.t() => Decimal.t()}
+
+  def get_balances, do: impl().get_balances()
+  defp impl, do: Application.get_env(:harjus, :balance_exchange)
 end
