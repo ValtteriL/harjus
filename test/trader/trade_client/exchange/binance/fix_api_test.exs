@@ -14,7 +14,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   require Decimal
   use PropCheck
 
-  property "generates correct market order request", [:verbose] do
+  property "generates correct market order request" do
     forall [seq, sender_comp_id, quantity, symbol, client_order_id, trading_symbol] <- [integer(1, :inf), non_empty_string(), decimal(), non_empty_string(), trading_symbol()] do
       msg =
         FixApi.market_order_request(
