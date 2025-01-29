@@ -11,15 +11,84 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
 
   use ExUnit.Case, async: true
   doctest FixApi
+  require Decimal
   use PropCheck
 
-  # property "generates correct market order request" do
-  # end
+  property "generates correct market order request", [:verbose] do
+    forall [seq, sender_comp_id, quantity, symbol, client_order_id, trading_symbol] <- [integer(1, :inf), non_empty_string(), decimal(), non_empty_string(), trading_symbol()] do
+      msg =
+        FixApi.market_order_request(
+          seq,
+          sender_comp_id,
+          trading_symbol,
+          quantity,
+          client_order_id
+        )
+
+      # correct msg type
+      assert String.contains?(
+               msg,
+               "#{Tag.msg_type()}=#{MsgType.single_order_entry()}"
+             )
+
+      # correct symbol
+      assert String.contains?(msg, "#{Tag.symbol()}=#{symbol}")
+
+      # correct side
+      assert String.contains?(msg, "#{Tag.side()}=#{OrderSide.buy()}")
+
+      # correct quantity
+      assert String.contains?(msg, "#{Tag.cash_order_qty()}=#{quantity}")
+
+      # correct sender comp id
+      assert String.contains?(msg, "#{Tag.sender_comp_id()}=#{sender_comp_id}")
+
+      # correct order type
+      assert String.contains?(
+               msg,
+               "#{Tag.order_type()}=#{OrderType.market()}"
+             )
+    end
+  end
 
   # property "parses execution_report message" do
   # end
 
   ## Generators ##
+
+  defp trading_symbol do
+    let symbol <- non_empty_string() do
+      let position <- union([:long, :short]) do
+        let base_asset <- non_empty_string() do
+          let quote_asset <- non_empty_string() do
+            %TradingSymbol{
+              symbol: symbol,
+              position: position,
+              base_asset: base_asset,
+              quote_asset: quote_asset
+            }
+          end
+        end
+      end
+    end
+  end
+
+  defp decimal do
+    let float <- float() do
+      Decimal.from_float(float)
+    end
+  end
+
+  defp non_empty_string do
+    let charlist <- non_empty(elements(textdata())) do
+      to_string(charlist)
+    end
+  end
+
+  defp textdata do
+    ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
+      ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
+  end
 
   ## Unit tests ##
 
