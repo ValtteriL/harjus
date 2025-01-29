@@ -69,16 +69,16 @@ defmodule PortfolioManager.ImplTest do
   end
 
   defp opportunity do
-    let profit <- decimal() do
-      let capacity <- decimal() do
-        let path <- path() do
-          %Opportunity{
-            path: path,
-            profit: profit,
-            capacity: capacity
-          }
-        end
-      end
+    let [
+      profit <- decimal(),
+      capacity <- decimal(),
+      path <- path()
+    ] do
+      %Opportunity{
+        path: path,
+        profit: profit,
+        capacity: capacity
+      }
     end
   end
 
@@ -100,20 +100,19 @@ defmodule PortfolioManager.ImplTest do
     end
   end
 
-  def trading_symbol do
-    let symbol <- non_empty_string() do
-      let position <- union([:long, :short]) do
-        let base_asset <- non_empty_string() do
-          let quote_asset <- non_empty_string() do
-            %TradingSymbol{
-              symbol: symbol,
-              position: position,
-              base_asset: base_asset,
-              quote_asset: quote_asset
-            }
-          end
-        end
-      end
+  defp trading_symbol do
+    let [
+      symbol <- non_empty_string(),
+      position <- union([:long, :short]),
+      base_asset <- non_empty_string(),
+      quote_asset <- non_empty_string()
+    ] do
+      %TradingSymbol{
+        symbol: symbol,
+        position: position,
+        base_asset: base_asset,
+        quote_asset: quote_asset
+      }
     end
   end
 

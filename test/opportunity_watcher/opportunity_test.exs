@@ -48,27 +48,24 @@ defmodule OpportunityWatcher.OpportunityTest do
   end
 
   defp price_qty_tuple do
-    let price <- non_neg_float() do
-      let qty <- non_neg_float() do
-        {Decimal.from_float(price), Decimal.from_float(qty)}
-      end
+    let [price <- non_neg_float(), qty <- non_neg_float()] do
+      {Decimal.from_float(price), Decimal.from_float(qty)}
     end
   end
 
-  def trading_symbol do
-    let symbol <- non_empty_string() do
-      let position <- union([:long, :short]) do
-        let base_asset <- non_empty_string() do
-          let quote_asset <- non_empty_string() do
-            %TradingSymbol{
-              symbol: symbol,
-              position: position,
-              base_asset: base_asset,
-              quote_asset: quote_asset
-            }
-          end
-        end
-      end
+  defp trading_symbol do
+    let [
+      symbol <- non_empty_string(),
+      position <- union([:long, :short]),
+      base_asset <- non_empty_string(),
+      quote_asset <- non_empty_string()
+    ] do
+      %TradingSymbol{
+        symbol: symbol,
+        position: position,
+        base_asset: base_asset,
+        quote_asset: quote_asset
+      }
     end
   end
 

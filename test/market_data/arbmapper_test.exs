@@ -141,14 +141,14 @@ defmodule MarketData.ArbmapperTest do
   ## Generators ##
 
   defp trading_symbols do
-    let symbol <- non_empty_string() do
-      let base_asset <- non_empty_string() do
-        let quote_asset <- non_empty_string() do
-          let a <-
-                non_empty(list(%{symbol: symbol, baseAsset: base_asset, quoteAsset: quote_asset})) do
-            a
-          end
-        end
+    let [
+      symbol <- non_empty_string(),
+      base_asset <- non_empty_string(),
+      quote_asset <- non_empty_string()
+    ] do
+      let symbols <-
+            non_empty(list(%{symbol: symbol, baseAsset: base_asset, quoteAsset: quote_asset})) do
+        symbols
       end
     end
   end

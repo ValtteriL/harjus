@@ -70,56 +70,52 @@ defmodule OpportunityWatcher.ImplTest do
   end
 
   defp price_update do
-    let symbol <- non_empty_string() do
-      let ask_price <- non_neg_float() do
-        let ask_qty <- non_neg_float() do
-          let bid_price <- non_neg_float() do
-            let bid_qty <- non_neg_float() do
-              %PriceUpdate{
-                symbol: symbol,
-                ask_price: Decimal.from_float(ask_price),
-                ask_qty: Decimal.from_float(ask_qty),
-                bid_price: Decimal.from_float(bid_price),
-                bid_qty: Decimal.from_float(bid_qty)
-              }
-            end
-          end
-        end
-      end
+    let [
+      symbol <- non_empty_string(),
+      ask_price <- non_neg_float(),
+      ask_qty <- non_neg_float(),
+      bid_price <- non_neg_float(),
+      bid_qty <- non_neg_float()
+    ] do
+      %PriceUpdate{
+        symbol: symbol,
+        ask_price: Decimal.from_float(ask_price),
+        ask_qty: Decimal.from_float(ask_qty),
+        bid_price: Decimal.from_float(bid_price),
+        bid_qty: Decimal.from_float(bid_qty)
+      }
     end
   end
 
   defp args do
-    let min_profit_percentage <- non_neg_float() do
-      let min_capacity <- non_neg_float() do
-        let commission <- non_neg_float() do
-          let trading_paths <- non_empty(list(non_empty(list(trading_symbol())))) do
-            %Args{
-              min_profit_percentage: Decimal.from_float(min_profit_percentage),
-              min_capacity: Decimal.from_float(min_capacity),
-              commission: Decimal.from_float(commission),
-              trading_paths: trading_paths
-            }
-          end
-        end
-      end
+    let [
+      min_profit_percentage <- non_neg_float(),
+      min_capacity <- non_neg_float(),
+      commission <- non_neg_float(),
+      trading_paths <- non_empty(list(non_empty(list(trading_symbol()))))
+    ] do
+      %Args{
+        min_profit_percentage: Decimal.from_float(min_profit_percentage),
+        min_capacity: Decimal.from_float(min_capacity),
+        commission: Decimal.from_float(commission),
+        trading_paths: trading_paths
+      }
     end
   end
 
   defp trading_symbol do
-    let symbol <- non_empty_string() do
-      let position <- union([:long, :short]) do
-        let base_asset <- non_empty_string() do
-          let quote_asset <- non_empty_string() do
-            %TradingSymbol{
-              symbol: symbol,
-              position: position,
-              base_asset: base_asset,
-              quote_asset: quote_asset
-            }
-          end
-        end
-      end
+    let [
+      symbol <- non_empty_string(),
+      position <- union([:long, :short]),
+      base_asset <- non_empty_string(),
+      quote_asset <- non_empty_string()
+    ] do
+      %TradingSymbol{
+        symbol: symbol,
+        position: position,
+        base_asset: base_asset,
+        quote_asset: quote_asset
+      }
     end
   end
 
