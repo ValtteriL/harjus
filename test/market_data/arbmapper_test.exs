@@ -12,7 +12,7 @@ defmodule MarketData.ArbmapperTest do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
-             positive_integer()
+             non_neg_integer()
            ] do
       {paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
@@ -29,7 +29,7 @@ defmodule MarketData.ArbmapperTest do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
-             positive_integer()
+             non_neg_integer()
            ] do
       {paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
@@ -46,7 +46,7 @@ defmodule MarketData.ArbmapperTest do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
-             positive_integer()
+             non_neg_integer()
            ] do
       {paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
@@ -64,7 +64,7 @@ defmodule MarketData.ArbmapperTest do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
-             positive_integer()
+             non_neg_integer()
            ] do
       {paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
@@ -81,7 +81,7 @@ defmodule MarketData.ArbmapperTest do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
-             positive_integer()
+             non_neg_integer()
            ] do
       {paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
@@ -98,7 +98,7 @@ defmodule MarketData.ArbmapperTest do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
-             positive_integer()
+             non_neg_integer()
            ] do
       {paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
@@ -115,7 +115,7 @@ defmodule MarketData.ArbmapperTest do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
-             positive_integer()
+             non_neg_integer()
            ] do
       {paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
@@ -132,7 +132,7 @@ defmodule MarketData.ArbmapperTest do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
-             positive_integer()
+             non_neg_integer()
            ] do
       {paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
@@ -169,12 +169,6 @@ defmodule MarketData.ArbmapperTest do
   defp textdata do
     ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
       ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
-  end
-
-  defp positive_integer do
-    let integer <- non_neg_integer() do
-      integer
-    end
   end
 
   ## Unit tests ##
