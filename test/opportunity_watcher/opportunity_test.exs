@@ -8,7 +8,7 @@ defmodule OpportunityWatcher.OpportunityTest do
   doctest Opportunity
   use PropCheck
 
-  property "profit cannot be less than -1", [:verbose] do
+  property "profit cannot be less than -1" do
     forall [{trading_path, price_qty_map}, commission_percentage] <- [
              trading_path_and_price_map(),
              float(0.0, 1.0)
@@ -23,7 +23,7 @@ defmodule OpportunityWatcher.OpportunityTest do
     end
   end
 
-  property "capacity is always greater than or equal to 0", [:verbose] do
+  property "capacity is always greater than or equal to 0" do
     forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
       capacity = Opportunity.capacity(trading_path, price_qty_map)
 

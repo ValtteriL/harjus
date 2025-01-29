@@ -13,10 +13,10 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   doctest FixApi
   use PropCheck
 
-  # property "generates correct market order request", [:verbose] do
+  # property "generates correct market order request" do
   # end
 
-  # property "parses execution_report message", [:verbose] do
+  # property "parses execution_report message" do
   # end
 
   ## Generators ##

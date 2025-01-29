@@ -8,7 +8,7 @@ defmodule MarketData.AssetComparerTest do
   doctest AssetComparer
   use PropCheck
 
-  property "output map includes all symbols as keys", [:verbose] do
+  property "output map includes all symbols as keys" do
     forall {symbols, symbol_prices, comparison_asset} <- gen_symbols_prices_asset() do
       relative_prices =
         AssetComparer.calculate_relative_values(symbols, symbol_prices, comparison_asset)
@@ -21,7 +21,7 @@ defmodule MarketData.AssetComparerTest do
     end
   end
 
-  property "comparison asset has value of 1.0", [:verbose] do
+  property "comparison asset has value of 1.0" do
     forall {symbols, symbol_prices, comparison_asset} <- gen_symbols_prices_asset() do
       relative_prices =
         AssetComparer.calculate_relative_values(symbols, symbol_prices, comparison_asset)

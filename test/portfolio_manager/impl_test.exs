@@ -12,14 +12,14 @@ defmodule PortfolioManager.ImplTest do
   # turn off logging
   @moduletag :capture_log
 
-  property "emits list of single opportunity", [:verbose] do
+  property "emits list of single opportunity" do
     forall [args, opportunities] <- [args(), opportunities()] do
       state = %Args{} = Impl.new(args)
       assert Enum.count(Impl.filter_opportunities(state, opportunities)) == 1
     end
   end
 
-  property "emitted opportunity is one of input opportunities", [:verbose] do
+  property "emitted opportunity is one of input opportunities" do
     forall [args, opportunities] <- [args(), opportunities()] do
       state = %Args{} = Impl.new(args)
 
@@ -30,7 +30,7 @@ defmodule PortfolioManager.ImplTest do
     end
   end
 
-  property "emitted element has highest value", [:verbose] do
+  property "emitted element has highest value" do
     forall [args, opportunities] <- [args(), opportunities()] do
       state = %Args{} = Impl.new(args)
 

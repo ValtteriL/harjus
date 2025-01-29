@@ -8,7 +8,7 @@ defmodule MarketData.ArbmapperTest do
   doctest Arbmapper
   use PropCheck
 
-  property "symbol list cannot have more symbols than in input", [:verbose] do
+  property "symbol list cannot have more symbols than in input" do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
@@ -25,7 +25,7 @@ defmodule MarketData.ArbmapperTest do
     end
   end
 
-  property "symbol list cannot have other symbols than in input", [:verbose] do
+  property "symbol list cannot have other symbols than in input" do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
@@ -42,7 +42,7 @@ defmodule MarketData.ArbmapperTest do
     end
   end
 
-  property "symbol list symbols must be unique", [:verbose] do
+  property "symbol list symbols must be unique" do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
@@ -60,7 +60,7 @@ defmodule MarketData.ArbmapperTest do
     end
   end
 
-  property "trading paths must be unique", [:verbose] do
+  property "trading paths must be unique" do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
@@ -77,7 +77,7 @@ defmodule MarketData.ArbmapperTest do
     end
   end
 
-  property "trading paths only contain symbols from symbol list", [:verbose] do
+  property "trading paths only contain symbols from symbol list" do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
@@ -94,7 +94,7 @@ defmodule MarketData.ArbmapperTest do
     end
   end
 
-  property "trading paths start with starting symbols if defined", [:verbose] do
+  property "trading paths start with starting symbols if defined" do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
@@ -111,7 +111,7 @@ defmodule MarketData.ArbmapperTest do
     end
   end
 
-  property "trading paths must be of length depth or less if defined", [:verbose] do
+  property "trading paths must be of length depth or less if defined" do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),
@@ -128,7 +128,7 @@ defmodule MarketData.ArbmapperTest do
     end
   end
 
-  property "trading path contains a single trading symbol only once", [:verbose] do
+  property "trading path contains a single trading symbol only once" do
     forall [trading_symbols, starting_symbols, depth] <- [
              trading_symbols(),
              non_empty(list(non_empty_string())),

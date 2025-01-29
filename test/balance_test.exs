@@ -11,7 +11,7 @@ defmodule BalanceTest do
     :ok
   end
 
-  property "balance behaves correctly", [:verbose] do
+  property "balance behaves correctly" do
     forall [symbol, update_value] <- [non_empty_string(), float()] do
       # starting balance is 0
       assert Decimal.eq?(Balance.get(symbol), Decimal.from_float(0.0))

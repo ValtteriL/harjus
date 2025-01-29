@@ -10,7 +10,7 @@ defmodule MarketDataTest do
   # Make sure mocks are verified when the test exits
   setup :verify_on_exit!
 
-  property "generates correct trading paths and symbols", [:verbose] do
+  property "generates correct trading paths and symbols" do
     forall [{symbols, symbol_prices, comparison_asset}, starting_symbols, depth] <- [
              gen_symbols_prices_asset(),
              non_empty(list(non_empty_string())),

@@ -14,7 +14,7 @@ defmodule OpportunityWatcher.ImplTest do
   # turn off logging
   @moduletag :capture_log
 
-  property "opportunity has a profit greater than or equal to min_profit_percentage", [:verbose] do
+  property "opportunity has a profit greater than or equal to min_profit_percentage" do
     forall {args, price_update} <- args_price_update() do
       state = %State{} = Impl.new(args)
 
@@ -27,7 +27,7 @@ defmodule OpportunityWatcher.ImplTest do
     end
   end
 
-  property "opportunity has capacity greater than or equal to min_capacity", [:verbose] do
+  property "opportunity has capacity greater than or equal to min_capacity" do
     forall {args, price_update} <- args_price_update() do
       state = %State{} = Impl.new(args)
 
@@ -40,7 +40,7 @@ defmodule OpportunityWatcher.ImplTest do
     end
   end
 
-  property "opportunity must include symbol that was updated", [:verbose] do
+  property "opportunity must include symbol that was updated" do
     forall {args, price_update} <- args_price_update() do
       state = %State{} = Impl.new(args)
 
