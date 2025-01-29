@@ -16,7 +16,7 @@ defmodule Trader do
     * `max_number_workers` - The maximum number of workers to start
   """
   @spec start_link(max_number_workers :: integer()) :: {:ok, pid()}
-  def start_link(max_number_workers) do
+  def start_link(max_number_workers) when is_integer(max_number_workers) do
     Impl.new()
     ConsumerSupervisor.start_link(Consumer, max_number_workers, name: __MODULE__)
   end
