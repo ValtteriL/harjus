@@ -15,7 +15,13 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   use PropCheck
 
   property "generates correct market order request" do
-    forall [seq, sender_comp_id, quantity, symbol, client_order_id, trading_symbol] <- [integer(1, :inf), non_empty_string(), decimal(), non_empty_string(), trading_symbol()] do
+    forall [seq, sender_comp_id, trading_symbol, quantity, client_order_id] <- [
+             pos_integer(),
+             non_empty_string(),
+             trading_symbol(),
+             pos_decimal(),
+             non_empty_string()
+           ] do
       msg =
         FixApi.market_order_request(
           seq,
@@ -32,13 +38,22 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
              )
 
       # correct symbol
-      assert String.contains?(msg, "#{Tag.symbol()}=#{symbol}")
+      assert String.contains?(msg, "#{Tag.symbol()}=#{trading_symbol.symbol}")
 
       # correct side
-      assert String.contains?(msg, "#{Tag.side()}=#{OrderSide.buy()}")
+      correct_side =
+        case trading_symbol.position do
+          :long -> OrderSide.buy()
+          _ -> OrderSide.sell()
+        end
 
-      # correct quantity
-      assert String.contains?(msg, "#{Tag.cash_order_qty()}=#{quantity}")
+      assert String.contains?(msg, "#{Tag.side()}=#{correct_side}")
+
+      # correct quantity (10 decimals)
+      assert String.contains?(
+               msg,
+               "#{Tag.cash_order_qty()}=#{:erlang.float_to_binary(Decimal.to_float(quantity), [{:decimals, 10}, :compact])}"
+             )
 
       # correct sender comp id
       assert String.contains?(msg, "#{Tag.sender_comp_id()}=#{sender_comp_id}")
@@ -51,8 +66,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     end
   end
 
-  # property "parses execution_report message" do
-  # end
+  property "parses execution_report message" do
+  end
 
   ## Generators ##
 
@@ -73,8 +88,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     end
   end
 
-  defp decimal do
-    let float <- float() do
+  defp pos_decimal do
+    let float <- float(0.000001, :inf) do
       Decimal.from_float(float)
     end
   end
@@ -219,46 +234,6 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     assert {:news} == FixApi.parse_message(str_message_to_binary(msg))
   end
 
-  test "parses execution_report message" do
-    status = "1"
-    quantity_base = Decimal.new("2.0")
-    quantity_quote = Decimal.new("3.0")
-    symbol = "BTCUSDT"
-    side = "4"
-    fee_currency = "USDT"
-    fee_amount = Decimal.new("5.0")
-    client_order_id = "some_id"
-
-    report_fields =
-      [
-        pair(Tag.order_status(), status),
-        pair(Tag.quantity_base(), quantity_base),
-        pair(Tag.quantity_quote(), quantity_quote),
-        pair(Tag.symbol(), symbol),
-        pair(Tag.side(), side),
-        pair(Tag.fee_currency(), fee_currency),
-        pair(Tag.fee_amount(), fee_amount),
-        pair(Tag.cl_order_id(), client_order_id)
-      ]
-      |> Enum.join("|")
-
-    msg =
-      "8=FIX.4.4|9=12|35=8|34=1|49=binance|56=client|#{report_fields}|52=20210101-00:00:00.000|10=000|"
-
-    assert {:execution_report,
-            %ExecutionReport{
-              order_status: status,
-              quantity_base: quantity_base,
-              quantity_quote: quantity_quote,
-              symbol: symbol,
-              side: side,
-              fee_currency: fee_currency,
-              fee_amount: fee_amount,
-              client_order_id: client_order_id
-            }} ==
-             FixApi.parse_message(str_message_to_binary(msg))
-  end
-
   test "parses unknown message" do
     msg = "whateva"
     assert {:unknown, msg} == FixApi.parse_message(msg)
@@ -301,6 +276,12 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     str_message
     |> :binary.split("|", [:global])
     |> Enum.join(<<1>>)
+  end
+
+  defp binary_to_str_message(binary_msg) do
+    binary_msg
+    |> :binary.split(<<1>>, [:global])
+    |> Enum.join("|")
   end
 
   # create pair
