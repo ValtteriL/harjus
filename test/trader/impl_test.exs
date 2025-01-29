@@ -1,38 +1,39 @@
 defmodule Trader.ImplTest do
   @moduledoc "Tests for Impl"
 
-  use ExUnit.Case, async: true
+  use ExUnit.Case
   use PropCheck
 
   alias Trader.Impl
   alias Types.Opportunity
   alias Types.TradeReport
   alias Types.TradingSymbol
+  require Decimal
 
   import Mox
 
   # Make sure mocks are verified when the test exits
   setup :verify_on_exit!
 
-  setup do
-    {:ok, _pid} = Balance.start_link()
-    :ok
-  end
-
+  # turn off logging
+  @moduletag :capture_log
 
   property "succeeds when balace and free symbols" do
-    forall [{opportunity, balances}, trade_report] <-
+    forall [opportunity, trade_report] <-
              [
-               opportunity_and_balances(),
+               opportunity_with_uniq_symbols(),
                trade_report()
              ] do
       # setup mocks
-      Balance.Exchange.TestMock
-      |> expect(:get_balances, fn -> balances end)
+      Trader.Balance.TestMock
+      |> stub(:update, fn _asset, _amount -> :ok end)
+      |> expect(:reserve_upto, fn _asset, _amount -> Decimal.new(1) end)
 
       Trader.TradeClient.Exchange.TestMock
       |> expect(:new, fn -> :ok end)
-      |> expect(:market_order, fn trading_symbol, quantity -> trade_report end)
+      |> expect(:market_order, Enum.count(opportunity.path), fn trading_symbol, quantity ->
+        trade_report
+      end)
 
       # init
       Impl.new()
@@ -42,18 +43,62 @@ defmodule Trader.ImplTest do
   end
 
   property "fails if any symbol in path already reserved" do
-    assert false
+    forall [opportunity, trade_report] <-
+             [
+               opportunity_with_duplicate_symbols(),
+               trade_report()
+             ] do
+      # setup mocks
+      Trader.Balance.TestMock
+      |> stub(:update, fn _asset, _amount -> :ok end)
+
+      Trader.TradeClient.Exchange.TestMock
+      |> expect(:new, fn -> :ok end)
+
+      # init
+      Impl.new()
+
+      assert Map.has_key?(catch_error(Impl.execute_opportunity(opportunity)), :key)
+    end
   end
 
   property "fails if no balance to reserve" do
-    assert false
+    forall [opportunity, trade_report] <-
+             [
+               opportunity_with_uniq_symbols(),
+               trade_report()
+             ] do
+      # setup mocks
+      Trader.Balance.TestMock
+      |> stub(:update, fn _asset, _amount -> :ok end)
+      |> expect(:reserve_upto, fn _asset, _amount -> Decimal.from_float(0.0) end)
+
+      Trader.TradeClient.Exchange.TestMock
+      |> expect(:new, fn -> :ok end)
+
+      # init
+      Impl.new()
+
+      assert %RuntimeError{message: "No budget available to reserve"} ==
+               catch_error(Impl.execute_opportunity(opportunity))
+    end
   end
 
   ## Generators ##
 
-  defp opportunity_and_balances do
-    let [opportunity <- opportunity(), balances <- balances(^opportunity)] do
-      {opportunity, balances}
+  defp opportunity_with_uniq_symbols do
+    let opportunity <- opportunity() do
+      # make symbols unique
+      uniq_path = opportunity.path |> Enum.uniq_by(fn p -> p.symbol end)
+      %{opportunity | path: uniq_path}
+    end
+  end
+
+  defp opportunity_with_duplicate_symbols do
+    let opportunity <- opportunity() do
+      # make symbols duplicate
+      duplicate_path = opportunity.path ++ opportunity.path
+      %{opportunity | path: duplicate_path}
     end
   end
 
