@@ -31,7 +31,7 @@ defmodule Trader.ImplTest do
 
       Trader.TradeClient.Exchange.TestMock
       |> expect(:new, fn -> :ok end)
-      |> expect(:market_order, Enum.count(opportunity.path), fn trading_symbol, quantity ->
+      |> expect(:market_order, Enum.count(opportunity.path), fn _trading_symbol, _quantity ->
         trade_report
       end)
 
@@ -63,11 +63,7 @@ defmodule Trader.ImplTest do
   end
 
   property "fails if no balance to reserve" do
-    forall [opportunity, trade_report] <-
-             [
-               opportunity_with_uniq_symbols(),
-               trade_report()
-             ] do
+    forall opportunity <- opportunity_with_uniq_symbols() do
       # setup mocks
       Trader.Balance.TestMock
       |> stub(:update, fn _asset, _amount -> :ok end)
@@ -109,14 +105,6 @@ defmodule Trader.ImplTest do
         profit: profit,
         capacity: capacity
       }
-    end
-  end
-
-  defp balances(%Opportunity{path: path}) do
-    let balances <- non_empty(list(pos_decimal())) do
-      assets = path |> Enum.map(fn p -> p.quote_asset end) |> Enum.uniq()
-      # create map of symbol -> balance for all symbols
-      Enum.zip(assets, balances) |> Enum.into(%{})
     end
   end
 

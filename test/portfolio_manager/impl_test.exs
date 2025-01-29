@@ -43,7 +43,7 @@ defmodule PortfolioManager.ImplTest do
 
       best_opportunity_value =
         Decimal.mult(
-          Decimal.mult(best_opportunity.profit, best_opportunity.capacity),
+          Decimal.mult(profit, cap),
           best_opportunity_asset_value
         )
 

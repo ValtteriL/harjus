@@ -14,7 +14,7 @@ defmodule MarketData.ArbmapperTest do
              non_empty(list(non_empty_string())),
              non_neg_integer()
            ] do
-      {paths, symbols} =
+      {_paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
           starting_symbols: starting_symbols,
           depth: depth
@@ -31,7 +31,7 @@ defmodule MarketData.ArbmapperTest do
              non_empty(list(non_empty_string())),
              non_neg_integer()
            ] do
-      {paths, symbols} =
+      {_paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
           starting_symbols: starting_symbols,
           depth: depth
@@ -48,13 +48,11 @@ defmodule MarketData.ArbmapperTest do
              non_empty(list(non_empty_string())),
              non_neg_integer()
            ] do
-      {paths, symbols} =
+      {_paths, symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
           starting_symbols: starting_symbols,
           depth: depth
         )
-
-      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
 
       assert Enum.uniq(symbols) == symbols
     end
@@ -66,13 +64,12 @@ defmodule MarketData.ArbmapperTest do
              non_empty(list(non_empty_string())),
              non_neg_integer()
            ] do
-      {paths, symbols} =
+      {paths, _symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
           starting_symbols: starting_symbols,
           depth: depth
         )
 
-      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.uniq(paths) == paths
     end
   end
@@ -89,7 +86,6 @@ defmodule MarketData.ArbmapperTest do
           depth: depth
         )
 
-      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.all?(paths, fn x -> Enum.member?(symbols, x.symbol) end)
     end
   end
@@ -100,13 +96,12 @@ defmodule MarketData.ArbmapperTest do
              non_empty(list(non_empty_string())),
              non_neg_integer()
            ] do
-      {paths, symbols} =
+      {paths, _symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
           starting_symbols: starting_symbols,
           depth: depth
         )
 
-      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.all?(paths, fn x -> Enum.member?(starting_symbols, hd(x)) end)
     end
   end
@@ -117,13 +112,12 @@ defmodule MarketData.ArbmapperTest do
              non_empty(list(non_empty_string())),
              non_neg_integer()
            ] do
-      {paths, symbols} =
+      {paths, _symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
           starting_symbols: starting_symbols,
           depth: depth
         )
 
-      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.all?(paths, fn x -> length(x) <= depth end)
     end
   end
@@ -134,13 +128,12 @@ defmodule MarketData.ArbmapperTest do
              non_empty(list(non_empty_string())),
              non_neg_integer()
            ] do
-      {paths, symbols} =
+      {paths, _symbols} =
         Arbmapper.generate_trading_paths(trading_symbols,
           starting_symbols: starting_symbols,
           depth: depth
         )
 
-      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
       assert Enum.all?(paths, fn x -> Enum.uniq(x) == x end)
     end
   end

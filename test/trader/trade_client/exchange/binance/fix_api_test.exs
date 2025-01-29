@@ -125,8 +125,6 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
              non_empty_string(),
              non_empty_string()
            ] do
-      msg_type_part = "#{Tag.msg_type()}=#{MsgType.heartbeat()}"
-
       msg = FixApi.heartbeat(1, sender_comp_id, id)
 
       # correct header
@@ -299,11 +297,11 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     |> Enum.join(<<1>>)
   end
 
-  defp binary_to_str_message(binary_msg) do
-    binary_msg
-    |> :binary.split(<<1>>, [:global])
-    |> Enum.join("|")
-  end
+  # defp binary_to_str_message(binary_msg) do
+  #   binary_msg
+  #   |> :binary.split(<<1>>, [:global])
+  #   |> Enum.join("|")
+  # end
 
   # create pair
   def pair(tag, value) do
