@@ -6,4 +6,10 @@ end
 Mox.defmock(MarketData.Exchange.TestMock, for: MarketData.Exchange)
 Application.put_env(:harjus, :market_data_exchange, MarketData.Exchange.TestMock)
 
+Mox.defmock(Balance.Exchange.TestMock, for: Balance.Exchange)
+Application.put_env(:harjus, :balance_exchange, Balance.Exchange.TestMock)
+
+Mox.defmock(Trader.TradeClient.Exchange.TestMock, for: Trader.TradeClient.Exchange)
+Application.put_env(:harjus, :trade_client_exchange, Trader.TradeClient.Exchange.TestMock)
+
 ExUnit.start()
