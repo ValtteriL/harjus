@@ -1,4 +1,4 @@
-defmodule Trader.TradeClient.Exchange.Binance.FixApi.Tag do
+defmodule Trader.TradeClient.Exchange.Binance.FixApi.Const.Tag do
   @moduledoc "tag enum"
   def msg_type, do: "35"
   def seqnum, do: "34"

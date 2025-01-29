@@ -5,27 +5,21 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
   https://github.com/binance/binance-spot-api-docs/blob/master/fix-api.md
   """
 
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Delimiter
-  alias Trader.TradeClient.Exchange.Binance.FixApi.ExecutionReport
-  alias Trader.TradeClient.Exchange.Binance.FixApi.MessageHandling
-  alias Trader.TradeClient.Exchange.Binance.FixApi.MessageToSend
-  alias Trader.TradeClient.Exchange.Binance.FixApi.MsgType
-  alias Trader.TradeClient.Exchange.Binance.FixApi.OrderSide
-  alias Trader.TradeClient.Exchange.Binance.FixApi.OrderType
-  alias Trader.TradeClient.Exchange.Binance.FixApi.ResponseMode
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Tag
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Types.MessageToSend
   alias Types.TradingSymbol
 
   require Decimal
 
-  @msg_type_heartbeat MsgType.heartbeat()
-  @msg_type_test_request MsgType.test_request()
-  @msg_type_logon MsgType.logon()
-  @msg_type_news MsgType.news()
-  @msg_type_execution_report MsgType.execution_report()
-  @msg_type_reject MsgType.reject()
+  @msg_type_heartbeat Const.MsgType.heartbeat()
+  @msg_type_test_request Const.MsgType.test_request()
+  @msg_type_logon Const.MsgType.logon()
+  @msg_type_news Const.MsgType.news()
+  @msg_type_execution_report Const.MsgType.execution_report()
+  @msg_type_reject Const.MsgType.reject()
 
-  @soh Delimiter.soh()
+  @soh Const.Delimiter.soh()
 
   @doc """
   Construct a logon message
@@ -41,25 +35,25 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
       when is_integer(seq_num) do
     ts = timestamp()
 
-    signature = sign({MsgType.logon(), sender_comp_id, "SPOT", seq_num, ts}, private_key)
+    signature = sign({Const.MsgType.logon(), sender_comp_id, "SPOT", seq_num, ts}, private_key)
     signature_length = String.length(signature)
 
     serialize(
       %MessageToSend{
         seqnum: seq_num,
-        msg_type: MsgType.logon(),
+        msg_type: Const.MsgType.logon(),
         sender: sender_comp_id,
         orig_sending_time: nil,
         body: [
-          {Tag.encrypt_method(), 0},
-          {Tag.heartbeat_interval(), 60},
-          {Tag.raw_data_length(), signature_length},
-          {Tag.raw_data(), signature},
-          {Tag.reset_seq_num_flag(), true},
-          {Tag.username(), api_key},
-          {Tag.message_handling(), MessageHandling.unordered()},
-          {Tag.response_mode(), ResponseMode.everything()},
-          {Tag.drop_copy_flag(), false}
+          {Const.Tag.encrypt_method(), 0},
+          {Const.Tag.heartbeat_interval(), 60},
+          {Const.Tag.raw_data_length(), signature_length},
+          {Const.Tag.raw_data(), signature},
+          {Const.Tag.reset_seq_num_flag(), true},
+          {Const.Tag.username(), api_key},
+          {Const.Tag.message_handling(), Const.MessageHandling.unordered()},
+          {Const.Tag.response_mode(), Const.ResponseMode.everything()},
+          {Const.Tag.drop_copy_flag(), false}
         ]
       },
       ts
@@ -87,8 +81,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
       when Decimal.is_decimal(quantity) and is_integer(seq_num) do
     side =
       case trading_symbol.position do
-        :long -> OrderSide.buy()
-        :short -> OrderSide.sell()
+        :long -> Const.OrderSide.buy()
+        :short -> Const.OrderSide.sell()
       end
 
     symbol = trading_symbol.symbol
@@ -96,15 +90,15 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
     serialize(
       %MessageToSend{
         seqnum: seq_num,
-        msg_type: MsgType.single_order_entry(),
+        msg_type: Const.MsgType.single_order_entry(),
         sender: sender_comp_id,
         orig_sending_time: nil,
         body: [
-          {Tag.cl_order_id(), client_order_id},
-          {Tag.order_type(), OrderType.market()},
-          {Tag.side(), side},
-          {Tag.symbol(), symbol},
-          {Tag.cash_order_qty(), Decimal.to_float(quantity)}
+          {Const.Tag.cl_order_id(), client_order_id},
+          {Const.Tag.order_type(), Const.OrderType.market()},
+          {Const.Tag.side(), side},
+          {Const.Tag.symbol(), symbol},
+          {Const.Tag.cash_order_qty(), Decimal.to_float(quantity)}
         ]
       },
       timestamp()
@@ -125,11 +119,11 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
     serialize(
       %MessageToSend{
         seqnum: seq_num,
-        msg_type: MsgType.heartbeat(),
+        msg_type: Const.MsgType.heartbeat(),
         sender: sender_comp_id,
         orig_sending_time: nil,
         body: [
-          {Tag.test_request_id(), test_request_id}
+          {Const.Tag.test_request_id(), test_request_id}
         ]
       },
       timestamp()
@@ -176,27 +170,27 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
 
   defp parse_reject_message(message) do
     fields = parse_message_into_fields(message)
-    fields[Tag.reject_text()]
+    fields[Const.Tag.reject_text()]
   end
 
   # return rest req id
   defp parse_test_request(message) do
     fields = parse_message_into_fields(message)
-    fields[Tag.test_request_id()]
+    fields[Const.Tag.test_request_id()]
   end
 
   defp parse_execution_report(message) do
     fields = parse_message_into_fields(message)
 
     %ExecutionReport{
-      order_status: fields[Tag.order_status()],
-      quantity_base: Decimal.new(fields[Tag.quantity_base()]),
-      quantity_quote: Decimal.new(fields[Tag.quantity_quote()]),
-      symbol: fields[Tag.symbol()],
-      side: fields[Tag.side()],
-      fee_currency: fields[Tag.fee_currency()],
-      fee_amount: Decimal.new(fields[Tag.fee_amount()]),
-      client_order_id: fields[Tag.cl_order_id()]
+      order_status: fields[Const.Tag.order_status()],
+      quantity_base: Decimal.new(fields[Const.Tag.quantity_base()]),
+      quantity_quote: Decimal.new(fields[Const.Tag.quantity_quote()]),
+      symbol: fields[Const.Tag.symbol()],
+      side: fields[Const.Tag.side()],
+      fee_currency: fields[Const.Tag.fee_currency()],
+      fee_amount: Decimal.new(fields[Const.Tag.fee_amount()]),
+      client_order_id: fields[Const.Tag.cl_order_id()]
     }
   end
 
@@ -267,22 +261,22 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
     header =
       if resend,
         do: [
-          {Tag.sender_comp_id(), sender},
-          {Tag.poss_dup_flag(), true},
-          {Tag.sending_time(), sending_time},
-          {Tag.orig_sending_time(), orig_sending_time},
-          {Tag.target_comp_id(), "SPOT"}
+          {Const.Tag.sender_comp_id(), sender},
+          {Const.Tag.poss_dup_flag(), true},
+          {Const.Tag.sending_time(), sending_time},
+          {Const.Tag.orig_sending_time(), orig_sending_time},
+          {Const.Tag.target_comp_id(), "SPOT"}
         ],
         else: [
-          {Tag.sender_comp_id(), sender},
-          {Tag.sending_time(), sending_time},
-          {Tag.target_comp_id(), "SPOT"}
+          {Const.Tag.sender_comp_id(), sender},
+          {Const.Tag.sending_time(), sending_time},
+          {Const.Tag.target_comp_id(), "SPOT"}
         ]
 
     fields = header ++ extra_header ++ body
 
     {:ok, body, bin_len, cs_total} =
-      fields_to_bin([{Tag.msg_type(), msg_type}, {Tag.seqnum(), seqnum} | fields])
+      fields_to_bin([{Const.Tag.msg_type(), msg_type}, {Const.Tag.seqnum(), seqnum} | fields])
 
     head = <<"8=FIX.4.4", @soh, "9=", bin_len::binary, @soh>>
     checksum_bin = calculate_checksum(cs_total, head)

@@ -1,4 +1,4 @@
-defmodule Trader.TradeClient.Exchange.Binance.FixApi.MessageToSend do
+defmodule Trader.TradeClient.Exchange.Binance.FixApi.Types.MessageToSend do
   @moduledoc "serializer argument map"
   @type t :: %__MODULE__{}
   defstruct seqnum: 0,

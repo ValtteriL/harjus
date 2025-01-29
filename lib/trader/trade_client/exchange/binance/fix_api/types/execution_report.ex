@@ -1,4 +1,4 @@
-defmodule Trader.TradeClient.Exchange.Binance.FixApi.ExecutionReport do
+defmodule Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport do
   @moduledoc "execution report type"
 
   @type t :: %__MODULE__{}

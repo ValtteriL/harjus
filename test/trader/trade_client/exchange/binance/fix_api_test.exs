@@ -2,22 +2,22 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   @moduledoc "Tests for FixApi"
 
   alias Trader.TradeClient.Exchange.Binance.FixApi
-  alias Trader.TradeClient.Exchange.Binance.FixApi.ExecutionReport
-  alias Trader.TradeClient.Exchange.Binance.FixApi.MsgType
-  alias Trader.TradeClient.Exchange.Binance.FixApi.OrderSide
-  alias Trader.TradeClient.Exchange.Binance.FixApi.OrderType
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Tag
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.MsgType
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.OrderSide
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.OrderType
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.Tag
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport
   alias Types.TradingSymbol
 
   use ExUnit.Case, async: true
   doctest FixApi
   use PropCheck
 
-  property "generates correct market order request", [:verbose] do
-  end
+  # property "generates correct market order request", [:verbose] do
+  # end
 
-  property "parses execution_report message", [:verbose] do
-  end
+  # property "parses execution_report message", [:verbose] do
+  # end
 
   ## Generators ##
 

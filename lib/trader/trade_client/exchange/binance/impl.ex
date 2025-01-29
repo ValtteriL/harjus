@@ -9,12 +9,14 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
 
   require Logger
   alias Trader.TradeClient.Exchange.Binance.FixApi
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport
   alias Trader.TradeClient.Exchange.Binance.State
 
   alias Types.TradeReport
   alias Types.TradingSymbol
 
-  @order_filled FixApi.ExecutionReport.OrderStatus.filled()
+  @order_filled ExecutionReport.OrderStatus.filled()
 
   def new do
     api_key = Application.fetch_env!(:harjus, :binance_ed25519_api_key)
@@ -134,8 +136,8 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
     state
   end
 
-  @buy_side FixApi.OrderSide.buy()
-  @sell_side FixApi.OrderSide.sell()
+  @buy_side Const.OrderSide.buy()
+  @sell_side Const.OrderSide.sell()
 
   defp executionreport_to_tradereport(execution_report) do
     position =
