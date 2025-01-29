@@ -32,7 +32,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
   """
   @spec logon(integer(), String.t(), String.t(), String.t()) :: binary()
   def logon(seq_num, sender_comp_id = "" <> _, api_key = "" <> _, private_key = "" <> _)
-      when is_integer(seq_num) do
+      when is_integer(seq_num) and seq_num > 0 do
     ts = timestamp()
 
     signature = sign({Const.MsgType.logon(), sender_comp_id, "SPOT", seq_num, ts}, private_key)
@@ -78,7 +78,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
         quantity,
         client_order_id = "" <> _
       )
-      when Decimal.is_decimal(quantity) and is_integer(seq_num) do
+      when Decimal.is_decimal(quantity) and is_integer(seq_num) and seq_num > 0 do
     side =
       case trading_symbol.position do
         :long -> Const.OrderSide.buy()
@@ -115,7 +115,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
   """
   @spec heartbeat(integer(), String.t(), String.t()) :: binary()
   def heartbeat(seq_num, sender_comp_id = "" <> _, test_request_id = "" <> _)
-      when is_integer(seq_num) do
+      when is_integer(seq_num) and seq_num > 0 do
     serialize(
       %MessageToSend{
         seqnum: seq_num,
