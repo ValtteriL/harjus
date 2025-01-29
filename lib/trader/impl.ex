@@ -3,6 +3,7 @@ defmodule Trader.Impl do
   Implementation for trader
   """
 
+  alias Trader.Balance, as: MyBalance
   alias Trader.TradeClient
   alias Types.Opportunity
   alias Types.TradeReport
@@ -24,25 +25,31 @@ defmodule Trader.Impl do
   Execute opportunity
   """
   @spec execute_opportunity(opportunity :: Opportunity.t()) :: :ok
-  def execute_opportunity(opportunity) do
+  def execute_opportunity(opportunity = %Opportunity{path: path}) when is_list(path) do
     Logger.debug("Attempting execution with: #{inspect(opportunity)}")
     Metrics.report_trade_attempted()
 
-    pairs = opportunity.path |> Enum.map(& &1.symbol)
+    pairs = path |> Enum.map(& &1.symbol)
 
     # reserve the trading pairs
     reserve_symbols(pairs)
 
     execute_opportunity_after_reserving_symbols(opportunity)
 
+    # release the trading pairs (required to make tests work, as they dont use separate process)
+    Mutex.goodbye(ReservedSymbols)
     :ok
   end
 
   defp execute_opportunity_after_reserving_symbols(opportunity) do
     # reserve budget
-    budget = Balance.reserve_upto(Enum.at(opportunity.path, 0).quote_asset, opportunity.capacity)
+    budget =
+      MyBalance.reserve_upto(Enum.at(opportunity.path, 0).quote_asset, opportunity.capacity)
 
     if Decimal.eq?(budget, 0) do
+      # release the trading pairs (required to make tests work, as they dont use separate process)
+      Mutex.goodbye(ReservedSymbols)
+
       raise "No budget available to reserve"
     end
 
@@ -71,7 +78,8 @@ defmodule Trader.Impl do
     end
 
     # update balances
-    balance_delta |> Enum.each(fn {symbol, qty_change} -> Balance.update(symbol, qty_change) end)
+    balance_delta
+    |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
   end
 
   @spec trade([TradingSymbol.t()], Decimal.t()) :: balance_delta()
@@ -84,7 +92,7 @@ defmodule Trader.Impl do
     Logger.debug("Trade #{inspect(trading_symbol)} completed. Report: #{inspect(report)}")
 
     # update fee balance right away
-    Balance.update(report.fee_currency, Decimal.negate(report.quantity_fee))
+    MyBalance.update(report.fee_currency, Decimal.negate(report.quantity_fee))
 
     # store other balance changes in delta
     new_balance_delta = update_balance_delta(balance_delta, trading_symbol, report)

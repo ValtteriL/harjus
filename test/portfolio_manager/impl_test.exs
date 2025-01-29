@@ -7,10 +7,127 @@ defmodule PortfolioManager.ImplTest do
   alias Types.TradingSymbol
 
   use ExUnit.Case, async: true
+  use PropCheck
 
-  setup do
-    :ok
+  # turn off logging
+  @moduletag :capture_log
+
+  property "emits list of single opportunity" do
+    forall [args, opportunities] <- [args(), opportunities()] do
+      state = %Args{} = Impl.new(args)
+      assert Enum.count(Impl.filter_opportunities(state, opportunities)) == 1
+    end
   end
+
+  property "emitted opportunity is one of input opportunities" do
+    forall [args, opportunities] <- [args(), opportunities()] do
+      state = %Args{} = Impl.new(args)
+
+      assert Enum.member?(
+               opportunities,
+               Enum.at(Impl.filter_opportunities(state, opportunities), 0)
+             )
+    end
+  end
+
+  property "emitted element has highest value" do
+    forall [args, opportunities] <- [args(), opportunities()] do
+      state = %Args{} = Impl.new(args)
+
+      best_opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)
+
+      %{path: [firstsymbol | _], profit: profit, capacity: cap} = best_opportunity
+
+      best_opportunity_asset_value =
+        Map.get(args.relative_asset_values, firstsymbol.quote_asset, Decimal.new(0))
+
+      best_opportunity_value =
+        Decimal.mult(
+          Decimal.mult(profit, cap),
+          best_opportunity_asset_value
+        )
+
+      assert Enum.all?(opportunities, fn opportunity ->
+               %{path: [firstsymbol1 | _], profit: profit1, capacity: cap1} = opportunity
+
+               value =
+                 Map.get(args.relative_asset_values, firstsymbol1.quote_asset, Decimal.new(0))
+
+               opportunity_value = Decimal.mult(Decimal.mult(profit1, cap1), value)
+
+               Decimal.lte?(opportunity_value, best_opportunity_value)
+             end)
+    end
+  end
+
+  ## Generators ##
+
+  defp opportunities do
+    let opps <- non_empty(list(opportunity())) do
+      opps
+    end
+  end
+
+  defp opportunity do
+    let [
+      profit <- decimal(),
+      capacity <- decimal(),
+      path <- path()
+    ] do
+      %Opportunity{
+        path: path,
+        profit: profit,
+        capacity: capacity
+      }
+    end
+  end
+
+  defp path do
+    let p <- non_empty(list(trading_symbol())) do
+      p
+    end
+  end
+
+  defp args do
+    let relative_asset_values <- map(non_empty_string(), decimal()) do
+      %Args{relative_asset_values: relative_asset_values}
+    end
+  end
+
+  defp decimal do
+    let float <- float() do
+      Decimal.from_float(float)
+    end
+  end
+
+  defp trading_symbol do
+    let [
+      symbol <- non_empty_string(),
+      position <- union([:long, :short]),
+      base_asset <- non_empty_string(),
+      quote_asset <- non_empty_string()
+    ] do
+      %TradingSymbol{
+        symbol: symbol,
+        position: position,
+        base_asset: base_asset,
+        quote_asset: quote_asset
+      }
+    end
+  end
+
+  def non_empty_string do
+    let charlist <- non_empty(elements(textdata())) do
+      to_string(charlist)
+    end
+  end
+
+  defp textdata do
+    ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
+      ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
+  end
+
+  ## Unit tests ##
 
   test "prioritizes by relative asset value" do
     state =

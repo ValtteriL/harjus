@@ -19,7 +19,14 @@ config :harjus,
   binance_rest_api_uri: ConfigHelper.get_env("BINANCE_REST_API_URI", "", :str),
   binance_fix_api_hostname: ConfigHelper.get_env("BINANCE_FIX_API_HOSTNAME", "", :str),
   binance_fix_api_port: ConfigHelper.get_env("BINANCE_FIX_API_PORT", 9000, :int),
-  binance_market_data_api_uri: ConfigHelper.get_env("BINANCE_MARKET_DATA_API_URI", "", :str)
+  binance_market_data_api_uri: ConfigHelper.get_env("BINANCE_MARKET_DATA_API_URI", "", :str),
+  market_data_exchange:
+    ConfigHelper.get_env("MARKET_DATA_EXCHANGE", MarketData.Exchange.Mock, :module),
+  price_streamer_exchange:
+    ConfigHelper.get_env("PRICE_STREAMER_EXCHANGE", PriceStreamer.Exchange.Mock, :module),
+  trade_client_exchange:
+    ConfigHelper.get_env("TRADE_CLIENT_EXCHANGE", Trader.TradeClient.Exchange.Mock, :module),
+  balance_exchange: ConfigHelper.get_env("BALANCE_EXCHANGE", Balance.Exchange.Mock, :module)
 
 # configure logger verbosity
 config :logger, level: ConfigHelper.get_env("VERBOSITY", :debug, :atom)

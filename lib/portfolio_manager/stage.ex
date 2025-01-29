@@ -23,7 +23,7 @@ defmodule PortfolioManager.Stage do
     do: {:producer_consumer, args, subscribe_to: [{OpportunityWatcher, buffer_size: 1}]}
 
   @impl GenStage
-  @spec handle_events([event :: [Opportunity.t()]], _from :: any(), state :: Args.t()) ::
+  @spec handle_events([event :: Opportunity.t()], _from :: any(), state :: Args.t()) ::
           {:noreply, [Opportunity.t()], Args.t()}
   def handle_events(events, _from, state),
     # Dispatch immediately

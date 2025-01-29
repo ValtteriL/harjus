@@ -19,7 +19,7 @@ defmodule PriceStreamer.Exchange.Binance.SpotStream do
           {:error, any()}
           | {:sub_ack}
           | {:book_ticker_update,
-             {symbol :: charlist(), best_ask_price :: Decimal.t(), best_ask_qty :: Decimal.t(),
+             {symbol :: String.t(), best_ask_price :: Decimal.t(), best_ask_qty :: Decimal.t(),
               best_bid_price :: Decimal.t(), best_bid_qty :: Decimal.t()}}
           | {:unknown, map()}
   def parse_message(msg) do

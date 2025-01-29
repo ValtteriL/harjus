@@ -2,26 +2,184 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   @moduledoc "Tests for FixApi"
 
   alias Trader.TradeClient.Exchange.Binance.FixApi
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.MsgType
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.OrderSide
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.OrderType
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.Tag
+  alias Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport
   alias Types.TradingSymbol
 
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest FixApi
+  require Decimal
+  use PropCheck
 
-  test "generates correct heartbeat message" do
-    sender_comp_id = "asd123"
-    id = "some_id"
-    msg_type_part = "#{FixApi.Tag.msg_type()}=#{FixApi.MsgType.heartbeat()}"
+  property "generates correct market order request" do
+    forall [seq, sender_comp_id, trading_symbol, quantity, client_order_id] <- [
+             pos_integer(),
+             non_empty_string(),
+             trading_symbol(),
+             pos_decimal(),
+             non_empty_string()
+           ] do
+      msg =
+        FixApi.market_order_request(
+          seq,
+          sender_comp_id,
+          trading_symbol,
+          quantity,
+          client_order_id
+        )
 
-    # correct msg type
-    <<"8=FIX.4.4", 1, "9=68", 1, ^msg_type_part::binary, rest::binary>> =
-      FixApi.heartbeat(1, sender_comp_id, id)
+      # correct header
+      <<"8=FIX.4.4", 1, _rest::binary>> = msg
 
-    # correct sender comp id
-    assert String.contains?(rest, "#{FixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
+      # correct msg type
+      assert String.contains?(
+               msg,
+               "#{Tag.msg_type()}=#{MsgType.single_order_entry()}"
+             )
 
-    # rest contains id
-    assert String.contains?(rest, "#{FixApi.Tag.test_request_id()}=#{id}")
+      # correct symbol
+      assert String.contains?(msg, "#{Tag.symbol()}=#{trading_symbol.symbol}")
+
+      # correct side
+      correct_side =
+        case trading_symbol.position do
+          :long -> OrderSide.buy()
+          _ -> OrderSide.sell()
+        end
+
+      assert String.contains?(msg, "#{Tag.side()}=#{correct_side}")
+
+      # correct quantity (10 decimals)
+      assert String.contains?(
+               msg,
+               "#{Tag.cash_order_qty()}=#{:erlang.float_to_binary(Decimal.to_float(quantity), [{:decimals, 10}, :compact])}"
+             )
+
+      # correct sender comp id
+      assert String.contains?(msg, "#{Tag.sender_comp_id()}=#{sender_comp_id}")
+
+      # correct order type
+      assert String.contains?(
+               msg,
+               "#{Tag.order_type()}=#{OrderType.market()}"
+             )
+    end
   end
+
+  property "parses execution_report message" do
+    forall [
+             status,
+             quantity_base,
+             quantity_quote,
+             symbol,
+             side,
+             fee_currency,
+             fee_amount,
+             client_order_id
+           ] <- [
+             pos_integer(),
+             pos_decimal(),
+             pos_decimal(),
+             non_empty_string(),
+             pos_integer(),
+             non_empty_string(),
+             pos_decimal(),
+             non_empty_string()
+           ] do
+      report_fields =
+        [
+          pair(Tag.order_status(), Integer.to_string(status)),
+          pair(Tag.quantity_base(), quantity_base),
+          pair(Tag.quantity_quote(), quantity_quote),
+          pair(Tag.symbol(), symbol),
+          pair(Tag.side(), Integer.to_string(side)),
+          pair(Tag.fee_currency(), fee_currency),
+          pair(Tag.fee_amount(), fee_amount),
+          pair(Tag.cl_order_id(), client_order_id)
+        ]
+        |> Enum.join("|")
+
+      msg =
+        "8=FIX.4.4|9=12|35=8|34=1|49=binance|56=client|#{report_fields}|52=20210101-00:00:00.000|10=000|"
+
+      assert {:execution_report,
+              %ExecutionReport{
+                order_status: Integer.to_string(status),
+                quantity_base: quantity_base,
+                quantity_quote: quantity_quote,
+                symbol: symbol,
+                side: Integer.to_string(side),
+                fee_currency: fee_currency,
+                fee_amount: fee_amount,
+                client_order_id: client_order_id
+              }} ==
+               FixApi.parse_message(str_message_to_binary(msg))
+    end
+  end
+
+  property "generates correct heartbeat message" do
+    forall [sender_comp_id, id] <- [
+             non_empty_string(),
+             non_empty_string()
+           ] do
+      msg = FixApi.heartbeat(1, sender_comp_id, id)
+
+      # correct header
+      <<"8=FIX.4.4", 1, _rest::binary>> = msg
+
+      # correct msg type
+      assert String.contains?(
+               msg,
+               "#{Tag.msg_type()}=#{MsgType.heartbeat()}"
+             )
+
+      # correct sender comp id
+      assert String.contains?(msg, "#{Tag.sender_comp_id()}=#{sender_comp_id}")
+
+      # rest contains id
+      assert String.contains?(msg, "#{Tag.test_request_id()}=#{id}")
+    end
+  end
+
+  ## Generators ##
+
+  defp trading_symbol do
+    let [
+      symbol <- non_empty_string(),
+      position <- union([:long, :short]),
+      base_asset <- non_empty_string(),
+      quote_asset <- non_empty_string()
+    ] do
+      %TradingSymbol{
+        symbol: symbol,
+        position: position,
+        base_asset: base_asset,
+        quote_asset: quote_asset
+      }
+    end
+  end
+
+  defp pos_decimal do
+    let float <- float(0.000001, :inf) do
+      Decimal.from_float(float)
+    end
+  end
+
+  defp non_empty_string do
+    let charlist <- non_empty(elements(textdata())) do
+      to_string(charlist)
+    end
+  end
+
+  defp textdata do
+    ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
+      ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
+  end
+
+  ## Unit tests ##
 
   test "generates correct logon request" do
     sender_comp_id = "asd123"
@@ -40,54 +198,14 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     # correct msg type
     assert String.contains?(
              logon_msg,
-             "#{FixApi.Tag.msg_type()}=#{FixApi.MsgType.logon()}"
+             "#{Tag.msg_type()}=#{MsgType.logon()}"
            )
 
     # correct user
-    assert String.contains?(logon_msg, "#{FixApi.Tag.username()}=#{pubkey}")
+    assert String.contains?(logon_msg, "#{Tag.username()}=#{pubkey}")
 
     # correct sender comp id
-    assert String.contains?(logon_msg, "#{FixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
-  end
-
-  test "generates correct market order request" do
-    sender_comp_id = "asd123"
-    quantity = Decimal.new("1")
-    symbol = "BTCUSDT"
-    client_order_id = "some_id"
-
-    msg =
-      FixApi.market_order_request(
-        1,
-        sender_comp_id,
-        %TradingSymbol{symbol: symbol, position: :long, base_asset: "BTC", quote_asset: "USDT"},
-        quantity,
-        client_order_id
-      )
-
-    # correct msg type
-    assert String.contains?(
-             msg,
-             "#{FixApi.Tag.msg_type()}=#{FixApi.MsgType.single_order_entry()}"
-           )
-
-    # correct symbol
-    assert String.contains?(msg, "#{FixApi.Tag.symbol()}=#{symbol}")
-
-    # correct side
-    assert String.contains?(msg, "#{FixApi.Tag.side()}=#{FixApi.OrderSide.buy()}")
-
-    # correct quantity
-    assert String.contains?(msg, "#{FixApi.Tag.cash_order_qty()}=#{quantity}")
-
-    # correct sender comp id
-    assert String.contains?(msg, "#{FixApi.Tag.sender_comp_id()}=#{sender_comp_id}")
-
-    # correct order type
-    assert String.contains?(
-             msg,
-             "#{FixApi.Tag.order_type()}=#{FixApi.OrderType.market()}"
-           )
+    assert String.contains?(logon_msg, "#{Tag.sender_comp_id()}=#{sender_comp_id}")
   end
 
   test "parses heartbeat message" do
@@ -134,46 +252,6 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     assert {:news} == FixApi.parse_message(str_message_to_binary(msg))
   end
 
-  test "parses execution_report message" do
-    status = "1"
-    quantity_base = Decimal.new("2.0")
-    quantity_quote = Decimal.new("3.0")
-    symbol = "BTCUSDT"
-    side = "4"
-    fee_currency = "USDT"
-    fee_amount = Decimal.new("5.0")
-    client_order_id = "some_id"
-
-    report_fields =
-      [
-        pair(FixApi.Tag.order_status(), status),
-        pair(FixApi.Tag.quantity_base(), quantity_base),
-        pair(FixApi.Tag.quantity_quote(), quantity_quote),
-        pair(FixApi.Tag.symbol(), symbol),
-        pair(FixApi.Tag.side(), side),
-        pair(FixApi.Tag.fee_currency(), fee_currency),
-        pair(FixApi.Tag.fee_amount(), fee_amount),
-        pair(FixApi.Tag.cl_order_id(), client_order_id)
-      ]
-      |> Enum.join("|")
-
-    msg =
-      "8=FIX.4.4|9=12|35=8|34=1|49=binance|56=client|#{report_fields}|52=20210101-00:00:00.000|10=000|"
-
-    assert {:execution_report,
-            %FixApi.ExecutionReport{
-              order_status: status,
-              quantity_base: quantity_base,
-              quantity_quote: quantity_quote,
-              symbol: symbol,
-              side: side,
-              fee_currency: fee_currency,
-              fee_amount: fee_amount,
-              client_order_id: client_order_id
-            }} ==
-             FixApi.parse_message(str_message_to_binary(msg))
-  end
-
   test "parses unknown message" do
     msg = "whateva"
     assert {:unknown, msg} == FixApi.parse_message(msg)
@@ -217,6 +295,12 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
     |> :binary.split("|", [:global])
     |> Enum.join(<<1>>)
   end
+
+  # defp binary_to_str_message(binary_msg) do
+  #   binary_msg
+  #   |> :binary.split(<<1>>, [:global])
+  #   |> Enum.join("|")
+  # end
 
   # create pair
   def pair(tag, value) do

@@ -55,7 +55,7 @@ defmodule Harjus do
          }},
         {PortfolioManager,
          %PortfolioManager.Args{
-           relative_asset_values: MarketData.relative_values(market_data)
+           relative_asset_values: MarketData.relative_values(market_data, "BTC")
          }},
         {Trader, Application.fetch_env!(:harjus, :number_of_traders)}
       ]

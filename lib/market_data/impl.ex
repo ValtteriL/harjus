@@ -3,35 +3,38 @@ defmodule MarketData.Impl do
   Market data implementation
   """
 
-  @exchange Application.compile_env(:harjus, :marketdata_exchange)
-
   alias MarketData.Arbmapper
   alias MarketData.AssetComparer
+  alias MarketData.Exchange
 
   require Logger
 
   def new do
     %{
-      symbols: @exchange.get_symbols(),
-      symbol_prices: @exchange.get_symbol_prices()
+      symbols: Exchange.get_symbols(),
+      symbol_prices: Exchange.get_symbol_prices()
     }
   end
 
-  def trading_paths(state, starting_symbols, depth) do
+  def trading_paths(%{symbols: symbols}, starting_symbols, depth)
+      when is_integer(depth) and is_list(starting_symbols) do
     # discover trading paths
 
     Arbmapper.generate_trading_paths(
-      state.symbols,
+      symbols,
       starting_symbols: starting_symbols,
       depth: depth
     )
   end
 
-  def relative_values(state) do
+  def relative_values(
+        %{symbols: symbols, symbol_prices: symbol_prices},
+        comparison_asset = "" <> _
+      ) do
     AssetComparer.calculate_relative_values(
-      state.symbols,
-      state.symbol_prices,
-      "BTC"
+      symbols,
+      symbol_prices,
+      comparison_asset
     )
   end
 end

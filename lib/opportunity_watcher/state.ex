@@ -33,10 +33,10 @@ defmodule OpportunityWatcher.State do
   @type t() :: %__MODULE__{
           pathid_to_path_map: %{integer() => trading_path()},
           trading_symbol_to_price_qty_tuple: %{TradingSymbol.t() => price_qty_tuple()},
-          symbol_to_pathids_map: %{charlist() => [integer()]},
+          symbol_to_pathids_map: %{String.t() => [integer()]},
           pathid_to_profit_cap_tuple: %{integer() => profit_cap_tuple()},
           symbol_to_trading_symbol_map: %{
-            charlist() => %{long: TradingSymbol.t(), short: TradingSymbol.t()}
+            String.t() => %{long: TradingSymbol.t(), short: TradingSymbol.t()}
           },
           min_capacity: Decimal.t(),
           min_profit_percentage: Decimal.t(),

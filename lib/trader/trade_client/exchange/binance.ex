@@ -14,6 +14,8 @@ defmodule Trader.TradeClient.Exchange.Binance do
   alias Types.TradeReport
   alias Types.TradingSymbol
 
+  require Decimal
+
   @spec new() :: any()
   def new do
     GenServer.start_link(Server, Impl.new(), name: __MODULE__)
@@ -23,7 +25,8 @@ defmodule Trader.TradeClient.Exchange.Binance do
           trading_symbol :: TradingSymbol.t(),
           quantity :: Decimal.t()
         ) :: TradeReport.t()
-  def market_order(trading_symbol, quantity) do
+  def market_order(trading_symbol = %TradingSymbol{}, quantity)
+      when Decimal.is_decimal(quantity) do
     GenServer.call(__MODULE__, {:market_order, {trading_symbol, quantity}})
   end
 end

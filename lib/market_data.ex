@@ -20,7 +20,7 @@ defmodule MarketData do
   Get trading paths from the market data that start with the given symbols, up to the given depth
   """
   @spec trading_paths(data :: any(), starting_symbols :: [String.t()], depth :: integer()) ::
-          {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [charlist()]}
+          {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [String.t()]}
   def trading_paths(state, starting_symbols, depth) do
     Impl.trading_paths(state, starting_symbols, depth)
   end
@@ -28,8 +28,11 @@ defmodule MarketData do
   @doc """
   Get the relative values of all assets in the market data
   """
-  @spec relative_values(data :: any()) :: %{symbol: String.t(), value: Decimal.t()}
-  def relative_values(data) do
-    Impl.relative_values(data)
+  @spec relative_values(data :: any(), comparison_asset :: String.t()) :: %{
+          symbol: String.t(),
+          value: Decimal.t()
+        }
+  def relative_values(data, comparison_asset) do
+    Impl.relative_values(data, comparison_asset)
   end
 end

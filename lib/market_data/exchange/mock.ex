@@ -15,9 +15,9 @@ defmodule MarketData.Exchange.Mock do
   # get symbol prices
   def get_symbol_prices do
     %{
-      "BTCUSDT" => 10_000.0,
-      "ETHBTC" => 0.1,
-      "ETHUSDT" => 1000.0
+      "BTCUSDT" => Decimal.from_float(10_000.0),
+      "ETHBTC" => Decimal.from_float(0.1),
+      "ETHUSDT" => Decimal.from_float(1000.0)
     }
   end
 end
