@@ -7,6 +7,9 @@ defmodule BalanceTest do
   use PropCheck
 
   setup do
+    # dont use Mox mock in tests
+    Application.put_env(:harjus, :balance_exchange, Balance.Exchange.Mock)
+
     {:ok, _pid} = Balance.start_link()
     :ok
   end
