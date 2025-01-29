@@ -24,11 +24,11 @@ defmodule Trader.Impl do
   Execute opportunity
   """
   @spec execute_opportunity(opportunity :: Opportunity.t()) :: :ok
-  def execute_opportunity(opportunity) do
+  def execute_opportunity(opportunity = %Opportunity{path: path}) when is_list(path) do
     Logger.debug("Attempting execution with: #{inspect(opportunity)}")
     Metrics.report_trade_attempted()
 
-    pairs = opportunity.path |> Enum.map(& &1.symbol)
+    pairs = path |> Enum.map(& &1.symbol)
 
     # reserve the trading pairs
     reserve_symbols(pairs)
