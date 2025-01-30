@@ -4,6 +4,8 @@ defmodule Trader.ImplTest do
   use ExUnit.Case
   use PropCheck
 
+  alias Trader.Error.InsufficientBalanceError
+  alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.Impl
   alias Types.Opportunity
   alias Types.TradeReport
@@ -58,7 +60,16 @@ defmodule Trader.ImplTest do
       # init
       Impl.new()
 
-      assert Map.has_key?(catch_error(Impl.execute_opportunity(opportunity)), :key)
+      raises_correct_error =
+        try do
+          Impl.execute_opportunity(opportunity)
+        rescue
+          SymbolAlreadyReservedError -> true
+        else
+          _ -> false
+        end
+
+      assert raises_correct_error
     end
   end
 
@@ -75,8 +86,16 @@ defmodule Trader.ImplTest do
       # init
       Impl.new()
 
-      assert %RuntimeError{message: "No budget available to reserve"} ==
-               catch_error(Impl.execute_opportunity(opportunity))
+      raises_correct_error =
+        try do
+          Impl.execute_opportunity(opportunity)
+        rescue
+          InsufficientBalanceError -> true
+        else
+          _ -> false
+        end
+
+      assert raises_correct_error
     end
   end
 

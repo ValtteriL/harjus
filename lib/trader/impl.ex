@@ -4,6 +4,8 @@ defmodule Trader.Impl do
   """
 
   alias Trader.Balance, as: MyBalance
+  alias Trader.Error.InsufficientBalanceError
+  alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.TradeClient
   alias Types.Opportunity
   alias Types.TradeReport
@@ -50,7 +52,7 @@ defmodule Trader.Impl do
       # release the trading pairs (required to make tests work, as they dont use separate process)
       Mutex.goodbye(ReservedSymbols)
 
-      raise "No budget available to reserve"
+      raise InsufficientBalanceError
     end
 
     execute_opportunity_after_reserving_budget(opportunity, budget)
@@ -137,6 +139,11 @@ defmodule Trader.Impl do
 
   defp reserve_symbols(pairs) do
     pairs
-    |> Enum.each(&Mutex.lock!(ReservedSymbols, &1))
+    |> Enum.each(fn pair ->
+      case Mutex.lock(ReservedSymbols, pair) do
+        {:ok, _} -> :ok
+        _ -> raise SymbolAlreadyReservedError
+      end
+    end)
   end
 end
