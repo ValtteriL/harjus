@@ -94,7 +94,7 @@ defmodule Trader.ImplTest do
     let opportunity <- opportunity() do
       # make symbols duplicate
       duplicate_path = opportunity.path ++ opportunity.path
-      %{opportunity | path: duplicate_path}
+      Map.replace(opportunity, :path, duplicate_path)
     end
   end
 
