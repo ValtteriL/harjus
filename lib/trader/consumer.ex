@@ -10,7 +10,15 @@ defmodule Trader.Consumer do
 
   @impl ConsumerSupervisor
   def init(max_number_workers) do
-    children = [%{id: Trader, start: {__MODULE__, :handle_event, []}, restart: :temporary}]
+    children = [
+      %{
+        id: Trader,
+        start: {__MODULE__, :handle_event, []},
+        restart: :temporary,
+        # 5 seconds grace period
+        shutdown: 5000
+      }
+    ]
 
     opts = [
       strategy: :one_for_one,
@@ -23,6 +31,8 @@ defmodule Trader.Consumer do
   @spec handle_event(Opportunity.t()) :: {:ok, pid()}
   def handle_event(opportunity) do
     Task.start_link(fn ->
+      # trap exits to allow some time for tasks to complete
+      Process.flag(:trap_exit, true)
       Impl.execute_opportunity(opportunity)
     end)
   end
