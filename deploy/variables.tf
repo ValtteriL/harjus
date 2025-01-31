@@ -15,3 +15,21 @@ variable "repository_name" {
   type        = string
   default     = "qa-repository"
 }
+
+variable "service_name" {
+  description = "The name of the ECS service"
+  type        = string
+  default     = "qa-service"
+}
+
+variable "task_definition_family" {
+  description = "The family of the ECS task definition"
+  type        = string
+  default     = "qa-task"
+}
+
+variable "container_name" {
+  description = "The name of the ECS container"
+  type        = string
+  default     = "qa-container"
+}
