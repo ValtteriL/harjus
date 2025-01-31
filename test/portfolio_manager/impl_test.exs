@@ -19,6 +19,9 @@ defmodule PortfolioManager.ImplTest do
 
   property "emits list of single opportunity" do
     forall [args, opportunities] <- [args(), opportunities()] do
+      PortfolioManager.BalanceMock
+      |> stub(:get, fn _ -> Decimal.new(1) end)
+
       state = %Args{} = Impl.new(args)
       assert Enum.count(Impl.filter_opportunities(state, opportunities)) == 1
     end
@@ -26,6 +29,9 @@ defmodule PortfolioManager.ImplTest do
 
   property "emitted opportunity is one of input opportunities" do
     forall [args, opportunities] <- [args(), opportunities()] do
+      PortfolioManager.BalanceMock
+      |> stub(:get, fn _ -> Decimal.new(1) end)
+
       state = %Args{} = Impl.new(args)
 
       assert Enum.member?(
@@ -37,6 +43,9 @@ defmodule PortfolioManager.ImplTest do
 
   property "emitted element has highest value" do
     forall [args, opportunities] <- [args(), opportunities()] do
+      PortfolioManager.BalanceMock
+      |> stub(:get, fn _ -> Decimal.new(1) end)
+
       state = %Args{} = Impl.new(args)
 
       best_opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)
@@ -135,6 +144,9 @@ defmodule PortfolioManager.ImplTest do
   ## Unit tests ##
 
   test "prioritizes by relative asset value" do
+    PortfolioManager.BalanceMock
+    |> stub(:get, fn _ -> Decimal.new(1) end)
+
     state =
       Impl.new(%Args{
         relative_asset_values: %{
@@ -153,6 +165,9 @@ defmodule PortfolioManager.ImplTest do
   end
 
   test "prioritizes by capacity" do
+    PortfolioManager.BalanceMock
+    |> stub(:get, fn _ -> Decimal.new(10) end)
+
     state =
       Impl.new(%Args{
         relative_asset_values: %{
@@ -171,6 +186,9 @@ defmodule PortfolioManager.ImplTest do
   end
 
   test "prioritizes by profit" do
+    PortfolioManager.BalanceMock
+    |> stub(:get, fn _ -> Decimal.new(1) end)
+
     state =
       Impl.new(%Args{
         relative_asset_values: %{
@@ -189,6 +207,9 @@ defmodule PortfolioManager.ImplTest do
   end
 
   test "prioritizes by profit * capacity" do
+    PortfolioManager.BalanceMock
+    |> stub(:get, fn _ -> Decimal.new(5) end)
+
     state =
       Impl.new(%Args{
         relative_asset_values: %{
@@ -204,6 +225,31 @@ defmodule PortfolioManager.ImplTest do
     ]
 
     assert Impl.filter_opportunities(state, opportunities) == [bigger]
+  end
+
+  test "prioritizes by balance when profits and capacities are equal" do
+    PortfolioManager.BalanceMock
+    |> stub(:get, fn
+      "BTC" -> Decimal.new(10)
+      "ETH" -> Decimal.new(5)
+      _ -> Decimal.new(0)
+    end)
+
+    state =
+      Impl.new(%Args{
+        relative_asset_values: %{
+          "BTC" => Decimal.new(1),
+          "ETH" => Decimal.new(1),
+          "USDT" => Decimal.new(1)
+        }
+      })
+
+    opportunities = [
+      btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
+      eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
+    ]
+
+    assert Impl.filter_opportunities(state, opportunities) == [btc]
   end
 
   defp opportunity(base_asset, quote_asset, profit, capacity) do
