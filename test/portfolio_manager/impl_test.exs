@@ -9,8 +9,13 @@ defmodule PortfolioManager.ImplTest do
   use ExUnit.Case, async: true
   use PropCheck
 
+  import PortfolioManager.BalanceMock
+  import Mox
+
   # turn off logging
   @moduletag :capture_log
+
+  setup :verify_on_exit!
 
   property "emits list of single opportunity" do
     forall [args, opportunities] <- [args(), opportunities()] do
