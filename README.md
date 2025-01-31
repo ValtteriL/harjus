@@ -101,3 +101,14 @@ git push origin releases/1.0.0
 
 1. **Quality Pipeline**: Runs all tests on push to any branch.
 2. **Build and Release Pipeline**: If the quality pipeline succeeds and the push is to the main branch, a build is made. Additionally the build is deployed to QA if the release tag is used.
+
+## Performing Rolling Updates of ECS with the Newly Built Image
+
+1. Update the ECS service: After the new image is built and pushed to the ECR repository, update the ECS service to use the new image. This can be done by running the following command:
+
+```bash
+cd deploy
+terraform apply -auto-approve
+```
+
+2. Verify the update: Check the ECS service in the AWS Management Console to ensure that the new task definition is being used and that the rolling update is in progress.
