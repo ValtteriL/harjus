@@ -75,8 +75,29 @@ docker image push $IMAGE
 kubectl run -i -t harjus --image=$IMAGE --restart=Never --env "START_SYMBOLS=BNB"
 ```
 
-### Deploy QA (testnet, home lab k8s)
+## Setting up Terraform
+
+1. Configure AWS credentials: Ensure that your AWS credentials are configured on your machine. You can do this by setting the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables, or by using the AWS CLI to configure your credentials.
+
+2. Initialize Terraform: Navigate to the `deploy` directory and run the following command to initialize Terraform:
 
 ```bash
-./scripts/build-and-release-on-k8s.sh
+cd deploy
+terraform init
 ```
+
+## Deploying to QA via Git Tags
+
+1. Create a Git tag: Create a Git tag that matches the pattern `releases/[1-9]+.[0-9]+.[0-9]+`. For example:
+
+```bash
+git tag releases/1.0.0
+git push origin releases/1.0.0
+```
+
+2. GitHub Actions will automatically trigger the `build-and-release.yml` workflow, which will build and deploy the application to the QA environment.
+
+## Pipeline Overview
+
+1. **Quality Pipeline**: Runs all tests on push to any branch.
+2. **Build and Release Pipeline**: If the quality pipeline succeeds and the push is to the main branch, a build is made. Additionally the build is deployed to QA if the release tag is used.
