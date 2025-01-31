@@ -27,6 +27,7 @@ let
         elixir
         mix2nix
         cowsay
+        terraform
       ];
 
       # this is executed when shell entered
