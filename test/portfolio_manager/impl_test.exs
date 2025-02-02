@@ -58,6 +58,44 @@ defmodule PortfolioManager.ImplTest do
     end
   end
 
+  property "prioritizes by balance when profits and capacities are equal" do
+    forall [btc_price, eth_price] <- [pos_decimal(), pos_decimal()] do
+      PortfolioManager.BalanceMock
+      |> stub(:get, fn
+        "BTC" -> btc_price
+        "ETH" -> eth_price
+        _ -> Decimal.new(0)
+      end)
+
+      state =
+        Impl.new(%Args{
+          relative_asset_values: %{
+            "BTC" => Decimal.new(1),
+            "ETH" => Decimal.new(1),
+            "USDT" => Decimal.new(1)
+          }
+        })
+
+      opportunities = [
+        btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
+        eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
+      ]
+
+      opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)
+
+      %{path: [%{quote_asset: q} | _]} = opportunity
+
+      ret =
+        case(q) do
+          "BTC" -> Decimal.gte?(btc_price, eth_price)
+          "ETH" -> Decimal.gte?(eth_price, btc_price)
+          _ -> false
+        end
+
+      assert ret
+    end
+  end
+
   ## Generators ##
 
   defp opportunities do
@@ -215,31 +253,6 @@ defmodule PortfolioManager.ImplTest do
     ]
 
     assert Impl.filter_opportunities(state, opportunities) == [bigger]
-  end
-
-  test "prioritizes by balance when profits and capacities are equal" do
-    PortfolioManager.BalanceMock
-    |> stub(:get, fn
-      "BTC" -> Decimal.new(10)
-      "ETH" -> Decimal.new(5)
-      _ -> Decimal.new(0)
-    end)
-
-    state =
-      Impl.new(%Args{
-        relative_asset_values: %{
-          "BTC" => Decimal.new(1),
-          "ETH" => Decimal.new(1),
-          "USDT" => Decimal.new(1)
-        }
-      })
-
-    opportunities = [
-      btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
-      _eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
-    ]
-
-    assert Impl.filter_opportunities(state, opportunities) == [btc]
   end
 
   defp opportunity(base_asset, quote_asset, profit, capacity) do
