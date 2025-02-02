@@ -12,5 +12,5 @@ defmodule PortfolioManager.Balance do
   def get(asset), do: impl().get(asset)
   def update(asset, amount), do: impl().update(asset, amount)
   def reserve_upto(asset, amount), do: impl().reserve_upto(asset, amount)
-  defp impl, do: Application.get_env(:harjus, :balance, Balance)
+  defp impl, do: Application.get_env(:harjus, :pm_balance, Balance)
 end

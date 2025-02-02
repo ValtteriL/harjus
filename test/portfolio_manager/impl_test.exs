@@ -2,6 +2,7 @@ defmodule PortfolioManager.ImplTest do
   @moduledoc "Tests for Impl"
 
   alias PortfolioManager.Args
+  alias PortfolioManager.BalanceMock
   alias PortfolioManager.Impl
   alias Types.Opportunity
   alias Types.TradingSymbol
@@ -9,7 +10,6 @@ defmodule PortfolioManager.ImplTest do
   use ExUnit.Case, async: true
   use PropCheck
 
-  import PortfolioManager.BalanceMock
   import Mox
 
   # turn off logging
@@ -19,7 +19,7 @@ defmodule PortfolioManager.ImplTest do
 
   property "emits list of single opportunity" do
     forall [args, opportunities] <- [args(), opportunities()] do
-      PortfolioManager.BalanceMock
+      BalanceMock
       |> stub(:get, fn _ -> Decimal.new(1) end)
 
       state = %Args{} = Impl.new(args)
@@ -29,7 +29,7 @@ defmodule PortfolioManager.ImplTest do
 
   property "emitted opportunity is one of input opportunities" do
     forall [args, opportunities] <- [args(), opportunities()] do
-      PortfolioManager.BalanceMock
+      BalanceMock
       |> stub(:get, fn _ -> Decimal.new(1) end)
 
       state = %Args{} = Impl.new(args)
@@ -43,33 +43,17 @@ defmodule PortfolioManager.ImplTest do
 
   property "emitted element has highest value" do
     forall [args, opportunities] <- [args(), opportunities()] do
-      PortfolioManager.BalanceMock
+      BalanceMock
       |> stub(:get, fn _ -> Decimal.new(1) end)
 
       state = %Args{} = Impl.new(args)
 
       best_opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)
-
-      %{path: [firstsymbol | _], profit: profit, capacity: cap} = best_opportunity
-
-      best_opportunity_asset_value =
-        Map.get(args.relative_asset_values, firstsymbol.quote_asset, Decimal.new(0))
-
-      best_opportunity_value =
-        Decimal.mult(
-          Decimal.mult(profit, cap),
-          best_opportunity_asset_value
-        )
+      best_opportunity_value = get_opportunity_value(best_opportunity, args.relative_asset_values)
 
       assert Enum.all?(opportunities, fn opportunity ->
-               %{path: [firstsymbol1 | _], profit: profit1, capacity: cap1} = opportunity
-
-               value =
-                 Map.get(args.relative_asset_values, firstsymbol1.quote_asset, Decimal.new(0))
-
-               opportunity_value = Decimal.mult(Decimal.mult(profit1, cap1), value)
-
-               Decimal.lte?(opportunity_value, best_opportunity_value)
+               value = get_opportunity_value(opportunity, args.relative_asset_values)
+               Decimal.lte?(value, best_opportunity_value)
              end)
     end
   end
@@ -85,7 +69,7 @@ defmodule PortfolioManager.ImplTest do
   defp opportunity do
     let [
       profit <- decimal(),
-      capacity <- decimal(),
+      capacity <- pos_decimal(),
       path <- path()
     ] do
       %Opportunity{
@@ -103,8 +87,14 @@ defmodule PortfolioManager.ImplTest do
   end
 
   defp args do
-    let relative_asset_values <- map(non_empty_string(), decimal()) do
+    let relative_asset_values <- map(non_empty_string(), pos_decimal()) do
       %Args{relative_asset_values: relative_asset_values}
+    end
+  end
+
+  defp pos_decimal do
+    let float <- non_neg_float() do
+      Decimal.from_float(float)
     end
   end
 
@@ -246,7 +236,7 @@ defmodule PortfolioManager.ImplTest do
 
     opportunities = [
       btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
-      eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
+      _eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
     ]
 
     assert Impl.filter_opportunities(state, opportunities) == [btc]
@@ -265,5 +255,17 @@ defmodule PortfolioManager.ImplTest do
       profit: profit,
       capacity: capacity
     }
+  end
+
+  defp get_opportunity_value(opportunity, relative_asset_values) do
+    %{path: [symbol | _], profit: profit, capacity: cap} = opportunity
+
+    asset_value =
+      Map.get(relative_asset_values, symbol.quote_asset, Decimal.new(0))
+
+    Decimal.mult(
+      Decimal.mult(profit, Decimal.min(cap, BalanceMock.get(symbol.quote_asset))),
+      asset_value
+    )
   end
 end

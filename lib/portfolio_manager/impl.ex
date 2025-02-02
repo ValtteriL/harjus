@@ -5,8 +5,8 @@ defmodule PortfolioManager.Impl do
 
   require Logger
   alias PortfolioManager.Args
-  alias Types.Opportunity
   alias PortfolioManager.Balance
+  alias Types.Opportunity
 
   @spec new(args :: Args.t()) :: Args.t()
   def new(args = %Args{}), do: args
