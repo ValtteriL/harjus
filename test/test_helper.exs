@@ -15,4 +15,7 @@ Application.put_env(:harjus, :trade_client_exchange, Trader.TradeClient.Exchange
 Mox.defmock(Trader.Balance.TestMock, for: Trader.Balance)
 Application.put_env(:harjus, :balance, Trader.Balance.TestMock)
 
+Mox.defmock(PortfolioManager.BalanceMock, for: PortfolioManager.Balance)
+Application.put_env(:harjus, :pm_balance, PortfolioManager.BalanceMock)
+
 ExUnit.start()

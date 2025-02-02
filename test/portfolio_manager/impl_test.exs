@@ -2,6 +2,7 @@ defmodule PortfolioManager.ImplTest do
   @moduledoc "Tests for Impl"
 
   alias PortfolioManager.Args
+  alias PortfolioManager.BalanceMock
   alias PortfolioManager.Impl
   alias Types.Opportunity
   alias Types.TradingSymbol
@@ -9,11 +10,18 @@ defmodule PortfolioManager.ImplTest do
   use ExUnit.Case, async: true
   use PropCheck
 
+  import Mox
+
   # turn off logging
   @moduletag :capture_log
 
+  setup :verify_on_exit!
+
   property "emits list of single opportunity" do
     forall [args, opportunities] <- [args(), opportunities()] do
+      BalanceMock
+      |> stub(:get, fn _ -> Decimal.new(1) end)
+
       state = %Args{} = Impl.new(args)
       assert Enum.count(Impl.filter_opportunities(state, opportunities)) == 1
     end
@@ -21,6 +29,9 @@ defmodule PortfolioManager.ImplTest do
 
   property "emitted opportunity is one of input opportunities" do
     forall [args, opportunities] <- [args(), opportunities()] do
+      BalanceMock
+      |> stub(:get, fn _ -> Decimal.new(1) end)
+
       state = %Args{} = Impl.new(args)
 
       assert Enum.member?(
@@ -32,31 +43,56 @@ defmodule PortfolioManager.ImplTest do
 
   property "emitted element has highest value" do
     forall [args, opportunities] <- [args(), opportunities()] do
+      BalanceMock
+      |> stub(:get, fn _ -> Decimal.new(1) end)
+
       state = %Args{} = Impl.new(args)
 
       best_opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)
-
-      %{path: [firstsymbol | _], profit: profit, capacity: cap} = best_opportunity
-
-      best_opportunity_asset_value =
-        Map.get(args.relative_asset_values, firstsymbol.quote_asset, Decimal.new(0))
-
-      best_opportunity_value =
-        Decimal.mult(
-          Decimal.mult(profit, cap),
-          best_opportunity_asset_value
-        )
+      best_opportunity_value = get_opportunity_value(best_opportunity, args.relative_asset_values)
 
       assert Enum.all?(opportunities, fn opportunity ->
-               %{path: [firstsymbol1 | _], profit: profit1, capacity: cap1} = opportunity
-
-               value =
-                 Map.get(args.relative_asset_values, firstsymbol1.quote_asset, Decimal.new(0))
-
-               opportunity_value = Decimal.mult(Decimal.mult(profit1, cap1), value)
-
-               Decimal.lte?(opportunity_value, best_opportunity_value)
+               value = get_opportunity_value(opportunity, args.relative_asset_values)
+               Decimal.lte?(value, best_opportunity_value)
              end)
+    end
+  end
+
+  property "prioritizes by balance when profits and capacities are equal" do
+    forall [btc_price, eth_price] <- [pos_decimal(), pos_decimal()] do
+      PortfolioManager.BalanceMock
+      |> stub(:get, fn
+        "BTC" -> btc_price
+        "ETH" -> eth_price
+        _ -> Decimal.new(0)
+      end)
+
+      state =
+        Impl.new(%Args{
+          relative_asset_values: %{
+            "BTC" => Decimal.new(1),
+            "ETH" => Decimal.new(1),
+            "USDT" => Decimal.new(1)
+          }
+        })
+
+      opportunities = [
+        btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
+        eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
+      ]
+
+      opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)
+
+      %{path: [%{quote_asset: q} | _]} = opportunity
+
+      ret =
+        case(q) do
+          "BTC" -> Decimal.gte?(btc_price, eth_price)
+          "ETH" -> Decimal.gte?(eth_price, btc_price)
+          _ -> false
+        end
+
+      assert ret
     end
   end
 
@@ -71,7 +107,7 @@ defmodule PortfolioManager.ImplTest do
   defp opportunity do
     let [
       profit <- decimal(),
-      capacity <- decimal(),
+      capacity <- pos_decimal(),
       path <- path()
     ] do
       %Opportunity{
@@ -89,8 +125,14 @@ defmodule PortfolioManager.ImplTest do
   end
 
   defp args do
-    let relative_asset_values <- map(non_empty_string(), decimal()) do
+    let relative_asset_values <- map(non_empty_string(), pos_decimal()) do
       %Args{relative_asset_values: relative_asset_values}
+    end
+  end
+
+  defp pos_decimal do
+    let float <- non_neg_float() do
+      Decimal.from_float(float)
     end
   end
 
@@ -130,6 +172,9 @@ defmodule PortfolioManager.ImplTest do
   ## Unit tests ##
 
   test "prioritizes by relative asset value" do
+    PortfolioManager.BalanceMock
+    |> stub(:get, fn _ -> Decimal.new(1) end)
+
     state =
       Impl.new(%Args{
         relative_asset_values: %{
@@ -148,6 +193,9 @@ defmodule PortfolioManager.ImplTest do
   end
 
   test "prioritizes by capacity" do
+    PortfolioManager.BalanceMock
+    |> stub(:get, fn _ -> Decimal.new(10) end)
+
     state =
       Impl.new(%Args{
         relative_asset_values: %{
@@ -166,6 +214,9 @@ defmodule PortfolioManager.ImplTest do
   end
 
   test "prioritizes by profit" do
+    PortfolioManager.BalanceMock
+    |> stub(:get, fn _ -> Decimal.new(1) end)
+
     state =
       Impl.new(%Args{
         relative_asset_values: %{
@@ -184,6 +235,9 @@ defmodule PortfolioManager.ImplTest do
   end
 
   test "prioritizes by profit * capacity" do
+    PortfolioManager.BalanceMock
+    |> stub(:get, fn _ -> Decimal.new(5) end)
+
     state =
       Impl.new(%Args{
         relative_asset_values: %{
@@ -214,5 +268,17 @@ defmodule PortfolioManager.ImplTest do
       profit: profit,
       capacity: capacity
     }
+  end
+
+  defp get_opportunity_value(opportunity, relative_asset_values) do
+    %{path: [symbol | _], profit: profit, capacity: cap} = opportunity
+
+    asset_value =
+      Map.get(relative_asset_values, symbol.quote_asset, Decimal.new(0))
+
+    Decimal.mult(
+      Decimal.mult(profit, Decimal.min(cap, BalanceMock.get(symbol.quote_asset))),
+      asset_value
+    )
   end
 end
