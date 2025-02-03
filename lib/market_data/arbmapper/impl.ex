@@ -7,7 +7,15 @@ defmodule MarketData.Arbmapper.Impl do
 
   @spec generate_trading_paths(
           symbols :: [
-            %{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}
+            %{
+              symbol: String.t(),
+              baseAsset: String.t(),
+              quoteAsset: String.t(),
+              baseAssetPrecision: integer(),
+              quoteAssetPrecision: integer(),
+              baseAssetIncrement: Decimal.t(),
+              quoteAssetIncrement: Decimal.t()
+            }
           ],
           opts :: [
             starting_symbols: [String.t()],
@@ -66,14 +74,18 @@ defmodule MarketData.Arbmapper.Impl do
         symbol: s[:symbol],
         position: :long,
         base_asset: s[:baseAsset],
-        quote_asset: s[:quoteAsset]
+        quote_asset: s[:quoteAsset],
+        quote_asset_increment: s[:quoteAssetIncrement],
+        quote_asset_precision: s[:quoteAssetPrecision]
       })
 
       :digraph.add_edge(graph, s[:quoteAsset], s[:baseAsset], %TradingSymbol{
         symbol: s[:symbol],
         position: :short,
         base_asset: s[:quoteAsset],
-        quote_asset: s[:baseAsset]
+        quote_asset: s[:baseAsset],
+        quote_asset_precision: s[:baseAssetPrecision],
+        quote_asset_increment: s[:baseAssetIncrement]
       })
     end
 

@@ -12,10 +12,19 @@ defmodule MarketData.Exchange.Binance do
 
     resp.body["symbols"]
     |> Enum.map(fn x ->
-      Map.take(x, ["symbol", "baseAsset", "quoteAsset"])
+      Map.take(x, ["symbol", "baseAsset", "quoteAsset", "baseAssetPrecision", "quoteAssetPrecision", "filters"])
       # use atoms as keys
       |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
+      |> Map.put(:baseAssetIncrement, get_asset_increment(x["filters"], "LOT_SIZE"))
+      |> Map.put(:quoteAssetIncrement, get_asset_increment(x["filters"], "MIN_NOTIONAL"))
     end)
+  end
+
+  defp get_asset_increment(filters, filter_type) do
+    filters
+    |> Enum.find(fn filter -> filter["filterType"] == filter_type end)
+    |> Map.get("stepSize")
+    |> Decimal.new()
   end
 
   # get symbol prices from Binance

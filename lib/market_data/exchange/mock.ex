@@ -6,9 +6,33 @@ defmodule MarketData.Exchange.Mock do
   # Get all trading pairs
   def get_symbols do
     [
-      %{symbol: "BTCUSDT", baseAsset: "BTC", quoteAsset: "USDT"},
-      %{symbol: "ETHBTC", baseAsset: "ETH", quoteAsset: "BTC"},
-      %{symbol: "ETHUSDT", baseAsset: "ETH", quoteAsset: "USDT"}
+      %{
+        symbol: "BTCUSDT",
+        baseAsset: "BTC",
+        quoteAsset: "USDT",
+        baseAssetPrecision: 8,
+        quoteAssetPrecision: 2,
+        baseAssetIncrement: Decimal.new("0.00000001"),
+        quoteAssetIncrement: Decimal.new("0.01")
+      },
+      %{
+        symbol: "ETHBTC",
+        baseAsset: "ETH",
+        quoteAsset: "BTC",
+        baseAssetPrecision: 8,
+        quoteAssetPrecision: 8,
+        baseAssetIncrement: Decimal.new("0.00000001"),
+        quoteAssetIncrement: Decimal.new("0.00000001")
+      },
+      %{
+        symbol: "ETHUSDT",
+        baseAsset: "ETH",
+        quoteAsset: "USDT",
+        baseAssetPrecision: 8,
+        quoteAssetPrecision: 2,
+        baseAssetIncrement: Decimal.new("0.00000001"),
+        quoteAssetIncrement: Decimal.new("0.01")
+      }
     ]
   end
 

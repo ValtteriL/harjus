@@ -18,7 +18,15 @@ defmodule MarketData.Arbmapper do
   """
   @spec generate_trading_paths(
           symbols :: [
-            %{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}
+            %{
+              symbol: String.t(),
+              baseAsset: String.t(),
+              quoteAsset: String.t(),
+              baseAssetPrecision: integer(),
+              quoteAssetPrecision: integer(),
+              baseAssetIncrement: Decimal.t(),
+              quoteAssetIncrement: Decimal.t()
+            }
           ],
           opts :: [
             starting_symbols: [String.t()],
