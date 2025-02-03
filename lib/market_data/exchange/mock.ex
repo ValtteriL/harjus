@@ -12,8 +12,8 @@ defmodule MarketData.Exchange.Mock do
         quoteAsset: "USDT",
         baseAssetPrecision: 8,
         quoteAssetPrecision: 2,
-        baseAssetIncrement: Decimal.new("0.00000001"),
-        quoteAssetIncrement: Decimal.new("0.01")
+        baseAssetIncrement: Decimal.from_float(0.00000001),
+        quoteAssetIncrement: Decimal.from_float(0.01)
       },
       %{
         symbol: "ETHBTC",
@@ -21,8 +21,8 @@ defmodule MarketData.Exchange.Mock do
         quoteAsset: "BTC",
         baseAssetPrecision: 8,
         quoteAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.00000001"),
-        quoteAssetIncrement: Decimal.new("0.00000001")
+        baseAssetIncrement: Decimal.from_float(0.00000001),
+        quoteAssetIncrement: Decimal.from_float(0.00000001)
       },
       %{
         symbol: "ETHUSDT",
@@ -30,8 +30,8 @@ defmodule MarketData.Exchange.Mock do
         quoteAsset: "USDT",
         baseAssetPrecision: 8,
         quoteAssetPrecision: 2,
-        baseAssetIncrement: Decimal.new("0.00000001"),
-        quoteAssetIncrement: Decimal.new("0.01")
+        baseAssetIncrement: Decimal.from_float(0.00000001),
+        quoteAssetIncrement: Decimal.from_float(0.01)
       }
     ]
   end

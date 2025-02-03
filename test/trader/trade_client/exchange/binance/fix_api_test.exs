@@ -151,13 +151,17 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
       symbol <- non_empty_string(),
       position <- union([:long, :short]),
       base_asset <- non_empty_string(),
-      quote_asset <- non_empty_string()
+      quote_asset <- non_empty_string(),
+      precision <- pos_integer(),
+      increment <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
         position: position,
         base_asset: base_asset,
-        quote_asset: quote_asset
+        quote_asset: quote_asset,
+        quote_asset_increment: increment,
+        quote_asset_precision: precision
       }
     end
   end
@@ -281,7 +285,9 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
                    symbol: "BTCETH",
                    position: :short,
                    base_asset: "ETH",
-                   quote_asset: "BTC"
+                   quote_asset: "BTC",
+                   quote_asset_increment: Decimal.new("0.0001"),
+                   quote_asset_precision: 8
                  },
                  Decimal.new("1"),
                  client_order_id

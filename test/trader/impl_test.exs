@@ -29,7 +29,7 @@ defmodule Trader.ImplTest do
       # setup mocks
       Trader.Balance.TestMock
       |> stub(:update, fn _asset, _amount -> :ok end)
-      |> expect(:reserve_upto, fn _asset, _amount -> Decimal.new(1) end)
+      |> expect(:reserve_upto, fn _asset, _amount, _increment, _precision -> Decimal.new(1) end)
 
       Trader.TradeClient.Exchange.TestMock
       |> expect(:new, fn -> :ok end)
@@ -78,7 +78,9 @@ defmodule Trader.ImplTest do
       # setup mocks
       Trader.Balance.TestMock
       |> stub(:update, fn _asset, _amount -> :ok end)
-      |> expect(:reserve_upto, fn _asset, _amount -> Decimal.from_float(0.0) end)
+      |> expect(:reserve_upto, fn _asset, _amount, _increment, _precision ->
+        Decimal.from_float(0.0)
+      end)
 
       Trader.TradeClient.Exchange.TestMock
       |> expect(:new, fn -> :ok end)
@@ -150,7 +152,9 @@ defmodule Trader.ImplTest do
         symbol: symbol,
         position: position,
         base_asset: base_asset,
-        quote_asset: quote_asset
+        quote_asset: quote_asset,
+        quote_asset_increment: Decimal.from_float(0.01),
+        quote_asset_precision: 8
       }
     end
   end

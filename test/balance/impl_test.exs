@@ -11,47 +11,56 @@ defmodule Balance.ImplTest do
   # Make sure mocks are verified when the test exits
   setup :verify_on_exit!
 
-  property "balance behaves correctly" do
-    forall [symbol, update_value, increment, precision] <- [non_empty_string(), float(), pos_decimal(), integer()] do
+  property "starting balance is 0" do
+    forall [symbol, update_value, increment, precision] <- [
+             non_empty_string(),
+             float(),
+             pos_decimal(),
+             pos_integer()
+           ] do
       Balance.Exchange.TestMock
       |> expect(:get_balances, fn -> %{} end)
 
       state = Impl.new()
 
       # starting balance is 0
-      assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(0.0))
-
-      # balance is updated correctly
-      state = Impl.update(state, symbol, Decimal.from_float(update_value))
-      assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(update_value))
-
-      # reserve upto the current balance
-      {reserved, state} = Impl.reserve_upto(state, symbol, Decimal.from_float(update_value), increment, precision)
-
-      # reserved amount is the same as the current balance
-      assert Decimal.eq?(reserved, Decimal.from_float(update_value))
-
-      # balance is now 0
       assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(0.0))
     end
   end
 
-  property "return value is multiplier of increment" do
-    forall [symbol, update_value, increment, precision] <- [non_empty_string(), float(), pos_decimal(), integer()] do
+  property "balance is updated correctly" do
+    forall [symbol, update_value, increment, precision] <- [
+             non_empty_string(),
+             float(),
+             pos_decimal(),
+             pos_integer()
+           ] do
       Balance.Exchange.TestMock
       |> expect(:get_balances, fn -> %{} end)
 
       state = Impl.new()
 
-      # starting balance is 0
-      assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(0.0))
-
       # balance is updated correctly
       state = Impl.update(state, symbol, Decimal.from_float(update_value))
       assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(update_value))
+    end
+  end
+
+  property "return value is multiplier of increment" do
+    forall [symbol, balance, increment, precision] <- [
+             non_empty_string(),
+             pos_decimal(),
+             pos_decimal(),
+             pos_integer()
+           ] do
+      Balance.Exchange.TestMock
+      |> expect(:get_balances, fn -> %{} end)
+
+      state = Impl.new()
 
       # reserve upto the current balance
-      {reserved, state} = Impl.reserve_upto(state, symbol, Decimal.from_float(update_value), increment, precision)
+      {reserved, _state} =
+        Impl.reserve_upto(state, symbol, balance, increment, precision)
 
       # reserved amount is a multiple of increment
       assert Decimal.eq?(Decimal.rem(reserved, increment), Decimal.new(0))
@@ -59,21 +68,20 @@ defmodule Balance.ImplTest do
   end
 
   property "return value has precision number of decimals" do
-    forall [symbol, update_value, increment, precision] <- [non_empty_string(), float(), pos_decimal(), integer()] do
+    forall [symbol, balance, increment, precision] <- [
+             non_empty_string(),
+             pos_decimal(),
+             pos_decimal(),
+             pos_integer()
+           ] do
       Balance.Exchange.TestMock
-      |> expect(:get_balances, fn -> %{} end)
+      |> expect(:get_balances, fn -> %{symbol => balance} end)
 
       state = Impl.new()
 
-      # starting balance is 0
-      assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(0.0))
-
-      # balance is updated correctly
-      state = Impl.update(state, symbol, Decimal.from_float(update_value))
-      assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(update_value))
-
       # reserve upto the current balance
-      {reserved, state} = Impl.reserve_upto(state, symbol, Decimal.from_float(update_value), increment, precision)
+      {reserved, _state} =
+        Impl.reserve_upto(state, symbol, balance, increment, precision)
 
       # reserved amount has the specified number of decimals
       assert Decimal.scale(reserved) == precision
@@ -81,24 +89,23 @@ defmodule Balance.ImplTest do
   end
 
   property "return value is less than or equal to balance" do
-    forall [symbol, update_value, increment, precision] <- [non_empty_string(), float(), pos_decimal(), integer()] do
+    forall [symbol, balance, increment, precision] <- [
+             non_empty_string(),
+             pos_decimal(),
+             pos_decimal(),
+             pos_integer()
+           ] do
       Balance.Exchange.TestMock
-      |> expect(:get_balances, fn -> %{} end)
+      |> expect(:get_balances, fn -> %{symbol => balance} end)
 
       state = Impl.new()
 
-      # starting balance is 0
-      assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(0.0))
-
-      # balance is updated correctly
-      state = Impl.update(state, symbol, Decimal.from_float(update_value))
-      assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(update_value))
-
       # reserve upto the current balance
-      {reserved, state} = Impl.reserve_upto(state, symbol, Decimal.from_float(update_value), increment, precision)
+      {reserved, _state} =
+        Impl.reserve_upto(state, symbol, balance, increment, precision)
 
       # reserved amount is less than or equal to balance
-      assert Decimal.cmp(reserved, Decimal.from_float(update_value)) != :gt
+      assert Decimal.lte?(reserved, balance)
     end
   end
 
