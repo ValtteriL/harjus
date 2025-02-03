@@ -3,7 +3,15 @@ defmodule MarketData.Exchange do
   Exchange behaviour
   """
   @callback get_symbols() :: [
-              %{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}
+              %{
+                symbol: String.t(),
+                baseAsset: String.t(),
+                quoteAsset: String.t(),
+                baseAssetPrecision: integer(),
+                quoteAssetPrecision: integer(),
+                baseAssetIncrement: Decimal.t(),
+                quoteAssetIncrement: Decimal.t()
+              }
             ]
   @callback get_symbol_prices() :: %{String.t() => Decimal.t()}
 
