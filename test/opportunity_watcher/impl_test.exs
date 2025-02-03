@@ -108,14 +108,24 @@ defmodule OpportunityWatcher.ImplTest do
       symbol <- non_empty_string(),
       position <- union([:long, :short]),
       base_asset <- non_empty_string(),
-      quote_asset <- non_empty_string()
+      quote_asset <- non_empty_string(),
+      precision <- pos_integer(),
+      increment <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
         position: position,
         base_asset: base_asset,
-        quote_asset: quote_asset
+        quote_asset: quote_asset,
+        quote_asset_increment: increment,
+        quote_asset_precision: precision
       }
+    end
+  end
+
+  defp pos_decimal do
+    let float <- float(0.000001, :inf) do
+      Decimal.from_float(float)
     end
   end
 
@@ -143,13 +153,17 @@ defmodule OpportunityWatcher.ImplTest do
             symbol: "BTCUSDT",
             position: :long,
             base_asset: "BTC",
-            quote_asset: "USDT"
+            quote_asset: "USDT",
+            quote_asset_increment: Decimal.new("0.01"),
+            quote_asset_precision: 8
           },
           %TradingSymbol{
             symbol: "BTCUSDT",
             position: :short,
             base_asset: "USDT",
-            quote_asset: "BTC"
+            quote_asset: "BTC",
+            quote_asset_increment: Decimal.new("0.01"),
+            quote_asset_precision: 8
           }
         ]
       ]
@@ -190,13 +204,17 @@ defmodule OpportunityWatcher.ImplTest do
                    symbol: "BTCUSDT",
                    position: :long,
                    base_asset: "BTC",
-                   quote_asset: "USDT"
+                   quote_asset: "USDT",
+                   quote_asset_increment: Decimal.new("0.01"),
+                   quote_asset_precision: 8
                  },
                  %TradingSymbol{
                    symbol: "BTCUSDT",
                    position: :short,
                    base_asset: "USDT",
-                   quote_asset: "BTC"
+                   quote_asset: "BTC",
+                   quote_asset_increment: Decimal.new("0.01"),
+                   quote_asset_precision: 8
                  }
                ],
                profit: Decimal.new("1"),

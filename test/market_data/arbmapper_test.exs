@@ -168,9 +168,9 @@ defmodule MarketData.ArbmapperTest do
 
   test "generates correct trading paths and symbols" do
     trading_symbols = [
-      %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH"},
-      %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC"},
-      %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC"}
+      %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH", quoteAssetPrecision: 8, quoteAssetIncrement: Decimal.new("0.01"), baseAssetPrecision: 8, baseAssetIncrement: Decimal.new("0.01")},
+      %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC", quoteAssetPrecision: 8, quoteAssetIncrement: Decimal.new("0.01"), baseAssetPrecision: 8, baseAssetIncrement: Decimal.new("0.01")},
+      %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC", quoteAssetPrecision: 8, quoteAssetIncrement: Decimal.new("0.01"), baseAssetPrecision: 8, baseAssetIncrement: Decimal.new("0.01")},
     ]
 
     trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
@@ -179,124 +179,124 @@ defmodule MarketData.ArbmapperTest do
              {
                [
                  [
-                   %Types.TradingSymbol{
+                   ts(%{
                      base_asset: "LTC",
                      position: :long,
                      quote_asset: "BTC",
                      symbol: "LTCBTC"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "ETH",
                      position: :long,
                      quote_asset: "LTC",
                      symbol: "ETHLTC"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "BTC",
                      position: :long,
                      quote_asset: "ETH",
                      symbol: "BTCETH"
-                   }
+                   })
                  ],
                  [
-                   %Types.TradingSymbol{
+                   ts(%{
                      base_asset: "ETH",
                      position: :short,
                      quote_asset: "BTC",
                      symbol: "BTCETH"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "LTC",
                      position: :short,
                      quote_asset: "ETH",
                      symbol: "ETHLTC"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "BTC",
                      position: :short,
                      quote_asset: "LTC",
                      symbol: "LTCBTC"
-                   }
+                   })
                  ],
                  [
-                   %Types.TradingSymbol{
+                   ts(%{
                      symbol: "LTCBTC",
                      position: :short,
                      base_asset: "BTC",
                      quote_asset: "LTC"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      symbol: "BTCETH",
                      position: :short,
                      base_asset: "ETH",
                      quote_asset: "BTC"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      symbol: "ETHLTC",
                      position: :short,
                      base_asset: "LTC",
                      quote_asset: "ETH"
-                   }
+                   })
                  ],
                  [
-                   %Types.TradingSymbol{
+                   ts(%{
                      base_asset: "ETH",
                      position: :long,
                      quote_asset: "LTC",
                      symbol: "ETHLTC"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "BTC",
                      position: :long,
                      quote_asset: "ETH",
                      symbol: "BTCETH"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "LTC",
                      position: :long,
                      quote_asset: "BTC",
                      symbol: "LTCBTC"
-                   }
+                   })
                  ],
                  [
-                   %Types.TradingSymbol{
+                   ts(%{
                      base_asset: "LTC",
                      position: :short,
                      quote_asset: "ETH",
                      symbol: "ETHLTC"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "BTC",
                      position: :short,
                      quote_asset: "LTC",
                      symbol: "LTCBTC"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "ETH",
                      position: :short,
                      quote_asset: "BTC",
                      symbol: "BTCETH"
-                   }
+                   })
                  ],
                  [
-                   %Types.TradingSymbol{
+                   ts(%{
                      base_asset: "BTC",
                      position: :long,
                      quote_asset: "ETH",
                      symbol: "BTCETH"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "LTC",
                      position: :long,
                      quote_asset: "BTC",
                      symbol: "LTCBTC"
-                   },
-                   %Types.TradingSymbol{
+                   }),
+                   ts(%{
                      base_asset: "ETH",
                      position: :long,
                      quote_asset: "LTC",
                      symbol: "ETHLTC"
-                   }
+                   })
                  ]
                ],
                ["LTCBTC", "ETHLTC", "BTCETH"]
@@ -332,7 +332,9 @@ defmodule MarketData.ArbmapperTest do
       symbol: "#{quote_asset}#{base_asset}",
       position: :short,
       base_asset: base_asset,
-      quote_asset: quote_asset
+      quote_asset: quote_asset,
+      quote_asset_increment: Decimal.new("0.01"),
+      quote_asset_precision: 8
     }
   end
 
@@ -341,7 +343,20 @@ defmodule MarketData.ArbmapperTest do
       symbol: "#{base_asset}#{quote_asset}",
       position: :long,
       base_asset: base_asset,
-      quote_asset: quote_asset
+      quote_asset: quote_asset,
+      quote_asset_increment: Decimal.new("0.01"),
+      quote_asset_precision: 8
+    }
+  end
+
+  defp ts(%{symbol: symbol, position: position, base_asset: base_aset, quote_asset: quote_asset}) do
+    %TradingSymbol{
+      symbol: symbol,
+      position: position,
+      base_asset: base_aset,
+      quote_asset: quote_asset,
+      quote_asset_increment: Decimal.new("0.01"),
+      quote_asset_precision: 8
     }
   end
 end

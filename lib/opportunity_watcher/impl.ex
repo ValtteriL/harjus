@@ -8,7 +8,6 @@ defmodule OpportunityWatcher.Impl do
   alias OpportunityWatcher.Opportunity
   alias OpportunityWatcher.State
   alias Types.PriceUpdate
-  alias Types.TradingSymbol
 
   @spec new(args :: Args.t()) :: State.t()
   def new(%Args{
@@ -36,25 +35,15 @@ defmodule OpportunityWatcher.Impl do
     symbol_to_trading_symbol_map =
       trading_paths
       |> List.flatten()
-      |> Enum.uniq_by(fn x -> x.symbol end)
-      |> Enum.map(fn x ->
-        {x.symbol,
-         %{
-           long: %TradingSymbol{
-             symbol: x.symbol,
-             position: :long,
-             base_asset: x.base_asset,
-             quote_asset: x.quote_asset
-           },
-           short: %TradingSymbol{
-             symbol: x.symbol,
-             position: :short,
-             base_asset: x.quote_asset,
-             quote_asset: x.base_asset
-           }
-         }}
+      |> Enum.uniq()
+      |> Enum.group_by(fn x -> x.symbol end)
+      |> Map.new(fn {symbol, list} ->
+        {symbol,
+         Enum.map(list, fn x ->
+           {x.position, x}
+         end)
+         |> Enum.into(%{})}
       end)
-      |> Map.new()
 
     # initialize symbol to pathids map
     symbol_to_pathids_map =
@@ -102,11 +91,16 @@ defmodule OpportunityWatcher.Impl do
     # update price and quantity on long + short
     new_trading_symbol_to_price_qty_tuple =
       state.trading_symbol_to_price_qty_tuple
-      |> Map.replace(state.symbol_to_trading_symbol_map[symbol].long, {ask_price, ask_qty})
-      |> Map.replace(state.symbol_to_trading_symbol_map[symbol].short, {
-        Decimal.div(1, bid_price),
-        Decimal.mult(bid_qty, bid_price)
-      })
+      |> Map.replace_lazy(
+        Map.get(state.symbol_to_trading_symbol_map[symbol], :long),
+        fn _ -> {ask_price, ask_qty} end
+      )
+      |> Map.replace_lazy(Map.get(state.symbol_to_trading_symbol_map[symbol], :short), fn _ ->
+        {
+          Decimal.div(1, bid_price),
+          Decimal.mult(bid_qty, bid_price)
+        }
+      end)
 
     # recalculate profit and capacity for affected paths
     affected_pathids = state.symbol_to_pathids_map[symbol]

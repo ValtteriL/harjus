@@ -58,14 +58,24 @@ defmodule OpportunityWatcher.OpportunityTest do
       symbol <- non_empty_string(),
       position <- union([:long, :short]),
       base_asset <- non_empty_string(),
-      quote_asset <- non_empty_string()
+      quote_asset <- non_empty_string(),
+      precision <- pos_integer(),
+      increment <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
         position: position,
         base_asset: base_asset,
-        quote_asset: quote_asset
+        quote_asset: quote_asset,
+        quote_asset_increment: increment,
+        quote_asset_precision: precision
       }
+    end
+  end
+
+  defp pos_decimal do
+    let float <- float(0.000001, :inf) do
+      Decimal.from_float(float)
     end
   end
 
@@ -86,18 +96,18 @@ defmodule OpportunityWatcher.OpportunityTest do
     commission = Decimal.new(0)
 
     path = [
-      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"},
-      %TradingSymbol{symbol: "USDTBTC", position: :long, base_asset: "USDT", quote_asset: "BTC"}
+      ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}),
+      ts(%{symbol: "USDTBTC", position: :long, base_asset: "USDT", quote_asset: "BTC"})
     ]
 
     price_table = %{
-      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"} =>
+      ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}) =>
         {Decimal.new("10000.0"), Decimal.new("1.0")},
-      %TradingSymbol{symbol: "USDTBTC", position: :long, base_asset: "USDT", quote_asset: "BTC"} =>
+      ts(%{symbol: "USDTBTC", position: :long, base_asset: "USDT", quote_asset: "BTC"}) =>
         {Decimal.new("0.00005"), Decimal.new("1337.1337")},
-      %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"} =>
+      ts(%{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"}) =>
         {Decimal.new("0.1"), Decimal.new("10.0")},
-      %TradingSymbol{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"} =>
+      ts(%{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"}) =>
         {Decimal.new("0.001"), Decimal.new("1.0")}
     }
 
@@ -112,14 +122,14 @@ defmodule OpportunityWatcher.OpportunityTest do
     commission = Decimal.new(0)
 
     path = [
-      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"},
-      %TradingSymbol{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"}
+      ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}),
+      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"})
     ]
 
     price_table = %{
-      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"} =>
+      ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}) =>
         {Decimal.new("1.0"), Decimal.new("1.0")},
-      %TradingSymbol{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"} =>
+      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"}) =>
         {Decimal.div(Decimal.new("1"), Decimal.new("2")), Decimal.new("1.0")}
     }
 
@@ -134,17 +144,17 @@ defmodule OpportunityWatcher.OpportunityTest do
     commission = Decimal.new("0.01")
 
     path = [
-      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"},
-      %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"},
-      %TradingSymbol{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"}
+      ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}),
+      ts(%{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"}),
+      ts(%{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"})
     ]
 
     price_table = %{
-      %TradingSymbol{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"} =>
+      ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}) =>
         {Decimal.new("10000"), Decimal.new("1.0")},
-      %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"} =>
+      ts(%{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"}) =>
         {Decimal.new("0.1"), Decimal.new("10")},
-      %TradingSymbol{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"} =>
+      ts(%{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"}) =>
         {Decimal.new("0.001"), Decimal.new("1.0")}
     }
 
@@ -163,37 +173,48 @@ defmodule OpportunityWatcher.OpportunityTest do
     assert_raise ArgumentError, fn ->
       Opportunity.profit(
         [
-          %TradingSymbol{
+          ts(%{
             symbol: "BTCUSDT",
             position: :long,
             base_asset: "BTC",
             quote_asset: "USDT"
-          },
-          %TradingSymbol{
+          }),
+          ts(%{
             symbol: "ETHBTC",
             position: :long,
             base_asset: "ETH",
             quote_asset: "BTC"
-          },
-          %TradingSymbol{
+          }),
+          ts(%{
             symbol: "USDTETH",
             position: :long,
             base_asset: "USDT",
             quote_asset: "ETH"
-          }
+          })
         ],
         %{
-          %TradingSymbol{
+          ts(%{
             symbol: "BTCUSDT",
             position: :long,
             base_asset: "BTC",
             quote_asset: "USDT"
-          } => {Decimal.new("10000"), Decimal.new("1.0")},
-          %TradingSymbol{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"} =>
+          }) => {Decimal.new("10000"), Decimal.new("1.0")},
+          ts(%{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"}) =>
             {Decimal.new("0.1"), Decimal.new("10")}
         },
         Decimal.new("0.01")
       )
     end
+  end
+
+  defp ts(%{symbol: symbol, position: position, base_asset: base_aset, quote_asset: quote_asset}) do
+    %TradingSymbol{
+      symbol: symbol,
+      position: position,
+      base_asset: base_aset,
+      quote_asset: quote_asset,
+      quote_asset_increment: Decimal.new("0.01"),
+      quote_asset_precision: 8
+    }
   end
 end

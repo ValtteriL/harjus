@@ -12,18 +12,36 @@ defmodule MarketData.Exchange.Binance do
 
     resp.body["symbols"]
     |> Enum.map(fn x ->
-      Map.take(x, ["symbol", "baseAsset", "quoteAsset", "baseAssetPrecision", "quoteAssetPrecision", "filters"])
+      Map.take(x, [
+        "symbol",
+        "baseAsset",
+        "quoteAsset",
+        "baseAssetPrecision",
+        "quoteAssetPrecision",
+        "filters"
+      ])
       # use atoms as keys
       |> Map.new(fn {k, v} -> {String.to_atom(k), v} end)
-      |> Map.put(:baseAssetIncrement, get_asset_increment(x["filters"], "LOT_SIZE"))
-      |> Map.put(:quoteAssetIncrement, get_asset_increment(x["filters"], "MIN_NOTIONAL"))
+      # get asset increments
+      |> Map.put(:baseAssetIncrement, get_base_asset_increment(x["filters"]))
+      |> Map.put(:quoteAssetIncrement, get_quote_asset_increment(x["filters"]))
+      # delete filters
+      |> Map.delete(:filters)
     end)
   end
 
-  defp get_asset_increment(filters, filter_type) do
+  defp get_base_asset_increment(filters) do
+    get_asset_increment(filters, "LOT_SIZE", "stepSize")
+  end
+
+  defp get_quote_asset_increment(filters) do
+    get_asset_increment(filters, "PRICE_FILTER", "tickSize")
+  end
+
+  defp get_asset_increment(filters, filter_type, key) do
     filters
     |> Enum.find(fn filter -> filter["filterType"] == filter_type end)
-    |> Map.get("stepSize")
+    |> Map.get(key)
     |> Decimal.new()
   end
 
@@ -35,7 +53,7 @@ defmodule MarketData.Exchange.Binance do
     {:ok, resp} = Req.get(url)
 
     resp.body
-    |> Enum.map(fn x -> {x["symbol"], Decimal.from_float(x["price"])} end)
+    |> Enum.map(fn x -> {x["symbol"], Decimal.from_float(String.to_float(x["price"]))} end)
     |> Enum.into(%{})
   end
 end
