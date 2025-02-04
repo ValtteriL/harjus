@@ -3,13 +3,13 @@ defmodule MarketData.AssetComparer.Impl do
   AssetComparer implementation
   """
 
+  alias MarketData.Types.Symbol
+
   @doc """
   calculate relative value for symbols
   """
   @spec calculate_relative_values(
-          symbols :: [
-            %{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}
-          ],
+          symbols :: [Symbol.t()],
           symbol_prices :: %{String.t() => Decimal.t()},
           comparison_asset :: String.t()
         ) ::
