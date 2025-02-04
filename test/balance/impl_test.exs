@@ -72,7 +72,7 @@ defmodule Balance.ImplTest do
              non_empty_string(),
              pos_decimal(),
              pos_decimal(),
-             pos_integer()
+             integer(0, 15)
            ] do
       Balance.Exchange.TestMock
       |> expect(:get_balances, fn -> %{symbol => balance} end)
