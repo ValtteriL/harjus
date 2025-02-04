@@ -57,6 +57,9 @@ defmodule IntegrationTest do
     end)
 
     Trader.TradeClient.Exchange.TestMock
+    |> expect(:new, fn ->
+      :does_not_matter
+    end)
     |> expect(:market_order, 3, fn trading_symbol, quantity ->
       %Types.TradeReport{
         symbol: trading_symbol.symbol,
@@ -85,6 +88,8 @@ defmodule IntegrationTest do
     # Initialize components
     {:ok, _} = Balance.start_link()
 
+    {:ok, _} = PriceStreamer.start_link(symbols)
+
     {:ok, _} =
       OpportunityWatcher.start_link(%OpportunityWatcher.Args{
         min_profit_percentage: Decimal.from_float(0.01),
@@ -100,7 +105,6 @@ defmodule IntegrationTest do
 
     number_of_traders = 1
     {:ok, _} = Trader.start_link(number_of_traders)
-    {:ok, _} = PriceStreamer.start_link(symbols)
 
     # Simulate price updates
     PriceStreamer.price_update(%Types.PriceUpdate{
