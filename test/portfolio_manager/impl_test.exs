@@ -77,8 +77,8 @@ defmodule PortfolioManager.ImplTest do
         })
 
       opportunities = [
-        btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
-        eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
+        _btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
+        _eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
       ]
 
       opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)

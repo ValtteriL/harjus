@@ -3,6 +3,8 @@ defmodule MarketData.Exchange.Binance do
 
   @behaviour MarketData.Exchange
 
+  alias MarketData.Types.Symbol
+
   # Get all trading pairs from Binance
   def get_symbols do
     base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
@@ -27,6 +29,17 @@ defmodule MarketData.Exchange.Binance do
       |> Map.put(:quoteAssetIncrement, get_quote_asset_increment(x["filters"]))
       # delete filters
       |> Map.delete(:filters)
+    end)
+    |> Enum.map(fn x ->
+      %Symbol{
+        symbol: x[:symbol],
+        baseAsset: x[:baseAsset],
+        quoteAsset: x[:quoteAsset],
+        baseAssetPrecision: x[:baseAssetPrecision],
+        quoteAssetPrecision: x[:quoteAssetPrecision],
+        baseAssetIncrement: x[:baseAssetIncrement],
+        quoteAssetIncrement: x[:quoteAssetIncrement]
+      }
     end)
   end
 

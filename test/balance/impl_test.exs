@@ -12,11 +12,8 @@ defmodule Balance.ImplTest do
   setup :verify_on_exit!
 
   property "starting balance is 0" do
-    forall [symbol, update_value, increment, precision] <- [
-             non_empty_string(),
-             float(),
-             pos_decimal(),
-             pos_integer()
+    forall [symbol] <- [
+             non_empty_string()
            ] do
       Balance.Exchange.TestMock
       |> expect(:get_balances, fn -> %{} end)
@@ -29,11 +26,9 @@ defmodule Balance.ImplTest do
   end
 
   property "balance is updated correctly" do
-    forall [symbol, update_value, increment, precision] <- [
+    forall [symbol, update_value] <- [
              non_empty_string(),
-             float(),
-             pos_decimal(),
-             pos_integer()
+             decimal()
            ] do
       Balance.Exchange.TestMock
       |> expect(:get_balances, fn -> %{} end)
@@ -41,8 +36,8 @@ defmodule Balance.ImplTest do
       state = Impl.new()
 
       # balance is updated correctly
-      state = Impl.update(state, symbol, Decimal.from_float(update_value))
-      assert Decimal.eq?(Impl.get(state, symbol), Decimal.from_float(update_value))
+      state = Impl.update(state, symbol, update_value)
+      assert Decimal.eq?(Impl.get(state, symbol), update_value)
     end
   end
 
@@ -124,6 +119,12 @@ defmodule Balance.ImplTest do
 
   defp pos_decimal do
     let float <- float(0.000001, :inf) do
+      Decimal.from_float(float)
+    end
+  end
+
+  defp decimal do
+    let float <- float() do
       Decimal.from_float(float)
     end
   end

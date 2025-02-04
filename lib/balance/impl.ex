@@ -45,6 +45,6 @@ defmodule Balance.Impl do
         false -> amount
       end
 
-    Decimal.div_int(max, increment) |> Decimal.mult(increment) |> Decimal.round(precision)
+    Decimal.div_int(max, increment) |> Decimal.mult(increment) |> Decimal.round(precision, :down)
   end
 end
