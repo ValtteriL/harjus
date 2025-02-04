@@ -1,21 +1,52 @@
 defmodule IntegrationTest do
+  @moduledoc """
+  Integration tests for Harjus.
+  """
+
   use ExUnit.Case, async: false
   import Mox
+
+  alias MarketData.Types.Symbol
+  require Decimal
 
   setup :verify_on_exit!
 
   @tag :integration
   test "opportunity gets captured" do
     # Mock Binance modules
-    MarketData.Exchange.Binance
-    |> expect(:get_symbols, fn -> 
+    MarketData.Exchange.TestMock
+    |> expect(:get_symbols, fn ->
       [
-        %{symbol: "BTCUSDT", baseAsset: "BTC", quoteAsset: "USDT"},
-        %{symbol: "ETHBTC", baseAsset: "ETH", quoteAsset: "BTC"},
-        %{symbol: "ETHUSDT", baseAsset: "ETH", quoteAsset: "USDT"}
+        %Symbol{
+          symbol: "BTCUSDT",
+          baseAsset: "BTC",
+          quoteAsset: "USDT",
+          baseAssetPrecision: 8,
+          quoteAssetPrecision: 2,
+          baseAssetIncrement: Decimal.from_float(0.000001),
+          quoteAssetIncrement: Decimal.from_float(0.01)
+        },
+        %Symbol{
+          symbol: "ETHBTC",
+          baseAsset: "ETH",
+          quoteAsset: "BTC",
+          baseAssetPrecision: 8,
+          quoteAssetPrecision: 2,
+          baseAssetIncrement: Decimal.from_float(0.000001),
+          quoteAssetIncrement: Decimal.from_float(0.01)
+        },
+        %Symbol{
+          symbol: "ETHUSDT",
+          baseAsset: "ETH",
+          quoteAsset: "USDT",
+          baseAssetPrecision: 8,
+          quoteAssetPrecision: 2,
+          baseAssetIncrement: Decimal.from_float(0.000001),
+          quoteAssetIncrement: Decimal.from_float(0.01)
+        }
       ]
     end)
-    |> expect(:get_symbol_prices, fn -> 
+    |> expect(:get_symbol_prices, fn ->
       %{
         "BTCUSDT" => Decimal.from_float(10_000.0),
         "ETHBTC" => Decimal.from_float(0.1),
@@ -23,8 +54,8 @@ defmodule IntegrationTest do
       }
     end)
 
-    Trader.TradeClient.Exchange.Binance
-    |> expect(:market_order, 3, fn trading_symbol, quantity -> 
+    Trader.TradeClient.Exchange.TestMock
+    |> expect(:market_order, 3, fn trading_symbol, quantity ->
       %Types.TradeReport{
         symbol: trading_symbol.symbol,
         position: trading_symbol.position,
@@ -36,8 +67,8 @@ defmodule IntegrationTest do
     end)
 
     # must start with USDT, BNB balance must be negative in the end
-    Balance.Exchange.Binance
-    |> expect(:get_balances, fn -> 
+    Balance.Exchange.TestMock
+    |> expect(:get_balances, fn ->
       %{
         "USDT" => Decimal.new(100)
       }
@@ -51,14 +82,22 @@ defmodule IntegrationTest do
 
     # Initialize components
     {:ok, _} = Balance.start_link()
-    {:ok, _} = OpportunityWatcher.start_link(%OpportunityWatcher.Args{
-      min_profit_percentage: Decimal.new(0.01),
-      min_capacity: Decimal.new(0.01),
-      commission: Decimal.new(0.001),
-      trading_paths: trading_paths
-    })
-    {:ok, _} = PortfolioManager.start_link()
-    {:ok, _} = Trader.start_link()
+
+    {:ok, _} =
+      OpportunityWatcher.start_link(%OpportunityWatcher.Args{
+        min_profit_percentage: Decimal.from_float(0.01),
+        min_capacity: Decimal.from_float(0.01),
+        commission: Decimal.from_float(0.001),
+        trading_paths: trading_paths
+      })
+
+    {:ok, _} =
+      PortfolioManager.start_link(%PortfolioManager.Args{
+        relative_asset_values: MarketData.relative_values(market_data, "BTC")
+      })
+
+    number_of_traders = 1
+    {:ok, _} = Trader.start_link(number_of_traders)
     {:ok, _} = PriceStreamer.start_link(symbols)
 
     # Simulate price updates
