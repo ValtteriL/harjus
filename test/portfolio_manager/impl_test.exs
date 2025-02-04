@@ -77,8 +77,8 @@ defmodule PortfolioManager.ImplTest do
         })
 
       opportunities = [
-        btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
-        eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
+        _btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
+        _eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
       ]
 
       opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)
@@ -147,13 +147,17 @@ defmodule PortfolioManager.ImplTest do
       symbol <- non_empty_string(),
       position <- union([:long, :short]),
       base_asset <- non_empty_string(),
-      quote_asset <- non_empty_string()
+      quote_asset <- non_empty_string(),
+      precision <- pos_integer(),
+      increment <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
         position: position,
         base_asset: base_asset,
-        quote_asset: quote_asset
+        quote_asset: quote_asset,
+        quote_asset_increment: increment,
+        quote_asset_precision: precision
       }
     end
   end
@@ -262,7 +266,9 @@ defmodule PortfolioManager.ImplTest do
           symbol: "#{base_asset}#{quote_asset}",
           position: :long,
           base_asset: base_asset,
-          quote_asset: quote_asset
+          quote_asset: quote_asset,
+          quote_asset_increment: Decimal.new("0.01"),
+          quote_asset_precision: 8
         }
       ],
       profit: profit,

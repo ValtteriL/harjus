@@ -2,8 +2,11 @@ defmodule MarketData.Exchange do
   @moduledoc """
   Exchange behaviour
   """
+
+  alias MarketData.Types.Symbol
+
   @callback get_symbols() :: [
-              %{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}
+              Symbol.t()
             ]
   @callback get_symbol_prices() :: %{String.t() => Decimal.t()}
 

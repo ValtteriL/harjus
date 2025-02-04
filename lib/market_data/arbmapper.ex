@@ -4,6 +4,7 @@ defmodule MarketData.Arbmapper do
   """
 
   alias MarketData.Arbmapper.Impl
+  alias MarketData.Types.Symbol
   alias Types.TradingSymbol
 
   @doc """
@@ -17,9 +18,7 @@ defmodule MarketData.Arbmapper do
   This also limits the symbols to subscribe to to those in the paths
   """
   @spec generate_trading_paths(
-          symbols :: [
-            %{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}
-          ],
+          symbols :: [Symbol.t()],
           opts :: [
             starting_symbols: [String.t()],
             depth: integer()

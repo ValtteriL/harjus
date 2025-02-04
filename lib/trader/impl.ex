@@ -46,7 +46,12 @@ defmodule Trader.Impl do
   defp execute_opportunity_after_reserving_symbols(opportunity) do
     # reserve budget
     budget =
-      MyBalance.reserve_upto(Enum.at(opportunity.path, 0).quote_asset, opportunity.capacity)
+      MyBalance.reserve_upto(
+        Enum.at(opportunity.path, 0).quote_asset,
+        opportunity.capacity,
+        Enum.at(opportunity.path, 0).quote_asset_increment,
+        Enum.at(opportunity.path, 0).quote_asset_precision
+      )
 
     if Decimal.eq?(budget, 0) do
       # release the trading pairs (required to make tests work, as they dont use separate process)

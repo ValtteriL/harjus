@@ -22,17 +22,29 @@ defmodule Balance.Impl do
     Map.update(state, asset, amount, &Decimal.add(&1, amount))
   end
 
-  @spec reserve_upto(state :: map(), asset :: String.t(), amount :: Decimal.t()) ::
+  @spec reserve_upto(
+          state :: map(),
+          asset :: String.t(),
+          amount :: Decimal.t(),
+          increment :: Decimal.t(),
+          precision :: integer()
+        ) ::
           {Decimal.t(), map()}
-  def reserve_upto(state = %{}, asset = "" <> _, amount) when Decimal.is_decimal(amount) do
+  def reserve_upto(state = %{}, asset = "" <> _, amount, increment, precision)
+      when Decimal.is_decimal(amount) and Decimal.is_decimal(increment) and is_integer(precision) do
     current_balance = get(state, asset)
+    reserved_amount = max_reserved_amount(current_balance, amount, increment, precision)
 
-    cond do
-      Decimal.gte?(current_balance, amount) ->
-        {amount, update(state, asset, Decimal.negate(amount))}
+    {reserved_amount, update(state, asset, Decimal.negate(reserved_amount))}
+  end
 
-      Decimal.lt?(current_balance, amount) ->
-        {current_balance, update(state, asset, Decimal.negate(current_balance))}
-    end
+  defp max_reserved_amount(current_balance, amount, increment, precision) do
+    max =
+      case Decimal.lte?(current_balance, amount) do
+        true -> current_balance
+        false -> amount
+      end
+
+    Decimal.div_int(max, increment) |> Decimal.mult(increment) |> Decimal.round(precision, :down)
   end
 end
