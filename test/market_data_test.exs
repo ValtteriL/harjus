@@ -5,6 +5,8 @@ defmodule MarketDataTest do
   use PropCheck
   import Mox
 
+  alias MarketData.Types.Symbol
+
   doctest MarketData
 
   # Make sure mocks are verified when the test exits
@@ -25,7 +27,7 @@ defmodule MarketDataTest do
       {paths, symbols} = MarketData.trading_paths(md, starting_symbols, depth)
       relative_prices = MarketData.relative_values(md, comparison_asset)
 
-      input_symbols = symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
+      input_symbols = symbols |> Enum.map(fn x -> x.symbol end) |> Enum.uniq()
 
       # symbol list cannot have more symbols than in input
       assert length(symbols) <= length(input_symbols)
@@ -53,8 +55,8 @@ defmodule MarketDataTest do
 
       # output map must include all symbols as keys
       assert Enum.all?(symbols, fn x ->
-               Map.has_key?(relative_prices, x[:baseAsset]) and
-                 Map.has_key?(relative_prices, x[:quoteAsset])
+               Map.has_key?(relative_prices, x.baseAsset) and
+                 Map.has_key?(relative_prices, x.quoteAsset)
              end)
     end
   end
@@ -66,7 +68,7 @@ defmodule MarketDataTest do
       let price <- non_neg_float() do
         let symbol_prices <-
               symbols
-              |> Enum.map(fn x -> x[:symbol] end)
+              |> Enum.map(fn x -> x.symbol end)
               |> Enum.map(fn x -> {x, Decimal.from_float(price)} end)
               |> Enum.into(%{}) do
           let comparison_asset <- symbols |> Enum.random() |> Map.fetch!(:baseAsset) do
@@ -81,10 +83,24 @@ defmodule MarketDataTest do
     let [
       symbol <- non_empty_string(),
       base_asset <- non_empty_string(),
-      quote_asset <- non_empty_string()
+      quote_asset <- non_empty_string(),
+      base_asset_precision <- pos_integer(),
+      quote_asset_precision <- pos_integer(),
+      base_asset_increment <- pos_decimal(),
+      quote_asset_increment <- pos_decimal()
     ] do
       let symbols <-
-            non_empty(list(%{symbol: symbol, baseAsset: base_asset, quoteAsset: quote_asset})) do
+            non_empty(
+              list(%Symbol{
+                symbol: symbol,
+                baseAsset: base_asset,
+                quoteAsset: quote_asset,
+                baseAssetPrecision: base_asset_precision,
+                quoteAssetPrecision: quote_asset_precision,
+                baseAssetIncrement: base_asset_increment,
+                quoteAssetIncrement: quote_asset_increment
+              })
+            ) do
         symbols
       end
     end
@@ -104,6 +120,12 @@ defmodule MarketDataTest do
   defp positive_integer do
     let integer <- non_neg_integer() do
       integer
+    end
+  end
+
+  defp pos_decimal do
+    let float <- float(0.000001, :inf) do
+      Decimal.from_float(float)
     end
   end
 end

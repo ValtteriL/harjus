@@ -5,8 +5,22 @@ defmodule Types.TradingSymbol do
   Note: base and quote assets are always swapped, so that quote asset is always the one we use in transactions.
   """
 
-  @enforce_keys [:symbol, :position, :base_asset, :quote_asset, :quote_asset_increment, :quote_asset_precision]
-  defstruct [:symbol, :position, :base_asset, :quote_asset, :quote_asset_increment, :quote_asset_precision]
+  @enforce_keys [
+    :symbol,
+    :position,
+    :base_asset,
+    :quote_asset,
+    :quote_asset_increment,
+    :quote_asset_precision
+  ]
+  defstruct [
+    :symbol,
+    :position,
+    :base_asset,
+    :quote_asset,
+    :quote_asset_increment,
+    :quote_asset_precision
+  ]
 
   @type t :: %__MODULE__{
           symbol: String.t(),

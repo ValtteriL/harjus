@@ -2,6 +2,7 @@ defmodule MarketData.ArbmapperTest do
   @moduledoc "Tests for Arbmapper"
 
   alias MarketData.Arbmapper
+  alias MarketData.Types.Symbol
   alias Types.TradingSymbol
 
   use ExUnit.Case, async: true
@@ -20,7 +21,7 @@ defmodule MarketData.ArbmapperTest do
           depth: depth
         )
 
-      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
+      input_symbols = trading_symbols |> Enum.map(fn x -> x.symbol end) |> Enum.uniq()
       assert length(symbols) <= length(input_symbols)
     end
   end
@@ -37,7 +38,7 @@ defmodule MarketData.ArbmapperTest do
           depth: depth
         )
 
-      input_symbols = trading_symbols |> Enum.map(fn x -> x[:symbol] end) |> Enum.uniq()
+      input_symbols = trading_symbols |> Enum.map(fn x -> x.symbol end) |> Enum.uniq()
       assert Enum.all?(symbols, fn x -> Enum.member?(input_symbols, x) end)
     end
   end
@@ -144,12 +145,32 @@ defmodule MarketData.ArbmapperTest do
     let [
       symbol <- non_empty_string(),
       base_asset <- non_empty_string(),
-      quote_asset <- non_empty_string()
+      quote_asset <- non_empty_string(),
+      quote_asset_precision <- pos_integer(),
+      quote_asset_increment <- pos_decimal(),
+      base_asset_precision <- pos_integer(),
+      base_asset_increment <- pos_decimal()
     ] do
       let symbols <-
-            non_empty(list(%{symbol: symbol, baseAsset: base_asset, quoteAsset: quote_asset})) do
+            non_empty(
+              list(%Symbol{
+                symbol: symbol,
+                baseAsset: base_asset,
+                quoteAsset: quote_asset,
+                quoteAssetPrecision: quote_asset_precision,
+                quoteAssetIncrement: quote_asset_increment,
+                baseAssetPrecision: base_asset_precision,
+                baseAssetIncrement: base_asset_increment
+              })
+            ) do
         symbols
       end
+    end
+  end
+
+  defp pos_decimal do
+    let float <- float(0.000001, :inf) do
+      Decimal.from_float(float)
     end
   end
 
@@ -168,7 +189,7 @@ defmodule MarketData.ArbmapperTest do
 
   test "generates correct trading paths and symbols" do
     trading_symbols = [
-      %{
+      %Symbol{
         symbol: "BTCETH",
         baseAsset: "BTC",
         quoteAsset: "ETH",
@@ -177,7 +198,7 @@ defmodule MarketData.ArbmapperTest do
         baseAssetPrecision: 8,
         baseAssetIncrement: Decimal.new("0.01")
       },
-      %{
+      %Symbol{
         symbol: "ETHLTC",
         baseAsset: "ETH",
         quoteAsset: "LTC",
@@ -186,7 +207,7 @@ defmodule MarketData.ArbmapperTest do
         baseAssetPrecision: 8,
         baseAssetIncrement: Decimal.new("0.01")
       },
-      %{
+      %Symbol{
         symbol: "LTCBTC",
         baseAsset: "LTC",
         quoteAsset: "BTC",
@@ -327,7 +348,7 @@ defmodule MarketData.ArbmapperTest do
              }
 
     symbols = [
-      %{
+      %Symbol{
         symbol: "BTCUSDT",
         baseAsset: "BTC",
         quoteAsset: "USDT",
@@ -336,7 +357,7 @@ defmodule MarketData.ArbmapperTest do
         baseAssetPrecision: 8,
         baseAssetIncrement: Decimal.new("0.01")
       },
-      %{
+      %Symbol{
         symbol: "ETHBTC",
         baseAsset: "ETH",
         quoteAsset: "BTC",
@@ -345,7 +366,7 @@ defmodule MarketData.ArbmapperTest do
         baseAssetPrecision: 8,
         baseAssetIncrement: Decimal.new("0.01")
       },
-      %{
+      %Symbol{
         symbol: "ETHUSDT",
         baseAsset: "ETH",
         quoteAsset: "USDT",

@@ -3,20 +3,11 @@ defmodule MarketData.Arbmapper.Impl do
   Arbmapper implementation
   """
 
+  alias MarketData.Types.Symbol
   alias Types.TradingSymbol
 
   @spec generate_trading_paths(
-          symbols :: [
-            %{
-              symbol: String.t(),
-              baseAsset: String.t(),
-              quoteAsset: String.t(),
-              baseAssetPrecision: integer(),
-              quoteAssetPrecision: integer(),
-              baseAssetIncrement: Decimal.t(),
-              quoteAssetIncrement: Decimal.t()
-            }
-          ],
+          symbols :: [Symbol.t()],
           opts :: [
             starting_symbols: [String.t()],
             depth: integer()
@@ -24,7 +15,7 @@ defmodule MarketData.Arbmapper.Impl do
         ) ::
           {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [String.t()]}
   def generate_trading_paths(
-        symbols = [%{symbol: _, baseAsset: _, quoteAsset: _} | _],
+        symbols = [%Symbol{} | _],
         opts \\ []
       )
       when is_list(opts) do
@@ -52,16 +43,14 @@ defmodule MarketData.Arbmapper.Impl do
   end
 
   # generate graph from symbols
-  @spec generate_graph(
-          symbols :: [%{symbol: String.t(), baseAsset: String.t(), quoteAsset: String.t()}]
-        ) ::
+  @spec generate_graph(symbols :: [Symbol.t()]) ::
           :digraph.graph()
-  defp generate_graph(symbols) do
+  defp generate_graph(symbols = [%Symbol{} | _]) do
     graph = :digraph.new()
 
     # Add symbols as vertices
     uniq_base_symbols =
-      symbols |> Enum.flat_map(fn x -> [x[:baseAsset], x[:quoteAsset]] end) |> Enum.uniq()
+      symbols |> Enum.flat_map(fn x -> [x.baseAsset, x.quoteAsset] end) |> Enum.uniq()
 
     for s <- uniq_base_symbols do
       :digraph.add_vertex(graph, s)
@@ -70,22 +59,22 @@ defmodule MarketData.Arbmapper.Impl do
     # Add trading pairs as edges
     # forward (long), backward (short)
     for s <- symbols do
-      :digraph.add_edge(graph, s[:baseAsset], s[:quoteAsset], %TradingSymbol{
-        symbol: s[:symbol],
+      :digraph.add_edge(graph, s.baseAsset, s.quoteAsset, %TradingSymbol{
+        symbol: s.symbol,
         position: :long,
-        base_asset: s[:baseAsset],
-        quote_asset: s[:quoteAsset],
-        quote_asset_increment: s[:quoteAssetIncrement],
-        quote_asset_precision: s[:quoteAssetPrecision]
+        base_asset: s.baseAsset,
+        quote_asset: s.quoteAsset,
+        quote_asset_increment: s.quoteAssetIncrement,
+        quote_asset_precision: s.quoteAssetPrecision
       })
 
-      :digraph.add_edge(graph, s[:quoteAsset], s[:baseAsset], %TradingSymbol{
-        symbol: s[:symbol],
+      :digraph.add_edge(graph, s.quoteAsset, s.baseAsset, %TradingSymbol{
+        symbol: s.symbol,
         position: :short,
-        base_asset: s[:quoteAsset],
-        quote_asset: s[:baseAsset],
-        quote_asset_precision: s[:baseAssetPrecision],
-        quote_asset_increment: s[:baseAssetIncrement]
+        base_asset: s.quoteAsset,
+        quote_asset: s.baseAsset,
+        quote_asset_precision: s.baseAssetPrecision,
+        quote_asset_increment: s.baseAssetIncrement
       })
     end
 

@@ -3,10 +3,12 @@ defmodule MarketData.Exchange.Mock do
 
   @behaviour MarketData.Exchange
 
+  alias MarketData.Types.Symbol
+
   # Get all trading pairs
   def get_symbols do
     [
-      %{
+      %Symbol{
         symbol: "BTCUSDT",
         baseAsset: "BTC",
         quoteAsset: "USDT",
@@ -15,7 +17,7 @@ defmodule MarketData.Exchange.Mock do
         baseAssetIncrement: Decimal.from_float(0.00000001),
         quoteAssetIncrement: Decimal.from_float(0.01)
       },
-      %{
+      %Symbol{
         symbol: "ETHBTC",
         baseAsset: "ETH",
         quoteAsset: "BTC",
@@ -24,7 +26,7 @@ defmodule MarketData.Exchange.Mock do
         baseAssetIncrement: Decimal.from_float(0.00000001),
         quoteAssetIncrement: Decimal.from_float(0.00000001)
       },
-      %{
+      %Symbol{
         symbol: "ETHUSDT",
         baseAsset: "ETH",
         quoteAsset: "USDT",
