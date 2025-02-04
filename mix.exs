@@ -18,8 +18,7 @@ defmodule Harjus.MixProject do
           "format",
           "credo --strict",
           "compile --all-warnings --warnings-as-errors",
-          "test --no-start",
-          "include_integration_tests",
+          "test --no-start --include integration:true",
           "credo --strict",
           "dialyzer --ignore-exit-status"
         ],
@@ -27,8 +26,7 @@ defmodule Harjus.MixProject do
           "format --check-formatted",
           "credo --strict",
           "compile --all-warnings --warnings-as-errors",
-          "test --no-start",
-          "include_integration_tests",
+          "test --no-start --include integration:true",
           "credo --strict",
           "dialyzer"
         ]
