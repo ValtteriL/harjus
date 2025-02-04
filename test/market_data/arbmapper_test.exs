@@ -168,9 +168,33 @@ defmodule MarketData.ArbmapperTest do
 
   test "generates correct trading paths and symbols" do
     trading_symbols = [
-      %{symbol: "BTCETH", baseAsset: "BTC", quoteAsset: "ETH", quoteAssetPrecision: 8, quoteAssetIncrement: Decimal.new("0.01"), baseAssetPrecision: 8, baseAssetIncrement: Decimal.new("0.01")},
-      %{symbol: "ETHLTC", baseAsset: "ETH", quoteAsset: "LTC", quoteAssetPrecision: 8, quoteAssetIncrement: Decimal.new("0.01"), baseAssetPrecision: 8, baseAssetIncrement: Decimal.new("0.01")},
-      %{symbol: "LTCBTC", baseAsset: "LTC", quoteAsset: "BTC", quoteAssetPrecision: 8, quoteAssetIncrement: Decimal.new("0.01"), baseAssetPrecision: 8, baseAssetIncrement: Decimal.new("0.01")},
+      %{
+        symbol: "BTCETH",
+        baseAsset: "BTC",
+        quoteAsset: "ETH",
+        quoteAssetPrecision: 8,
+        quoteAssetIncrement: Decimal.new("0.01"),
+        baseAssetPrecision: 8,
+        baseAssetIncrement: Decimal.new("0.01")
+      },
+      %{
+        symbol: "ETHLTC",
+        baseAsset: "ETH",
+        quoteAsset: "LTC",
+        quoteAssetPrecision: 8,
+        quoteAssetIncrement: Decimal.new("0.01"),
+        baseAssetPrecision: 8,
+        baseAssetIncrement: Decimal.new("0.01")
+      },
+      %{
+        symbol: "LTCBTC",
+        baseAsset: "LTC",
+        quoteAsset: "BTC",
+        quoteAssetPrecision: 8,
+        quoteAssetIncrement: Decimal.new("0.01"),
+        baseAssetPrecision: 8,
+        baseAssetIncrement: Decimal.new("0.01")
+      }
     ]
 
     trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
@@ -303,9 +327,33 @@ defmodule MarketData.ArbmapperTest do
              }
 
     symbols = [
-      %{symbol: "BTCUSDT", baseAsset: "BTC", quoteAsset: "USDT"},
-      %{symbol: "ETHBTC", baseAsset: "ETH", quoteAsset: "BTC"},
-      %{symbol: "ETHUSDT", baseAsset: "ETH", quoteAsset: "USDT"}
+      %{
+        symbol: "BTCUSDT",
+        baseAsset: "BTC",
+        quoteAsset: "USDT",
+        quoteAssetPrecision: 8,
+        quoteAssetIncrement: Decimal.new("0.01"),
+        baseAssetPrecision: 8,
+        baseAssetIncrement: Decimal.new("0.01")
+      },
+      %{
+        symbol: "ETHBTC",
+        baseAsset: "ETH",
+        quoteAsset: "BTC",
+        quoteAssetPrecision: 8,
+        quoteAssetIncrement: Decimal.new("0.01"),
+        baseAssetPrecision: 8,
+        baseAssetIncrement: Decimal.new("0.01")
+      },
+      %{
+        symbol: "ETHUSDT",
+        baseAsset: "ETH",
+        quoteAsset: "USDT",
+        quoteAssetPrecision: 8,
+        quoteAssetIncrement: Decimal.new("0.01"),
+        baseAssetPrecision: 8,
+        baseAssetIncrement: Decimal.new("0.01")
+      }
     ]
 
     assert Arbmapper.generate_trading_paths(symbols, starting_symbols: ["BTC"]) ==
