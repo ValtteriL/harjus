@@ -9,6 +9,8 @@ defmodule IntegrationTest do
   alias MarketData.Types.Symbol
   require Decimal
 
+  # use global Mox mode
+  setup :set_mox_from_context
   setup :verify_on_exit!
 
   @tag :integration
