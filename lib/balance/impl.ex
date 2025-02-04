@@ -33,20 +33,18 @@ defmodule Balance.Impl do
   def reserve_upto(state = %{}, asset = "" <> _, amount, increment, precision)
       when Decimal.is_decimal(amount) and Decimal.is_decimal(increment) and is_integer(precision) do
     current_balance = get(state, asset)
+    reserved_amount = max_reserved_amount(current_balance, amount, increment, precision)
 
-    cond do
-      Decimal.gte?(current_balance, amount) ->
-        reserved_amount = round_to_increment(amount, increment, precision)
-        {reserved_amount, update(state, asset, Decimal.negate(reserved_amount))}
-
-      Decimal.lt?(current_balance, amount) ->
-        reserved_amount = round_to_increment(current_balance, increment, precision)
-        {reserved_amount, update(state, asset, Decimal.negate(reserved_amount))}
-    end
+    {reserved_amount, update(state, asset, Decimal.negate(reserved_amount))}
   end
 
-  defp round_to_increment(amount, increment, precision) do
-    rounded_amount = Decimal.mult(Decimal.div(amount, increment) |> Decimal.round(0), increment)
-    Decimal.round(rounded_amount, precision)
+  defp max_reserved_amount(current_balance, amount, increment, precision) do
+    max =
+      case Decimal.lte?(current_balance, amount) do
+        true -> current_balance
+        false -> amount
+      end
+
+    Decimal.div_int(max, increment) |> Decimal.mult(increment) |> Decimal.round(precision)
   end
 end
