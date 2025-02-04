@@ -12,7 +12,8 @@ defmodule Harjus.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: [
-        test: ["test --no-start", "exclude_integration_tests"],
+        # exclude integration tests by default
+        test: ["test --no-start --exclude integration:true"],
         quality: [
           "format",
           "credo --strict",
@@ -73,15 +74,5 @@ defmodule Harjus.MixProject do
     [
       preferred_envs: [quality: :test, "quality.ci": :test]
     ]
-  end
-
-  defp include_integration_tests do
-    Mix.shell().info("Including integration tests")
-    ExUnit.configure(include: :integration)
-  end
-
-  defp exclude_integration_tests do
-    Mix.shell().info("Excluding integration tests")
-    ExUnit.configure(exclude: :integration)
   end
 end
