@@ -90,8 +90,8 @@ defmodule Trader.Impl do
   end
 
   @spec trade([TradingSymbol.t()], Decimal.t()) :: balance_delta()
-  defp trade(path, quantity) do
-    trade(path, quantity, %{})
+  defp trade(path = [%TradingSymbol{quote_asset: quote_asset} | _], quantity) do
+    trade(path, quantity, %{quote_asset => quantity})
   end
 
   defp trade([trading_symbol | rest], quantity, balance_delta) do
