@@ -12,18 +12,21 @@ defmodule Harjus.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: [
-        test: "test --no-start",
+        # exclude integration tests by default
+        test: ["test --no-start --exclude integration:true"],
         quality: [
           "format",
+          "credo --strict",
           "compile --all-warnings --warnings-as-errors",
-          "test --no-start",
+          "test --no-start --include integration:true",
           "credo --strict",
           "dialyzer --ignore-exit-status"
         ],
         "quality.ci": [
           "format --check-formatted",
+          "credo --strict",
           "compile --all-warnings --warnings-as-errors",
-          "test --no-start",
+          "test --no-start --include integration:true",
           "credo --strict",
           "dialyzer"
         ]
