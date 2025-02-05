@@ -2,7 +2,9 @@
 
 Binance arbitrage bot.
 
-Uses triangular arbitration on Spot trading, and Cash-and-Carry between SPOT and Futures.
+Captures triangular arbitrage opportunities on Spot trading.
+
+![ci workflow](https://github.com/ValtteriL/harjus/actions/workflows/ci.yml/badge.svg)
 
 ## Development
 
@@ -22,10 +24,26 @@ Run unit tests
 mix test
 ```
 
+Run all tests
+
+```bash
+mix test --include integration:true
+```
+
 Run static code analysis
 
 ```bash
 mix dialyzer
+```
+
+Run full quality checkup (all tests, formatter, credo, dialyzer)
+
+```bash
+# this will format the code
+mix quality
+
+# this will fail on any issues
+mix quality.ci
 ```
 
 ## Deployment
@@ -54,7 +72,7 @@ docker container run --rm -it $IMAGE /bin/sh
 docker image push $IMAGE
 
 # run in k8s
-kubectl run -i -t harjus --image=$IMAGE --restart=Never --env "START_SYMBOLS=BNB" --env "PROD=true"
+kubectl run -i -t harjus --image=$IMAGE --restart=Never --env "START_SYMBOLS=BNB"
 ```
 
 ### Deploy QA (testnet, home lab k8s)
