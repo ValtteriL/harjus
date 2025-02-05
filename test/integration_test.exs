@@ -13,9 +13,28 @@ defmodule IntegrationTest do
   setup :set_mox_from_context
   setup :verify_on_exit!
 
+  setup do
+    # use real balance in these tests
+    old_pm_balance = swap_mock_and_get_old(:pm_balance, Balance)
+    old_trade_balance = swap_mock_and_get_old(:balance, Balance)
+
+    # after tests, restore the mocks
+    on_exit(fn ->
+      swap_mock_and_get_old(:pm_balance, old_pm_balance)
+      swap_mock_and_get_old(:balance, old_trade_balance)
+    end)
+  end
+
   @tag :integration
   test "opportunity gets captured" do
+    fee = Decimal.from_float(0.001)
+
     # Mock Binance modules
+    PriceStreamer.Exchange.TestMock
+    |> expect(:new, fn _symbols ->
+      :ok
+    end)
+
     MarketData.Exchange.TestMock
     |> expect(:get_symbols, fn ->
       [
@@ -60,13 +79,26 @@ defmodule IntegrationTest do
     |> expect(:new, fn ->
       :does_not_matter
     end)
-    |> expect(:market_order, 3, fn trading_symbol, quantity ->
+
+    # 2 trades 1:1
+    |> expect(:market_order, 2, fn trading_symbol, quantity ->
       %Types.TradeReport{
         symbol: trading_symbol.symbol,
         position: trading_symbol.position,
         quantity_base: Decimal.new(1),
-        quantity_quote: quantity,
-        quantity_fee: Decimal.from_float(0.1),
+        quantity_quote: Decimal.new(1),
+        quantity_fee: fee,
+        fee_currency: "BNB"
+      }
+    end)
+    # last trade trade 1:2. It should result in profit of capacity
+    |> expect(:market_order, 1, fn trading_symbol, quantity ->
+      %Types.TradeReport{
+        symbol: trading_symbol.symbol,
+        position: trading_symbol.position,
+        quantity_base: Decimal.new(1),
+        quantity_quote: Decimal.new(2),
+        quantity_fee: fee,
         fee_currency: "BNB"
       }
     end)
@@ -107,36 +139,44 @@ defmodule IntegrationTest do
     {:ok, _} = Trader.start_link(number_of_traders)
 
     # Simulate price updates
+    # there should be multiple opportunities with capacity of 1
     PriceStreamer.price_update(%Types.PriceUpdate{
       symbol: "BTCUSDT",
-      ask_price: Decimal.new(10_000),
+      ask_price: Decimal.new(1),
       ask_qty: Decimal.new(1),
-      bid_price: Decimal.new(10_000),
+      bid_price: Decimal.new(1),
       bid_qty: Decimal.new(1)
     })
 
     PriceStreamer.price_update(%Types.PriceUpdate{
       symbol: "ETHBTC",
-      ask_price: Decimal.from_float(0.1),
+      ask_price: Decimal.new(1),
       ask_qty: Decimal.new(1),
-      bid_price: Decimal.from_float(0.1),
+      bid_price: Decimal.new(1),
       bid_qty: Decimal.new(1)
     })
 
     PriceStreamer.price_update(%Types.PriceUpdate{
       symbol: "ETHUSDT",
-      ask_price: Decimal.new(1_000),
+      ask_price: Decimal.new(1),
       ask_qty: Decimal.new(1),
-      bid_price: Decimal.new(1_000),
-      bid_qty: Decimal.new(1)
+      bid_price: Decimal.new(2),
+      bid_qty: Decimal.new(2)
     })
 
     # allow time for execution
     :timer.sleep(100)
 
-    assert Decimal.eq?(Balance.get("BTC"), Decimal.new(1))
-    assert Decimal.eq?(Balance.get("ETH"), Decimal.new(1))
-    assert Decimal.eq?(Balance.get("USDT"), Decimal.new(10_000))
-    assert Decimal.negative?(Balance.get("BNB"))
+    assert Decimal.eq?(Balance.get("BTC"), Decimal.new(0))
+    assert Decimal.eq?(Balance.get("ETH"), Decimal.new(0))
+    assert Decimal.eq?(Balance.get("USDT"), Decimal.new(101))
+    # 3 trades, with BNB fee each
+    assert Decimal.eq?(Balance.get("BNB"), Decimal.mult(-3, fee))
+  end
+
+  defp swap_mock_and_get_old(key, new_module) do
+    module = Application.get_env(:harjus, key)
+    Application.put_env(:harjus, key, new_module)
+    module
   end
 end
