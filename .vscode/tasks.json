@@ -48,6 +48,27 @@
         "isDefault": false
       },
       "label": "mix: Quality"
+    },
+    {
+      "command": "mix",
+      "args": [
+        "test",
+        "--include",
+        "integration:true",
+        "--no-start",
+        "--color",
+        "--trace",
+        "${relativeFile}"
+      ],
+      "problemMatcher": [
+        "$mixCompileError",
+        "$mixCompileWarning"
+      ],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      },
+      "label": "mix: Run tests for current file"
     }
   ]
 }
