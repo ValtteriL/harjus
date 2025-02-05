@@ -18,4 +18,7 @@ Application.put_env(:harjus, :balance, Trader.Balance.TestMock)
 Mox.defmock(PortfolioManager.BalanceMock, for: PortfolioManager.Balance)
 Application.put_env(:harjus, :pm_balance, PortfolioManager.BalanceMock)
 
+Mox.defmock(PriceStreamer.Exchange.TestMock, for: PriceStreamer.Exchange)
+Application.put_env(:harjus, :price_streamer_exchange, PriceStreamer.Exchange.TestMock)
+
 ExUnit.start()
