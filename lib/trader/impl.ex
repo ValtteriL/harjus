@@ -126,19 +126,23 @@ defmodule Trader.Impl do
 
   @spec update_balance_delta(balance_delta(), TradingSymbol.t(), TradeReport.t()) ::
           balance_delta()
-  defp update_balance_delta(delta, trading_symbol, trade_report) do
+  defp update_balance_delta(
+         delta,
+         %TradingSymbol{base_asset: base_asset, quote_asset: quote_asset},
+         trade_report
+       ) do
     delta
     # received
     |> Map.update(
-      trading_symbol.base_asset,
+      base_asset,
       received_quantity(trade_report),
-      &Decimal.add(&1, received_quantity(trade_report))
+      fn current_qty -> Decimal.add(current_qty, received_quantity(trade_report)) end
     )
     # used
     |> Map.update(
-      trading_symbol.quote_asset,
-      used_quantity(trade_report),
-      &Decimal.sub(&1, used_quantity(trade_report))
+      quote_asset,
+      Decimal.negate(used_quantity(trade_report)),
+      fn current_qty -> Decimal.sub(current_qty, used_quantity(trade_report)) end
     )
   end
 
