@@ -45,10 +45,9 @@ defmodule Trader.ImplTest do
   end
 
   property "fails if any symbol in path already reserved" do
-    forall [opportunity, trade_report] <-
+    forall [opportunity] <-
              [
-               opportunity_with_duplicate_symbols(),
-               trade_report()
+               opportunity_with_duplicate_symbols()
              ] do
       # setup mocks
       Trader.Balance.TestMock
