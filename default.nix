@@ -11,6 +11,8 @@ with pkgs;
 let
   packages = rec {
 
+    nonfree = import pkgs { config.allowUnfree = true; };
+
     # The shell of our experiment runtime environment
     devEnv = mkShellNoCC rec {
       name = "devEnv";
@@ -27,7 +29,7 @@ let
         elixir
         mix2nix
         cowsay
-        terraform
+        nonfree.terraform
       ];
 
       # this is executed when shell entered
