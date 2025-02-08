@@ -115,9 +115,18 @@ terraform apply -auto-approve
 
 ## Setup
 
-Create Terraform backend in S3
+### Create Terraform backend in S3
 
 ```bash
 terraform -chdir=deploy/backend init
 terraform -chdir=deploy/backend apply
+```
+
+Set the output from into s3 backend in deploy
+
+### Setup infra
+
+```bash
+terraform -chdir=deploy init
+terraform -chdir=deploy apply
 ```
