@@ -1,11 +1,17 @@
 name: Build and Release
 
+# build if push to main
+# if tagged with releases/X.Y.Z, deploy additionally to QA
+
 on:
   push:
     tags: releases/[1-9]+.[0-9]+.[0-9]+
     branches: main
 
 jobs:
+  quality:
+    uses: ./.github/workflows/quality.yml
+
   build:
     runs-on: ubuntu-latest
     needs: [quality]
@@ -28,20 +34,20 @@ jobs:
 
       - name: Build, tag, and push image to Amazon ECR
         env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: qa-repository
+          ECR_REGISTRY: 137068223640.dkr.ecr.eu-north-1.amazonaws.com
+          ECR_REPOSITORY: harjus-ecr-repository
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Deploy to ECS
-        if: startsWith(github.ref, 'refs/tags/releases/')
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          TF_VAR_image_tag: ${{ github.sha }}
-        run: |
-          cd deploy
-          terraform init
-          terraform apply -auto-approve
+      # - name: Deploy to ECS
+      #   if: startsWith(github.ref, 'refs/tags/releases/')
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     TF_VAR_image_tag: ${{ github.sha }}
+      #   run: |
+      #     cd deploy
+      #     terraform -chdir=deploy init
+      #     terraform -chdir=deploy apply -auto-approve

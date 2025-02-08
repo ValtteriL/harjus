@@ -4,30 +4,10 @@ on:
   push:
     branches:
       - '**'
+    # ignore main as it has its own workflow
+    branches-ignore:
+      - 'main'
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Nix
-        uses: cachix/install-nix-action@v14
-
-      - name: Activate nix-shell and run mix quality.ci
-        run: |
-          nix-shell -A devEnv --run "mix local.hex --force && mix deps.get && mix quality.ci"
-
-      - name: Clean up deps
-        run: rm -rf deps/*
-
-      - name: Run nix-build
-        run: nix-build
-
-      - name: Upload container image
-        uses: actions/upload-artifact@v4
-        with:
-          name: container-image
-          path: result-2
+  quality:
+    uses: ./.github/workflows/quality.yml

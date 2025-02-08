@@ -1,9 +1,8 @@
-name: Quality
+name: Quality check
 
+# This is reusable by other workflows
 on:
-  push:
-    branches:
-      - '**'
+  workflow_call:
 
 jobs:
   quality:
