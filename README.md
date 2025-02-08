@@ -112,3 +112,12 @@ terraform apply -auto-approve
 ```
 
 2. Verify the update: Check the ECS service in the AWS Management Console to ensure that the new task definition is being used and that the rolling update is in progress.
+
+## Setup
+
+Create Terraform backend in S3
+
+```bash
+terraform -chdir=deploy/backend init
+terraform -chdir=deploy/backend apply
+```
