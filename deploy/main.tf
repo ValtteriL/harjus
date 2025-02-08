@@ -9,6 +9,10 @@ terraform {
   }
 }
 
+resource "aws_ecr_repository" "ecr_repository" {
+  name = "harjus-ecr-repository"
+}
+
 # resource "aws_ecs_cluster" "qa_cluster" {
 #   name = var.cluster_name
 # }
