@@ -2,9 +2,7 @@ name: CI
 
 on:
   push:
-    branches:
-      - '**'
-    # ignore main as it has its own workflow
+    # run on all but main - it has its own workflow
     branches-ignore:
       - 'main'
 
