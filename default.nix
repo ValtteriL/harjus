@@ -20,6 +20,7 @@ let
       LC_ALL = "C";
       ERL_AFLAGS = "-kernel shell_history enabled -enable-feature maybe_expr";
       PROPCHECK_VERBOSE = "1"; # print exceptions in propcheck
+      AWS_PROFILE="137068223640_AdministratorAccess";
 
       # packages to be installed in env
       packages = with pkgs; [
