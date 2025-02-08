@@ -28,6 +28,7 @@ let
         mix2nix
         cowsay
 	terraform
+	awscli2
       ];
 
       # this is executed when shell entered
