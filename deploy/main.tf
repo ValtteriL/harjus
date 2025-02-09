@@ -10,7 +10,7 @@ terraform {
 }
 
 resource "aws_ecr_repository" "ecr_repository" {
-  name = "harjus-ecr-repository"
+  name = "harjus"
 }
 
 
@@ -79,26 +79,32 @@ resource "aws_ecs_capacity_provider" "ecs_cap_provider" {
 resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
   cluster_name       = aws_ecs_cluster.ecs_cluster.name
   capacity_providers = [aws_ecs_capacity_provider.ecs_cap_provider.name]
+
+  default_capacity_provider_strategy {
+    base              = 1
+    weight            = 100
+    capacity_provider = aws_ecs_capacity_provider.ecs_cap_provider.name
+  }
 }
 
 resource "aws_ecs_task_definition" "ecs_td" {
-  family = "harjus"
+  family                   = "harjus"
+  requires_compatibilities = ["EC2"]
   container_definitions = jsonencode([
     {
-      name      = "harjus"
-      image     = "${aws_ecr_repository.ecr_repository.repository_url}:${var.image_tag}"
-      essential = true
-      secrets = [
+      name              = "harjus"
+      image             = "${aws_ecr_repository.ecr_repository.repository_url}:${var.image_tag}"
+      essential         = true
+      memoryReservation = 256
+      environment = [
         {
           name      = "BINANCE_API_KEY"
-          valueFrom = aws_secretsmanager_secret.binance_ed25519_api_key.arn
+          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_api_key.secret_string
         },
         {
           name      = "BINANCE_PRIVATE_KEY"
-          valueFrom = aws_secretsmanager_secret.binance_ed25519_private_key.arn
-        }
-      ]
-      environment = [
+          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_private_key.secret_string
+        },
         {
           name  = "NUMBER_OF_TRADERS"
           value = "${tostring(var.number_of_traders)}"
@@ -163,6 +169,17 @@ resource "aws_ecs_task_definition" "ecs_td" {
     }
   ])
 
+}
+
+resource "aws_ecs_service" "ecs_service" {
+  name            = "harjus"
+  cluster         = aws_ecs_cluster.ecs_cluster.id
+  task_definition = aws_ecs_task_definition.ecs_td.arn
+  desired_count   = 1
+  capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.ecs_cap_provider.name
+  }
+  depends_on = [aws_ecs_cluster_capacity_providers.ecs_cluster_capacity_providers]
 }
 
 # end ECS
