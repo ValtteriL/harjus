@@ -81,14 +81,89 @@ resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
   capacity_providers = [aws_ecs_capacity_provider.ecs_cap_provider.name]
 }
 
+resource "aws_ecs_task_definition" "ecs_td" {
+  family = "harjus"
+  container_definitions = jsonencode([
+    {
+      name      = "harjus"
+      image     = "${aws_ecr_repository.ecr_repository.repository_url}:${var.image_tag}"
+      essential = true
+      secrets = [
+        {
+          name      = "BINANCE_API_KEY"
+          valueFrom = aws_secretsmanager_secret.binance_ed25519_api_key.arn
+        },
+        {
+          name      = "BINANCE_PRIVATE_KEY"
+          valueFrom = aws_secretsmanager_secret.binance_ed25519_private_key.arn
+        }
+      ]
+      environment = [
+        {
+          name  = "NUMBER_OF_TRADERS"
+          value = "${tostring(var.number_of_traders)}"
+        },
+        {
+          name  = "MAX_TRADING_PATH_LENGTH"
+          value = "${tostring(var.max_trading_path_length)}"
+        },
+        {
+          name  = "START_SYMBOLS"
+          value = var.start_symbols
+        },
+        {
+          name  = "MIN_PROFIT_PERCENTAGE"
+          value = "${tostring(var.min_profit_percentage)}"
+        },
+        {
+          name  = "COMMISSION"
+          value = "${tostring(var.commission)}"
+        },
+        {
+          name  = "MIN_CAPACITY"
+          value = "${tostring(var.min_capacity)}"
+        },
+        {
+          name  = "BINANCE_WEBSOCKET_STREAM_URI"
+          value = var.binance_websocket_stream_uri
+        },
+        {
+          name  = "BINANCE_REST_API_URI"
+          value = var.binance_rest_api_uri
+        },
+        {
+          name  = "BINANCE_FIX_API_HOSTNAME"
+          value = var.binance_fix_api_hostname
+        },
+        {
+          name  = "BINANCE_FIX_API_PORT"
+          value = var.binance_fix_api_port
+        },
+        {
+          name  = "BINANCE_MARKET_DATA_API_URI"
+          value = var.binance_market_data_api_uri
+        },
+        {
+          name  = "VERBOSITY"
+          value = var.verbosity
+        },
+        {
+          name  = "MARKET_DATA_EXCHANGE"
+          value = var.market_data_exchange
+        },
+        {
+          name  = "PRICE_STREAMER_EXCHANGE"
+          value = var.price_streamer_exchange
+        },
+        {
+          name  = "TRADE_CLIENT_EXCHANGE"
+          value = var.trade_client_exchange
+        }
+      ]
+    }
+  ])
+
+}
+
 # end ECS
 
-# module "ecs_service" {
-#   source                 = "./ecs_service.tf"
-#   service_name           = var.service_name
-#   task_definition_family = var.task_definition_family
-#   container_name         = var.container_name
-#   image_tag              = var.image_tag
-#   subnets                = var.subnets
-#   security_groups        = var.security_groups
-# }
