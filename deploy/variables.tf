@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "The AWS region to deploy resources in"
   type        = string
-  default     = "eu-north-1"
+  default     = "ap-northeast-1"
 }
 
 variable "binance_ed25519_api_key" {
