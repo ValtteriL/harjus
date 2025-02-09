@@ -34,14 +34,54 @@ resource "aws_secretsmanager_secret_version" "binance_ed25519_private_key" {
   secret_string = var.binance_ed25519_private_key
 }
 
+# begin ECS
 
-# resource "aws_ecs_cluster" "qa_cluster" {
-#   name = var.cluster_name
-# }
+resource "aws_ecs_cluster" "ecs_cluster" {
+  name = "harjus"
 
-# resource "aws_ecr_repository" "qa_repository" {
-#   name = var.repository_name
-# }
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+
+resource "aws_autoscaling_group" "ecs_asg" {
+  name_prefix        = "harjus-asg"
+  max_size           = 1
+  min_size           = 1
+  desired_capacity   = 1
+  availability_zones = ["${var.aws_region}a"]
+  launch_template {
+    id      = aws_launch_template.ecs_lt.id
+    version = "$Latest"
+  }
+}
+
+resource "aws_launch_template" "ecs_lt" {
+  name_prefix = "harjus-ecs-lt"
+  # Amazon ECS-optimized Amazon Linux 2023 AMI
+  # source: https://github.com/aws/amazon-ecs-ami/releases
+  # al2023-ami-ecs-hvm-2023.0.20250129-kernel-6.1-x86_64
+  image_id      = "ami-029678e4f0fddbf9b"
+  instance_type = "t3a.small"
+}
+
+resource "aws_ecs_capacity_provider" "ecs_cap_provider" {
+  name = "harjus-cap-provider"
+  auto_scaling_group_provider {
+    auto_scaling_group_arn = aws_autoscaling_group.ecs_asg.arn
+    managed_scaling {
+      status = "ENABLED"
+    }
+  }
+}
+
+resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
+  cluster_name       = aws_ecs_cluster.ecs_cluster.name
+  capacity_providers = [aws_ecs_capacity_provider.ecs_cap_provider.name]
+}
+
+# end ECS
 
 # module "ecs_service" {
 #   source                 = "./ecs_service.tf"
