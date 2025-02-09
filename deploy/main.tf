@@ -13,6 +13,28 @@ resource "aws_ecr_repository" "ecr_repository" {
   name = "harjus-ecr-repository"
 }
 
+
+resource "aws_secretsmanager_secret" "binance_ed25519_api_key" {
+  name_prefix = "harjus-binance-api-key"
+  description = "Binance API key for FIX API"
+}
+
+resource "aws_secretsmanager_secret_version" "binance_ed25519_api_key" {
+  secret_id     = aws_secretsmanager_secret.binance_ed25519_api_key.id
+  secret_string = var.binance_ed25519_api_key
+}
+
+resource "aws_secretsmanager_secret" "binance_ed25519_private_key" {
+  name_prefix = "harjus-binance-api-private-key"
+  description = "Binance ED25519 private key for FIX API"
+}
+
+resource "aws_secretsmanager_secret_version" "binance_ed25519_private_key" {
+  secret_id     = aws_secretsmanager_secret.binance_ed25519_private_key.id
+  secret_string = var.binance_ed25519_private_key
+}
+
+
 # resource "aws_ecs_cluster" "qa_cluster" {
 #   name = var.cluster_name
 # }

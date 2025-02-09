@@ -128,5 +128,5 @@ Set the output from into s3 backend in deploy
 
 ```bash
 terraform -chdir=deploy init
-terraform -chdir=deploy apply
+terraform -chdir=deploy apply -var-file="qa.tfvars"
 ```
