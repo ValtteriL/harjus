@@ -50,6 +50,7 @@ resource "aws_autoscaling_group" "ecs_asg" {
   max_size           = 1
   min_size           = 1
   desired_capacity   = 1
+  health_check_type  = "EC2"
   availability_zones = ["${var.aws_region}a"]
   launch_template {
     id      = aws_launch_template.ecs_lt.id
@@ -69,9 +70,11 @@ resource "aws_launch_template" "ecs_lt" {
 resource "aws_ecs_capacity_provider" "ecs_cap_provider" {
   name = "harjus-cap-provider"
   auto_scaling_group_provider {
-    auto_scaling_group_arn = aws_autoscaling_group.ecs_asg.arn
+    auto_scaling_group_arn         = aws_autoscaling_group.ecs_asg.arn
+    managed_termination_protection = "ENABLED"
     managed_scaling {
-      status = "ENABLED"
+      status          = "ENABLED"
+      target_capacity = 100
     }
   }
 }
@@ -79,12 +82,6 @@ resource "aws_ecs_capacity_provider" "ecs_cap_provider" {
 resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
   cluster_name       = aws_ecs_cluster.ecs_cluster.name
   capacity_providers = [aws_ecs_capacity_provider.ecs_cap_provider.name]
-
-  default_capacity_provider_strategy {
-    base              = 1
-    weight            = 100
-    capacity_provider = aws_ecs_capacity_provider.ecs_cap_provider.name
-  }
 }
 
 resource "aws_ecs_task_definition" "ecs_td" {
@@ -178,6 +175,7 @@ resource "aws_ecs_service" "ecs_service" {
   desired_count   = 1
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.ecs_cap_provider.name
+    weight            = 100
   }
   depends_on = [aws_ecs_cluster_capacity_providers.ecs_cluster_capacity_providers]
 }
