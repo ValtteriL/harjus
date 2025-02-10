@@ -8,6 +8,10 @@ on:
     tags: releases/[1-9]+.[0-9]+.[0-9]+
     branches: main
 
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
 jobs:
   quality:
     uses: ./.github/workflows/quality.yml
@@ -17,37 +21,40 @@ jobs:
     needs: [quality]
 
     steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::137068223640:role/GithubAction
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
       - name: Checkout code
         uses: actions/checkout@v2
 
       - name: Set up Nix
         uses: cachix/install-nix-action@v14
 
-      - name: Activate nix-shell and build project
-        run: |
-          nix-shell -A devEnv --run "mix local.hex --force && mix deps.get"
-          nix-build
-
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Activate nix-shell, build, push image to ECR
         env:
           ECR_REGISTRY: 137068223640.dkr.ecr.ap-northeast-1.amazonaws.com
           ECR_REPOSITORY: harjus
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          nix-shell -A devEnv --run "mix local.hex --force && mix deps.get"
+
+          nix-build
+          IMAGE=`docker image load -q < result-2|awk '{print $3}'`
+          
+          docker tag $IMAGE $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      # - name: Deploy to ECS
-      #   if: startsWith(github.ref, 'refs/tags/releases/')
-      #   env:
-      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     TF_VAR_image_tag: ${{ github.sha }}
-      #   run: |
-      #     cd deploy
-      #     terraform -chdir=deploy init
-      #     terraform -chdir=deploy apply -auto-approve
+      - name: Deploy to ECS
+        if: startsWith(github.ref, 'refs/tags/releases/')
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          terraform -chdir=deploy init
+          terraform -chdir=deploy apply -var-file="qa.tfvars" -var "image_tag=$IMAGE_TAG" -auto-approve
