@@ -92,6 +92,8 @@ resource "aws_ecs_task_definition" "ecs_td" {
       name              = "harjus"
       image             = "${aws_ecr_repository.ecr_repository.repository_url}:${var.image_tag}"
       essential         = true
+      startTimeout      = 60
+      stopTimeout       = 60
       memoryReservation = 256
       environment = [
         {
@@ -162,7 +164,14 @@ resource "aws_ecs_task_definition" "ecs_td" {
           name  = "TRADE_CLIENT_EXCHANGE"
           value = var.trade_client_exchange
         }
-      ]
+      ],
+      "healthCheck" : {
+        "command" : ["CMD-SHELL", "harjus pid"],
+        "interval" : 30,
+        "timeout" : 2,
+        "retries" : 3,
+        "startPeriod" : 30
+      }
     }
   ])
 
