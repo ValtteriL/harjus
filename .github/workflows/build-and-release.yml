@@ -42,14 +42,26 @@ jobs:
           ECR_REGISTRY: 137068223640.dkr.ecr.ap-northeast-1.amazonaws.com
           ECR_REPOSITORY: harjus
           IMAGE_TAG: ${{ github.sha }}
+          RELEASE_VERSION: ${{ github.ref_name }}
         run: |
           nix-shell -A devEnv --run "mix local.hex --force && mix deps.get"
 
           nix-build
           IMAGE=`docker image load -q < result-2|awk '{print $3}'`
           
-          docker tag $IMAGE $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker tag $IMAGE $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }}
+
+      - name: Tag and Push Release Version
+        if: startsWith(github.ref, 'refs/tags/releases/')
+        env:
+          ECR_REGISTRY: 137068223640.dkr.ecr.ap-northeast-1.amazonaws.com
+          ECR_REPOSITORY: harjus
+          IMAGE_TAG: ${{ github.sha }}
+          RELEASE_VERSION: ${{ github.ref_name }}
+        run: |
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.sha }} $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.ref_name }}
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:${{ github.ref_name }}
 
       - name: Deploy to ECS
         if: startsWith(github.ref, 'refs/tags/releases/')
