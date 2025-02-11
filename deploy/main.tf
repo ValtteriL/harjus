@@ -181,7 +181,7 @@ resource "aws_ecs_service" "ecs_service" {
   name            = "harjus"
   cluster         = aws_ecs_cluster.ecs_cluster.id
   task_definition = aws_ecs_task_definition.ecs_td.arn
-  desired_count   = 1
+  desired_count   = 0
   capacity_provider_strategy {
     capacity_provider = aws_ecs_capacity_provider.ecs_cap_provider.name
     weight            = 100
@@ -193,6 +193,10 @@ resource "aws_ecs_service" "ecs_service" {
       enable   = true
       rollback = true
     }
+  }
+  deployment_configuration {
+    maximum_percent         = 100
+    minimum_healthy_percent = 0
   }
   depends_on = [aws_ecs_cluster_capacity_providers.ecs_cluster_capacity_providers]
 }
