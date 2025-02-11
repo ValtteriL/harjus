@@ -186,8 +186,15 @@ resource "aws_ecs_service" "ecs_service" {
     capacity_provider = aws_ecs_capacity_provider.ecs_cap_provider.name
     weight            = 100
   }
+  deployment_maximum_percent = 100
+  deployment_controller {
+    type = "ECS"
+    circuit_breaker {
+      enable   = true
+      rollback = true
+    }
+  }
   depends_on = [aws_ecs_cluster_capacity_providers.ecs_cluster_capacity_providers]
 }
 
 # end ECS
-
