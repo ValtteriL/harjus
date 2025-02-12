@@ -37,24 +37,29 @@ jobs:
       - name: Set up Nix
         uses: cachix/install-nix-action@v14
 
-      - name: Activate nix-shell, build, push image to ECR
+      - name: Build image
+        run: |
+          nix-shell -A devEnv --run "mix local.hex --force && mix deps.get"
+          nix-build
+
+      - name: Push hash-tagged image to ECR
         env:
           ECR_REGISTRY: 137068223640.dkr.ecr.ap-northeast-1.amazonaws.com
           ECR_REPOSITORY: harjus
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          nix-shell -A devEnv --run "mix local.hex --force && mix deps.get"
-
-          nix-build
           IMAGE=`docker image load -q < result-2|awk '{print $3}'`
           
           docker tag $IMAGE $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      - name: Deploy to ECS
+      - name: Push release-tagged image to ECR
         if: startsWith(github.ref, 'refs/tags/releases/')
         env:
+          ECR_REGISTRY: 137068223640.dkr.ecr.ap-northeast-1.amazonaws.com
+          ECR_REPOSITORY: harjus
           IMAGE_TAG: ${{ github.sha }}
+          RELEASE_VERSION: ${{ github.ref_name }}
         run: |
-          terraform -chdir=deploy init
-          terraform -chdir=deploy apply -var-file="qa.tfvars" -var "image_tag=$IMAGE_TAG" -auto-approve
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$RELEASE_VERSION
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$RELEASE_VERSION

@@ -46,9 +46,11 @@ mix quality
 mix quality.ci
 ```
 
-## Deployment
+### Automatic tests
 
-### Build
+The quality.ci is run by CI/CD **Quality Pipeline** on push.
+
+## Build
 
 Build harjus and package into a container
 
@@ -59,34 +61,12 @@ nix-build
 # container then available at ./result-2
 ```
 
-### Running
+### Automatic builds
 
-```bash
-IMAGE=`docker image load -q < result-2|awk '{print $3}'`
-docker container run --rm -it --env-file .env $IMAGE
+Container images are build automatically by CI/CD **Build Pipeline** and pushed to registry. If the quality pipeline succeeds and the push is to the main branch, a build is made and its pushed to registry with git hash tag.
+The image is additionally pushed with release version tag if release tag pushed in git.
 
-# can also run shell inside container
-docker container run --rm -it $IMAGE /bin/sh
-
-# push to k8s registry
-docker image push $IMAGE
-
-# run in k8s
-kubectl run -i -t harjus --image=$IMAGE --restart=Never --env "START_SYMBOLS=BNB"
-```
-
-## Setting up Terraform
-
-1. Configure AWS credentials: Ensure that your AWS credentials are configured on your machine. You can do this by setting the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables, or by using the AWS CLI to configure your credentials.
-
-2. Initialize Terraform: Navigate to the `deploy` directory and run the following command to initialize Terraform:
-
-```bash
-cd deploy
-terraform init
-```
-
-## Deploying to QA via Git Tags
+Pushing with release tag:
 
 1. Create a Git tag: Create a Git tag that matches the pattern `releases/[1-9]+.[0-9]+.[0-9]+`. For example:
 
@@ -95,27 +75,11 @@ git tag releases/1.0.0
 git push origin releases/1.0.0
 ```
 
-2. GitHub Actions will automatically trigger the `build-and-release.yml` workflow, which will build and deploy the application to the QA environment.
+## Deployment
 
-## Pipeline Overview
+Deployment is done manually from local shell.
 
-1. **Quality Pipeline**: Runs all tests on push to any branch.
-2. **Build and Release Pipeline**: If the quality pipeline succeeds and the push is to the main branch, a build is made. Additionally the build is deployed to QA if the release tag is used.
-
-## Performing Rolling Updates of ECS with the Newly Built Image
-
-1. Update the ECS service: After the new image is built and pushed to the ECR repository, update the ECS service to use the new image. This can be done by running the following command:
-
-```bash
-cd deploy
-terraform apply -auto-approve
-```
-
-2. Verify the update: Check the ECS service in the AWS Management Console to ensure that the new task definition is being used and that the rolling update is in progress.
-
-## Setup
-
-### Create Terraform backend in S3
+### Prerequisite: Create Terraform backend in S3
 
 ```bash
 terraform -chdir=deploy/backend init
@@ -124,9 +88,9 @@ terraform -chdir=deploy/backend apply
 
 Set the output from into s3 backend in deploy
 
-### Setup infra
+### Deploy
 
 ```bash
 terraform -chdir=deploy init
-terraform -chdir=deploy apply -var-file="qa.tfvars"
+terraform -chdir=deploy apply -var-file="$env.tfvars" -var "image_tag=$image_tag_to_deploy"
 ```
