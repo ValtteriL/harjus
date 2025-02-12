@@ -1,6 +1,7 @@
 #!/bin/bash
 # determine ip for hostname with lowest rtt
-# requires `dig` and `nping`
+# requires `dig` and `nping` - dig already installed on amazon linux
+# sudo dnf install nmap
 # usage: cat hosts.txt | sudo ./optimize-resolve.sh <number of nping probes>
 # hosts.txt contains hostname and port separated by space
 
