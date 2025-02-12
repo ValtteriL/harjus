@@ -69,3 +69,4 @@ terraform.rc
 .env
 result
 result-*
+*.pem

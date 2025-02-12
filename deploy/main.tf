@@ -34,6 +34,48 @@ resource "aws_secretsmanager_secret_version" "binance_ed25519_private_key" {
   secret_string = var.binance_ed25519_private_key
 }
 
+# resources required to SSH into the EC2 instance(s)
+
+# allow ingress traffic to port 22
+# allow all egress traffic
+resource "aws_security_group" "security" {
+  name = "allow_ingress_ssh_egress_all"
+
+  ingress {
+    cidr_blocks = [
+      "0.0.0.0/0"
+    ]
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = -1
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "tls_private_key" "private_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "ec_key" {
+  key_name_prefix = "harjus-ec2-key"
+  public_key      = tls_private_key.private_key.public_key_openssh
+}
+
+resource "local_sensitive_file" "ec_key_file" {
+  content         = tls_private_key.private_key.private_key_pem
+  filename        = "harjus-ec2-key.pem"
+  file_permission = "0400"
+}
+
+# end ssh resources
+
 # begin ECS
 
 resource "aws_ecs_cluster" "ecs_cluster" {
@@ -63,8 +105,10 @@ resource "aws_launch_template" "ecs_lt" {
   # Amazon ECS-optimized Amazon Linux 2023 AMI
   # source: https://github.com/aws/amazon-ecs-ami/releases
   # al2023-ami-ecs-hvm-2023.0.20250129-kernel-6.1-x86_64
-  image_id      = "ami-029678e4f0fddbf9b"
-  instance_type = "t3a.small"
+  image_id             = "ami-029678e4f0fddbf9b"
+  instance_type        = "t3a.small"
+  security_group_names = [aws_security_group.security.name]
+  key_name             = aws_key_pair.ec_key.key_name
 }
 
 resource "aws_ecs_capacity_provider" "ecs_cap_provider" {
@@ -186,18 +230,18 @@ resource "aws_ecs_service" "ecs_service" {
     capacity_provider = aws_ecs_capacity_provider.ecs_cap_provider.name
     weight            = 100
   }
-  deployment_maximum_percent = 100
+  deployment_maximum_percent         = 100
+  deployment_minimum_healthy_percent = 0
+
   deployment_controller {
     type = "ECS"
-    circuit_breaker {
-      enable   = true
-      rollback = true
-    }
   }
-  deployment_configuration {
-    maximum_percent         = 100
-    minimum_healthy_percent = 0
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = true
   }
+
   depends_on = [aws_ecs_cluster_capacity_providers.ecs_cluster_capacity_providers]
 }
 
