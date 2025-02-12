@@ -2,7 +2,6 @@
 
 use strict;
 use warnings;
-use Net::DNS;
 use IPC::Open3;
 use Symbol 'gensym';
 
@@ -17,16 +16,13 @@ while (<STDIN>) {
     push @{$hosts{$hostname}}, $port;
 }
 
-# Resolve hostnames to IPs
+# Resolve hostnames to IPs using dig command
 my %resolved_hosts;
-my $resolver = Net::DNS::Resolver->new;
 foreach my $hostname (keys %hosts) {
-    my $query = $resolver->search($hostname);
-    if ($query) {
-        foreach my $rr ($query->answer) {
-            next unless $rr->type eq "A";
-            push @{$resolved_hosts{$hostname}}, $rr->address;
-        }
+    my $cmd = "dig +short $hostname";
+    my $output = `$cmd`;
+    foreach my $line (split /\n/, $output) {
+        push @{$resolved_hosts{$hostname}}, $line if $line =~ /^\d+\.\d+\.\d+\.\d+$/;
     }
 }
 
