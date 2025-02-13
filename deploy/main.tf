@@ -239,10 +239,12 @@ resource "aws_ecs_task_definition" "ecs_td" {
 }
 
 resource "aws_ecs_service" "ecs_service" {
-  name                               = "harjus"
-  cluster                            = aws_ecs_cluster.ecs_cluster.id
-  task_definition                    = aws_ecs_task_definition.ecs_td.arn
-  desired_count                      = 0
+  name            = "harjus"
+  cluster         = aws_ecs_cluster.ecs_cluster.id
+  task_definition = aws_ecs_task_definition.ecs_td.arn
+
+  # deploy only one instance of the task, keep at most one running
+  desired_count                      = 1
   deployment_maximum_percent         = 100
   deployment_minimum_healthy_percent = 0
 
