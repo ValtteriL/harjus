@@ -94,3 +94,11 @@ Set the output from into s3 backend in deploy
 terraform -chdir=deploy init
 terraform -chdir=deploy apply -var-file="$env.tfvars" -var "image_tag=$image_tag_to_deploy"
 ```
+
+## Debugging
+
+### Access container runner
+
+```bash
+ssh -i deploy/harjus-ec2-key.pem ec2-user@$(terraform -chdir=deploy output ecs_instance_ip|sed 's/"//g')
+```

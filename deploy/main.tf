@@ -87,45 +87,58 @@ resource "aws_ecs_cluster" "ecs_cluster" {
   }
 }
 
-resource "aws_autoscaling_group" "ecs_asg" {
-  name_prefix        = "harjus-asg"
-  max_size           = 1
-  min_size           = 1
-  desired_capacity   = 1
-  health_check_type  = "EC2"
-  availability_zones = ["${var.aws_region}a"]
-  launch_template {
-    id      = aws_launch_template.ecs_lt.id
-    version = "$Latest"
-  }
+resource "aws_iam_role" "ecsInstanceRole" {
+  name               = "ecsInstanceRole"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
 }
 
-resource "aws_launch_template" "ecs_lt" {
-  name_prefix = "harjus-ecs-lt"
+resource "aws_iam_role_policy_attachment" "ecsInstanceRole" {
+  role       = aws_iam_role.ecsInstanceRole.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+}
+
+resource "aws_iam_instance_profile" "iam_instance_profile" {
+  name = "ecsInstanceProfile"
+  role = aws_iam_role.ecsInstanceRole.name
+}
+
+resource "aws_instance" "ecs_instance" {
+
   # Amazon ECS-optimized Amazon Linux 2023 AMI
   # source: https://github.com/aws/amazon-ecs-ami/releases
   # al2023-ami-ecs-hvm-2023.0.20250129-kernel-6.1-x86_64
-  image_id             = "ami-029678e4f0fddbf9b"
-  instance_type        = "t3a.small"
-  security_group_names = [aws_security_group.security.name]
-  key_name             = aws_key_pair.ec_key.key_name
-}
+  # this joins the given ECS cluster automatically at startup
+  ami = "ami-029678e4f0fddbf9b"
 
-resource "aws_ecs_capacity_provider" "ecs_cap_provider" {
-  name = "harjus-cap-provider"
-  auto_scaling_group_provider {
-    auto_scaling_group_arn         = aws_autoscaling_group.ecs_asg.arn
-    managed_termination_protection = "ENABLED"
-    managed_scaling {
-      status          = "ENABLED"
-      target_capacity = 100
-    }
+  instance_type   = "t3a.small"
+  key_name        = aws_key_pair.ec_key.key_name
+  security_groups = [aws_security_group.security.name]
+  user_data       = <<-EOF
+                      #!/bin/bash
+                      echo ECS_CLUSTER=${aws_ecs_cluster.ecs_cluster.name} >> /etc/ecs/ecs.config
+                      EOF
+
+  user_data_replace_on_change = true
+
+  iam_instance_profile = aws_iam_instance_profile.iam_instance_profile.name # required to be able to join ECS
+
+  tags = {
+    Name = "harjus-ecs-instance"
   }
-}
-
-resource "aws_ecs_cluster_capacity_providers" "ecs_cluster_capacity_providers" {
-  cluster_name       = aws_ecs_cluster.ecs_cluster.name
-  capacity_providers = [aws_ecs_capacity_provider.ecs_cap_provider.name]
 }
 
 resource "aws_ecs_task_definition" "ecs_td" {
@@ -207,6 +220,10 @@ resource "aws_ecs_task_definition" "ecs_td" {
         {
           name  = "TRADE_CLIENT_EXCHANGE"
           value = var.trade_client_exchange
+        },
+        {
+          name  = "BALANCE_EXCHANGE"
+          value = var.balance_exchange
         }
       ],
       "healthCheck" : {
@@ -222,16 +239,14 @@ resource "aws_ecs_task_definition" "ecs_td" {
 }
 
 resource "aws_ecs_service" "ecs_service" {
-  name            = "harjus"
-  cluster         = aws_ecs_cluster.ecs_cluster.id
-  task_definition = aws_ecs_task_definition.ecs_td.arn
-  desired_count   = 0
-  capacity_provider_strategy {
-    capacity_provider = aws_ecs_capacity_provider.ecs_cap_provider.name
-    weight            = 100
-  }
+  name                               = "harjus"
+  cluster                            = aws_ecs_cluster.ecs_cluster.id
+  task_definition                    = aws_ecs_task_definition.ecs_td.arn
+  desired_count                      = 0
   deployment_maximum_percent         = 100
   deployment_minimum_healthy_percent = 0
+
+  launch_type = "EC2"
 
   deployment_controller {
     type = "ECS"
@@ -241,8 +256,6 @@ resource "aws_ecs_service" "ecs_service" {
     enable   = true
     rollback = true
   }
-
-  depends_on = [aws_ecs_cluster_capacity_providers.ecs_cluster_capacity_providers]
 }
 
 # end ECS

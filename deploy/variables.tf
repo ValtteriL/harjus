@@ -101,3 +101,9 @@ variable "trade_client_exchange" {
   description = "The exchange module to use in TradeClient"
   type        = string
 }
+
+variable "balance_exchange" {
+  description = "The exchange module to use in Balance"
+  type        = string
+}
+
