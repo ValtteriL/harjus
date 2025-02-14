@@ -232,6 +232,14 @@ resource "aws_ecs_task_definition" "ecs_td" {
         "timeout" : 2,
         "retries" : 3,
         "startPeriod" : 30
+      },
+      "logConfiguration" : {
+        "logDriver" : "awslogs",
+        "options" : {
+          "awslogs-group" : "/ecs/harjus",
+          "awslogs-region" : var.aws_region,
+          "awslogs-stream-prefix" : "ecs"
+        }
       }
     }
   ])
@@ -257,6 +265,15 @@ resource "aws_ecs_service" "ecs_service" {
   deployment_circuit_breaker {
     enable   = true
     rollback = true
+  }
+
+  log_configuration {
+    log_driver = "awslogs"
+    options = {
+      awslogs-group         = "/ecs/harjus"
+      awslogs-region        = var.aws_region
+      awslogs-stream-prefix = "ecs"
+    }
   }
 }
 
