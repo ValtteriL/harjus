@@ -107,3 +107,8 @@ variable "balance_exchange" {
   type        = string
 }
 
+variable "prometheus_metrics_port" {
+  description = "The port number to fetch Prometheus metrics from"
+  type        = number
+  default     = 3333
+}

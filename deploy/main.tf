@@ -247,9 +247,34 @@ resource "aws_ecs_task_definition" "ecs_td" {
           "mode" : "non-blocking"
         }
       }
+    },
+    {
+      name              = "prometheus_metrics_agent"
+      image             = "amazon/cloudwatch-agent:latest"
+      essential         = true
+      memoryReservation = 128
+      environment = [
+        {
+          name  = "PROMETHEUS_METRICS_PORT"
+          value = "${tostring(var.prometheus_metrics_port)}"
+        }
+      ],
+      mountPoints = [
+        {
+          sourceVolume  = "cwagentconfig"
+          containerPath = "/etc/cwagentconfig"
+          readOnly      = true
+        }
+      ]
     }
   ])
 
+  volume {
+    name = "cwagentconfig"
+    host_path {
+      path = "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json"
+    }
+  }
 }
 
 resource "aws_ecs_service" "ecs_service" {
