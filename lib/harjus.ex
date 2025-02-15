@@ -38,9 +38,13 @@ defmodule Harjus do
         # erlang VM telemetry poller
         {:telemetry_poller, measurements: [], period: :timer.seconds(10)},
 
-        # prometheus metric reporter
-        {TelemetryMetricsCloudwatch,
-         [metrics: Metrics.metrics(), namespace: "Harjus", push_interval: 30_000]},
+        # telemetry reporter
+        if Application.fetch_env!(:harjus, :console_telemetry) do
+          {Telemetry.Metrics.ConsoleReporter, [metrics: Metrics.metrics()]}
+        else
+          {TelemetryMetricsCloudwatch,
+           [metrics: Metrics.metrics(), namespace: "Harjus", push_interval: 30_000]}
+        end,
 
         # utilities
         {Balance, []},
