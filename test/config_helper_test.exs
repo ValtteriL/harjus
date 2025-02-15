@@ -44,6 +44,12 @@ defmodule ConfigHelperTest do
     assert ConfigHelper.get_env(env_name, :no_default, :list) == ["a", "b", "c"]
   end
 
+  test "parses empty list" do
+    env_name = "test_env"
+    System.put_env(env_name, "")
+    assert ConfigHelper.get_env(env_name, :no_default, :list) == []
+  end
+
   test "parses string" do
     env_name = "test_env"
     System.put_env(env_name, "hello")
