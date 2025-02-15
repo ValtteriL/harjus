@@ -4,7 +4,7 @@ Binance arbitrage bot.
 
 Captures triangular arbitrage opportunities on Spot trading.
 
-![ci workflow](https://github.com/ValtteriL/harjus/actions/workflows/ci.yml/badge.svg)
+![build workflow](https://github.com/ValtteriL/harjus/actions/workflows/build.yml/badge.svg)
 
 ## Development
 
