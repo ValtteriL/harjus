@@ -13,7 +13,7 @@ defmodule Metrics.Impl do
   defp trade_report_delta, do: [:harjus, :trader, :trade, :report]
 
   defp counter_measurement, do: :count
-  defp distribution_measurement, do: :delta
+  defp summary_measurement, do: :delta
 
   @spec metrics() :: [
           Telemetry.Metrics.Counter.t()
@@ -55,11 +55,10 @@ defmodule Metrics.Impl do
         measurement: counter_measurement(),
         description: "Number of winning trades"
       ),
-      distribution(trade_report_delta(),
-        measurement: distribution_measurement(),
+      summary(trade_report_delta(),
+        measurement: summary_measurement(),
         tags: [:asset],
-        description: "Change in asset balance after execution",
-        reporter_options: [buckets: [0.05, 0.1, 0.2, 0.5, 1]]
+        description: "Change in asset balance after execution"
       ),
 
       # VM Metrics
@@ -109,7 +108,7 @@ defmodule Metrics.Impl do
   def report_trade_report_delta(delta_map) do
     delta_map
     |> Enum.each(fn {asset, delta} ->
-      :telemetry.execute(trade_report_delta(), %{distribution_measurement() => delta}, %{
+      :telemetry.execute(trade_report_delta(), %{summary_measurement() => delta}, %{
         asset: asset
       })
     end)
