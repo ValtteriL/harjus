@@ -31,3 +31,6 @@ config :harjus,
 
 # configure logger verbosity
 config :logger, level: ConfigHelper.get_env("VERBOSITY", :debug, :atom)
+
+# configure region for ex_aws
+config :ex_aws, region: ConfigHelper.get_env("AWS_REGION", "", :str)

@@ -164,6 +164,10 @@ resource "aws_ecs_task_definition" "ecs_td" {
       memoryReservation = 256
       environment = [
         {
+          name  = "AWS_REGION"
+          value = var.aws_region
+        },
+        {
           name      = "BINANCE_API_KEY"
           valueFrom = aws_secretsmanager_secret_version.binance_ed25519_api_key.secret_string
         },
