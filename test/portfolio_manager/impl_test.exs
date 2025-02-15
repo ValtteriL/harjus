@@ -76,9 +76,11 @@ defmodule PortfolioManager.ImplTest do
           }
         })
 
+      bigger_balance = Decimal.max(btc_price, eth_price)
+
       opportunities = [
-        _btc = opportunity("USDT", "BTC", Decimal.new(1), Decimal.new(100)),
-        _eth = opportunity("USDT", "ETH", Decimal.new(1), Decimal.new(100))
+        _btc = opportunity("USDT", "BTC", Decimal.new(1), bigger_balance),
+        _eth = opportunity("USDT", "ETH", Decimal.new(1), bigger_balance)
       ]
 
       opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)
