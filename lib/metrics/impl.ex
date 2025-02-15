@@ -23,39 +23,55 @@ defmodule Metrics.Impl do
   def metrics do
     [
       # market data metrics
-      last_value(trading_symbol_count(),
+      last_value(
+        trading_symbol_count(),
+        event_name: trading_symbol_count(),
         measurement: counter_measurement(),
         description: "Number of trading symbols available in exchange"
       ),
-      last_value(trading_path_count(),
+      last_value(
+        trading_path_count(),
+        event_name: trading_path_count(),
         measurement: counter_measurement(),
         description: "Number of possible trading paths"
       ),
 
       # price streamer metrics
-      counter(price_update(),
+      counter(
+        price_update(),
+        event_name: price_update(),
         measurement: counter_measurement(),
         description: "Number of price updates received"
       ),
 
       # trader metrics
-      counter(trade_executed(),
+      counter(
+        trade_executed(),
+        event_name: trade_executed(),
         measurement: counter_measurement(),
         description: "Number of trades executed"
       ),
-      counter(trade_attempted(),
+      counter(
+        trade_attempted(),
+        event_name: trade_attempted(),
         measurement: counter_measurement(),
         description: "Number of trades attempted"
       ),
-      counter(trade_losing(),
+      counter(
+        trade_losing(),
+        event_name: trade_losing(),
         measurement: counter_measurement(),
         description: "Number of losing trades"
       ),
-      counter(trade_winning(),
+      counter(
+        trade_winning(),
+        event_name: trade_winning(),
         measurement: counter_measurement(),
         description: "Number of winning trades"
       ),
-      summary(trade_report_delta(),
+      summary(
+        trade_report_delta(),
+        event_name: trade_report_delta(),
         measurement: summary_measurement(),
         tags: [:asset],
         description: "Change in asset balance after execution"
@@ -108,9 +124,13 @@ defmodule Metrics.Impl do
   def report_trade_report_delta(delta_map) do
     delta_map
     |> Enum.each(fn {asset, delta} ->
-      :telemetry.execute(trade_report_delta(), %{summary_measurement() => delta}, %{
-        asset: asset
-      })
+      :telemetry.execute(
+        trade_report_delta(),
+        %{summary_measurement() => Decimal.to_float(delta)},
+        %{
+          asset: asset
+        }
+      )
     end)
   end
 end
