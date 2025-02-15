@@ -466,3 +466,44 @@ resource "aws_cloudwatch_metric_alarm" "status_check" {
   threshold           = 1.0
   alarm_description   = "This alarm helps to monitor both system status checks and instance status checks."
 }
+
+# ECS recommended alarms https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Best_Practice_Recommended_Alarms_AWS_Services.html#ECS
+resource "aws_cloudwatch_metric_alarm" "ecs_cpu_reservation" {
+  alarm_name          = "ecs_cpu_reservation"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 5
+  datapoints_to_alarm = 5
+  metric_name         = "CPUReservation"
+  namespace           = "AWS/ECS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 80.0
+  alarm_description   = "This alarm helps to monitor cpu reservation of the cluster."
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_cpu_utilization" {
+  alarm_name          = "ecs_cpu_utilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 5
+  datapoints_to_alarm = 5
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 80.0
+  alarm_description   = "This alarm helps to monitor cpu utilization of the cluster."
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_memory_reservation" {
+  alarm_name          = "ecs_memory_reservation"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 5
+  datapoints_to_alarm = 5
+  metric_name         = "MemoryReservation"
+  namespace           = "AWS/ECS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 80.0
+  alarm_description   = "This alarm helps to monitor memory reservation of the cluster."
+}
+
