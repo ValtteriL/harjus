@@ -141,6 +141,11 @@ resource "aws_instance" "ecs_instance" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "log_group" {
+  name_prefix       = "harjus-ecs-logs"
+  retention_in_days = 7
+}
+
 resource "aws_ecs_task_definition" "ecs_td" {
   family                   = "harjus"
   requires_compatibilities = ["EC2"]
@@ -232,6 +237,15 @@ resource "aws_ecs_task_definition" "ecs_td" {
         "timeout" : 2,
         "retries" : 3,
         "startPeriod" : 30
+      },
+      "logConfiguration" : {
+        "logDriver" : "awslogs",
+        "options" : {
+          "awslogs-group" : aws_cloudwatch_log_group.log_group.name,
+          "awslogs-region" : var.aws_region,
+          "awslogs-stream-prefix" : "harjus",
+          "mode" : "non-blocking"
+        }
       }
     }
   ])
