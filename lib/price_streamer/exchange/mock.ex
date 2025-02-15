@@ -31,7 +31,7 @@ defmodule PriceStreamer.Exchange.Mock do
       bid_qty: Decimal.new(bid_qty)
     })
 
-    :timer.sleep(100)
+    :timer.sleep(1000)
     simulate_updates(symbols)
   end
 end
