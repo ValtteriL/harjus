@@ -437,3 +437,32 @@ resource "aws_cloudwatch_dashboard" "dashboard" {
 
 
 }
+
+# alarms
+
+# EC2 recommended alarms https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Best_Practice_Recommended_Alarms_AWS_Services.html#EC2
+resource "aws_cloudwatch_metric_alarm" "cpu_utilization" {
+  alarm_name          = "ec2_cpu_utilization"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 3
+  datapoints_to_alarm = 3
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Average"
+  threshold           = 80
+  alarm_description   = "This metric monitors ec2 cpu utilization"
+}
+
+resource "aws_cloudwatch_metric_alarm" "status_check" {
+  alarm_name          = "ec2_cpu_utilization"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 2
+  datapoints_to_alarm = 2
+  metric_name         = "StatusCheckFailed"
+  namespace           = "AWS/EC2"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 1.0
+  alarm_description   = "This alarm helps to monitor both system status checks and instance status checks."
+}
