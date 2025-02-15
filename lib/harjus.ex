@@ -39,7 +39,8 @@ defmodule Harjus do
         {:telemetry_poller, measurements: [], period: :timer.seconds(10)},
 
         # prometheus metric reporter
-        {TelemetryMetricsCloudwatch, [metrics: Metrics.metrics()]},
+        {TelemetryMetricsCloudwatch,
+         [metrics: Metrics.metrics(), namespace: "Harjus", push_interval: 30_000]},
 
         # utilities
         {Balance, []},

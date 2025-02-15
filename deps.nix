@@ -476,32 +476,6 @@ let
       beamDeps = [ ex_aws_cloudwatch telemetry_metrics ];
     };
 
-    telemetry_metrics_prometheus = buildMix rec {
-      name = "telemetry_metrics_prometheus";
-      version = "1.1.0";
-
-      src = fetchHex {
-        pkg = "telemetry_metrics_prometheus";
-        version = "${version}";
-        sha256 = "d43b3659b3244da44fe0275b717701542365d4519b79d9ce895b9719c1ce4d26";
-      };
-
-      beamDeps = [ plug_cowboy telemetry_metrics_prometheus_core ];
-    };
-
-    telemetry_metrics_prometheus_core = buildMix rec {
-      name = "telemetry_metrics_prometheus_core";
-      version = "1.2.1";
-
-      src = fetchHex {
-        pkg = "telemetry_metrics_prometheus_core";
-        version = "${version}";
-        sha256 = "5e2c599da4983c4f88a33e9571f1458bf98b0cf6ba930f1dc3a6e8cf45d5afb6";
-      };
-
-      beamDeps = [ telemetry telemetry_metrics ];
-    };
-
     telemetry_poller = buildRebar3 rec {
       name = "telemetry_poller";
       version = "1.1.0";
