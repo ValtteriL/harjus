@@ -297,17 +297,17 @@ resource "aws_cloudwatch_dashboard" "dashboard" {
         "type" : "metric",
         "properties" : {
           "metrics" : [
-            [{ "expression" : "RUNNING_SUM(m1)", "label" : "Winning", "id" : "e1", "color" : "#2ca02c", "stat" : "Sum", "region" : var.aws_region, "period" : 86400 }],
-            [{ "expression" : "RUNNING_SUM(m2)", "label" : "Losing", "id" : "e2", "color" : "#d62728", "stat" : "Sum", "region" : var.aws_region, "period" : 86400 }],
-            ["Harjus", "harjus.trader.trade.winning.count", { "region" : var.aws_region, "color" : "#2ca02c", "id" : "m1", "visible" : false }],
-            [".", "harjus.trader.trade.losing.count", { "color" : "#d62728", "region" : var.aws_region, "id" : "m2", "visible" : false }]
+            [{ "color" : "#2ca02c", "expression" : "RUNNING_SUM(m1)", "id" : "e1", "label" : "Winning", "period" : 86400, "region" : var.aws_region, "stat" : "Sum" }],
+            [{ "color" : "#d62728", "expression" : "RUNNING_SUM(m2)", "id" : "e2", "label" : "Losing", "period" : 86400, "region" : var.aws_region, "stat" : "Sum" }],
+            ["Harjus", "harjus.trader.trade.winning.count", { "color" : "#2ca02c", "id" : "m1", "region" : var.aws_region, "visible" : false }],
+            [".", "harjus.trader.trade.losing.count", { "color" : "#d62728", "id" : "m2", "region" : var.aws_region, "visible" : false }]
           ],
-          "view" : "singleValue",
-          "stacked" : true,
-          "region" : var.aws_region,
           "period" : 86400,
+          "region" : var.aws_region,
+          "stacked" : true,
           "stat" : "Sum",
-          "title" : "Winning vs Losing trades in 24h"
+          "title" : "Winning vs Losing trades in 24h",
+          "view" : "singleValue"
         }
       },
       {
@@ -317,8 +317,8 @@ resource "aws_cloudwatch_dashboard" "dashboard" {
         "x" : 0,
         "type" : "text",
         "properties" : {
-          "markdown" : "# Business metrics",
-          "background" : "solid"
+          "background" : "solid",
+          "markdown" : "# Business metrics"
         }
       },
       {
@@ -328,28 +328,28 @@ resource "aws_cloudwatch_dashboard" "dashboard" {
         "x" : 15,
         "type" : "text",
         "properties" : {
-          "markdown" : "# Alarms",
-          "background" : "solid"
+          "background" : "solid",
+          "markdown" : "# Alarms"
         }
       },
       {
-        "type" : "metric",
-        "x" : 0,
-        "y" : 8,
-        "width" : 24,
         "height" : 5,
+        "width" : 24,
+        "y" : 8,
+        "x" : 0,
+        "type" : "metric",
         "properties" : {
-          "sparkline" : true,
-          "view" : "singleValue",
           "metrics" : [
             ["Harjus", "vm.memory.total.last_value", { "region" : var.aws_region }],
             [".", "vm.total_run_queue_lengths.cpu.last_value", { "region" : var.aws_region }],
             [".", "vm.total_run_queue_lengths.io.last_value", { "region" : var.aws_region }],
             [".", "vm.total_run_queue_lengths.total.last_value", { "region" : var.aws_region }]
           ],
-          "region" : var.aws_region,
           "period" : 300,
-          "title" : "Erlang VM metrics"
+          "region" : var.aws_region,
+          "sparkline" : true,
+          "title" : "Erlang VM metrics",
+          "view" : "singleValue"
         }
       },
       {
@@ -359,77 +359,95 @@ resource "aws_cloudwatch_dashboard" "dashboard" {
         "x" : 0,
         "type" : "text",
         "properties" : {
-          "markdown" : "# Host, VM metrics",
-          "background" : "solid"
+          "background" : "solid",
+          "markdown" : "# Host, VM metrics"
         }
       },
       {
-        "type" : "metric",
-        "x" : 0,
-        "y" : 1,
-        "width" : 9,
         "height" : 3,
+        "width" : 9,
+        "y" : 1,
+        "x" : 0,
+        "type" : "metric",
         "properties" : {
           "metrics" : [
-            [{ "expression" : "RATE(RUNNING_SUM(m1))", "label" : "Price updates", "id" : "e1", "period" : 1, "region" : var.aws_region, "stat" : "Sum" }],
-            [{ "expression" : "RATE(RUNNING_SUM(m2))", "label" : "Attempted trades", "id" : "e2", "period" : 1, "region" : var.aws_region, "stat" : "Sum" }],
-            [{ "expression" : "RATE(RUNNING_SUM(m3))", "label" : "Executions", "id" : "e3", "period" : 1, "region" : var.aws_region, "stat" : "Sum" }],
-            ["Harjus", "harjus.price_streamer.price_update.count", { "region" : var.aws_region, "id" : "m1", "visible" : false }],
-            [".", "harjus.trader.trade.attempted.count", { "region" : var.aws_region, "id" : "m2", "visible" : false }],
-            [".", "harjus.trader.trade.executed.count", { "region" : var.aws_region, "id" : "m3", "visible" : false }]
+            [{ "expression" : "RATE(RUNNING_SUM(m1))", "id" : "e1", "label" : "Price updates", "period" : 1, "region" : var.aws_region, "stat" : "Sum" }],
+            [{ "expression" : "RATE(RUNNING_SUM(m2))", "id" : "e2", "label" : "Attempted trades", "period" : 1, "region" : var.aws_region, "stat" : "Sum" }],
+            [{ "expression" : "RATE(RUNNING_SUM(m3))", "id" : "e3", "label" : "Executions", "period" : 1, "region" : var.aws_region, "stat" : "Sum" }],
+            ["Harjus", "harjus.price_streamer.price_update.count", { "id" : "m1", "region" : var.aws_region, "visible" : false }],
+            [".", "harjus.trader.trade.attempted.count", { "id" : "m2", "region" : var.aws_region, "visible" : false }],
+            [".", "harjus.trader.trade.executed.count", { "id" : "m3", "region" : var.aws_region, "visible" : false }]
           ],
-          "view" : "singleValue",
+          "period" : 1,
           "region" : var.aws_region,
+          "stat" : "Sum",
+          "title" : "Events per second",
+          "view" : "singleValue",
           "yAxis" : {
             "left" : {
-              "min" : 0,
-              "max" : 100
+              "max" : 100,
+              "min" : 0
             }
-          },
-          "period" : 1,
-          "stat" : "Sum",
-          "title" : "Events per second"
+          }
         }
       },
       {
-        "type" : "metric",
-        "x" : 0,
-        "y" : 13,
-        "width" : 24,
         "height" : 3,
+        "width" : 24,
+        "y" : 13,
+        "x" : 0,
+        "type" : "metric",
         "properties" : {
-          "sparkline" : true,
-          "view" : "singleValue",
           "metrics" : [
             ["AWS/ECS", "CPUUtilization", "ClusterName", "harjus"],
             [".", "MemoryUtilization", ".", "."],
             [".", "CPUReservation", ".", "."],
             [".", "MemoryReservation", ".", "."]
           ],
-          "region" : var.aws_region
+          "region" : var.aws_region,
+          "sparkline" : true,
+          "view" : "singleValue"
         }
       },
       {
-        "type" : "metric",
-        "x" : 0,
-        "y" : 4,
-        "width" : 15,
         "height" : 3,
+        "width" : 15,
+        "y" : 4,
+        "x" : 0,
+        "type" : "metric",
         "properties" : {
           "metrics" : [
-            [{ "expression" : "RUNNING_SUM(m1)", "label" : "BTC", "id" : "e1", "stat" : "Sum", "period" : 1 }],
-            [{ "expression" : "RUNNING_SUM(m2)", "label" : "ETH", "id" : "e2", "stat" : "Sum", "period" : 1 }],
-            [{ "expression" : "RUNNING_SUM(m3)", "label" : "USDT", "id" : "e3", "stat" : "Sum", "period" : 1 }],
+            [{ "expression" : "RUNNING_SUM(m1)", "id" : "e1", "label" : "BTC", "period" : 1, "stat" : "Sum" }],
+            [{ "expression" : "RUNNING_SUM(m2)", "id" : "e2", "label" : "ETH", "period" : 1, "stat" : "Sum" }],
+            [{ "expression" : "RUNNING_SUM(m3)", "id" : "e3", "label" : "USDT", "period" : 1, "stat" : "Sum" }],
             ["Harjus", "harjus.trader.trade.report.summary", "asset", "BTC", { "id" : "m1", "visible" : false }],
             ["...", "ETH", { "id" : "m2", "visible" : false }],
             ["...", "USDT", { "id" : "m3", "visible" : false }]
           ],
-          "sparkline" : true,
-          "view" : "singleValue",
-          "region" : var.aws_region,
-          "stat" : "Sum",
           "period" : 1,
-          "title" : "Balances"
+          "region" : var.aws_region,
+          "sparkline" : true,
+          "stat" : "Sum",
+          "title" : "Balances",
+          "view" : "singleValue"
+        }
+      },
+      {
+        "type" : "alarm",
+        "x" : 15,
+        "y" : 1,
+        "width" : 9,
+        "height" : 6,
+        "properties" : {
+          "title" : "Alarms",
+          "alarms" : [
+            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_instance_filesystem_utilization",
+            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_runnin_task_count",
+            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_cpu_utilization",
+            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_memory_reservation",
+            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_cpu_reservation",
+            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ec2_cpu_utilization"
+          ]
         }
       }
     ]
