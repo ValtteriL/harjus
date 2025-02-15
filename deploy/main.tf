@@ -441,12 +441,12 @@ resource "aws_cloudwatch_dashboard" "dashboard" {
         "properties" : {
           "title" : "Alarms",
           "alarms" : [
-            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_instance_filesystem_utilization",
-            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_runnin_task_count",
-            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_cpu_utilization",
-            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_memory_reservation",
-            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ecs_cpu_reservation",
-            "arn:aws:cloudwatch:ap-northeast-1:137068223640:alarm:ec2_cpu_utilization"
+            aws_cloudwatch_metric_alarm.ecs_instance_filesystem_utilization.arn,
+            aws_cloudwatch_metric_alarm.ecs_running_task_count.arn,
+            aws_cloudwatch_metric_alarm.ecs_cpu_utilization.arn,
+            aws_cloudwatch_metric_alarm.ecs_memory_reservation.arn,
+            aws_cloudwatch_metric_alarm.cpu_utilization.arn,
+            aws_cloudwatch_metric_alarm.status_check.arn
           ]
         }
       }
