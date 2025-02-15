@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build
 
 # build if push to main
 # if tagged with releases/X.Y.Z, deploy additionally to QA
