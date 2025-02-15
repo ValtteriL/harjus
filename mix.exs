@@ -62,7 +62,10 @@ defmodule Harjus.MixProject do
       {:telemetry_poller, "~> 1.1.0"},
       {:propcheck, "~> 1.4", only: [:test, :dev]},
       {:mox, "~> 1.2.0", only: :test},
-      {:telemetry_metrics_cloudwatch, "~> 1.0.0"}
+      {:telemetry_metrics_cloudwatch, "~> 1.0.0"},
+      # hackney, ex_aws required by telemetry_metrics_cloudwatch
+      {:hackney, "~> 1.20"},
+      {:ex_aws, "~> 2.1"}
     ]
   end
 
