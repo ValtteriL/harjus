@@ -46,9 +46,11 @@ mix quality
 mix quality.ci
 ```
 
-## Deployment
+### Automatic tests
 
-### Build
+The quality.ci is run by CI/CD **Quality Pipeline** on push.
+
+## Build
 
 Build harjus and package into a container
 
@@ -59,24 +61,44 @@ nix-build
 # container then available at ./result-2
 ```
 
-### Running
+### Automatic builds
+
+Container images are build automatically by CI/CD **Build Pipeline** and pushed to registry. If the quality pipeline succeeds and the push is to the main branch, a build is made and its pushed to registry with git hash tag.
+The image is additionally pushed with release version tag if release tag pushed in git.
+
+Pushing with release tag:
+
+1. Create a Git tag: Create a Git tag that matches the pattern `releases/[1-9]+.[0-9]+.[0-9]+`. For example:
 
 ```bash
-IMAGE=`docker image load -q < result-2|awk '{print $3}'`
-docker container run --rm -it --env-file .env $IMAGE
-
-# can also run shell inside container
-docker container run --rm -it $IMAGE /bin/sh
-
-# push to k8s registry
-docker image push $IMAGE
-
-# run in k8s
-kubectl run -i -t harjus --image=$IMAGE --restart=Never --env "START_SYMBOLS=BNB"
+git tag releases/1.0.0
+git push origin releases/1.0.0
 ```
 
-### Deploy QA (testnet, home lab k8s)
+## Deployment
+
+Deployment is done manually from local shell.
+
+### Prerequisite: Create Terraform backend in S3
 
 ```bash
-./scripts/build-and-release-on-k8s.sh
+terraform -chdir=deploy/backend init
+terraform -chdir=deploy/backend apply
+```
+
+Set the output from into s3 backend in deploy
+
+### Deploy
+
+```bash
+terraform -chdir=deploy init
+terraform -chdir=deploy apply -var-file="$env.tfvars" -var "image_tag=$image_tag_to_deploy"
+```
+
+## Debugging
+
+### Access container runner
+
+```bash
+ssh -i deploy/harjus-ec2-key.pem ec2-user@$(terraform -chdir=deploy output ecs_instance_ip|sed 's/"//g')
 ```

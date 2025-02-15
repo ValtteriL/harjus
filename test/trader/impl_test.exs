@@ -21,11 +21,7 @@ defmodule Trader.ImplTest do
   @moduletag :capture_log
 
   property "succeeds when balace and free symbols" do
-    forall [opportunity, trade_report] <-
-             [
-               opportunity_with_uniq_symbols(),
-               trade_report()
-             ] do
+    forall opportunity <- opportunity() do
       # setup mocks
       Trader.Balance.TestMock
       |> stub(:update, fn _asset, _amount -> :ok end)
@@ -33,8 +29,8 @@ defmodule Trader.ImplTest do
 
       Trader.TradeClient.Exchange.TestMock
       |> expect(:new, fn -> :ok end)
-      |> expect(:market_order, Enum.count(opportunity.path), fn _trading_symbol, _quantity ->
-        trade_report
+      |> expect(:market_order, Enum.count(opportunity.path), fn trading_symbol, _quantity ->
+        trade_report_for_symbol(trading_symbol)
       end)
 
       # init
@@ -73,7 +69,7 @@ defmodule Trader.ImplTest do
   end
 
   property "fails if no balance to reserve" do
-    forall opportunity <- opportunity_with_uniq_symbols() do
+    forall opportunity <- opportunity() do
       # setup mocks
       Trader.Balance.TestMock
       |> stub(:update, fn _asset, _amount -> :ok end)
@@ -100,15 +96,18 @@ defmodule Trader.ImplTest do
     end
   end
 
-  ## Generators ##
-
-  defp opportunity_with_uniq_symbols do
-    let opportunity <- opportunity() do
-      # make symbols unique
-      uniq_path = opportunity.path |> Enum.uniq_by(fn p -> p.symbol end)
-      %{opportunity | path: uniq_path}
-    end
+  defp trade_report_for_symbol(%TradingSymbol{position: position, symbol: symbol}) do
+    %TradeReport{
+      symbol: symbol,
+      position: position,
+      quantity_base: Decimal.new(1),
+      quantity_quote: Decimal.new(1),
+      quantity_fee: Decimal.from_float(0.1),
+      fee_currency: "BNB"
+    }
   end
+
+  ## Generators ##
 
   defp opportunity_with_duplicate_symbols do
     let opportunity <- opportunity() do
@@ -136,7 +135,17 @@ defmodule Trader.ImplTest do
 
   defp path do
     let path <- non_empty(list(trading_symbol())) do
+      first_base_asset = Enum.at(path, 0).base_asset
+
       path
+      # make symbols in path unique
+      |> Enum.uniq_by(fn p -> p.symbol end)
+      # make sure the next quote asset is the same as the previous base asset
+      |> Enum.map_reduce(first_base_asset, fn ts, prev_base_asset ->
+        new_ts = ts |> Map.put(:quote_asset, prev_base_asset)
+        {new_ts, ts.base_asset}
+      end)
+      |> elem(0)
     end
   end
 

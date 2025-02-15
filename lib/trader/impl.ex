@@ -139,9 +139,8 @@ defmodule Trader.Impl do
       fn current_qty -> Decimal.add(current_qty, received_quantity(trade_report)) end
     )
     # used
-    |> Map.update(
+    |> Map.update!(
       quote_asset,
-      Decimal.negate(used_quantity(trade_report)),
       fn current_qty -> Decimal.sub(current_qty, used_quantity(trade_report)) end
     )
   end

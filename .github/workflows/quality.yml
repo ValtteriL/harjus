@@ -1,0 +1,20 @@
+name: Quality check
+
+# This is reusable by other workflows
+on:
+  workflow_call:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Nix
+        uses: cachix/install-nix-action@v14
+
+      - name: Activate nix-shell and run mix quality.ci
+        run: |
+          nix-shell -A devEnv --run "mix local.hex --force && mix deps.get && mix quality.ci"
