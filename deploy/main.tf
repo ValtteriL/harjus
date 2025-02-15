@@ -507,3 +507,30 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_reservation" {
   alarm_description   = "This alarm helps to monitor memory reservation of the cluster."
 }
 
+# container insights recommended alarms https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Best_Practice_Recommended_Alarms_AWS_Services.html#ECS-ContainerInsights
+
+resource "aws_cloudwatch_metric_alarm" "ecs_instance_filesystem_utilization" {
+  alarm_name          = "ecs_instance_filesystem_utilization"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods  = 5
+  datapoints_to_alarm = 5
+  metric_name         = "RunningTaskCount"
+  namespace           = "AWS/ECS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 0.0
+  alarm_description   = "This alarm helps detect a low running task count of the ECS service."
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_running_task_count" {
+  alarm_name          = "ecs_runnin_task_count"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 5
+  datapoints_to_alarm = 5
+  metric_name         = "instance_filesystem_utilization"
+  namespace           = "AWS/ECS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 90.0
+  alarm_description   = "This alarm helps you detect a high file system utilization of the ECS cluster."
+}
