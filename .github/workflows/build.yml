@@ -39,7 +39,6 @@ jobs:
 
       - name: Build image
         run: |
-          nix-shell -A devEnv --run "mix local.hex --force && mix deps.get"
           nix-build
 
       - name: Push hash-tagged image to ECR
