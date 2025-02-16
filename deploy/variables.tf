@@ -107,3 +107,8 @@ variable "balance_exchange" {
   type        = string
 }
 
+variable "num_nping_probes" {
+  description = "The number of nping probes to send"
+  type        = number
+  default     = 100
+}
