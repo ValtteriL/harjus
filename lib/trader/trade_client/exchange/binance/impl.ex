@@ -21,7 +21,7 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
   def new do
     api_key = Application.fetch_env!(:harjus, :binance_ed25519_api_key)
     private_key = Application.fetch_env!(:harjus, :binance_ed25519_private_key)
-    hostname = Application.fetch_env!(:harjus, :binance_fix_api_hostname)
+    hostname = String.to_charlist(Application.fetch_env!(:harjus, :binance_fix_api_hostname))
     port = Application.fetch_env!(:harjus, :binance_fix_api_port)
 
     # start FIX session
