@@ -134,6 +134,7 @@ resource "aws_instance" "ecs_instance" {
   security_groups = [aws_security_group.security.name]
   user_data       = <<-EOF
                       #!/bin/bash
+                      set -e
 
                       # required to join ECS
                       echo ECS_CLUSTER=${aws_ecs_cluster.ecs_cluster.name} >> /etc/ecs/ecs.config
