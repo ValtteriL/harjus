@@ -178,6 +178,7 @@ resource "aws_cloudwatch_log_group" "log_group" {
 resource "aws_ecs_task_definition" "ecs_td" {
   family                   = "harjus"
   requires_compatibilities = ["EC2"]
+  network_mode             = "host"
   container_definitions = jsonencode([
     {
       name              = "harjus"
