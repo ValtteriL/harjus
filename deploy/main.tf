@@ -139,7 +139,7 @@ resource "aws_instance" "ecs_instance" {
                       echo ECS_CLUSTER=${aws_ecs_cluster.ecs_cluster.name} >> /etc/ecs/ecs.config
 
                       # begin optimized resolver config
-                      dnf install -y nmap dig bind-utils
+                      dnf install -y nmap bind-utils
 
                       NUM_PROBES=${var.num_nping_probes}
 
