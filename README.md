@@ -100,5 +100,5 @@ terraform -chdir=deploy apply -var-file="$env.tfvars" -var "image_tag=$image_tag
 ### Access container runner
 
 ```bash
-ssh -i deploy/harjus-ec2-key.pem ec2-user@$(terraform -chdir=deploy output ecs_instance_ip|sed 's/"//g')
+ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ec2-user@$(terraform -chdir=deploy output ecs_instance_ip|sed 's/"//g')
 ```
