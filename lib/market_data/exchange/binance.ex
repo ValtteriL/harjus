@@ -10,7 +10,13 @@ defmodule MarketData.Exchange.Binance do
     base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
     url = "#{base_url}/api/v3/exchangeInfo"
 
-    {:ok, resp} = Req.get(url)
+    resp = Req.get!(url)
+
+    # verify status code is 200, otherwise raise an error
+    case resp.status do
+      200 -> :ok
+      _ -> raise "Failed to get symbols from Binance: #{inspect(resp)}"
+    end
 
     resp.body["symbols"]
     |> Enum.map(fn x ->
@@ -63,7 +69,13 @@ defmodule MarketData.Exchange.Binance do
     base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
     url = "#{base_url}/api/v3/ticker/price"
 
-    {:ok, resp} = Req.get(url)
+    resp = Req.get!(url)
+
+    # verify status code is 200, otherwise raise an error
+    case resp.status do
+      200 -> :ok
+      _ -> raise "Failed to get symbol prices from Binance: #{inspect(resp)}"
+    end
 
     resp.body
     |> Enum.map(fn x -> {x["symbol"], Decimal.from_float(String.to_float(x["price"]))} end)
