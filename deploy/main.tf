@@ -238,7 +238,7 @@ resource "aws_ecs_task_definition" "ecs_td" {
         },
         {
           name  = "BINANCE_FIX_API_PORT"
-          value = var.binance_fix_api_port
+          value = "${tostring(var.binance_fix_api_port)}"
         },
         {
           name  = "BINANCE_MARKET_DATA_API_URI"
