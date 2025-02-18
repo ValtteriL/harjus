@@ -106,10 +106,10 @@ defmodule OpportunityWatcher.OpportunityTest do
     }
 
     profit = Opportunity.profit(path, price_table, commission)
-    # capacity = Opportunity.capacity(path, price_table)
+    capacity = Opportunity.capacity(path, price_table)
 
     assert Decimal.eq?(profit, 0)
-    # assert Decimal.eq?(capacity, 0)
+    assert Decimal.eq?(capacity, 0)
   end
 
   test "correct profit and capacity with 2 symbols" do
