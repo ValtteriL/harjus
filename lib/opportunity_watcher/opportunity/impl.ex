@@ -50,9 +50,7 @@ defmodule OpportunityWatcher.Opportunity.Impl do
     end
   end
 
-  defp profit([], _price_quantity_map, _commission_percentage, acc) do
-    Decimal.sub(acc, 1)
-  end
+  defp profit([], _price_quantity_map, _commission_percentage, acc), do: Decimal.sub(acc, 1)
 
   @spec capacity(
           trading_path :: trading_path(),
@@ -60,18 +58,27 @@ defmodule OpportunityWatcher.Opportunity.Impl do
             TradingSymbol.t() => price_qty_tuple()
           }
         ) :: Decimal.t()
-  def capacity(trading_path = [%TradingSymbol{} | _], price_quantity_map = %{}) do
-    first_symbol_qty = elem(Map.get(price_quantity_map, Enum.at(trading_path, 0)), 1)
+  def capacity(trading_path = [firstsymbol = %TradingSymbol{} | rest], price_quantity_map = %{}) do
+    {_first_symbol_price, first_symbol_qty} = Map.get(price_quantity_map, firstsymbol)
 
-    trading_path
+    rest
     |> Enum.map(fn symbol -> Map.get(price_quantity_map, symbol) end)
-    # skip first symbol
-    |> Enum.drop(1)
-    |> Enum.reduce(first_symbol_qty, fn price_quantity, acc ->
-      Decimal.min(Decimal.div(acc, elem(price_quantity, 0)), elem(price_quantity, 1))
+    |> Enum.reduce(first_symbol_qty, fn {price, quantity}, acc ->
+      Decimal.min(Decimal.div(acc, price), quantity)
     end)
     |> Decimal.div(Decimal.add(1, profit_without_commission(trading_path, price_quantity_map)))
   end
+
+  defp capacity([symbol = %TradingSymbol{} | rest], price_quantity_map, acc) do
+    qty = elem(Map.get(price_quantity_map, symbol), 1)
+
+    if Decimal.eq?(qty, 0) do
+      qty
+    else
+    end
+  end
+
+  defp capacity([], _price_quantity_map, acc), do: Decimal.new(0)
 
   defp profit_without_commission(trading_path, price_quantity_map) do
     trading_path
