@@ -92,6 +92,26 @@ defmodule OpportunityWatcher.OpportunityTest do
 
   ## Unit tests ##
 
+  test "profit and capacity 0 if price is 0" do
+    commission = Decimal.new(0)
+    symbol = ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"})
+
+    path = [
+      symbol
+    ]
+
+    price_table = %{
+      # price, qty
+      symbol => {Decimal.new(0), Decimal.new(1)}
+    }
+
+    profit = Opportunity.profit(path, price_table, commission)
+    # capacity = Opportunity.capacity(path, price_table)
+
+    assert Decimal.eq?(profit, 0)
+    # assert Decimal.eq?(capacity, 0)
+  end
+
   test "correct profit and capacity with 2 symbols" do
     commission = Decimal.new(0)
 
