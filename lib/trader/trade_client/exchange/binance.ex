@@ -9,7 +9,6 @@ defmodule Trader.TradeClient.Exchange.Binance do
 
   @behaviour Trader.TradeClient.Exchange
 
-  alias Trader.TradeClient.Exchange.Binance.Impl
   alias Trader.TradeClient.Exchange.Binance.Server
   alias Types.TradeReport
   alias Types.TradingSymbol
@@ -18,7 +17,7 @@ defmodule Trader.TradeClient.Exchange.Binance do
 
   @spec new() :: any()
   def new do
-    GenServer.start_link(Server, Impl.new(), name: __MODULE__)
+    GenServer.start_link(Server, name: __MODULE__)
   end
 
   @spec market_order(

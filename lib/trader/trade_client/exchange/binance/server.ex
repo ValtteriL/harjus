@@ -8,8 +8,8 @@ defmodule Trader.TradeClient.Exchange.Binance.Server do
   alias Trader.TradeClient.Exchange.Binance.Impl
 
   @impl GenServer
-  def init(args) do
-    {:ok, args}
+  def init(_args) do
+    {:ok, Impl.new()}
   end
 
   @impl GenServer
