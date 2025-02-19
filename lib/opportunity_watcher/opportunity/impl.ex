@@ -23,21 +23,15 @@ defmodule OpportunityWatcher.Opportunity.Impl do
         commission_percentage
       )
       when Decimal.is_decimal(commission_percentage) do
-    profit(trading_path, price_quantity_map, commission_percentage, Decimal.new(1))
-  end
+    prices = Enum.map(trading_path, fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
 
-  defp profit(
-         [symbol = %TradingSymbol{} | rest],
-         price_quantity_map = %{},
-         commission_percentage,
-         acc
-       ) do
-    price = elem(Map.get(price_quantity_map, symbol), 0)
-
-    if Decimal.eq?(price, 0) do
-      price
+    # if any of the prices are 0, return 0
+    if Enum.any?(prices, fn price -> Decimal.eq?(price, 0) end) do
+      Decimal.new(0)
     else
-      new_acc =
+      trading_path
+      |> Enum.map(fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
+      |> Enum.reduce(Decimal.new(1), fn price, acc ->
         Decimal.div(
           Decimal.mult(
             acc,
@@ -45,12 +39,10 @@ defmodule OpportunityWatcher.Opportunity.Impl do
           ),
           price
         )
-
-      profit(rest, price_quantity_map, commission_percentage, new_acc)
+      end)
+      |> Decimal.sub(1)
     end
   end
-
-  defp profit([], _price_quantity_map, _commission_percentage, acc), do: Decimal.sub(acc, 1)
 
   @spec capacity(
           trading_path :: trading_path(),
