@@ -25,7 +25,7 @@ defmodule Balance.Exchange.Binance do
     end
 
     resp.body["balances"]
-    |> Enum.map(fn x -> {x["asset"], String.to_float(x["free"])} end)
+    |> Enum.map(fn x -> {x["asset"], Decimal.from_float(String.to_float(x["free"]))} end)
     |> Enum.into(%{})
   end
 
