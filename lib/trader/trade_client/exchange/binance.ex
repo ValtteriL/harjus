@@ -17,7 +17,7 @@ defmodule Trader.TradeClient.Exchange.Binance do
 
   @spec new() :: any()
   def new do
-    GenServer.start_link(Server, name: __MODULE__)
+    GenServer.start_link(Server, [], name: __MODULE__)
   end
 
   @spec market_order(
