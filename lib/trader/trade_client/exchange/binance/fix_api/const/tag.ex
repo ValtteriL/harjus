@@ -26,6 +26,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Const.Tag do
   def quantity_quote, do: "25017"
   def fee_currency, do: "138"
   def fee_amount, do: "137"
+  def no_misc_fees, do: "136"
   def test_request_id, do: "112"
   def reject_text, do: "58"
 end

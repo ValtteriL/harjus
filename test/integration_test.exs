@@ -87,8 +87,12 @@ defmodule IntegrationTest do
         position: trading_symbol.position,
         quantity_base: Decimal.new(1),
         quantity_quote: Decimal.new(1),
-        quantity_fee: fee,
-        fee_currency: "BNB"
+        fees: [
+          %Types.TradeReport.Fee{
+            fee_currency: "BNB",
+            fee_amount: fee
+          }
+        ]
       }
     end)
     # last trade trade 1:2. It should result in profit of capacity
@@ -98,8 +102,12 @@ defmodule IntegrationTest do
         position: trading_symbol.position,
         quantity_base: Decimal.new(1),
         quantity_quote: Decimal.new(2),
-        quantity_fee: fee,
-        fee_currency: "BNB"
+        fees: [
+          %Types.TradeReport.Fee{
+            fee_currency: "BNB",
+            fee_amount: fee
+          }
+        ]
       }
     end)
 

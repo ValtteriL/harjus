@@ -3,21 +3,21 @@ defmodule Types.TradeReport do
   Trade report struct
   """
 
+  alias Types.TradeReport.Fee
+
   @enforce_keys [
     :symbol,
     :position,
     :quantity_base,
     :quantity_quote,
-    :quantity_fee,
-    :fee_currency
+    :fees
   ]
   defstruct [
     :symbol,
     :position,
     :quantity_base,
     :quantity_quote,
-    :quantity_fee,
-    :fee_currency
+    :fees
   ]
 
   @type t :: %__MODULE__{
@@ -25,7 +25,20 @@ defmodule Types.TradeReport do
           position: :long | :short,
           quantity_base: Decimal.t(),
           quantity_quote: Decimal.t(),
-          quantity_fee: Decimal.t(),
-          fee_currency: String.t()
+          fees: [Fee.t()]
         }
+
+  defmodule Fee do
+    @moduledoc "fee group"
+    @type t :: %__MODULE__{}
+
+    @enforce_keys [
+      :fee_currency,
+      :fee_amount
+    ]
+    defstruct [
+      :fee_currency,
+      :fee_amount
+    ]
+  end
 end

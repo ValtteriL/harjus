@@ -99,7 +99,9 @@ defmodule Trader.Impl do
     Logger.debug("Trade #{inspect(trading_symbol)} completed. Report: #{inspect(report)}")
 
     # update fee balance right away
-    MyBalance.update(report.fee_currency, Decimal.negate(report.quantity_fee))
+    Enum.each(report.fees, fn %TradeReport.Fee{fee_currency: currency, fee_amount: amount} ->
+      MyBalance.update(currency, Decimal.negate(amount))
+    end)
 
     # store other balance changes in delta
     new_balance_delta = update_balance_delta(balance_delta, trading_symbol, report)

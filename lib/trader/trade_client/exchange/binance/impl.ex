@@ -151,8 +151,7 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
       position: position,
       quantity_base: execution_report.quantity_base,
       quantity_quote: execution_report.quantity_quote,
-      quantity_fee: execution_report.fee_amount,
-      fee_currency: execution_report.fee_currency
+      fees: execution_report.fees
     }
   end
 end
