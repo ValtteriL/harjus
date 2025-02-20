@@ -108,7 +108,7 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
 
   defp react_to_fix_message(state, {:execution_report, execution_report}) do
     # if complete, reply to trader
-    Logger.info("Execution report: #{execution_report}")
+    Logger.info("Execution report: #{inspect(execution_report)}")
 
     # if order is filled, relay to trader
     case execution_report.order_status do
