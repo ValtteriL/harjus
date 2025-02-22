@@ -182,6 +182,9 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
   defp parse_execution_report(message) do
     fields = parse_message_into_fields(message)
     fees = parse_fees(message)
+    reject_text = Map.get(fields, Const.Tag.reject_text(), nil)
+
+    IO.inspect(fields)
 
     %ExecutionReport{
       order_status: fields[Const.Tag.order_status()],
@@ -190,7 +193,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
       symbol: fields[Const.Tag.symbol()],
       side: fields[Const.Tag.side()],
       fees: fees,
-      client_order_id: fields[Const.Tag.cl_order_id()]
+      client_order_id: fields[Const.Tag.cl_order_id()],
+      error_msg: reject_text
     }
   end
 

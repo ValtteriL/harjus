@@ -29,7 +29,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport do
     :symbol,
     :side,
     :fees,
-    :client_order_id
+    :client_order_id,
+    :error_msg
   ]
 
   defmodule Fee do

@@ -17,6 +17,8 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
   alias Types.TradingSymbol
 
   @order_filled ExecutionReport.OrderStatus.filled()
+  @rejected ExecutionReport.OrderStatus.rejected()
+  @expired ExecutionReport.OrderStatus.expired()
 
   def new do
     api_key = Application.fetch_env!(:harjus, :binance_ed25519_api_key)
@@ -124,6 +126,12 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
                 execution_report.client_order_id
               )
         }
+
+      @rejected ->
+        raise("Order rejected: #{inspect(execution_report)}")
+
+      @expired ->
+        raise("Order expired: #{inspect(execution_report)}")
 
       _ ->
         state
