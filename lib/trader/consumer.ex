@@ -16,7 +16,8 @@ defmodule Trader.Consumer do
       %{
         id: Trader,
         start: {__MODULE__, :handle_event, [self()]},
-        restart: :temporary,
+        # transient to allow killing supervisor on unexpected errors
+        restart: :transient,
         # 5 seconds grace period
         shutdown: 5000
       }
@@ -24,6 +25,8 @@ defmodule Trader.Consumer do
 
     opts = [
       strategy: :one_for_one,
+      # if any child dies, kill the supervisor (children first, with grace period)
+      max_restarts: 0,
       subscribe_to: [{PortfolioManager, max_demand: max_number_workers}]
     ]
 
@@ -43,7 +46,7 @@ defmodule Trader.Consumer do
         InsufficientBalanceError -> :ok
         SymbolAlreadyReservedError -> :ok
         # trigger graceful shutdown of trader on unexpected error
-        _ -> Task.start(fn -> GenStage.stop(parent, :fatal_error_in_trader) end)
+        e -> reraise e, __STACKTRACE__
       end
     end)
   end
