@@ -152,8 +152,6 @@ defmodule OpportunityWatcher.Impl do
         %Types.Opportunity{path: path, profit: profit, capacity: capacity}
       end)
 
-    Logger.debug("Opportunities: #{inspect(new_opportunities)}")
-
     {new_state, new_opportunities}
   end
 end
