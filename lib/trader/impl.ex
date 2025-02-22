@@ -114,17 +114,11 @@ defmodule Trader.Impl do
   defp trade([], _, balance_delta), do: balance_delta
 
   defp received_quantity(trade_report) do
-    case trade_report.position do
-      :long -> trade_report.quantity_base
-      :short -> trade_report.quantity_quote
-    end
+    trade_report.quantity_base
   end
 
   defp used_quantity(trade_report) do
-    case trade_report.position do
-      :long -> trade_report.quantity_quote
-      :short -> trade_report.quantity_base
-    end
+    trade_report.quantity_quote
   end
 
   @spec update_balance_delta(balance_delta(), TradingSymbol.t(), TradeReport.t()) ::
