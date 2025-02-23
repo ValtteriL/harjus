@@ -94,6 +94,33 @@ defmodule OpportunityWatcher.OpportunityTest do
 
   ## Unit tests ##
 
+  test "capacity is 0 if min_notional is not met" do
+    commission = Decimal.new(0)
+
+    symbol = %TradingSymbol{
+      symbol: "BTCUSDT",
+      position: :long,
+      base_asset: "BTC",
+      quote_asset: "USDT",
+      quote_asset_increment: Decimal.from_float(0.01),
+      quote_asset_precision: 8,
+      min_notional: Decimal.new(2)
+    }
+
+    path = [
+      symbol
+    ]
+
+    price_table = %{
+      # price, qty
+      # min_notional not met
+      symbol => {Decimal.new(1), Decimal.div(symbol.min_notional, 2)}
+    }
+
+    capacity = Opportunity.capacity(path, price_table)
+    assert Decimal.eq?(capacity, 0)
+  end
+
   test "profit and capacity 0 if price is 0" do
     commission = Decimal.new(0)
     symbol = ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"})
@@ -126,18 +153,14 @@ defmodule OpportunityWatcher.OpportunityTest do
       ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}) =>
         {Decimal.new("10000.0"), Decimal.new("1.0")},
       ts(%{symbol: "USDTBTC", position: :long, base_asset: "USDT", quote_asset: "BTC"}) =>
-        {Decimal.new("0.00005"), Decimal.new("1337.1337")},
-      ts(%{symbol: "ETHBTC", position: :long, base_asset: "ETH", quote_asset: "BTC"}) =>
-        {Decimal.new("0.1"), Decimal.new("10.0")},
-      ts(%{symbol: "USDTETH", position: :long, base_asset: "USDT", quote_asset: "ETH"}) =>
-        {Decimal.new("0.001"), Decimal.new("1.0")}
+        {Decimal.new("0.00005"), Decimal.new("1337.1337")}
     }
 
     profit = Opportunity.profit(path, price_table, commission)
     capacity = Opportunity.capacity(path, price_table)
 
     assert Decimal.eq?(profit, 1)
-    assert Decimal.eq?(capacity, Decimal.div(Decimal.new("1337.1337"), Decimal.add(1, profit)))
+    assert Decimal.eq?(capacity, 1)
   end
 
   test "correct profit and capacity with 2 symbols (long + short)" do
