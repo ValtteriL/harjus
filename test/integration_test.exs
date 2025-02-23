@@ -103,8 +103,8 @@ defmodule IntegrationTest do
       %Types.TradeReport{
         symbol: trading_symbol.symbol,
         position: trading_symbol.position,
-        quantity_base: Decimal.new(1),
-        quantity_quote: Decimal.new(2),
+        quantity_base: Decimal.new(2),
+        quantity_quote: Decimal.new(1),
         fees: [
           %Types.TradeReport.Fee{
             fee_currency: "BNB",
