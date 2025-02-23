@@ -158,7 +158,8 @@ defmodule Trader.ImplTest do
       symbol <- non_empty_string(),
       position <- union([:long, :short]),
       base_asset <- non_empty_string(),
-      quote_asset <- non_empty_string()
+      quote_asset <- non_empty_string(),
+      min_notional <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
@@ -166,7 +167,8 @@ defmodule Trader.ImplTest do
         base_asset: base_asset,
         quote_asset: quote_asset,
         quote_asset_increment: Decimal.from_float(0.01),
-        quote_asset_precision: 8
+        quote_asset_precision: 8,
+        min_notional: min_notional
       }
     end
   end

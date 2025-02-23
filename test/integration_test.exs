@@ -45,7 +45,8 @@ defmodule IntegrationTest do
           baseAssetPrecision: 8,
           quoteAssetPrecision: 2,
           baseAssetIncrement: Decimal.from_float(0.000001),
-          quoteAssetIncrement: Decimal.from_float(0.01)
+          quoteAssetIncrement: Decimal.from_float(0.01),
+          minNotional: Decimal.from_float(0.0001)
         },
         %Symbol{
           symbol: "ETHBTC",
@@ -54,7 +55,8 @@ defmodule IntegrationTest do
           baseAssetPrecision: 8,
           quoteAssetPrecision: 2,
           baseAssetIncrement: Decimal.from_float(0.000001),
-          quoteAssetIncrement: Decimal.from_float(0.01)
+          quoteAssetIncrement: Decimal.from_float(0.01),
+          minNotional: Decimal.from_float(0.0001)
         },
         %Symbol{
           symbol: "ETHUSDT",
@@ -63,7 +65,8 @@ defmodule IntegrationTest do
           baseAssetPrecision: 8,
           quoteAssetPrecision: 2,
           baseAssetIncrement: Decimal.from_float(0.000001),
-          quoteAssetIncrement: Decimal.from_float(0.01)
+          quoteAssetIncrement: Decimal.from_float(0.01),
+          minNotional: Decimal.from_float(0.0001)
         }
       ]
     end)

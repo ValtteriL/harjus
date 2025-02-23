@@ -33,6 +33,7 @@ defmodule MarketData.Exchange.Binance do
       # get asset increments
       |> Map.put(:baseAssetIncrement, get_base_asset_increment(x["filters"]))
       |> Map.put(:quoteAssetIncrement, get_quote_asset_increment(x["filters"]))
+      |> Map.put(:minNotional, get_min_notional(x["filters"]))
       # delete filters
       |> Map.delete(:filters)
     end)
@@ -44,9 +45,17 @@ defmodule MarketData.Exchange.Binance do
         baseAssetPrecision: x[:baseAssetPrecision],
         quoteAssetPrecision: x[:quoteAssetPrecision],
         baseAssetIncrement: x[:baseAssetIncrement],
-        quoteAssetIncrement: x[:quoteAssetIncrement]
+        quoteAssetIncrement: x[:quoteAssetIncrement],
+        minNotional: x[:minNotional]
       }
     end)
+  end
+
+  defp get_min_notional(filters) do
+    filters
+    |> Enum.find(fn filter -> filter["filterType"] == "NOTIONAL" end)
+    |> Map.get("minNotional")
+    |> Decimal.new()
   end
 
   defp get_base_asset_increment(filters) do

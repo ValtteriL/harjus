@@ -184,8 +184,6 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
     fees = parse_fees(message)
     reject_text = Map.get(fields, Const.Tag.reject_text(), nil)
 
-    IO.inspect(fields)
-
     %ExecutionReport{
       order_status: fields[Const.Tag.order_status()],
       quantity_base: Decimal.new(fields[Const.Tag.quantity_base()]),

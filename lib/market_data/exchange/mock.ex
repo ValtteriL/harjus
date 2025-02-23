@@ -15,7 +15,8 @@ defmodule MarketData.Exchange.Mock do
         baseAssetPrecision: 8,
         quoteAssetPrecision: 2,
         baseAssetIncrement: Decimal.from_float(0.00000001),
-        quoteAssetIncrement: Decimal.from_float(0.01)
+        quoteAssetIncrement: Decimal.from_float(0.01),
+        minNotional: Decimal.from_float(1.0)
       },
       %Symbol{
         symbol: "ETHBTC",
@@ -24,7 +25,8 @@ defmodule MarketData.Exchange.Mock do
         baseAssetPrecision: 8,
         quoteAssetPrecision: 8,
         baseAssetIncrement: Decimal.from_float(0.00000001),
-        quoteAssetIncrement: Decimal.from_float(0.00000001)
+        quoteAssetIncrement: Decimal.from_float(0.00000001),
+        minNotional: Decimal.from_float(1.0)
       },
       %Symbol{
         symbol: "ETHUSDT",
@@ -33,7 +35,8 @@ defmodule MarketData.Exchange.Mock do
         baseAssetPrecision: 8,
         quoteAssetPrecision: 2,
         baseAssetIncrement: Decimal.from_float(0.00000001),
-        quoteAssetIncrement: Decimal.from_float(0.01)
+        quoteAssetIncrement: Decimal.from_float(0.01),
+        minNotional: Decimal.from_float(1.0)
       }
     ]
   end

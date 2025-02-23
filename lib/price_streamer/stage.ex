@@ -18,11 +18,6 @@ defmodule PriceStreamer.Stage do
   # We don't care about the demand
   def handle_demand(_demand, state), do: {:noreply, [], state}
 
-  # TODO: remove this - important to know when we're discarding prices to avoid wrong data
-  @impl GenStage
-  # silence logging of discarded events
-  def format_discarded(_discarded, _state), do: false
-
   @impl GenStage
   @spec handle_cast({:price_update, update :: PriceUpdate.t()}, state :: any()) ::
           {:noreply, [Opportunity.t()], any()}
