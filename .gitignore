@@ -70,3 +70,5 @@ terraform.rc
 result
 result-*
 *.pem
+
+testnet-exchangeinfo.json
