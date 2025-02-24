@@ -89,15 +89,18 @@ defmodule Trader.Impl do
     |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
   end
 
-  @spec trade([TradingSymbol.t()], Decimal.t()) :: balance_delta()
-  defp trade(path = [%TradingSymbol{quote_asset: quote_asset} | _], quantity) do
-    trade(path, quantity, %{quote_asset => quantity})
+  @spec trade([TradingSymbol.t()], Decimal.t(), Decimal.t()) :: balance_delta()
+  defp trade(
+         path = [%TradingSymbol{quote_asset: quote_asset} | _],
+         budget,
+         unit_price_for_first_trade
+       ) do
+    trade(path, budget, unit_price_for_first_trade, %{quote_asset => budget})
   end
 
-  defp trade([trading_symbol | rest], quantity, balance_delta) do
-    Logger.debug("Trading #{inspect(trading_symbol)} with quantity: #{inspect(quantity)}")
-    report = TradeClient.limit_order(trading_symbol, quantity, trading_symbol.price)
-    Logger.debug("Trade #{inspect(trading_symbol)} completed. Report: #{inspect(report)}")
+  defp trade([trading_symbol | rest], order_price, order_qty, balance_delta) do
+    report = TradeClient.limit_order(trading_symbol, order_qty, order_price)
+    Logger.debug("Trade completed. #{inspect(report)}")
 
     # update fee balance right away
     Enum.each(report.fees, fn %TradeReport.Fee{fee_currency: currency, fee_amount: amount} ->
