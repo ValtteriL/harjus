@@ -17,11 +17,13 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
   alias Types.TradingSymbol
 
   @order_filled ExecutionReport.OrderStatus.filled()
+  @rejected ExecutionReport.OrderStatus.rejected()
+  @expired ExecutionReport.OrderStatus.expired()
 
   def new do
     api_key = Application.fetch_env!(:harjus, :binance_ed25519_api_key)
     private_key = Application.fetch_env!(:harjus, :binance_ed25519_private_key)
-    hostname = Application.fetch_env!(:harjus, :binance_fix_api_hostname)
+    hostname = String.to_charlist(Application.fetch_env!(:harjus, :binance_fix_api_hostname))
     port = Application.fetch_env!(:harjus, :binance_fix_api_port)
 
     # start FIX session
@@ -108,7 +110,7 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
 
   defp react_to_fix_message(state, {:execution_report, execution_report}) do
     # if complete, reply to trader
-    Logger.info("Execution report: #{execution_report}")
+    Logger.info("Execution report: #{inspect(execution_report)}")
 
     # if order is filled, relay to trader
     case execution_report.order_status do
@@ -124,6 +126,12 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
                 execution_report.client_order_id
               )
         }
+
+      @rejected ->
+        raise("Order rejected: #{inspect(execution_report)}")
+
+      @expired ->
+        raise("Order expired: #{inspect(execution_report)}")
 
       _ ->
         state
@@ -151,8 +159,7 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
       position: position,
       quantity_base: execution_report.quantity_base,
       quantity_quote: execution_report.quantity_quote,
-      quantity_fee: execution_report.fee_amount,
-      fee_currency: execution_report.fee_currency
+      fees: execution_report.fees
     }
   end
 end

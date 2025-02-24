@@ -10,7 +10,13 @@ defmodule MarketData.Exchange.Binance do
     base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
     url = "#{base_url}/api/v3/exchangeInfo"
 
-    {:ok, resp} = Req.get(url)
+    resp = Req.get!(url)
+
+    # verify status code is 200, otherwise raise an error
+    case resp.status do
+      200 -> :ok
+      _ -> raise "Failed to get symbols from Binance: #{inspect(resp)}"
+    end
 
     resp.body["symbols"]
     |> Enum.map(fn x ->
@@ -27,6 +33,7 @@ defmodule MarketData.Exchange.Binance do
       # get asset increments
       |> Map.put(:baseAssetIncrement, get_base_asset_increment(x["filters"]))
       |> Map.put(:quoteAssetIncrement, get_quote_asset_increment(x["filters"]))
+      |> Map.put(:minNotional, get_min_notional(x["filters"]))
       # delete filters
       |> Map.delete(:filters)
     end)
@@ -38,9 +45,17 @@ defmodule MarketData.Exchange.Binance do
         baseAssetPrecision: x[:baseAssetPrecision],
         quoteAssetPrecision: x[:quoteAssetPrecision],
         baseAssetIncrement: x[:baseAssetIncrement],
-        quoteAssetIncrement: x[:quoteAssetIncrement]
+        quoteAssetIncrement: x[:quoteAssetIncrement],
+        minNotional: x[:minNotional]
       }
     end)
+  end
+
+  defp get_min_notional(filters) do
+    filters
+    |> Enum.find(fn filter -> filter["filterType"] == "NOTIONAL" end)
+    |> Map.get("minNotional")
+    |> Decimal.new()
   end
 
   defp get_base_asset_increment(filters) do
@@ -63,7 +78,13 @@ defmodule MarketData.Exchange.Binance do
     base_url = Application.get_env(:harjus, :binance_market_data_api_uri)
     url = "#{base_url}/api/v3/ticker/price"
 
-    {:ok, resp} = Req.get(url)
+    resp = Req.get!(url)
+
+    # verify status code is 200, otherwise raise an error
+    case resp.status do
+      200 -> :ok
+      _ -> raise "Failed to get symbol prices from Binance: #{inspect(resp)}"
+    end
 
     resp.body
     |> Enum.map(fn x -> {x["symbol"], Decimal.from_float(String.to_float(x["price"]))} end)

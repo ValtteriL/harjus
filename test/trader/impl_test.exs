@@ -102,8 +102,12 @@ defmodule Trader.ImplTest do
       position: position,
       quantity_base: Decimal.new(1),
       quantity_quote: Decimal.new(1),
-      quantity_fee: Decimal.from_float(0.1),
-      fee_currency: "BNB"
+      fees: [
+        %Types.TradeReport.Fee{
+          fee_currency: "BNB",
+          fee_amount: Decimal.from_float(0.1)
+        }
+      ]
     }
   end
 
@@ -154,7 +158,8 @@ defmodule Trader.ImplTest do
       symbol <- non_empty_string(),
       position <- union([:long, :short]),
       base_asset <- non_empty_string(),
-      quote_asset <- non_empty_string()
+      quote_asset <- non_empty_string(),
+      min_notional <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
@@ -162,27 +167,8 @@ defmodule Trader.ImplTest do
         base_asset: base_asset,
         quote_asset: quote_asset,
         quote_asset_increment: Decimal.from_float(0.01),
-        quote_asset_precision: 8
-      }
-    end
-  end
-
-  defp trade_report do
-    let([
-      symbol <- non_empty_string(),
-      position <- union([:long, :short]),
-      qty_base <- pos_decimal(),
-      qty_quote <- pos_decimal(),
-      qty_fee <- pos_decimal(),
-      fee_currency <- non_empty_string()
-    ]) do
-      %TradeReport{
-        symbol: symbol,
-        position: position,
-        quantity_base: qty_base,
-        quantity_quote: qty_quote,
-        quantity_fee: qty_fee,
-        fee_currency: fee_currency
+        quote_asset_precision: 8,
+        min_notional: min_notional
       }
     end
   end

@@ -74,7 +74,7 @@ variable "binance_fix_api_hostname" {
 
 variable "binance_fix_api_port" {
   description = "The port of the Binance FIX API"
-  type        = string
+  type        = number
 }
 
 variable "binance_market_data_api_uri" {
@@ -107,3 +107,8 @@ variable "balance_exchange" {
   type        = string
 }
 
+variable "num_nping_probes" {
+  description = "The number of nping probes to send"
+  type        = number
+  default     = 100
+}

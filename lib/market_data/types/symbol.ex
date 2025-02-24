@@ -9,7 +9,8 @@ defmodule MarketData.Types.Symbol do
           baseAssetPrecision: integer(),
           quoteAssetPrecision: integer(),
           baseAssetIncrement: Decimal.t(),
-          quoteAssetIncrement: Decimal.t()
+          quoteAssetIncrement: Decimal.t(),
+          minNotional: Decimal.t()
         }
 
   @enforce_keys [
@@ -19,7 +20,8 @@ defmodule MarketData.Types.Symbol do
     :baseAssetPrecision,
     :quoteAssetPrecision,
     :baseAssetIncrement,
-    :quoteAssetIncrement
+    :quoteAssetIncrement,
+    :minNotional
   ]
   defstruct [
     :symbol,
@@ -28,6 +30,7 @@ defmodule MarketData.Types.Symbol do
     :baseAssetPrecision,
     :quoteAssetPrecision,
     :baseAssetIncrement,
-    :quoteAssetIncrement
+    :quoteAssetIncrement,
+    :minNotional
   ]
 end

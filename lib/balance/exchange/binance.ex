@@ -16,11 +16,16 @@ defmodule Balance.Exchange.Binance do
     uri = Application.fetch_env!(:harjus, :binance_rest_api_uri)
     signature = sign_request(private_key)
 
-    {:ok, resp} =
-      Req.get("#{uri}/api/v3/account?#{signature}", headers: ["X-MBX-APIKEY": api_key])
+    resp = Req.get!("#{uri}/api/v3/account?#{signature}", headers: ["X-MBX-APIKEY": api_key])
+
+    # verify status code is 200, otherwise raise an error
+    case resp.status do
+      200 -> :ok
+      _ -> raise "Failed to get balances from Binance: #{inspect(resp)}"
+    end
 
     resp.body["balances"]
-    |> Enum.map(fn x -> {x["asset"], String.to_float(x["free"])} end)
+    |> Enum.map(fn x -> {x["asset"], Decimal.from_float(String.to_float(x["free"]))} end)
     |> Enum.into(%{})
   end
 

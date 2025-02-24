@@ -39,11 +39,19 @@ defmodule Harjus do
         {:telemetry_poller, measurements: [], period: :timer.seconds(10)},
 
         # telemetry reporter
-        if Application.fetch_env!(:harjus, :console_telemetry) do
-          {Telemetry.Metrics.ConsoleReporter, [metrics: Metrics.metrics()]}
-        else
-          {TelemetryMetricsCloudwatch,
-           [metrics: Metrics.metrics(), namespace: "Harjus", push_interval: 30_000]}
+        cond do
+          # silence metrics
+          Application.fetch_env!(:harjus, :console_silence) ->
+            {Agent, fn -> :ok end}
+
+          # metrics to console
+          Application.fetch_env!(:harjus, :console_telemetry) ->
+            {Telemetry.Metrics.ConsoleReporter, [metrics: Metrics.metrics()]}
+
+          # metrics to cloudwatch
+          true ->
+            {TelemetryMetricsCloudwatch,
+             [metrics: Metrics.metrics(), namespace: "Harjus", push_interval: 30_000]}
         end,
 
         # utilities

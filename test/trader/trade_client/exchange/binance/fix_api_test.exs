@@ -6,7 +6,6 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   alias Trader.TradeClient.Exchange.Binance.FixApi.Const.OrderSide
   alias Trader.TradeClient.Exchange.Binance.FixApi.Const.OrderType
   alias Trader.TradeClient.Exchange.Binance.FixApi.Const.Tag
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport
   alias Types.TradingSymbol
 
   use ExUnit.Case, async: true
@@ -76,9 +75,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
              quantity_quote,
              symbol,
              side,
-             fee_currency,
-             fee_amount,
-             client_order_id
+             client_order_id,
+             fee_groups
            ] <- [
              pos_integer(),
              pos_decimal(),
@@ -86,37 +84,61 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
              non_empty_string(),
              pos_integer(),
              non_empty_string(),
-             pos_decimal(),
-             non_empty_string()
+             list(fee_group())
            ] do
+      fees_as_pairs =
+        Enum.map(fee_groups, fn %{fee_currency: fee_currency, fee_amount: fee_amount} ->
+          [
+            pair(Tag.fee_currency(), fee_currency),
+            pair(Tag.fee_amount(), Decimal.to_string(fee_amount))
+          ]
+        end)
+        |> List.flatten()
+
       report_fields =
-        [
-          pair(Tag.order_status(), Integer.to_string(status)),
-          pair(Tag.quantity_base(), quantity_base),
-          pair(Tag.quantity_quote(), quantity_quote),
-          pair(Tag.symbol(), symbol),
-          pair(Tag.side(), Integer.to_string(side)),
-          pair(Tag.fee_currency(), fee_currency),
-          pair(Tag.fee_amount(), fee_amount),
-          pair(Tag.cl_order_id(), client_order_id)
-        ]
+        ([
+           pair(Tag.order_status(), Integer.to_string(status)),
+           pair(Tag.quantity_base(), quantity_base),
+           pair(Tag.quantity_quote(), quantity_quote),
+           pair(Tag.symbol(), symbol),
+           pair(Tag.side(), Integer.to_string(side)),
+           pair(Tag.cl_order_id(), client_order_id),
+           pair(Tag.no_misc_fees(), length(fee_groups))
+         ] ++ fees_as_pairs)
         |> Enum.join("|")
 
       msg =
         "8=FIX.4.4|9=12|35=8|34=1|49=binance|56=client|#{report_fields}|52=20210101-00:00:00.000|10=000|"
 
-      assert {:execution_report,
-              %ExecutionReport{
-                order_status: Integer.to_string(status),
-                quantity_base: quantity_base,
-                quantity_quote: quantity_quote,
-                symbol: symbol,
-                side: Integer.to_string(side),
-                fee_currency: fee_currency,
-                fee_amount: fee_amount,
-                client_order_id: client_order_id
-              }} ==
-               FixApi.parse_message(str_message_to_binary(msg))
+      {:execution_report, parsed_msg} = FixApi.parse_message(str_message_to_binary(msg))
+
+      # verify fields are correct
+
+      order_status = Integer.to_string(status)
+      side = Integer.to_string(side)
+
+      %{
+        order_status: ^order_status,
+        quantity_base: ^quantity_base,
+        quantity_quote: ^quantity_quote,
+        symbol: ^symbol,
+        side: ^side,
+        fees: _,
+        client_order_id: ^client_order_id
+      } =
+        parsed_msg
+
+      # verify fees are correct
+      assert Enum.count(fee_groups) == length(parsed_msg.fees)
+
+      assert Enum.all?(parsed_msg.fees, fn %{fee_currency: fee_currency, fee_amount: fee_amount} ->
+               Enum.any?(fee_groups, fn %{
+                                          fee_currency: expected_fee_currency,
+                                          fee_amount: expected_fee_amount
+                                        } ->
+                 fee_currency == expected_fee_currency and fee_amount == expected_fee_amount
+               end)
+             end)
     end
   end
 
@@ -146,6 +168,18 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
 
   ## Generators ##
 
+  defp fee_group do
+    let [
+      fee_currency <- non_empty_string(),
+      fee_amount <- pos_decimal()
+    ] do
+      %{
+        fee_currency: fee_currency,
+        fee_amount: fee_amount
+      }
+    end
+  end
+
   defp trading_symbol do
     let [
       symbol <- non_empty_string(),
@@ -153,7 +187,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
       base_asset <- non_empty_string(),
       quote_asset <- non_empty_string(),
       precision <- pos_integer(),
-      increment <- pos_decimal()
+      increment <- pos_decimal(),
+      min_notional <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
@@ -161,7 +196,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
         base_asset: base_asset,
         quote_asset: quote_asset,
         quote_asset_increment: increment,
-        quote_asset_precision: precision
+        quote_asset_precision: precision,
+        min_notional: min_notional
       }
     end
   end
@@ -287,7 +323,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
                    base_asset: "ETH",
                    quote_asset: "BTC",
                    quote_asset_increment: Decimal.new("0.0001"),
-                   quote_asset_precision: 8
+                   quote_asset_precision: 8,
+                   min_notional: Decimal.from_float(0.001)
                  },
                  Decimal.new("1"),
                  client_order_id

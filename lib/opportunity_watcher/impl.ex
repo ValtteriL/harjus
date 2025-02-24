@@ -106,8 +106,7 @@ defmodule OpportunityWatcher.Impl do
     affected_pathids = state.symbol_to_pathids_map[symbol]
 
     new_pathid_profit_cap =
-      affected_pathids
-      |> Enum.map(fn pathid ->
+      Enum.map(affected_pathids, fn pathid ->
         path = state.pathid_to_path_map[pathid]
         profit = Opportunity.profit(path, new_trading_symbol_to_price_qty_tuple, state.commission)
 
@@ -151,8 +150,6 @@ defmodule OpportunityWatcher.Impl do
         path = state.pathid_to_path_map[pathid]
         %Types.Opportunity{path: path, profit: profit, capacity: capacity}
       end)
-
-    Logger.debug("Opportunities: #{inspect(new_opportunities)}")
 
     {new_state, new_opportunities}
   end

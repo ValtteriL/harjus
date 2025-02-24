@@ -134,7 +134,31 @@ resource "aws_instance" "ecs_instance" {
   security_groups = [aws_security_group.security.name]
   user_data       = <<-EOF
                       #!/bin/bash
+                      set -e
+
+                      # required to join ECS
                       echo ECS_CLUSTER=${aws_ecs_cluster.ecs_cluster.name} >> /etc/ecs/ecs.config
+
+                      # begin optimized resolver config
+                      dnf install -y nmap bind-utils
+
+                      NUM_PROBES=${var.num_nping_probes}
+
+                      endpoints=( "data-stream.binance.vision:443" "stream.binance.com:443" "data-stream.binance.com:443" )
+                      for pair in "$${endpoints[@]}"; do
+                        host=$(echo $pair | awk -F: '{print $1}')
+                        port=$(echo $pair | awk -F: '{print $2}')
+
+                        best_ip=$(for ip in `dig +short $host`; do
+                          avg_rtt=`nping -c "$NUM_PROBES" --tcp -p "$port" "$ip" |grep "Avg rtt" |awk '{print $11}'`
+                          echo "$ip $avg_rtt"
+                        done|sort -k2 -n | head -n1|awk '{print $1}')
+
+                        # add the best IP to /etc/hosts
+                        echo "$best_ip $host" >> /etc/hosts
+                      done
+
+                      # end optimized resolver config
                       EOF
 
   user_data_replace_on_change = true
@@ -154,6 +178,7 @@ resource "aws_cloudwatch_log_group" "log_group" {
 resource "aws_ecs_task_definition" "ecs_td" {
   family                   = "harjus"
   requires_compatibilities = ["EC2"]
+  network_mode             = "host"
   container_definitions = jsonencode([
     {
       name              = "harjus"
@@ -213,7 +238,7 @@ resource "aws_ecs_task_definition" "ecs_td" {
         },
         {
           name  = "BINANCE_FIX_API_PORT"
-          value = var.binance_fix_api_port
+          value = "${tostring(var.binance_fix_api_port)}"
         },
         {
           name  = "BINANCE_MARKET_DATA_API_URI"

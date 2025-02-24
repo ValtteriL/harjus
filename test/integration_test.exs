@@ -45,7 +45,8 @@ defmodule IntegrationTest do
           baseAssetPrecision: 8,
           quoteAssetPrecision: 2,
           baseAssetIncrement: Decimal.from_float(0.000001),
-          quoteAssetIncrement: Decimal.from_float(0.01)
+          quoteAssetIncrement: Decimal.from_float(0.01),
+          minNotional: Decimal.from_float(0.0001)
         },
         %Symbol{
           symbol: "ETHBTC",
@@ -54,7 +55,8 @@ defmodule IntegrationTest do
           baseAssetPrecision: 8,
           quoteAssetPrecision: 2,
           baseAssetIncrement: Decimal.from_float(0.000001),
-          quoteAssetIncrement: Decimal.from_float(0.01)
+          quoteAssetIncrement: Decimal.from_float(0.01),
+          minNotional: Decimal.from_float(0.0001)
         },
         %Symbol{
           symbol: "ETHUSDT",
@@ -63,7 +65,8 @@ defmodule IntegrationTest do
           baseAssetPrecision: 8,
           quoteAssetPrecision: 2,
           baseAssetIncrement: Decimal.from_float(0.000001),
-          quoteAssetIncrement: Decimal.from_float(0.01)
+          quoteAssetIncrement: Decimal.from_float(0.01),
+          minNotional: Decimal.from_float(0.0001)
         }
       ]
     end)
@@ -87,8 +90,12 @@ defmodule IntegrationTest do
         position: trading_symbol.position,
         quantity_base: Decimal.new(1),
         quantity_quote: Decimal.new(1),
-        quantity_fee: fee,
-        fee_currency: "BNB"
+        fees: [
+          %Types.TradeReport.Fee{
+            fee_currency: "BNB",
+            fee_amount: fee
+          }
+        ]
       }
     end)
     # last trade trade 1:2. It should result in profit of capacity
@@ -96,10 +103,14 @@ defmodule IntegrationTest do
       %Types.TradeReport{
         symbol: trading_symbol.symbol,
         position: trading_symbol.position,
-        quantity_base: Decimal.new(1),
-        quantity_quote: Decimal.new(2),
-        quantity_fee: fee,
-        fee_currency: "BNB"
+        quantity_base: Decimal.new(2),
+        quantity_quote: Decimal.new(1),
+        fees: [
+          %Types.TradeReport.Fee{
+            fee_currency: "BNB",
+            fee_amount: fee
+          }
+        ]
       }
     end)
 

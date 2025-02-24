@@ -95,11 +95,14 @@ defmodule Trader.Impl do
   end
 
   defp trade([trading_symbol | rest], quantity, balance_delta) do
+    Logger.debug("Trading #{inspect(trading_symbol)} with quantity: #{inspect(quantity)}")
     report = TradeClient.market_order(trading_symbol, quantity)
     Logger.debug("Trade #{inspect(trading_symbol)} completed. Report: #{inspect(report)}")
 
     # update fee balance right away
-    MyBalance.update(report.fee_currency, Decimal.negate(report.quantity_fee))
+    Enum.each(report.fees, fn %TradeReport.Fee{fee_currency: currency, fee_amount: amount} ->
+      MyBalance.update(currency, Decimal.negate(amount))
+    end)
 
     # store other balance changes in delta
     new_balance_delta = update_balance_delta(balance_delta, trading_symbol, report)
@@ -111,17 +114,11 @@ defmodule Trader.Impl do
   defp trade([], _, balance_delta), do: balance_delta
 
   defp received_quantity(trade_report) do
-    case trade_report.position do
-      :long -> trade_report.quantity_base
-      :short -> trade_report.quantity_quote
-    end
+    trade_report.quantity_base
   end
 
   defp used_quantity(trade_report) do
-    case trade_report.position do
-      :long -> trade_report.quantity_quote
-      :short -> trade_report.quantity_base
-    end
+    trade_report.quantity_quote
   end
 
   @spec update_balance_delta(balance_delta(), TradingSymbol.t(), TradeReport.t()) ::

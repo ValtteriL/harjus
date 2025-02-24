@@ -16,8 +16,12 @@ defmodule Trader.TradeClient.Exchange.Mock do
       position: [:long, :short] |> Enum.random(),
       quantity_base: quantity,
       quantity_quote: Decimal.from_float(1.0),
-      quantity_fee: Decimal.from_float(0.1),
-      fee_currency: "BNB"
+      fees: [
+        %TradeReport.Fee{
+          fee_currency: "BNB",
+          fee_amount: Decimal.from_float(0.1)
+        }
+      ]
     }
   end
 end

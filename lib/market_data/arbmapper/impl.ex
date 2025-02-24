@@ -65,7 +65,8 @@ defmodule MarketData.Arbmapper.Impl do
         base_asset: s.baseAsset,
         quote_asset: s.quoteAsset,
         quote_asset_increment: s.quoteAssetIncrement,
-        quote_asset_precision: s.quoteAssetPrecision
+        quote_asset_precision: s.quoteAssetPrecision,
+        min_notional: s.minNotional
       })
 
       :digraph.add_edge(graph, s.quoteAsset, s.baseAsset, %TradingSymbol{
@@ -74,7 +75,8 @@ defmodule MarketData.Arbmapper.Impl do
         base_asset: s.quoteAsset,
         quote_asset: s.baseAsset,
         quote_asset_precision: s.baseAssetPrecision,
-        quote_asset_increment: s.baseAssetIncrement
+        quote_asset_increment: s.baseAssetIncrement,
+        min_notional: s.minNotional
       })
     end
 

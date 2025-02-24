@@ -110,7 +110,8 @@ defmodule OpportunityWatcher.ImplTest do
       base_asset <- non_empty_string(),
       quote_asset <- non_empty_string(),
       precision <- pos_integer(),
-      increment <- pos_decimal()
+      increment <- pos_decimal(),
+      min_notional <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
@@ -118,7 +119,8 @@ defmodule OpportunityWatcher.ImplTest do
         base_asset: base_asset,
         quote_asset: quote_asset,
         quote_asset_increment: increment,
-        quote_asset_precision: precision
+        quote_asset_precision: precision,
+        min_notional: min_notional
       }
     end
   end
@@ -155,7 +157,8 @@ defmodule OpportunityWatcher.ImplTest do
             base_asset: "BTC",
             quote_asset: "USDT",
             quote_asset_increment: Decimal.new("0.01"),
-            quote_asset_precision: 8
+            quote_asset_precision: 8,
+            min_notional: Decimal.from_float(0.0001)
           },
           %TradingSymbol{
             symbol: "BTCUSDT",
@@ -163,7 +166,8 @@ defmodule OpportunityWatcher.ImplTest do
             base_asset: "USDT",
             quote_asset: "BTC",
             quote_asset_increment: Decimal.new("0.01"),
-            quote_asset_precision: 8
+            quote_asset_precision: 8,
+            min_notional: Decimal.from_float(0.0001)
           }
         ]
       ]
@@ -206,7 +210,8 @@ defmodule OpportunityWatcher.ImplTest do
                    base_asset: "BTC",
                    quote_asset: "USDT",
                    quote_asset_increment: Decimal.new("0.01"),
-                   quote_asset_precision: 8
+                   quote_asset_precision: 8,
+                   min_notional: Decimal.from_float(0.0001)
                  },
                  %TradingSymbol{
                    symbol: "BTCUSDT",
@@ -214,7 +219,8 @@ defmodule OpportunityWatcher.ImplTest do
                    base_asset: "USDT",
                    quote_asset: "BTC",
                    quote_asset_increment: Decimal.new("0.01"),
-                   quote_asset_precision: 8
+                   quote_asset_precision: 8,
+                   min_notional: Decimal.from_float(0.0001)
                  }
                ],
                profit: Decimal.new("1"),

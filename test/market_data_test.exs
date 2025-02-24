@@ -87,7 +87,8 @@ defmodule MarketDataTest do
       base_asset_precision <- pos_integer(),
       quote_asset_precision <- pos_integer(),
       base_asset_increment <- pos_decimal(),
-      quote_asset_increment <- pos_decimal()
+      quote_asset_increment <- pos_decimal(),
+      min_notional <- pos_decimal()
     ] do
       let symbols <-
             non_empty(
@@ -98,7 +99,8 @@ defmodule MarketDataTest do
                 baseAssetPrecision: base_asset_precision,
                 quoteAssetPrecision: quote_asset_precision,
                 baseAssetIncrement: base_asset_increment,
-                quoteAssetIncrement: quote_asset_increment
+                quoteAssetIncrement: quote_asset_increment,
+                minNotional: min_notional
               })
             ) do
         symbols

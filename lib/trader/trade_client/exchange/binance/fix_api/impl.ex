@@ -181,6 +181,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
 
   defp parse_execution_report(message) do
     fields = parse_message_into_fields(message)
+    fees = parse_fees(message)
+    reject_text = Map.get(fields, Const.Tag.reject_text(), nil)
 
     %ExecutionReport{
       order_status: fields[Const.Tag.order_status()],
@@ -188,10 +190,25 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
       quantity_quote: Decimal.new(fields[Const.Tag.quantity_quote()]),
       symbol: fields[Const.Tag.symbol()],
       side: fields[Const.Tag.side()],
-      fee_currency: fields[Const.Tag.fee_currency()],
-      fee_amount: Decimal.new(fields[Const.Tag.fee_amount()]),
-      client_order_id: fields[Const.Tag.cl_order_id()]
+      fees: fees,
+      client_order_id: fields[Const.Tag.cl_order_id()],
+      error_msg: reject_text
     }
+  end
+
+  defp parse_fees(message) do
+    :binary.split(message, <<@soh>>, [:global, :trim_all])
+    |> Enum.map(fn p -> parse_field(p) end)
+    |> Enum.filter(fn {tag, _} ->
+      tag == Const.Tag.fee_currency() or tag == Const.Tag.fee_amount()
+    end)
+    |> Enum.chunk_every(2)
+    |> Enum.map(fn [{_, currency}, {_, amount}] ->
+      %ExecutionReport.Fee{
+        fee_currency: currency,
+        fee_amount: Decimal.from_float(String.to_float(amount))
+      }
+    end)
   end
 
   defp parse_message_into_fields(message) do

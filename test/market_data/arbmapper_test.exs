@@ -160,7 +160,8 @@ defmodule MarketData.ArbmapperTest do
                 quoteAssetPrecision: quote_asset_precision,
                 quoteAssetIncrement: quote_asset_increment,
                 baseAssetPrecision: base_asset_precision,
-                baseAssetIncrement: base_asset_increment
+                baseAssetIncrement: base_asset_increment,
+                minNotional: Decimal.new("0.01")
               })
             ) do
         symbols
@@ -196,7 +197,8 @@ defmodule MarketData.ArbmapperTest do
         quoteAssetPrecision: 8,
         quoteAssetIncrement: Decimal.new("0.01"),
         baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01")
+        baseAssetIncrement: Decimal.new("0.01"),
+        minNotional: Decimal.from_float(0.0001)
       },
       %Symbol{
         symbol: "ETHLTC",
@@ -205,7 +207,8 @@ defmodule MarketData.ArbmapperTest do
         quoteAssetPrecision: 8,
         quoteAssetIncrement: Decimal.new("0.01"),
         baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01")
+        baseAssetIncrement: Decimal.new("0.01"),
+        minNotional: Decimal.from_float(0.0001)
       },
       %Symbol{
         symbol: "LTCBTC",
@@ -214,7 +217,8 @@ defmodule MarketData.ArbmapperTest do
         quoteAssetPrecision: 8,
         quoteAssetIncrement: Decimal.new("0.01"),
         baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01")
+        baseAssetIncrement: Decimal.new("0.01"),
+        minNotional: Decimal.from_float(0.0001)
       }
     ]
 
@@ -355,7 +359,8 @@ defmodule MarketData.ArbmapperTest do
         quoteAssetPrecision: 8,
         quoteAssetIncrement: Decimal.new("0.01"),
         baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01")
+        baseAssetIncrement: Decimal.new("0.01"),
+        minNotional: Decimal.from_float(0.0001)
       },
       %Symbol{
         symbol: "ETHBTC",
@@ -364,7 +369,8 @@ defmodule MarketData.ArbmapperTest do
         quoteAssetPrecision: 8,
         quoteAssetIncrement: Decimal.new("0.01"),
         baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01")
+        baseAssetIncrement: Decimal.new("0.01"),
+        minNotional: Decimal.from_float(0.0001)
       },
       %Symbol{
         symbol: "ETHUSDT",
@@ -373,7 +379,8 @@ defmodule MarketData.ArbmapperTest do
         quoteAssetPrecision: 8,
         quoteAssetIncrement: Decimal.new("0.01"),
         baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01")
+        baseAssetIncrement: Decimal.new("0.01"),
+        minNotional: Decimal.from_float(0.0001)
       }
     ]
 
@@ -403,7 +410,8 @@ defmodule MarketData.ArbmapperTest do
       base_asset: base_asset,
       quote_asset: quote_asset,
       quote_asset_increment: Decimal.new("0.01"),
-      quote_asset_precision: 8
+      quote_asset_precision: 8,
+      min_notional: Decimal.from_float(0.0001)
     }
   end
 
@@ -414,7 +422,8 @@ defmodule MarketData.ArbmapperTest do
       base_asset: base_asset,
       quote_asset: quote_asset,
       quote_asset_increment: Decimal.new("0.01"),
-      quote_asset_precision: 8
+      quote_asset_precision: 8,
+      min_notional: Decimal.from_float(0.0001)
     }
   end
 
@@ -425,7 +434,8 @@ defmodule MarketData.ArbmapperTest do
       base_asset: base_aset,
       quote_asset: quote_asset,
       quote_asset_increment: Decimal.new("0.01"),
-      quote_asset_precision: 8
+      quote_asset_precision: 8,
+      min_notional: Decimal.from_float(0.0001)
     }
   end
 end
