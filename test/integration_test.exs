@@ -84,7 +84,7 @@ defmodule IntegrationTest do
     end)
 
     # 2 trades 1:1
-    |> expect(:market_order, 2, fn trading_symbol, _quantity ->
+    |> expect(:limit_order, 2, fn trading_symbol, _quantity ->
       %Types.TradeReport{
         symbol: trading_symbol.symbol,
         position: trading_symbol.position,
@@ -99,7 +99,7 @@ defmodule IntegrationTest do
       }
     end)
     # last trade trade 1:2. It should result in profit of capacity
-    |> expect(:market_order, 1, fn trading_symbol, _quantity ->
+    |> expect(:limit_order, 1, fn trading_symbol, _quantity ->
       %Types.TradeReport{
         symbol: trading_symbol.symbol,
         position: trading_symbol.position,

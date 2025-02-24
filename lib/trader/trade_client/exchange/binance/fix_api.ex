@@ -42,6 +42,34 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi do
               to: Impl
 
   @doc """
+  Construct a limit order request message
+
+  ## Parameters
+    * `seq_num` - sequence number
+    * `sender_comp_id` - sender comp id
+    * `trading_symbol` - trading symbol
+    * `quantity` - quantity (in quote asset units)
+    * `price` - price (in quote asset units)
+  """
+  @spec limit_order_request(
+          integer(),
+          String.t(),
+          TradingSymbol.t(),
+          Decimal.t(),
+          Decimal.t(),
+          String.t()
+        ) :: binary()
+  defdelegate limit_order_request(
+                seq_num,
+                sender_comp_id,
+                trading_symbol,
+                quantity,
+                price,
+                client_order_id
+              ),
+              to: Impl
+
+  @doc """
   Construct a heartbeat message
 
   ## Parameters

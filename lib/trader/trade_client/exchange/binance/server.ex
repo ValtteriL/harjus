@@ -17,6 +17,11 @@ defmodule Trader.TradeClient.Exchange.Binance.Server do
     {:noreply, Impl.market_order(state, from, trading_symbol, quantity)}
   end
 
+  @impl GenServer
+  def handle_call({:limit_order, {trading_symbol, quantity}}, from, state) do
+    {:noreply, Impl.market_order(state, from, trading_symbol, quantity)}
+  end
+
   # handle messages from FIX server
   @impl GenServer
   def handle_info({:ssl, _socket, data}, state) do

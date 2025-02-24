@@ -13,6 +13,16 @@ defmodule Trader.TradeClient.Impl do
     Exchange.new()
   end
 
+  @spec limit_order(
+          trading_symbol :: TradingSymbol.t(),
+          quantity :: Decimal.t(),
+          price :: Decimal.t()
+        ) :: trade_report :: TradeReport.t()
+  def limit_order(trading_symbol = %TradingSymbol{}, quantity, price)
+      when Decimal.is_decimal(quantity) and Decimal.is_decimal(price) do
+    Exchange.limit_order(trading_symbol, quantity, price)
+  end
+
   @spec market_order(
           trading_symbol :: TradingSymbol.t(),
           quantity :: Decimal.t()

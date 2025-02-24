@@ -11,11 +11,20 @@ defmodule Trader.TradeClient.Exchange.Mock do
 
   def market_order(trading_symbol = %TradingSymbol{}, quantity)
       when Decimal.is_decimal(quantity) do
+    report(trading_symbol, quantity)
+  end
+
+  def limit_order(trading_symbol = %TradingSymbol{}, quantity, _price)
+      when Decimal.is_decimal(quantity) do
+    report(trading_symbol, quantity)
+  end
+
+  defp report(trading_symbol, quantity) do
     %TradeReport{
       symbol: trading_symbol.symbol,
       position: [:long, :short] |> Enum.random(),
-      quantity_base: quantity,
-      quantity_quote: Decimal.from_float(1.0),
+      quantity_base: Decimal.from_float(1.0),
+      quantity_quote: quantity,
       fees: [
         %TradeReport.Fee{
           fee_currency: "BNB",

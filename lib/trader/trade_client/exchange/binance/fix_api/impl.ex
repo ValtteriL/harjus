@@ -106,6 +106,47 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
   end
 
   @doc """
+  Construct a limit order request message
+  """
+  def limit_order_request(
+        seq_num,
+        sender_comp_id = "" <> _,
+        trading_symbol = %TradingSymbol{},
+        quantity,
+        price,
+        client_order_id = "" <> _
+      )
+      when Decimal.is_decimal(quantity) and Decimal.is_decimal(price) and is_integer(seq_num) and
+             seq_num > 0 do
+    side =
+      case trading_symbol.position do
+        :long -> Const.OrderSide.buy()
+        :short -> Const.OrderSide.sell()
+      end
+
+    symbol = trading_symbol.symbol
+
+    serialize(
+      %MessageToSend{
+        seqnum: seq_num,
+        msg_type: Const.MsgType.single_order_entry(),
+        sender: sender_comp_id,
+        orig_sending_time: nil,
+        body: [
+          {Const.Tag.cl_order_id(), client_order_id},
+          {Const.Tag.order_type(), Const.OrderType.limit()},
+          {Const.Tag.side(), side},
+          {Const.Tag.symbol(), symbol},
+          {Const.Tag.order_qty(), Decimal.to_float(quantity)},
+          {Const.Tag.price(), Decimal.to_float(price)},
+          {Const.Tag.time_in_force(), Const.TimeInForce.fill_or_kill()}
+        ]
+      },
+      timestamp()
+    )
+  end
+
+  @doc """
   Construct a heartbeat message
 
   ## Parameters

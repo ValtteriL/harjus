@@ -17,6 +17,7 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
   alias Types.TradingSymbol
 
   @order_filled ExecutionReport.OrderStatus.filled()
+  @order_canceled ExecutionReport.OrderStatus.canceled()
   @rejected ExecutionReport.OrderStatus.rejected()
   @expired ExecutionReport.OrderStatus.expired()
 
@@ -61,7 +62,7 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
         ) ::
           State.t()
   def market_order(state, from, trading_symbol, quantity) do
-    client_order_id = :crypto.strong_rand_bytes(8) |> Base.encode16() |> String.downcase()
+    client_order_id = generate_client_order_id()
 
     :ok =
       :ssl.send(
@@ -71,6 +72,39 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
           state.sender_comp_id,
           trading_symbol,
           quantity,
+          client_order_id
+        )
+      )
+
+    # store request id with from to be able to relay execution report
+    state
+    |> Map.put(
+      :outstanding_execution_reports,
+      Map.put(state.outstanding_execution_reports, client_order_id, from)
+    )
+    |> Map.put(:seq_num, state.seq_num + 1)
+  end
+
+  @spec limit_order(
+          state :: State.t(),
+          from :: term(),
+          trading_symbol :: TradingSymbol.t(),
+          quantity :: Decimal.t(),
+          price :: Decimal.t()
+        ) ::
+          State.t()
+  def limit_order(state, from, trading_symbol, quantity, price) do
+    client_order_id = generate_client_order_id()
+
+    :ok =
+      :ssl.send(
+        state.socket,
+        FixApi.limit_order_request(
+          state.seq_num,
+          state.sender_comp_id,
+          trading_symbol,
+          quantity,
+          price,
           client_order_id
         )
       )
@@ -127,6 +161,19 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
               )
         }
 
+      @order_canceled ->
+        from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)
+        GenServer.reply(from, {:error, :order_canceled})
+
+        %{
+          state
+          | outstanding_execution_reports:
+              Map.delete(
+                state.outstanding_execution_reports,
+                execution_report.client_order_id
+              )
+        }
+
       @rejected ->
         raise("Order rejected: #{inspect(execution_report)}")
 
@@ -161,5 +208,9 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
       quantity_quote: execution_report.quantity_quote,
       fees: execution_report.fees
     }
+  end
+
+  defp generate_client_order_id do
+    :crypto.strong_rand_bytes(8) |> Base.encode16() |> String.downcase()
   end
 end

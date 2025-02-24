@@ -96,7 +96,7 @@ defmodule Trader.Impl do
 
   defp trade([trading_symbol | rest], quantity, balance_delta) do
     Logger.debug("Trading #{inspect(trading_symbol)} with quantity: #{inspect(quantity)}")
-    report = TradeClient.market_order(trading_symbol, quantity)
+    report = TradeClient.limit_order(trading_symbol, quantity, trading_symbol.price)
     Logger.debug("Trade #{inspect(trading_symbol)} completed. Report: #{inspect(report)}")
 
     # update fee balance right away
