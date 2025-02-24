@@ -82,29 +82,13 @@ defmodule IntegrationTest do
     |> expect(:new, fn ->
       :does_not_matter
     end)
-
-    # 2 trades 1:1
-    |> expect(:limit_order, 2, fn trading_symbol, _quantity ->
+    # trades
+    |> expect(:limit_order, 3, fn trading_symbol, quantity, price ->
       %Types.TradeReport{
         symbol: trading_symbol.symbol,
         position: trading_symbol.position,
-        quantity_base: Decimal.new(1),
-        quantity_quote: Decimal.new(1),
-        fees: [
-          %Types.TradeReport.Fee{
-            fee_currency: "BNB",
-            fee_amount: fee
-          }
-        ]
-      }
-    end)
-    # last trade trade 1:2. It should result in profit of capacity
-    |> expect(:limit_order, 1, fn trading_symbol, _quantity ->
-      %Types.TradeReport{
-        symbol: trading_symbol.symbol,
-        position: trading_symbol.position,
-        quantity_base: Decimal.new(2),
-        quantity_quote: Decimal.new(1),
+        quantity_base: quantity,
+        quantity_quote: Decimal.mult(quantity, price),
         fees: [
           %Types.TradeReport.Fee{
             fee_currency: "BNB",
