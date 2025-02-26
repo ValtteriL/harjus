@@ -68,8 +68,8 @@ defmodule OpportunityWatcher.OpportunityTest do
         position: position,
         base_asset: base_asset,
         quote_asset: quote_asset,
-        quote_asset_increment: increment,
-        quote_asset_precision: precision,
+        base_asset_increment: increment,
+        base_asset_precision: precision,
         min_notional: min_notional
       }
     end
@@ -102,8 +102,8 @@ defmodule OpportunityWatcher.OpportunityTest do
       position: :long,
       base_asset: "BTC",
       quote_asset: "USDT",
-      quote_asset_increment: Decimal.from_float(0.01),
-      quote_asset_precision: 8,
+      base_asset_increment: Decimal.from_float(0.01),
+      base_asset_precision: 8,
       min_notional: Decimal.new(2)
     }
 
@@ -258,8 +258,8 @@ defmodule OpportunityWatcher.OpportunityTest do
       position: position,
       base_asset: base_aset,
       quote_asset: quote_asset,
-      quote_asset_increment: Decimal.new("0.01"),
-      quote_asset_precision: 8,
+      base_asset_increment: Decimal.new("0.01"),
+      base_asset_precision: 8,
       min_notional: Decimal.from_float(0.0001)
     }
   end

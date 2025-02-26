@@ -8,6 +8,7 @@ defmodule Trader.Impl do
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.TradeClient
   alias Types.Opportunity
+  alias Types.PlannedTrade
   alias Types.TradeReport
   alias Types.TradingSymbol
   require Logger
@@ -31,7 +32,7 @@ defmodule Trader.Impl do
     Logger.debug("Attempting execution with: #{inspect(opportunity)}")
     Metrics.report_trade_attempted()
 
-    pairs = path |> Enum.map(& &1.symbol)
+    pairs = path |> Enum.map(fn %PlannedTrade{trading_symbol: ts} -> ts.symbol end)
 
     # reserve the trading pairs
     reserve_symbols(pairs)
@@ -47,10 +48,11 @@ defmodule Trader.Impl do
     # reserve budget
     budget =
       MyBalance.reserve_upto(
-        Enum.at(opportunity.path, 0).quote_asset,
+        Enum.at(opportunity.path, 0).trading_symbol.quote_asset,
         opportunity.capacity,
-        Enum.at(opportunity.path, 0).quote_asset_increment,
-        Enum.at(opportunity.path, 0).quote_asset_precision
+        # TODO: wrong - should be quote asset increment, same for precision - remove?
+        Enum.at(opportunity.path, 0).trading_symbol.base_asset_increment,
+        Enum.at(opportunity.path, 0).trading_symbol.base_asset_precision
       )
 
     if Decimal.eq?(budget, 0) do
@@ -77,7 +79,7 @@ defmodule Trader.Impl do
     Metrics.report_trade_report_delta(balance_delta)
 
     starting_balance_delta =
-      Decimal.to_float(balance_delta[Enum.at(opportunity.path, 0).quote_asset])
+      Decimal.to_float(balance_delta[Enum.at(opportunity.path, 0).trading_symbol.quote_asset])
 
     case starting_balance_delta do
       x when x > 0 -> Metrics.report_trade_winning()
@@ -89,17 +91,26 @@ defmodule Trader.Impl do
     |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
   end
 
-  @spec trade([TradingSymbol.t()], Decimal.t(), Decimal.t()) :: balance_delta()
+  @spec trade([PlannedTrade.t()], Decimal.t(), Decimal.t()) :: balance_delta()
   defp trade(
-         path = [%TradingSymbol{quote_asset: quote_asset} | _],
-         budget,
-         unit_price_for_first_trade
+         path = [%PlannedTrade{trading_symbol: %TradingSymbol{quote_asset: quote_asset}} | _],
+         budget
        ) do
-    trade(path, budget, unit_price_for_first_trade, %{quote_asset => budget})
+    trade(path, budget, %{quote_asset => budget})
   end
 
-  defp trade([trading_symbol | rest], order_price, order_qty, balance_delta) do
-    report = TradeClient.limit_order(trading_symbol, order_qty, order_price)
+  defp trade(
+         [
+           %PlannedTrade{trading_symbol: trading_symbol, order_price: price}
+           | rest
+         ],
+         budget,
+         balance_delta
+       ) do
+    # calculate how many we can buy with the budget
+    qty = order_qty_for_budget(budget, price, trading_symbol)
+
+    report = TradeClient.limit_order(trading_symbol, qty, price)
     Logger.debug("Trade completed. #{inspect(report)}")
 
     # update fee balance right away
@@ -153,5 +164,11 @@ defmodule Trader.Impl do
         _ -> raise SymbolAlreadyReservedError
       end
     end)
+  end
+
+  defp order_qty_for_budget(budget, price, trading_symbol) do
+    Decimal.div(budget, price)
+    |> Decimal.div_int(trading_symbol.base_asset_increment)
+    |> Decimal.mult(trading_symbol.base_asset_increment)
   end
 end

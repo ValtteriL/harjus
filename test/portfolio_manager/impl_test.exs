@@ -159,8 +159,8 @@ defmodule PortfolioManager.ImplTest do
         position: position,
         base_asset: base_asset,
         quote_asset: quote_asset,
-        quote_asset_increment: increment,
-        quote_asset_precision: precision,
+        base_asset_increment: increment,
+        base_asset_precision: precision,
         min_notional: min_notional
       }
     end
@@ -271,8 +271,8 @@ defmodule PortfolioManager.ImplTest do
           position: :long,
           base_asset: base_asset,
           quote_asset: quote_asset,
-          quote_asset_increment: Decimal.new("0.01"),
-          quote_asset_precision: 8,
+          base_asset_increment: Decimal.new("0.01"),
+          base_asset_precision: 8,
           min_notional: Decimal.from_float(0.001)
         }
       ],

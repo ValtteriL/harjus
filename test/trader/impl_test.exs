@@ -8,6 +8,7 @@ defmodule Trader.ImplTest do
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.Impl
   alias Types.Opportunity
+  alias Types.PlannedTrade
   alias Types.TradeReport
   alias Types.TradingSymbol
   require Decimal
@@ -29,7 +30,9 @@ defmodule Trader.ImplTest do
 
       Trader.TradeClient.Exchange.TestMock
       |> expect(:new, fn -> :ok end)
-      |> expect(:market_order, Enum.count(opportunity.path), fn trading_symbol, _quantity ->
+      |> expect(:limit_order, Enum.count(opportunity.path), fn trading_symbol,
+                                                               _quantity,
+                                                               _price ->
         trade_report_for_symbol(trading_symbol)
       end)
 
@@ -138,16 +141,18 @@ defmodule Trader.ImplTest do
   end
 
   defp path do
-    let path <- non_empty(list(trading_symbol())) do
-      first_base_asset = Enum.at(path, 0).base_asset
+    let path <- non_empty(list(planned_trade())) do
+      first_base_asset = Enum.at(path, 0).trading_symbol.base_asset
 
       path
       # make symbols in path unique
-      |> Enum.uniq_by(fn p -> p.symbol end)
+      |> Enum.uniq_by(fn p -> p.trading_symbol.symbol end)
       # make sure the next quote asset is the same as the previous base asset
-      |> Enum.map_reduce(first_base_asset, fn ts, prev_base_asset ->
+      |> Enum.map_reduce(first_base_asset, fn ps, prev_base_asset ->
+        ts = ps.trading_symbol
         new_ts = ts |> Map.put(:quote_asset, prev_base_asset)
-        {new_ts, ts.base_asset}
+        new_ps = ps |> Map.put(:trading_symbol, new_ts)
+        {new_ps, ts.base_asset}
       end)
       |> elem(0)
     end
@@ -166,9 +171,23 @@ defmodule Trader.ImplTest do
         position: position,
         base_asset: base_asset,
         quote_asset: quote_asset,
-        quote_asset_increment: Decimal.from_float(0.01),
-        quote_asset_precision: 8,
+        base_asset_increment: Decimal.from_float(0.01),
+        base_asset_precision: 8,
         min_notional: min_notional
+      }
+    end
+  end
+
+  defp planned_trade do
+    let [
+      trading_symbol <- trading_symbol(),
+      order_price <- pos_decimal(),
+      order_qty <- pos_decimal()
+    ] do
+      %PlannedTrade{
+        trading_symbol: trading_symbol,
+        order_price: order_price,
+        order_qty: order_qty
       }
     end
   end

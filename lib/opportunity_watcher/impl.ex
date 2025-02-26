@@ -147,7 +147,13 @@ defmodule OpportunityWatcher.Impl do
           Decimal.gt?(capacity, state.min_capacity)
       end)
       |> Enum.map(fn {pathid, {profit, capacity}} ->
-        path = state.pathid_to_path_map[pathid]
+        path =
+          Opportunity.plan_trades(
+            state.pathid_to_path_map[pathid],
+            capacity,
+            new_trading_symbol_to_price_qty_tuple
+          )
+
         %Types.Opportunity{path: path, profit: profit, capacity: capacity}
       end)
 

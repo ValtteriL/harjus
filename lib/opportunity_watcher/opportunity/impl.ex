@@ -3,6 +3,7 @@ defmodule OpportunityWatcher.Opportunity.Impl do
   Functions for calculating arbitrage opportunities.
   """
 
+  alias Types.PlannedTrade
   alias Types.TradingSymbol
 
   require Decimal
@@ -89,5 +90,36 @@ defmodule OpportunityWatcher.Opportunity.Impl do
     Enum.map(trading_path, fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
     |> Enum.reduce(1, fn price, acc -> Decimal.div(acc, price) end)
     |> Decimal.sub(1)
+  end
+
+  @spec plan_trades(
+          trading_path :: trading_path(),
+          capacity :: Decimal.t(),
+          price_quantity_map :: %{
+            TradingSymbol.t() => price_qty_tuple()
+          }
+        ) :: [PlannedTrade.t()]
+  def plan_trades(trading_path = [%TradingSymbol{} | _], capacity, price_quantity_map = %{}) do
+    trading_path
+    |> Enum.map_reduce(capacity, fn symbol, acc ->
+      {order_price, _} = Map.get(price_quantity_map, symbol)
+      order_qty = order_qty_for_budget(acc, order_price, symbol)
+
+      {
+        %PlannedTrade{
+          trading_symbol: symbol,
+          order_price: order_price,
+          order_qty: order_qty
+        },
+        order_qty
+      }
+    end)
+    |> elem(0)
+  end
+
+  defp order_qty_for_budget(budget, price, trading_symbol) do
+    Decimal.div(budget, price)
+    |> Decimal.div_int(trading_symbol.base_asset_increment)
+    |> Decimal.mult(trading_symbol.base_asset_increment)
   end
 end

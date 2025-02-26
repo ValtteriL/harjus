@@ -4,6 +4,7 @@ defmodule OpportunityWatcher.Opportunity do
   """
 
   alias OpportunityWatcher.Opportunity.Impl
+  alias Types.PlannedTrade
   alias Types.TradingSymbol
 
   @type trading_path() :: [TradingSymbol.t()]
@@ -34,4 +35,16 @@ defmodule OpportunityWatcher.Opportunity do
   Taking into accound only best ask prices and quantities.
   """
   defdelegate capacity(trading_path, price_quantity_map), to: Impl
+
+  @spec plan_trades(
+          trading_path :: trading_path(),
+          capacity :: Decimal.t(),
+          price_quantity_map :: %{
+            TradingSymbol.t() => price_qty_tuple()
+          }
+        ) :: [PlannedTrade.t()]
+  @doc """
+  Plan trades for a trading path given symbol prices and quantities
+  """
+  defdelegate plan_trades(trading_path, capacity, price_quantity_map), to: Impl
 end

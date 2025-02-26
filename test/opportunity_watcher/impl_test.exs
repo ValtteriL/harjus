@@ -5,6 +5,7 @@ defmodule OpportunityWatcher.ImplTest do
   alias OpportunityWatcher.Impl
   alias OpportunityWatcher.State
   alias Types.Opportunity
+  alias Types.PlannedTrade
   alias Types.PriceUpdate
   alias Types.TradingSymbol
 
@@ -118,8 +119,8 @@ defmodule OpportunityWatcher.ImplTest do
         position: position,
         base_asset: base_asset,
         quote_asset: quote_asset,
-        quote_asset_increment: increment,
-        quote_asset_precision: precision,
+        base_asset_increment: increment,
+        base_asset_precision: precision,
         min_notional: min_notional
       }
     end
@@ -156,8 +157,8 @@ defmodule OpportunityWatcher.ImplTest do
             position: :long,
             base_asset: "BTC",
             quote_asset: "USDT",
-            quote_asset_increment: Decimal.new("0.01"),
-            quote_asset_precision: 8,
+            base_asset_increment: Decimal.new("0.01"),
+            base_asset_precision: 8,
             min_notional: Decimal.from_float(0.0001)
           },
           %TradingSymbol{
@@ -165,8 +166,8 @@ defmodule OpportunityWatcher.ImplTest do
             position: :short,
             base_asset: "USDT",
             quote_asset: "BTC",
-            quote_asset_increment: Decimal.new("0.01"),
-            quote_asset_precision: 8,
+            base_asset_increment: Decimal.new("0.01"),
+            base_asset_precision: 8,
             min_notional: Decimal.from_float(0.0001)
           }
         ]
@@ -204,23 +205,31 @@ defmodule OpportunityWatcher.ImplTest do
     assert opportunities == [
              %Opportunity{
                path: [
-                 %TradingSymbol{
-                   symbol: "BTCUSDT",
-                   position: :long,
-                   base_asset: "BTC",
-                   quote_asset: "USDT",
-                   quote_asset_increment: Decimal.new("0.01"),
-                   quote_asset_precision: 8,
-                   min_notional: Decimal.from_float(0.0001)
+                 %PlannedTrade{
+                   trading_symbol: %TradingSymbol{
+                     symbol: "BTCUSDT",
+                     position: :long,
+                     base_asset: "BTC",
+                     quote_asset: "USDT",
+                     base_asset_increment: Decimal.new("0.01"),
+                     base_asset_precision: 8,
+                     min_notional: Decimal.from_float(0.0001)
+                   },
+                   order_price: Decimal.new("1.0"),
+                   order_qty: Decimal.new("1.00")
                  },
-                 %TradingSymbol{
-                   symbol: "BTCUSDT",
-                   position: :short,
-                   base_asset: "USDT",
-                   quote_asset: "BTC",
-                   quote_asset_increment: Decimal.new("0.01"),
-                   quote_asset_precision: 8,
-                   min_notional: Decimal.from_float(0.0001)
+                 %PlannedTrade{
+                   trading_symbol: %TradingSymbol{
+                     symbol: "BTCUSDT",
+                     position: :short,
+                     base_asset: "USDT",
+                     quote_asset: "BTC",
+                     base_asset_increment: Decimal.new("0.01"),
+                     base_asset_precision: 8,
+                     min_notional: Decimal.from_float(0.0001)
+                   },
+                   order_price: Decimal.new("0.5"),
+                   order_qty: Decimal.new("2.00")
                  }
                ],
                profit: Decimal.new("1"),
