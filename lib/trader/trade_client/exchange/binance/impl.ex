@@ -54,37 +54,6 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
     }
   end
 
-  @spec market_order(
-          state :: State.t(),
-          from :: term(),
-          trading_symbol :: TradingSymbol.t(),
-          quantity :: Decimal.t()
-        ) ::
-          State.t()
-  def market_order(state, from, trading_symbol, quantity) do
-    client_order_id = generate_client_order_id()
-
-    :ok =
-      :ssl.send(
-        state.socket,
-        FixApi.market_order_request(
-          state.seq_num,
-          state.sender_comp_id,
-          trading_symbol,
-          quantity,
-          client_order_id
-        )
-      )
-
-    # store request id with from to be able to relay execution report
-    state
-    |> Map.put(
-      :outstanding_execution_reports,
-      Map.put(state.outstanding_execution_reports, client_order_id, from)
-    )
-    |> Map.put(:seq_num, state.seq_num + 1)
-  end
-
   @spec limit_order(
           state :: State.t(),
           from :: term(),

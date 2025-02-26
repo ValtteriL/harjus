@@ -20,11 +20,22 @@ defmodule PortfolioManager.Impl do
       # sort by profit * capacity in relative asset value
       |> Enum.sort(fn %{path: [firstsymbol1 | _], profit: profit1, capacity: cap1},
                       %{path: [firstsymbol2 | _], profit: profit2, capacity: cap2} ->
-        value1 = Map.get(state.relative_asset_values, firstsymbol1.quote_asset, Decimal.new(0))
-        value2 = Map.get(state.relative_asset_values, firstsymbol2.quote_asset, Decimal.new(0))
+        value1 =
+          Map.get(
+            state.relative_asset_values,
+            firstsymbol1.trading_symbol.quote_asset,
+            Decimal.new(0)
+          )
 
-        balance1 = Balance.get(firstsymbol1.quote_asset)
-        balance2 = Balance.get(firstsymbol2.quote_asset)
+        value2 =
+          Map.get(
+            state.relative_asset_values,
+            firstsymbol2.trading_symbol.quote_asset,
+            Decimal.new(0)
+          )
+
+        balance1 = Balance.get(firstsymbol1.trading_symbol.quote_asset)
+        balance2 = Balance.get(firstsymbol2.trading_symbol.quote_asset)
 
         Decimal.lt?(
           Decimal.mult(Decimal.mult(value2, profit2), Decimal.min(cap2, balance2)),

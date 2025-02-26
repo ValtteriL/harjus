@@ -5,6 +5,5 @@ defmodule Trader.TradeClient do
   alias Trader.TradeClient.Impl
 
   defdelegate new(), to: Impl
-  defdelegate market_order(trading_symbol, quantity), to: Impl
   defdelegate limit_order(trading_symbol, quantity, price), to: Impl
 end

@@ -49,7 +49,7 @@ defmodule OpportunityWatcher.ImplTest do
       {_, opportunities} = Impl.price_update(state, price_update)
 
       assert Enum.all?(opportunities, fn x ->
-               Enum.any?(x.path, fn x -> x.symbol == x.symbol end)
+               Enum.any?(x.path, fn x -> x.trading_symbol.symbol == price_update.symbol end)
              end)
     end
   end

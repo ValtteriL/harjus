@@ -9,11 +9,6 @@ defmodule Trader.TradeClient.Exchange.Mock do
 
   def new, do: :ok
 
-  def market_order(trading_symbol = %TradingSymbol{}, quantity)
-      when Decimal.is_decimal(quantity) do
-    report(trading_symbol, quantity)
-  end
-
   def limit_order(trading_symbol = %TradingSymbol{}, quantity, _price)
       when Decimal.is_decimal(quantity) do
     report(trading_symbol, quantity)

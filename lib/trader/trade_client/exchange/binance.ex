@@ -20,15 +20,6 @@ defmodule Trader.TradeClient.Exchange.Binance do
     GenServer.start_link(Server, [], name: __MODULE__)
   end
 
-  @spec market_order(
-          trading_symbol :: TradingSymbol.t(),
-          quantity :: Decimal.t()
-        ) :: TradeReport.t()
-  def market_order(trading_symbol = %TradingSymbol{}, quantity)
-      when Decimal.is_decimal(quantity) do
-    GenServer.call(__MODULE__, {:market_order, {trading_symbol, quantity}}, 5_000)
-  end
-
   @spec limit_order(
           trading_symbol :: TradingSymbol.t(),
           quantity :: Decimal.t(),

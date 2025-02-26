@@ -13,20 +13,22 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
   require Decimal
   use PropCheck
 
-  property "generates correct market order request" do
-    forall [seq, sender_comp_id, trading_symbol, quantity, client_order_id] <- [
+  property "generates correct limit order request" do
+    forall [seq, sender_comp_id, trading_symbol, order_qty, order_price, client_order_id] <- [
              pos_integer(),
              non_empty_string(),
              trading_symbol(),
              pos_decimal(),
+             pos_decimal(),
              non_empty_string()
            ] do
       msg =
-        FixApi.market_order_request(
+        FixApi.limit_order_request(
           seq,
           sender_comp_id,
           trading_symbol,
-          quantity,
+          order_qty,
+          order_price,
           client_order_id
         )
 
@@ -54,7 +56,13 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
       # correct quantity (10 decimals)
       assert String.contains?(
                msg,
-               "#{Tag.cash_order_qty()}=#{:erlang.float_to_binary(Decimal.to_float(quantity), [{:decimals, 10}, :compact])}"
+               "#{Tag.order_qty()}=#{:erlang.float_to_binary(Decimal.to_float(order_qty), [{:decimals, 10}, :compact])}"
+             )
+
+      # correct price (10 decimals)
+      assert String.contains?(
+               msg,
+               "#{Tag.price()}=#{:erlang.float_to_binary(Decimal.to_float(order_price), [{:decimals, 10}, :compact])}"
              )
 
       # correct sender comp id
@@ -63,7 +71,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
       # correct order type
       assert String.contains?(
                msg,
-               "#{Tag.order_type()}=#{OrderType.market()}"
+               "#{Tag.order_type()}=#{OrderType.limit()}"
              )
     end
   end
@@ -314,7 +322,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
 
     assert {:unknown, _} =
              FixApi.parse_message(
-               FixApi.market_order_request(
+               FixApi.limit_order_request(
                  seq,
                  sender_comp_id,
                  %TradingSymbol{
@@ -326,6 +334,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
                    base_asset_precision: 8,
                    min_notional: Decimal.from_float(0.001)
                  },
+                 Decimal.new("1"),
                  Decimal.new("1"),
                  client_order_id
                )

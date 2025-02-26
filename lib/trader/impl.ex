@@ -50,7 +50,7 @@ defmodule Trader.Impl do
       MyBalance.reserve_upto(
         Enum.at(opportunity.path, 0).trading_symbol.quote_asset,
         opportunity.capacity,
-        # TODO: wrong - should be quote asset increment, same for precision - remove?
+        # wrong - should be quote asset increment, same for precision - remove altogether?
         Enum.at(opportunity.path, 0).trading_symbol.base_asset_increment,
         Enum.at(opportunity.path, 0).trading_symbol.base_asset_precision
       )
@@ -91,7 +91,7 @@ defmodule Trader.Impl do
     |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
   end
 
-  @spec trade([PlannedTrade.t()], Decimal.t(), Decimal.t()) :: balance_delta()
+  @spec trade([PlannedTrade.t()], Decimal.t()) :: balance_delta()
   defp trade(
          path = [%PlannedTrade{trading_symbol: %TradingSymbol{quote_asset: quote_asset}} | _],
          budget
