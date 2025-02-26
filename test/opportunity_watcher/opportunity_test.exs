@@ -32,6 +32,52 @@ defmodule OpportunityWatcher.OpportunityTest do
     end
   end
 
+  property "plan_trades contains same number of trades as trading path" do
+    forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
+      capacity = Opportunity.capacity(trading_path, price_qty_map)
+      trades = Opportunity.plan_trades(trading_path, capacity, price_qty_map)
+
+      # plan_trades contains same number of trades as trading path
+      assert length(trades) == length(trading_path)
+    end
+  end
+
+  property "plan_trades first order_qty is always lte capacity" do
+    forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
+      capacity = Opportunity.capacity(trading_path, price_qty_map)
+      trades = Opportunity.plan_trades(trading_path, capacity, price_qty_map)
+
+      # plan_trades first order_qty*order_price is always lte capacity
+      first_trade = Enum.at(trades, 0)
+      assert Decimal.lte?(Decimal.mult(first_trade.order_qty, first_trade.order_price), capacity)
+    end
+  end
+
+  property "quantities in plan_trades are always positive" do
+    forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
+      capacity = Opportunity.capacity(trading_path, price_qty_map)
+      trades = Opportunity.plan_trades(trading_path, capacity, price_qty_map)
+
+      # quantities in plan_trades are always positive
+      assert Enum.all?(trades, fn trade -> Decimal.gte?(trade.order_qty, 0) end)
+    end
+  end
+
+  property "quantities in plan_trades are always multiples of base_asset_increment" do
+    forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
+      capacity = Opportunity.capacity(trading_path, price_qty_map)
+      trades = Opportunity.plan_trades(trading_path, capacity, price_qty_map)
+
+      # quantities in plan_trades are always multiples of base_asset_increment
+      assert Enum.all?(trades, fn trade ->
+               Decimal.eq?(
+                 Decimal.rem(trade.order_qty, trade.trading_symbol.base_asset_increment),
+                 0
+               )
+             end)
+    end
+  end
+
   ## Generators ##
 
   defp trading_path_and_price_map do
