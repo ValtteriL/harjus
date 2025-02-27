@@ -149,7 +149,7 @@ defmodule Trader.Impl do
   defp trade([], _, balance_delta), do: {:execution, balance_delta}
 
   defp received_quantity(trade_report) do
-    if trade_report.side == :long do
+    if trade_report.position == :long do
       trade_report.quantity_base
     else
       trade_report.quantity_quote
@@ -157,7 +157,7 @@ defmodule Trader.Impl do
   end
 
   defp used_quantity(trade_report) do
-    if trade_report.side == :long do
+    if trade_report.position == :long do
       trade_report.quantity_quote
     else
       trade_report.quantity_base
