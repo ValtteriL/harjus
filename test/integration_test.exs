@@ -59,9 +59,9 @@ defmodule IntegrationTest do
           minNotional: Decimal.from_float(0.0001)
         },
         %Symbol{
-          symbol: "ETHUSDT",
-          baseAsset: "ETH",
-          quoteAsset: "USDT",
+          symbol: "USDTETH",
+          baseAsset: "USDT",
+          quoteAsset: "ETH",
           baseAssetPrecision: 8,
           quoteAssetPrecision: 2,
           baseAssetIncrement: Decimal.from_float(0.000001),
@@ -74,7 +74,7 @@ defmodule IntegrationTest do
       %{
         "BTCUSDT" => Decimal.from_float(10_000.0),
         "ETHBTC" => Decimal.from_float(0.1),
-        "ETHUSDT" => Decimal.from_float(1_000.0)
+        "USDTETH" => Decimal.from_float(0.001)
       }
     end)
 
@@ -153,11 +153,11 @@ defmodule IntegrationTest do
     })
 
     PriceStreamer.price_update(%Types.PriceUpdate{
-      symbol: "ETHUSDT",
-      ask_price: Decimal.new(1),
-      ask_qty: Decimal.new(1),
-      bid_price: Decimal.new(2),
-      bid_qty: Decimal.new(2)
+      symbol: "USDTETH",
+      ask_price: Decimal.new("0.5"),
+      ask_qty: Decimal.new(2),
+      bid_price: Decimal.new(1),
+      bid_qty: Decimal.new(1)
     })
 
     # allow time for execution
