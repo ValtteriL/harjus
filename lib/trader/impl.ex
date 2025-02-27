@@ -118,11 +118,6 @@ defmodule Trader.Impl do
          budget,
          balance_delta
        ) do
-    # round the price to the nearest increment (short prices cannot be trusted to be valid otherwise)
-    price =
-      Decimal.div_int(price, trading_symbol.quote_asset_increment)
-      |> Decimal.mult(trading_symbol.quote_asset_increment)
-
     # calculate how many we can buy with the budget
     qty = order_qty_for_budget(budget, price, trading_symbol)
 
@@ -154,11 +149,19 @@ defmodule Trader.Impl do
   defp trade([], _, balance_delta), do: {:execution, balance_delta}
 
   defp received_quantity(trade_report) do
-    trade_report.quantity_base
+    if trade_report.side == :long do
+      trade_report.quantity_base
+    else
+      trade_report.quantity_quote
+    end
   end
 
   defp used_quantity(trade_report) do
-    trade_report.quantity_quote
+    if trade_report.side == :long do
+      trade_report.quantity_quote
+    else
+      trade_report.quantity_base
+    end
   end
 
   @spec update_balance_delta(balance_delta(), TradingSymbol.t(), TradeReport.t()) ::
@@ -193,12 +196,19 @@ defmodule Trader.Impl do
   end
 
   defp order_qty_for_budget(budget, price, trading_symbol) do
-    if Decimal.eq?(price, 0) do
-      Decimal.new(0)
-    else
-      Decimal.div(budget, price)
-      |> Decimal.div_int(trading_symbol.base_asset_increment)
-      |> Decimal.mult(trading_symbol.base_asset_increment)
+    cond do
+      Decimal.eq?(price, 0) ->
+        Decimal.new(0)
+
+      trading_symbol.position == :long ->
+        Decimal.div(budget, price)
+        |> Decimal.div_int(trading_symbol.base_asset_increment)
+        |> Decimal.mult(trading_symbol.base_asset_increment)
+
+      trading_symbol.position == :short ->
+        budget
+        |> Decimal.div_int(trading_symbol.base_asset_increment)
+        |> Decimal.mult(trading_symbol.base_asset_increment)
     end
   end
 
