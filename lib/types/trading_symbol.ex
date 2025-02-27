@@ -12,6 +12,8 @@ defmodule Types.TradingSymbol do
     :quote_asset,
     :base_asset_increment,
     :base_asset_precision,
+    :quote_asset_increment,
+    :quote_asset_precision,
     :min_notional
   ]
   defstruct [
@@ -21,6 +23,8 @@ defmodule Types.TradingSymbol do
     :quote_asset,
     :base_asset_increment,
     :base_asset_precision,
+    :quote_asset_increment,
+    :quote_asset_precision,
     :min_notional
   ]
 
@@ -31,6 +35,8 @@ defmodule Types.TradingSymbol do
           quote_asset: String.t(),
           base_asset_increment: Decimal.t(),
           base_asset_precision: integer(),
+          quote_asset_increment: Decimal.t(),
+          quote_asset_precision: integer(),
           min_notional: Decimal.t()
         }
 end

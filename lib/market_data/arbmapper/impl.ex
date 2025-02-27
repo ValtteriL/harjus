@@ -66,6 +66,8 @@ defmodule MarketData.Arbmapper.Impl do
         quote_asset: s.quoteAsset,
         base_asset_increment: s.baseAssetIncrement,
         base_asset_precision: s.baseAssetPrecision,
+        quote_asset_increment: s.quoteAssetIncrement,
+        quote_asset_precision: s.quoteAssetPrecision,
         min_notional: s.minNotional
       })
 
@@ -76,6 +78,8 @@ defmodule MarketData.Arbmapper.Impl do
         quote_asset: s.baseAsset,
         base_asset_precision: s.quoteAssetPrecision,
         base_asset_increment: s.quoteAssetIncrement,
+        quote_asset_increment: s.baseAssetIncrement,
+        quote_asset_precision: s.baseAssetPrecision,
         min_notional: s.minNotional
       })
     end

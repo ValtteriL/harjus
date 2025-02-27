@@ -51,9 +51,8 @@ defmodule Trader.Impl do
       MyBalance.reserve_upto(
         Enum.at(opportunity.path, 0).trading_symbol.quote_asset,
         opportunity.capacity,
-        # wrong - should be quote asset increment, same for precision - remove altogether?
-        Enum.at(opportunity.path, 0).trading_symbol.base_asset_increment,
-        Enum.at(opportunity.path, 0).trading_symbol.base_asset_precision
+        Enum.at(opportunity.path, 0).trading_symbol.quote_asset_increment,
+        Enum.at(opportunity.path, 0).trading_symbol.quote_asset_precision
       )
 
     if Decimal.eq?(budget, 0) do
@@ -119,6 +118,11 @@ defmodule Trader.Impl do
          budget,
          balance_delta
        ) do
+    # round the price to the nearest increment (short prices cannot be trusted to be valid otherwise)
+    price =
+      Decimal.div_int(price, trading_symbol.quote_asset_increment)
+      |> Decimal.mult(trading_symbol.quote_asset_increment)
+
     # calculate how many we can buy with the budget
     qty = order_qty_for_budget(budget, price, trading_symbol)
 
@@ -189,9 +193,13 @@ defmodule Trader.Impl do
   end
 
   defp order_qty_for_budget(budget, price, trading_symbol) do
-    Decimal.div(budget, price)
-    |> Decimal.div_int(trading_symbol.base_asset_increment)
-    |> Decimal.mult(trading_symbol.base_asset_increment)
+    if Decimal.eq?(price, 0) do
+      Decimal.new(0)
+    else
+      Decimal.div(budget, price)
+      |> Decimal.div_int(trading_symbol.base_asset_increment)
+      |> Decimal.mult(trading_symbol.base_asset_increment)
+    end
   end
 
   defp notice(msg) do

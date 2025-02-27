@@ -116,6 +116,8 @@ defmodule OpportunityWatcher.OpportunityTest do
         quote_asset: quote_asset,
         base_asset_increment: increment,
         base_asset_precision: precision,
+        quote_asset_increment: increment,
+        quote_asset_precision: precision,
         min_notional: min_notional
       }
     end
@@ -150,6 +152,8 @@ defmodule OpportunityWatcher.OpportunityTest do
       quote_asset: "USDT",
       base_asset_increment: Decimal.from_float(0.01),
       base_asset_precision: 8,
+      quote_asset_increment: Decimal.from_float(0.01),
+      quote_asset_precision: 8,
       min_notional: Decimal.new(2)
     }
 
@@ -306,6 +310,8 @@ defmodule OpportunityWatcher.OpportunityTest do
       quote_asset: quote_asset,
       base_asset_increment: Decimal.new("0.01"),
       base_asset_precision: 8,
+      quote_asset_increment: Decimal.new("0.01"),
+      quote_asset_precision: 8,
       min_notional: Decimal.from_float(0.0001)
     }
   end

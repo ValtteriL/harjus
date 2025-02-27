@@ -174,6 +174,8 @@ defmodule Trader.ImplTest do
         quote_asset: quote_asset,
         base_asset_increment: Decimal.from_float(0.01),
         base_asset_precision: 8,
+        quote_asset_increment: Decimal.from_float(0.01),
+        quote_asset_precision: 8,
         min_notional: min_notional
       }
     end
