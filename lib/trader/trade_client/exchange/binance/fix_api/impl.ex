@@ -180,10 +180,13 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
     fees = parse_fees(message)
     reject_text = Map.get(fields, Const.Tag.reject_text(), nil)
 
+    base_quantity = Map.get(fields, Const.Tag.quantity_base(), "0")
+    quote_quantity = Map.get(fields, Const.Tag.quantity_quote(), "0")
+
     %ExecutionReport{
       order_status: fields[Const.Tag.order_status()],
-      quantity_base: Decimal.new(fields[Const.Tag.quantity_base()]),
-      quantity_quote: Decimal.new(fields[Const.Tag.quantity_quote()]),
+      quantity_base: Decimal.new(base_quantity),
+      quantity_quote: Decimal.new(quote_quantity),
       symbol: fields[Const.Tag.symbol()],
       side: fields[Const.Tag.side()],
       fees: fees,
