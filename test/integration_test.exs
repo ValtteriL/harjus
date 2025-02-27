@@ -84,18 +84,19 @@ defmodule IntegrationTest do
     end)
     # trades
     |> expect(:limit_order, 3, fn trading_symbol, quantity, price ->
-      %Types.TradeReport{
-        symbol: trading_symbol.symbol,
-        position: trading_symbol.position,
-        quantity_base: quantity,
-        quantity_quote: Decimal.mult(quantity, price),
-        fees: [
-          %Types.TradeReport.Fee{
-            fee_currency: "BNB",
-            fee_amount: fee
-          }
-        ]
-      }
+      {:executed,
+       %Types.TradeReport{
+         symbol: trading_symbol.symbol,
+         position: trading_symbol.position,
+         quantity_base: quantity,
+         quantity_quote: Decimal.mult(quantity, price),
+         fees: [
+           %Types.TradeReport.Fee{
+             fee_currency: "BNB",
+             fee_amount: fee
+           }
+         ]
+       }}
     end)
 
     # must start with USDT, BNB balance must be negative in the end

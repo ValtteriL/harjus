@@ -29,7 +29,8 @@ defmodule Trader.Impl do
   """
   @spec execute_opportunity(opportunity :: Opportunity.t()) :: :ok
   def execute_opportunity(opportunity = %Opportunity{path: path}) when is_list(path) do
-    Logger.debug("Attempting execution with: #{inspect(opportunity)}")
+    debug("Attempting execution with: #{inspect(opportunity)}")
+
     Metrics.report_trade_attempted()
 
     pairs = path |> Enum.map(fn %PlannedTrade{trading_symbol: ts} -> ts.symbol end)
@@ -66,32 +67,43 @@ defmodule Trader.Impl do
   end
 
   defp execute_opportunity_after_reserving_budget(opportunity, budget) do
-    Logger.notice("Executing opportunity #{inspect(opportunity)} with budget: #{budget}")
+    notice("Executing opportunity #{inspect(opportunity)} with budget: #{budget}")
 
     # execute trades
-    balance_delta = trade(opportunity.path, budget)
+    balance_delta =
+      case trade(opportunity.path, budget) do
+        {:canceled, balance_delta} ->
+          warn("Failed execution. Balance delta: #{inspect(balance_delta)}")
+          Metrics.report_trade_failed()
+          balance_delta
 
-    Logger.notice(
-      "Opportunity #{inspect(opportunity)} executed successfully. Balance delta: #{inspect(balance_delta)}"
-    )
+        {:execution, balance_delta} ->
+          notice("Successful execution. Balance delta: #{inspect(balance_delta)}")
 
-    Metrics.report_trade_executed()
+          Metrics.report_trade_executed()
+
+          starting_balance_delta =
+            Decimal.to_float(
+              balance_delta[Enum.at(opportunity.path, 0).trading_symbol.quote_asset]
+            )
+
+          case starting_balance_delta do
+            x when x > 0 -> Metrics.report_trade_winning()
+            _ -> Metrics.report_trade_losing()
+          end
+
+          balance_delta
+      end
+
     Metrics.report_trade_report_delta(balance_delta)
-
-    starting_balance_delta =
-      Decimal.to_float(balance_delta[Enum.at(opportunity.path, 0).trading_symbol.quote_asset])
-
-    case starting_balance_delta do
-      x when x > 0 -> Metrics.report_trade_winning()
-      _ -> Metrics.report_trade_losing()
-    end
 
     # update balances
     balance_delta
     |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
   end
 
-  @spec trade([PlannedTrade.t()], Decimal.t()) :: balance_delta()
+  @spec trade([PlannedTrade.t()], Decimal.t()) ::
+          {:execution, balance_delta()} | {:canceled, balance_delta()}
   defp trade(
          path = [%PlannedTrade{trading_symbol: %TradingSymbol{quote_asset: quote_asset}} | _],
          budget
@@ -110,22 +122,28 @@ defmodule Trader.Impl do
     # calculate how many we can buy with the budget
     qty = order_qty_for_budget(budget, price, trading_symbol)
 
-    report = TradeClient.limit_order(trading_symbol, qty, price)
-    Logger.debug("Trade completed. #{inspect(report)}")
+    case TradeClient.limit_order(trading_symbol, qty, price) do
+      {:executed, report} ->
+        debug("Trade completed. #{inspect(trading_symbol)}")
 
-    # update fee balance right away
-    Enum.each(report.fees, fn %TradeReport.Fee{fee_currency: currency, fee_amount: amount} ->
-      MyBalance.update(currency, Decimal.negate(amount))
-    end)
+        # update fee balance right away
+        Enum.each(report.fees, fn %TradeReport.Fee{fee_currency: currency, fee_amount: amount} ->
+          MyBalance.update(currency, Decimal.negate(amount))
+        end)
 
-    # store other balance changes in delta
-    new_balance_delta = update_balance_delta(balance_delta, trading_symbol, report)
+        # store other balance changes in delta
+        new_balance_delta = update_balance_delta(balance_delta, trading_symbol, report)
 
-    # continue with the next trade using the money from the previous
-    trade(rest, received_quantity(report), new_balance_delta)
+        # continue with the next trade using the money from the previous
+        trade(rest, received_quantity(report), new_balance_delta)
+
+      {:canceled, _} ->
+        debug("Trade canceled. #{inspect(trading_symbol)}")
+        {:canceled, balance_delta}
+    end
   end
 
-  defp trade([], _, balance_delta), do: balance_delta
+  defp trade([], _, balance_delta), do: {:execution, balance_delta}
 
   defp received_quantity(trade_report) do
     trade_report.quantity_base
@@ -170,5 +188,17 @@ defmodule Trader.Impl do
     Decimal.div(budget, price)
     |> Decimal.div_int(trading_symbol.base_asset_increment)
     |> Decimal.mult(trading_symbol.base_asset_increment)
+  end
+
+  defp notice(msg) do
+    Logger.notice("#{:erlang.pid_to_list(self())}: #{msg}")
+  end
+
+  defp debug(msg) do
+    Logger.debug("#{:erlang.pid_to_list(self())}: #{msg}")
+  end
+
+  defp warn(msg) do
+    Logger.warning("#{:erlang.pid_to_list(self())}: #{msg}")
   end
 end

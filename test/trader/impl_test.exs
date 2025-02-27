@@ -100,18 +100,19 @@ defmodule Trader.ImplTest do
   end
 
   defp trade_report_for_symbol(%TradingSymbol{position: position, symbol: symbol}) do
-    %TradeReport{
-      symbol: symbol,
-      position: position,
-      quantity_base: Decimal.new(1),
-      quantity_quote: Decimal.new(1),
-      fees: [
-        %Types.TradeReport.Fee{
-          fee_currency: "BNB",
-          fee_amount: Decimal.from_float(0.1)
-        }
-      ]
-    }
+    {:executed,
+     %TradeReport{
+       symbol: symbol,
+       position: position,
+       quantity_base: Decimal.new(1),
+       quantity_quote: Decimal.new(1),
+       fees: [
+         %Types.TradeReport.Fee{
+           fee_currency: "BNB",
+           fee_amount: Decimal.from_float(0.1)
+         }
+       ]
+     }}
   end
 
   ## Generators ##

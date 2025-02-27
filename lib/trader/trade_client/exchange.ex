@@ -8,7 +8,8 @@ defmodule Trader.TradeClient.Exchange do
   require Decimal
 
   @callback new() :: any()
-  @callback limit_order(TradingSymbol.t(), Decimal.t(), Decimal.t()) :: TradeReport.t()
+  @callback limit_order(TradingSymbol.t(), Decimal.t(), Decimal.t()) ::
+              {:executed, TradeReport.t()} | {:canceled, any()}
 
   def new, do: impl().new()
 

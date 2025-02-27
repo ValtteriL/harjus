@@ -119,29 +119,13 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
     case execution_report.order_status do
       @order_filled ->
         from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)
-        GenServer.reply(from, executionreport_to_tradereport(execution_report))
-
-        %{
-          state
-          | outstanding_execution_reports:
-              Map.delete(
-                state.outstanding_execution_reports,
-                execution_report.client_order_id
-              )
-        }
+        GenServer.reply(from, {:executed, executionreport_to_tradereport(execution_report)})
+        delete_outstanding_order(state, execution_report.client_order_id)
 
       @order_canceled ->
         from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)
-        GenServer.reply(from, {:error, :order_canceled})
-
-        %{
-          state
-          | outstanding_execution_reports:
-              Map.delete(
-                state.outstanding_execution_reports,
-                execution_report.client_order_id
-              )
-        }
+        GenServer.reply(from, {:canceled, nil})
+        delete_outstanding_order(state, execution_report.client_order_id)
 
       @rejected ->
         raise("Order rejected: #{inspect(execution_report)}")
@@ -158,6 +142,17 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
     Logger.error("Unknown message")
     Logger.debug(inspect(message))
     state
+  end
+
+  defp delete_outstanding_order(state, client_order_id) do
+    %{
+      state
+      | outstanding_execution_reports:
+          Map.delete(
+            state.outstanding_execution_reports,
+            client_order_id
+          )
+    }
   end
 
   @buy_side Const.OrderSide.buy()
