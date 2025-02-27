@@ -122,9 +122,13 @@ defmodule Trader.Impl do
     # calculate how many we can buy with the budget
     qty = order_qty_for_budget(budget, price, trading_symbol)
 
+    debug(
+      "Order for #{inspect(trading_symbol.base_asset)}, qty: #{qty}, price: #{price}, currency: #{trading_symbol.quote_asset}"
+    )
+
     case TradeClient.limit_order(trading_symbol, qty, price) do
       {:executed, report} ->
-        debug("Trade completed. #{inspect(trading_symbol)}")
+        debug("Trade completed. #{inspect(report)}")
 
         # update fee balance right away
         Enum.each(report.fees, fn %TradeReport.Fee{fee_currency: currency, fee_amount: amount} ->
@@ -138,7 +142,7 @@ defmodule Trader.Impl do
         trade(rest, received_quantity(report), new_balance_delta)
 
       {:canceled, _} ->
-        debug("Trade canceled. #{inspect(trading_symbol)}")
+        debug("Trade canceled.")
         {:canceled, balance_delta}
     end
   end
