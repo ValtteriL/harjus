@@ -27,6 +27,6 @@ defmodule Trader.TradeClient.Exchange.Binance do
         ) :: {:executed, TradeReport.t()} | {:canceled, any()}
   def limit_order(trading_symbol = %TradingSymbol{}, quantity, price)
       when Decimal.is_decimal(quantity) and Decimal.is_decimal(price) do
-    GenServer.call(__MODULE__, {:limit_order, {trading_symbol, quantity}}, 5_000)
+    GenServer.call(__MODULE__, {:limit_order, {trading_symbol, quantity, price}}, 5_000)
   end
 end
