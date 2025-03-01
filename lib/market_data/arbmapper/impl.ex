@@ -59,29 +59,8 @@ defmodule MarketData.Arbmapper.Impl do
     # Add trading pairs as edges
     # forward (long), backward (short)
     for s <- symbols do
-      :digraph.add_edge(graph, s.baseAsset, s.quoteAsset, %TradingSymbol{
-        symbol: s.symbol,
-        position: :long,
-        base_asset: s.baseAsset,
-        quote_asset: s.quoteAsset,
-        base_asset_increment: s.baseAssetIncrement,
-        base_asset_precision: s.baseAssetPrecision,
-        quote_asset_increment: s.quoteAssetIncrement,
-        quote_asset_precision: s.quoteAssetPrecision,
-        min_notional: s.minNotional
-      })
-
-      :digraph.add_edge(graph, s.quoteAsset, s.baseAsset, %TradingSymbol{
-        symbol: s.symbol,
-        position: :short,
-        base_asset: s.quoteAsset,
-        quote_asset: s.baseAsset,
-        base_asset_precision: s.quoteAssetPrecision,
-        base_asset_increment: s.quoteAssetIncrement,
-        quote_asset_increment: s.baseAssetIncrement,
-        quote_asset_precision: s.baseAssetPrecision,
-        min_notional: s.minNotional
-      })
+      :digraph.add_edge(graph, s.baseAsset, s.quoteAsset, symbol_to_tradingsymbol(s, :long))
+      :digraph.add_edge(graph, s.quoteAsset, s.baseAsset, symbol_to_tradingsymbol(s, :short))
     end
 
     graph
@@ -170,5 +149,19 @@ defmodule MarketData.Arbmapper.Impl do
       |> List.first()
       |> elem(3)
     end)
+  end
+
+  defp symbol_to_tradingsymbol(symbol, position) do
+    %TradingSymbol{
+      symbol: symbol.symbol,
+      position: position,
+      base_asset: symbol.baseAsset,
+      quote_asset: symbol.quoteAsset,
+      base_asset_increment: symbol.baseAssetIncrement,
+      base_asset_precision: symbol.baseAssetPrecision,
+      quote_asset_increment: symbol.quoteAssetIncrement,
+      quote_asset_precision: symbol.quoteAssetPrecision,
+      min_notional: symbol.minNotional
+    }
   end
 end

@@ -1,8 +1,6 @@
 defmodule Types.TradingSymbol do
   @moduledoc """
   Trading symbol module
-
-  Note: base and quote assets are always swapped, so that quote asset is always the one we use in transactions.
   """
 
   @enforce_keys [
