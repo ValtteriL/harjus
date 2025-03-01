@@ -30,19 +30,29 @@ defmodule OpportunityWatcher.Opportunity.Impl do
     if Enum.any?(prices, fn price -> Decimal.eq?(price, 0) end) do
       Decimal.new(0)
     else
-      trading_path
-      |> Enum.map(fn symbol -> elem(Map.get(price_quantity_map, symbol), 0) end)
-      |> Enum.reduce(Decimal.new(1), fn price, acc ->
-        Decimal.div(
-          Decimal.mult(
-            acc,
-            Decimal.sub(1, commission_percentage)
-          ),
-          price
-        )
-      end)
-      |> Decimal.sub(1)
+      calculate_profit(trading_path, price_quantity_map, commission_percentage)
     end
+  end
+
+  defp calculate_profit(trading_path, price_quantity_map, commission_percentage) do
+    trading_path
+    |> Enum.map(fn symbol -> {symbol.position, elem(Map.get(price_quantity_map, symbol), 0)} end)
+    |> Enum.reduce(Decimal.new(1), fn {position, price}, acc ->
+      price =
+        case position do
+          :long -> price
+          :short -> Decimal.div(1, price)
+        end
+
+      Decimal.div(
+        Decimal.mult(
+          acc,
+          Decimal.sub(1, commission_percentage)
+        ),
+        price
+      )
+    end)
+    |> Decimal.sub(1)
   end
 
   @spec capacity(
@@ -65,21 +75,27 @@ defmodule OpportunityWatcher.Opportunity.Impl do
          trading_path = [firstsymbol = %TradingSymbol{} | _],
          price_quantity_map
        ) do
-    {_first_symbol_price, first_symbol_qty} = Map.get(price_quantity_map, firstsymbol)
+    {first_symbol_price, first_symbol_qty} = Map.get(price_quantity_map, firstsymbol)
 
-    Enum.reduce(trading_path, first_symbol_qty, fn symbol, acc ->
-      {price, quantity} = Map.get(price_quantity_map, symbol)
+    qty =
+      case firstsymbol.position do
+        :long -> first_symbol_qty
+        :short -> Decimal.mult(first_symbol_qty, first_symbol_price)
+      end
 
-      lowest = Decimal.min(Decimal.div(acc, price), quantity)
+    Enum.reduce(trading_path, qty, fn symbol, acc ->
+      {symbol_price, symbol_quantity} = Map.get(price_quantity_map, symbol)
 
-      # if lowest * price lt min_notional, return 0. else return lowest
-
-      notional =
+      quantity =
         case symbol.position do
-          :long -> Decimal.mult(lowest, price)
-          # estimate price of long as 1/(price * 1.05)
-          :short -> Decimal.div(lowest, price |> Decimal.mult("1.05"))
+          :long -> symbol_quantity
+          :short -> Decimal.mult(symbol_quantity, symbol_price)
         end
+
+      lowest = Decimal.min(Decimal.div(acc, symbol_price), quantity)
+
+      # capacity is 0 if notional is less than min_notional
+      notional = Decimal.mult(lowest, symbol_price)
 
       if(Decimal.lt?(notional, firstsymbol.min_notional), do: Decimal.new(0), else: lowest)
     end)
@@ -117,6 +133,7 @@ defmodule OpportunityWatcher.Opportunity.Impl do
     |> elem(0)
   end
 
+  # ensure qty is a multiple of base_asset_increment
   defp order_qty_for_budget(budget, price, trading_symbol) do
     Decimal.div(budget, price)
     |> Decimal.div_int(trading_symbol.base_asset_increment)

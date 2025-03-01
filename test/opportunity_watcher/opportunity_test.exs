@@ -218,21 +218,21 @@ defmodule OpportunityWatcher.OpportunityTest do
 
     path = [
       ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}),
-      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"})
+      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "BTC", quote_asset: "USDT"})
     ]
 
     price_table = %{
       ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}) =>
         {Decimal.new("1.0"), Decimal.new("1.0")},
-      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"}) =>
-        {Decimal.div(Decimal.new("1"), Decimal.new("2")), Decimal.new("1.0")}
+      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "BTC", quote_asset: "USDT"}) =>
+        {Decimal.new("2.0"), Decimal.new("1.0")}
     }
 
     profit = Opportunity.profit(path, price_table, commission)
     capacity = Opportunity.capacity(path, price_table)
 
     assert Decimal.eq?(profit, 1)
-    assert Decimal.eq?(capacity, "0.5")
+    assert Decimal.eq?(capacity, 1)
   end
 
   test "correct profit and capacity with 3 symbols" do

@@ -159,21 +159,21 @@ defmodule OpportunityWatcher.ImplTest do
             position: :long,
             base_asset: "BTC",
             quote_asset: "USDT",
-            base_asset_increment: Decimal.new("0.01"),
-            base_asset_precision: 8,
-            quote_asset_increment: Decimal.new("0.01"),
-            quote_asset_precision: 8,
+            base_asset_increment: const_increment(),
+            base_asset_precision: const_precision(),
+            quote_asset_increment: const_increment(),
+            quote_asset_precision: const_precision(),
             min_notional: Decimal.from_float(0.0001)
           },
           %TradingSymbol{
             symbol: "BTCUSDT",
             position: :short,
-            base_asset: "USDT",
-            quote_asset: "BTC",
-            base_asset_increment: Decimal.new("0.01"),
-            base_asset_precision: 8,
-            quote_asset_increment: Decimal.new("0.01"),
-            quote_asset_precision: 8,
+            base_asset: "BTC",
+            quote_asset: "USDT",
+            base_asset_increment: const_increment(),
+            base_asset_precision: const_precision(),
+            quote_asset_increment: const_increment(),
+            quote_asset_precision: const_precision(),
             min_notional: Decimal.from_float(0.0001)
           }
         ]
@@ -217,10 +217,10 @@ defmodule OpportunityWatcher.ImplTest do
                      position: :long,
                      base_asset: "BTC",
                      quote_asset: "USDT",
-                     base_asset_increment: Decimal.new("0.01"),
-                     base_asset_precision: 8,
-                     quote_asset_increment: Decimal.new("0.01"),
-                     quote_asset_precision: 8,
+                     base_asset_increment: const_increment(),
+                     base_asset_precision: const_precision(),
+                     quote_asset_increment: const_increment(),
+                     quote_asset_precision: const_precision(),
                      min_notional: Decimal.from_float(0.0001)
                    },
                    order_price: Decimal.new("1.0"),
@@ -230,21 +230,29 @@ defmodule OpportunityWatcher.ImplTest do
                    trading_symbol: %TradingSymbol{
                      symbol: "BTCUSDT",
                      position: :short,
-                     base_asset: "USDT",
-                     quote_asset: "BTC",
-                     base_asset_increment: Decimal.new("0.01"),
-                     base_asset_precision: 8,
-                     quote_asset_increment: Decimal.new("0.01"),
-                     quote_asset_precision: 8,
+                     base_asset: "BTC",
+                     quote_asset: "USDT",
+                     base_asset_increment: const_increment(),
+                     base_asset_precision: const_precision(),
+                     quote_asset_increment: const_increment(),
+                     quote_asset_precision: const_precision(),
                      min_notional: Decimal.from_float(0.0001)
                    },
-                   order_price: Decimal.new("0.5"),
-                   order_qty: Decimal.new("2.00")
+                   order_price: Decimal.new("2.0"),
+                   order_qty: Decimal.new("0.50")
                  }
                ],
                profit: Decimal.new("1"),
-               capacity: Decimal.new("1.00")
+               capacity: Decimal.new("1")
              }
            ]
+  end
+
+  defp const_increment do
+    Decimal.new("0.01")
+  end
+
+  defp const_precision do
+    8
   end
 end
