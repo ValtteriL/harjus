@@ -71,34 +71,6 @@ defmodule Trader.ImplTest do
     end
   end
 
-  property "fails if no balance to reserve" do
-    forall opportunity <- opportunity() do
-      # setup mocks
-      Trader.Balance.TestMock
-      |> stub(:update, fn _asset, _amount -> :ok end)
-      |> expect(:reserve_upto, fn _asset, _amount, _increment, _precision ->
-        Decimal.from_float(0.0)
-      end)
-
-      Trader.TradeClient.Exchange.TestMock
-      |> expect(:new, fn -> :ok end)
-
-      # init
-      Impl.new()
-
-      raises_correct_error =
-        try do
-          Impl.execute_opportunity(opportunity)
-        rescue
-          InsufficientBalanceError -> true
-        else
-          _ -> false
-        end
-
-      assert raises_correct_error
-    end
-  end
-
   defp trade_report_for_symbol(%TradingSymbol{position: position, symbol: symbol}) do
     {:executed,
      %TradeReport{

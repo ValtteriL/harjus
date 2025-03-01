@@ -12,6 +12,7 @@ defmodule Trader.Impl do
   alias Types.TradeReport
   alias Types.TradingSymbol
   require Logger
+  import Decimal
 
   @type balance_delta() :: %{String.t() => Decimal.t()}
 
@@ -46,31 +47,43 @@ defmodule Trader.Impl do
   end
 
   defp execute_opportunity_after_reserving_symbols(opportunity) do
+    first_ts = Enum.at(opportunity.path, 0).trading_symbol
+
     # reserve budget
     budget =
-      MyBalance.reserve_upto(
-        Enum.at(opportunity.path, 0).trading_symbol.quote_asset,
-        opportunity.capacity,
-        Enum.at(opportunity.path, 0).trading_symbol.quote_asset_increment,
-        Enum.at(opportunity.path, 0).trading_symbol.quote_asset_precision
-      )
+      case first_ts.position do
+        :long ->
+          MyBalance.reserve_upto(
+            first_ts.quote_asset,
+            opportunity.capacity,
+            first_ts.quote_asset_increment,
+            first_ts.quote_asset_precision
+          )
 
-    if Decimal.eq?(budget, 0) do
-      # release the trading pairs (required to make tests work, as they dont use separate process)
-      Mutex.goodbye(ReservedSymbols)
+        :short ->
+          MyBalance.reserve_upto(
+            first_ts.base_asset,
+            opportunity.capacity,
+            first_ts.base_asset_increment,
+            first_ts.base_asset_precision
+          )
+      end
 
-      raise InsufficientBalanceError
+    case plan_execution(opportunity, budget) do
+      {:ok, plan} ->
+        notice("Executing opportunity #{inspect(opportunity)} with budget: #{budget}")
+        execute_plan(plan, budget)
+
+      {:insufficient_balance, _} ->
+        debug("Insufficient balance for opportunity #{inspect(opportunity)}")
+        MyBalance.update(used_asset(first_ts), budget)
     end
-
-    execute_opportunity_after_reserving_budget(opportunity, budget)
   end
 
-  defp execute_opportunity_after_reserving_budget(opportunity, budget) do
-    notice("Executing opportunity #{inspect(opportunity)} with budget: #{budget}")
-
+  defp execute_plan(plan = [%PlannedTrade{} | _], reserved_budget) do
     # execute trades
     balance_delta =
-      case trade(opportunity.path, budget) do
+      case trade(plan, reserved_budget) do
         {:canceled, balance_delta} ->
           warn("Failed execution. Balance delta: #{inspect(balance_delta)}")
           Metrics.report_trade_failed()
@@ -82,9 +95,7 @@ defmodule Trader.Impl do
           Metrics.report_trade_executed()
 
           starting_balance_delta =
-            Decimal.to_float(
-              balance_delta[Enum.at(opportunity.path, 0).trading_symbol.quote_asset]
-            )
+            Decimal.to_float(balance_delta[used_asset(Enum.at(plan, 0).trading_symbol)])
 
           case starting_balance_delta do
             x when x > 0 -> Metrics.report_trade_winning()
@@ -103,28 +114,20 @@ defmodule Trader.Impl do
 
   @spec trade([PlannedTrade.t()], Decimal.t()) ::
           {:execution, balance_delta()} | {:canceled, balance_delta()}
-  defp trade(
-         path = [%PlannedTrade{trading_symbol: %TradingSymbol{quote_asset: quote_asset}} | _],
-         budget
-       ) do
-    trade(path, budget, %{quote_asset => budget})
+  defp trade(path = [%PlannedTrade{trading_symbol: ts} | _], reserved_budget)
+       when is_list(path) and is_decimal(reserved_budget) do
+    used_asset = used_asset(ts)
+    # Todo
+    trade(path, %{used_asset => reserved_budget})
   end
 
   defp trade(
          [
-           %PlannedTrade{trading_symbol: trading_symbol, order_price: price}
+           %PlannedTrade{trading_symbol: trading_symbol, order_qty: qty, order_price: price}
            | rest
          ],
-         budget,
          balance_delta
        ) do
-    # calculate how many we can buy with the budget
-    qty = order_qty_for_budget(budget, price, trading_symbol)
-
-    debug(
-      "Order for #{inspect(trading_symbol.base_asset)}, qty: #{qty}, price: #{price}, currency: #{trading_symbol.quote_asset}"
-    )
-
     case TradeClient.limit_order(trading_symbol, qty, price) do
       {:executed, report} ->
         debug("Trade completed. #{inspect(report)}")
@@ -137,32 +140,19 @@ defmodule Trader.Impl do
         # store other balance changes in delta
         new_balance_delta = update_balance_delta(balance_delta, trading_symbol, report)
 
-        # continue with the next trade using the money from the previous
-        trade(rest, received_quantity(report), new_balance_delta)
+        # continue with the next trade
+        trade(rest, new_balance_delta)
 
       {:canceled, _} ->
         debug("Trade canceled.")
         {:canceled, balance_delta}
+
+      result ->
+        raise "Unexpected trade result: #{inspect(result)}"
     end
   end
 
-  defp trade([], _, balance_delta), do: {:execution, balance_delta}
-
-  defp received_quantity(trade_report) do
-    if trade_report.position == :long do
-      trade_report.quantity_base
-    else
-      trade_report.quantity_quote
-    end
-  end
-
-  defp used_quantity(trade_report) do
-    if trade_report.position == :long do
-      trade_report.quantity_quote
-    else
-      trade_report.quantity_base
-    end
-  end
+  defp trade([], balance_delta), do: {:execution, balance_delta}
 
   @spec update_balance_delta(balance_delta(), TradingSymbol.t(), TradeReport.t()) ::
           balance_delta()
@@ -172,16 +162,17 @@ defmodule Trader.Impl do
          trade_report
        ) do
     delta
-    # received
+    # base
     |> Map.update(
       base_asset,
-      received_quantity(trade_report),
-      fn current_qty -> Decimal.add(current_qty, received_quantity(trade_report)) end
+      trade_report.quantity_base,
+      fn current_qty -> Decimal.add(current_qty, trade_report.quantity_base) end
     )
-    # used
-    |> Map.update!(
+    # quote
+    |> Map.update(
       quote_asset,
-      fn current_qty -> Decimal.sub(current_qty, used_quantity(trade_report)) end
+      trade_report.quantity_quote,
+      fn current_qty -> Decimal.add(current_qty, trade_report.quantity_quote) end
     )
   end
 
@@ -195,22 +186,60 @@ defmodule Trader.Impl do
     end)
   end
 
-  defp order_qty_for_budget(budget, price, trading_symbol) do
-    cond do
-      Decimal.eq?(price, 0) ->
-        Decimal.new(0)
+  @spec plan_execution(Opportunity.t(), Decimal.t()) ::
+          {:ok, [PlannedTrade.t()]} | {:insufficient_balance, any()}
+  defp plan_execution(
+         opportunity = %Opportunity{
+           path: path = [%PlannedTrade{trading_symbol: ts} | _],
+           profit: profit,
+           capacity: full_capacity
+         },
+         budget
+       ) do
+    # plan valid qty, price for each trade in opportunity based on budget
+    capacity = Decimal.min(full_capacity, budget)
 
-      trading_symbol.position == :long ->
-        Decimal.div(budget, price)
-        |> Decimal.div_int(trading_symbol.base_asset_increment)
-        |> Decimal.mult(trading_symbol.base_asset_increment)
+    plan =
+      path
+      |> Enum.map_reduce(capacity, fn pt, acc ->
+        order_price = pt.order_price
+        order_qty = order_qty_for_budget(acc, pt.order_price, pt.trading_symbol)
 
-      trading_symbol.position == :short ->
-        budget
-        |> Decimal.div_int(trading_symbol.base_asset_increment)
-        |> Decimal.mult(trading_symbol.base_asset_increment)
+        {
+          %PlannedTrade{
+            trading_symbol: pt.trading_symbol,
+            order_price: pt.order_price,
+            order_qty: order_qty
+          },
+          order_qty
+        }
+      end)
+      |> elem(0)
+
+    # ensure all trades have notional >= min_notional
+    notional_fulfilled =
+      plan
+      |> Enum.all?(fn pt ->
+        notional = Decimal.mult(pt.order_qty, pt.order_price)
+        Decimal.lt?(notional, pt.trading_symbol.min_notional)
+      end)
+
+    if notional_fulfilled do
+      {:ok, plan}
+    else
+      {:insufficient_balance, nil}
     end
   end
+
+  # ensure qty is a multiple of base_asset_increment
+  defp order_qty_for_budget(budget, price, trading_symbol) do
+    Decimal.div(budget, price)
+    |> Decimal.div_int(trading_symbol.base_asset_increment)
+    |> Decimal.mult(trading_symbol.base_asset_increment)
+  end
+
+  defp used_asset(%TradingSymbol{position: :long, quote_asset: q}), do: q
+  defp used_asset(%TradingSymbol{position: :short, base_asset: b}), do: b
 
   defp notice(msg) do
     Logger.notice("#{:erlang.pid_to_list(self())}: #{msg}")
