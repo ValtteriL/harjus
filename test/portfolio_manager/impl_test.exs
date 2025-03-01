@@ -307,11 +307,17 @@ defmodule PortfolioManager.ImplTest do
   defp get_opportunity_value(opportunity, relative_asset_values) do
     %{path: [pt | _], profit: profit, capacity: cap} = opportunity
 
+    used_asset =
+      case pt.trading_symbol.position do
+        :long -> pt.trading_symbol.quote_asset
+        :short -> pt.trading_symbol.base_asset
+      end
+
     asset_value =
-      Map.get(relative_asset_values, pt.trading_symbol.quote_asset, Decimal.new(0))
+      Map.get(relative_asset_values, used_asset, Decimal.new(0))
 
     Decimal.mult(
-      Decimal.mult(profit, Decimal.min(cap, BalanceMock.get(pt.trading_symbol.quote_asset))),
+      Decimal.mult(profit, Decimal.min(cap, BalanceMock.get(used_asset))),
       asset_value
     )
   end

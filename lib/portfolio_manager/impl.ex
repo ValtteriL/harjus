@@ -20,22 +20,25 @@ defmodule PortfolioManager.Impl do
       # sort by profit * capacity in relative asset value
       |> Enum.sort(fn %{path: [firstsymbol1 | _], profit: profit1, capacity: cap1},
                       %{path: [firstsymbol2 | _], profit: profit2, capacity: cap2} ->
+        used_asset1 = get_used_asset(firstsymbol1.trading_symbol)
+        used_asset2 = get_used_asset(firstsymbol2.trading_symbol)
+
         value1 =
           Map.get(
             state.relative_asset_values,
-            firstsymbol1.trading_symbol.quote_asset,
+            used_asset1,
             Decimal.new(0)
           )
 
         value2 =
           Map.get(
             state.relative_asset_values,
-            firstsymbol2.trading_symbol.quote_asset,
+            used_asset2,
             Decimal.new(0)
           )
 
-        balance1 = Balance.get(firstsymbol1.trading_symbol.quote_asset)
-        balance2 = Balance.get(firstsymbol2.trading_symbol.quote_asset)
+        balance1 = Balance.get(used_asset1)
+        balance2 = Balance.get(used_asset2)
 
         Decimal.lt?(
           Decimal.mult(Decimal.mult(value2, profit2), Decimal.min(cap2, balance2)),
@@ -48,5 +51,12 @@ defmodule PortfolioManager.Impl do
     Logger.debug("Filtered opportunities: #{inspect(filtered_opportunities)}")
 
     filtered_opportunities
+  end
+
+  defp get_used_asset(trading_symbol) do
+    case trading_symbol.position do
+      :long -> trading_symbol.quote_asset
+      :short -> trading_symbol.base_asset
+    end
   end
 end

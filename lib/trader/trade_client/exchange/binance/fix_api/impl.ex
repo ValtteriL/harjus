@@ -183,6 +183,8 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
     base_quantity = Map.get(fields, Const.Tag.quantity_base(), "0")
     quote_quantity = Map.get(fields, Const.Tag.quantity_quote(), "0")
 
+    # IO.inspect(fields)
+
     %ExecutionReport{
       order_status: fields[Const.Tag.order_status()],
       quantity_base: Decimal.new(base_quantity),
