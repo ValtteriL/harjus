@@ -120,12 +120,14 @@ defmodule Trader.Impl do
     trade(path, %{used_asset => reserved_budget})
   end
 
+  @spec trade([PlannedTrade.t()], balance_delta()) ::
+          {:execution, balance_delta()} | {:canceled, balance_delta()}
   defp trade(
          [
            %PlannedTrade{trading_symbol: trading_symbol, order_qty: qty, order_price: price}
            | rest
          ],
-         balance_delta
+         balance_delta = %{}
        ) do
     case TradeClient.limit_order(trading_symbol, qty, price) do
       {:executed, report} ->
@@ -145,9 +147,6 @@ defmodule Trader.Impl do
       {:canceled, _} ->
         debug("Trade canceled.")
         {:canceled, balance_delta}
-
-      result ->
-        raise "Unexpected trade result: #{inspect(result)}"
     end
   end
 

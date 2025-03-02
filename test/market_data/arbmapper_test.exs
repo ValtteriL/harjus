@@ -271,20 +271,6 @@ defmodule MarketData.ArbmapperTest do
     }
   end
 
-  defp ts(%{symbol: symbol, position: position, base_asset: base_aset, quote_asset: quote_asset}) do
-    %TradingSymbol{
-      symbol: symbol,
-      position: position,
-      base_asset: base_aset,
-      quote_asset: quote_asset,
-      base_asset_increment: const_increment(),
-      base_asset_precision: const_precision(),
-      quote_asset_increment: const_increment(),
-      quote_asset_precision: const_precision(),
-      min_notional: Decimal.from_float(0.0001)
-    }
-  end
-
   defp const_precision do
     8
   end

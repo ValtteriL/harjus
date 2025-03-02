@@ -4,7 +4,6 @@ defmodule Trader.ImplTest do
   use ExUnit.Case
   use PropCheck
 
-  alias Trader.Error.InsufficientBalanceError
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.Impl
   alias Types.Opportunity
