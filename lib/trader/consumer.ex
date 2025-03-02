@@ -5,7 +5,6 @@ defmodule Trader.Consumer do
 
   use ConsumerSupervisor
 
-  alias Trader.Error.InsufficientBalanceError
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.Impl
   alias Types.Opportunity
@@ -43,7 +42,6 @@ defmodule Trader.Consumer do
         Impl.execute_opportunity(opportunity)
       rescue
         # these errors are expected, ignore
-        InsufficientBalanceError -> :ok
         SymbolAlreadyReservedError -> :ok
         # trigger graceful shutdown of trader on unexpected error
         e -> reraise e, __STACKTRACE__
