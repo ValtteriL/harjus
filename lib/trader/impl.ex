@@ -88,7 +88,7 @@ defmodule Trader.Impl do
     # execute trades
     balance_delta =
       case trade(plan, reserved_budget) do
-        {:canceled, balance_delta} ->
+        {:expired, balance_delta} ->
           warn("Failed execution. Balance delta: #{inspect(balance_delta)}")
           Metrics.report_trade_failed()
           balance_delta
@@ -117,7 +117,7 @@ defmodule Trader.Impl do
   end
 
   @spec trade([PlannedTrade.t()], Decimal.t()) ::
-          {:execution, balance_delta()} | {:canceled, balance_delta()}
+          {:execution, balance_delta()} | {:expired, balance_delta()}
   defp trade(path = [%PlannedTrade{trading_symbol: ts} | _], reserved_budget)
        when is_list(path) and is_decimal(reserved_budget) do
     used_asset = used_asset(ts)
@@ -126,7 +126,7 @@ defmodule Trader.Impl do
   end
 
   @spec trade([PlannedTrade.t()], balance_delta()) ::
-          {:execution, balance_delta()} | {:canceled, balance_delta()}
+          {:execution, balance_delta()} | {:expired, balance_delta()}
   defp trade(
          [
            %PlannedTrade{trading_symbol: trading_symbol, order_qty: qty, order_price: price}
@@ -151,9 +151,9 @@ defmodule Trader.Impl do
         # continue with the next trade
         trade(rest, new_balance_delta)
 
-      {:canceled, _} ->
-        debug("Trade canceled.")
-        {:canceled, balance_delta}
+      {:expired, _} ->
+        debug("Trade expired.")
+        {:expired, balance_delta}
     end
   end
 

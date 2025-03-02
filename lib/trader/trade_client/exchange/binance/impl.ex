@@ -18,8 +18,8 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
 
   @order_filled ExecutionReport.OrderStatus.filled()
   @order_canceled ExecutionReport.OrderStatus.canceled()
-  @rejected ExecutionReport.OrderStatus.rejected()
-  @expired ExecutionReport.OrderStatus.expired()
+  @order_rejected ExecutionReport.OrderStatus.rejected()
+  @order_expired ExecutionReport.OrderStatus.expired()
 
   def new do
     api_key = Application.fetch_env!(:harjus, :binance_ed25519_api_key)
@@ -123,15 +123,16 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
         delete_outstanding_order(state, execution_report.client_order_id)
 
       @order_canceled ->
-        from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)
-        GenServer.reply(from, {:canceled, nil})
-        delete_outstanding_order(state, execution_report.client_order_id)
+        raise("Order canceled: #{inspect(execution_report)}")
 
-      @rejected ->
+      @order_rejected ->
         raise("Order rejected: #{inspect(execution_report)}")
 
-      @expired ->
-        raise("Order expired: #{inspect(execution_report)}")
+      @order_expired ->
+        # FOK orders are expired if they can't be filled immediately
+        from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)
+        GenServer.reply(from, {:expired, nil})
+        delete_outstanding_order(state, execution_report.client_order_id)
 
       _ ->
         state

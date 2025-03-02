@@ -7,6 +7,7 @@ defmodule Trader.TradePlanner.Impl do
 
   alias Types.Opportunity
   alias Types.PlannedTrade
+  alias Types.TradingSymbol
 
   @spec plan_execution(Opportunity.t(), Decimal.t()) ::
           {:ok, [PlannedTrade.t()]} | {:insufficient_balance, any()}
@@ -52,8 +53,14 @@ defmodule Trader.TradePlanner.Impl do
   end
 
   # ensure qty is a multiple of base_asset_increment
-  defp order_qty_for_budget(budget, price, trading_symbol) do
+  defp order_qty_for_budget(budget, price, trading_symbol = %TradingSymbol{position: :long}) do
     Decimal.div(budget, price)
+    |> Decimal.div_int(trading_symbol.base_asset_increment)
+    |> Decimal.mult(trading_symbol.base_asset_increment)
+  end
+
+  defp order_qty_for_budget(budget, _price, trading_symbol = %TradingSymbol{position: :short}) do
+    budget
     |> Decimal.div_int(trading_symbol.base_asset_increment)
     |> Decimal.mult(trading_symbol.base_asset_increment)
   end

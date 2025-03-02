@@ -17,7 +17,7 @@ defmodule Trader.TradeClient.Impl do
           trading_symbol :: TradingSymbol.t(),
           quantity :: Decimal.t(),
           price :: Decimal.t()
-        ) :: {:executed, TradeReport.t()} | {:canceled, any()}
+        ) :: {:executed, TradeReport.t()} | {:expired, any()}
   def limit_order(trading_symbol = %TradingSymbol{}, quantity, price)
       when Decimal.is_decimal(quantity) and Decimal.is_decimal(price) do
     Exchange.limit_order(trading_symbol, quantity, price)

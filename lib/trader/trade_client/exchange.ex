@@ -9,7 +9,7 @@ defmodule Trader.TradeClient.Exchange do
 
   @callback new() :: any()
   @callback limit_order(TradingSymbol.t(), Decimal.t(), Decimal.t()) ::
-              {:executed, TradeReport.t()} | {:canceled, any()}
+              {:executed, TradeReport.t()} | {:expired, any()}
 
   def new, do: impl().new()
 
