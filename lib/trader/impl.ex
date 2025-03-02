@@ -75,7 +75,7 @@ defmodule Trader.Impl do
 
     case TradePlanner.plan_execution(opportunity, budget) do
       {:ok, plan} ->
-        notice("Executing opportunity #{inspect(opportunity)} with budget: #{budget}")
+        notice("Executing opportunity #{inspect(plan)} with budget: #{budget}")
         execute_plan(plan, budget)
 
       {:insufficient_balance, _} ->
