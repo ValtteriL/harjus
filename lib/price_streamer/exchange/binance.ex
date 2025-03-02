@@ -55,7 +55,7 @@ defmodule PriceStreamer.Exchange.Binance do
         Logger.error(inspect(error))
 
       {:sub_ack} ->
-        Logger.info("Subscribed")
+        Logger.debug("Websocket subscribtion acknowledged")
         :ok
 
       {:book_ticker_update, {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}} ->

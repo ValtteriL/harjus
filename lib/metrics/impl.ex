@@ -7,6 +7,7 @@ defmodule Metrics.Impl do
   defp trading_path_count, do: [:harjus, :market_data, :trading_path]
   defp price_update, do: [:harjus, :price_streamer, :price_update]
   defp trade_executed, do: [:harjus, :trader, :trade, :executed]
+  defp trade_failed, do: [:harjus, :trader, :trade, :failed]
   defp trade_attempted, do: [:harjus, :trader, :trade, :attempted]
   defp trade_losing, do: [:harjus, :trader, :trade, :losing]
   defp trade_winning, do: [:harjus, :trader, :trade, :winning]
@@ -50,6 +51,12 @@ defmodule Metrics.Impl do
         event_name: trade_executed(),
         measurement: counter_measurement(),
         description: "Number of trades executed"
+      ),
+      counter(
+        trade_failed(),
+        event_name: trade_failed(),
+        measurement: counter_measurement(),
+        description: "Number of trades failed"
       ),
       counter(
         trade_attempted(),
@@ -103,6 +110,11 @@ defmodule Metrics.Impl do
   @spec report_trade_executed() :: :ok
   def report_trade_executed do
     :telemetry.execute(trade_executed(), %{counter_measurement() => 1})
+  end
+
+  @spec report_trade_failed() :: :ok
+  def report_trade_failed do
+    :telemetry.execute(trade_failed(), %{counter_measurement() => 1})
   end
 
   @spec report_trade_attempted() :: :ok

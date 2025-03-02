@@ -32,6 +32,62 @@ defmodule OpportunityWatcher.OpportunityTest do
     end
   end
 
+  property "plan_trades contains same number of trades as trading path" do
+    forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
+      capacity = Opportunity.capacity(trading_path, price_qty_map)
+      trades = Opportunity.plan_trades(trading_path, capacity, price_qty_map)
+
+      # plan_trades contains same number of trades as trading path
+      assert length(trades) == length(trading_path)
+    end
+  end
+
+  property "plan_trades first order_qty is always lte capacity" do
+    forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
+      capacity = Opportunity.capacity(trading_path, price_qty_map)
+      trades = Opportunity.plan_trades(trading_path, capacity, price_qty_map)
+
+      # required qty for first trade is lte capacity
+      first_trade = Enum.at(trades, 0)
+
+      case first_trade.trading_symbol do
+        %TradingSymbol{position: :long} ->
+          assert Decimal.lte?(
+                   Decimal.mult(first_trade.order_qty, first_trade.order_price),
+                   capacity
+                 )
+
+        %TradingSymbol{position: :short} ->
+          assert Decimal.lte?(first_trade.order_qty, capacity)
+      end
+    end
+  end
+
+  property "quantities in plan_trades are always positive" do
+    forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
+      capacity = Opportunity.capacity(trading_path, price_qty_map)
+      trades = Opportunity.plan_trades(trading_path, capacity, price_qty_map)
+
+      # quantities in plan_trades are always positive
+      assert Enum.all?(trades, fn trade -> Decimal.gte?(trade.order_qty, 0) end)
+    end
+  end
+
+  property "quantities in plan_trades are always multiples of base_asset_increment" do
+    forall {trading_path, price_qty_map} <- trading_path_and_price_map() do
+      capacity = Opportunity.capacity(trading_path, price_qty_map)
+      trades = Opportunity.plan_trades(trading_path, capacity, price_qty_map)
+
+      # quantities in plan_trades are always multiples of base_asset_increment
+      assert Enum.all?(trades, fn trade ->
+               Decimal.eq?(
+                 Decimal.rem(trade.order_qty, trade.trading_symbol.base_asset_increment),
+                 0
+               )
+             end)
+    end
+  end
+
   ## Generators ##
 
   defp trading_path_and_price_map do
@@ -68,6 +124,8 @@ defmodule OpportunityWatcher.OpportunityTest do
         position: position,
         base_asset: base_asset,
         quote_asset: quote_asset,
+        base_asset_increment: increment,
+        base_asset_precision: precision,
         quote_asset_increment: increment,
         quote_asset_precision: precision,
         min_notional: min_notional
@@ -102,6 +160,8 @@ defmodule OpportunityWatcher.OpportunityTest do
       position: :long,
       base_asset: "BTC",
       quote_asset: "USDT",
+      base_asset_increment: Decimal.from_float(0.01),
+      base_asset_precision: 8,
       quote_asset_increment: Decimal.from_float(0.01),
       quote_asset_precision: 8,
       min_notional: Decimal.new(2)
@@ -168,21 +228,21 @@ defmodule OpportunityWatcher.OpportunityTest do
 
     path = [
       ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}),
-      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"})
+      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "BTC", quote_asset: "USDT"})
     ]
 
     price_table = %{
       ts(%{symbol: "BTCUSDT", position: :long, base_asset: "BTC", quote_asset: "USDT"}) =>
         {Decimal.new("1.0"), Decimal.new("1.0")},
-      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "USDT", quote_asset: "BTC"}) =>
-        {Decimal.div(Decimal.new("1"), Decimal.new("2")), Decimal.new("1.0")}
+      ts(%{symbol: "BTCUSDT", position: :short, base_asset: "BTC", quote_asset: "USDT"}) =>
+        {Decimal.new("2.0"), Decimal.new("1.0")}
     }
 
     profit = Opportunity.profit(path, price_table, commission)
     capacity = Opportunity.capacity(path, price_table)
 
     assert Decimal.eq?(profit, 1)
-    assert Decimal.eq?(capacity, "0.5")
+    assert Decimal.eq?(capacity, 1)
   end
 
   test "correct profit and capacity with 3 symbols" do
@@ -258,6 +318,8 @@ defmodule OpportunityWatcher.OpportunityTest do
       position: position,
       base_asset: base_aset,
       quote_asset: quote_asset,
+      base_asset_increment: Decimal.new("0.01"),
+      base_asset_precision: 8,
       quote_asset_increment: Decimal.new("0.01"),
       quote_asset_precision: 8,
       min_notional: Decimal.from_float(0.0001)

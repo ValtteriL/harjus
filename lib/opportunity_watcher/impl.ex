@@ -95,12 +95,10 @@ defmodule OpportunityWatcher.Impl do
         Map.get(state.symbol_to_trading_symbol_map[symbol], :long),
         fn _ -> {ask_price, ask_qty} end
       )
-      |> Map.replace_lazy(Map.get(state.symbol_to_trading_symbol_map[symbol], :short), fn _ ->
-        {
-          Decimal.div(1, bid_price),
-          Decimal.mult(bid_qty, bid_price)
-        }
-      end)
+      |> Map.replace_lazy(
+        Map.get(state.symbol_to_trading_symbol_map[symbol], :short),
+        fn _ -> {bid_price, bid_qty} end
+      )
 
     # recalculate profit and capacity for affected paths
     affected_pathids = state.symbol_to_pathids_map[symbol]
@@ -147,7 +145,13 @@ defmodule OpportunityWatcher.Impl do
           Decimal.gt?(capacity, state.min_capacity)
       end)
       |> Enum.map(fn {pathid, {profit, capacity}} ->
-        path = state.pathid_to_path_map[pathid]
+        path =
+          Opportunity.plan_trades(
+            state.pathid_to_path_map[pathid],
+            capacity,
+            new_trading_symbol_to_price_qty_tuple
+          )
+
         %Types.Opportunity{path: path, profit: profit, capacity: capacity}
       end)
 

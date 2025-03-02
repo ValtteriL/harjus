@@ -5,6 +5,7 @@ defmodule OpportunityWatcher.ImplTest do
   alias OpportunityWatcher.Impl
   alias OpportunityWatcher.State
   alias Types.Opportunity
+  alias Types.PlannedTrade
   alias Types.PriceUpdate
   alias Types.TradingSymbol
 
@@ -48,7 +49,7 @@ defmodule OpportunityWatcher.ImplTest do
       {_, opportunities} = Impl.price_update(state, price_update)
 
       assert Enum.all?(opportunities, fn x ->
-               Enum.any?(x.path, fn x -> x.symbol == x.symbol end)
+               Enum.any?(x.path, fn x -> x.trading_symbol.symbol == price_update.symbol end)
              end)
     end
   end
@@ -118,6 +119,8 @@ defmodule OpportunityWatcher.ImplTest do
         position: position,
         base_asset: base_asset,
         quote_asset: quote_asset,
+        base_asset_increment: increment,
+        base_asset_precision: precision,
         quote_asset_increment: increment,
         quote_asset_precision: precision,
         min_notional: min_notional
@@ -156,17 +159,21 @@ defmodule OpportunityWatcher.ImplTest do
             position: :long,
             base_asset: "BTC",
             quote_asset: "USDT",
-            quote_asset_increment: Decimal.new("0.01"),
-            quote_asset_precision: 8,
+            base_asset_increment: const_increment(),
+            base_asset_precision: const_precision(),
+            quote_asset_increment: const_increment(),
+            quote_asset_precision: const_precision(),
             min_notional: Decimal.from_float(0.0001)
           },
           %TradingSymbol{
             symbol: "BTCUSDT",
             position: :short,
-            base_asset: "USDT",
-            quote_asset: "BTC",
-            quote_asset_increment: Decimal.new("0.01"),
-            quote_asset_precision: 8,
+            base_asset: "BTC",
+            quote_asset: "USDT",
+            base_asset_increment: const_increment(),
+            base_asset_precision: const_precision(),
+            quote_asset_increment: const_increment(),
+            quote_asset_precision: const_precision(),
             min_notional: Decimal.from_float(0.0001)
           }
         ]
@@ -204,28 +211,48 @@ defmodule OpportunityWatcher.ImplTest do
     assert opportunities == [
              %Opportunity{
                path: [
-                 %TradingSymbol{
-                   symbol: "BTCUSDT",
-                   position: :long,
-                   base_asset: "BTC",
-                   quote_asset: "USDT",
-                   quote_asset_increment: Decimal.new("0.01"),
-                   quote_asset_precision: 8,
-                   min_notional: Decimal.from_float(0.0001)
+                 %PlannedTrade{
+                   trading_symbol: %TradingSymbol{
+                     symbol: "BTCUSDT",
+                     position: :long,
+                     base_asset: "BTC",
+                     quote_asset: "USDT",
+                     base_asset_increment: const_increment(),
+                     base_asset_precision: const_precision(),
+                     quote_asset_increment: const_increment(),
+                     quote_asset_precision: const_precision(),
+                     min_notional: Decimal.from_float(0.0001)
+                   },
+                   order_price: Decimal.new("1.0"),
+                   order_qty: Decimal.new("1.00")
                  },
-                 %TradingSymbol{
-                   symbol: "BTCUSDT",
-                   position: :short,
-                   base_asset: "USDT",
-                   quote_asset: "BTC",
-                   quote_asset_increment: Decimal.new("0.01"),
-                   quote_asset_precision: 8,
-                   min_notional: Decimal.from_float(0.0001)
+                 %PlannedTrade{
+                   trading_symbol: %TradingSymbol{
+                     symbol: "BTCUSDT",
+                     position: :short,
+                     base_asset: "BTC",
+                     quote_asset: "USDT",
+                     base_asset_increment: const_increment(),
+                     base_asset_precision: const_precision(),
+                     quote_asset_increment: const_increment(),
+                     quote_asset_precision: const_precision(),
+                     min_notional: Decimal.from_float(0.0001)
+                   },
+                   order_price: Decimal.new("2.0"),
+                   order_qty: Decimal.new("1.00")
                  }
                ],
                profit: Decimal.new("1"),
-               capacity: Decimal.new("1.00")
+               capacity: Decimal.new("1")
              }
            ]
+  end
+
+  defp const_increment do
+    Decimal.new("0.01")
+  end
+
+  defp const_precision do
+    8
   end
 end

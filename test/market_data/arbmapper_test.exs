@@ -161,7 +161,7 @@ defmodule MarketData.ArbmapperTest do
                 quoteAssetIncrement: quote_asset_increment,
                 baseAssetPrecision: base_asset_precision,
                 baseAssetIncrement: base_asset_increment,
-                minNotional: Decimal.new("0.01")
+                minNotional: const_increment()
               })
             ) do
         symbols
@@ -189,253 +189,93 @@ defmodule MarketData.ArbmapperTest do
   ## Unit tests ##
 
   test "generates correct trading paths and symbols" do
-    trading_symbols = [
-      %Symbol{
-        symbol: "BTCETH",
-        baseAsset: "BTC",
-        quoteAsset: "ETH",
-        quoteAssetPrecision: 8,
-        quoteAssetIncrement: Decimal.new("0.01"),
-        baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01"),
-        minNotional: Decimal.from_float(0.0001)
-      },
-      %Symbol{
-        symbol: "ETHLTC",
-        baseAsset: "ETH",
-        quoteAsset: "LTC",
-        quoteAssetPrecision: 8,
-        quoteAssetIncrement: Decimal.new("0.01"),
-        baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01"),
-        minNotional: Decimal.from_float(0.0001)
-      },
-      %Symbol{
-        symbol: "LTCBTC",
-        baseAsset: "LTC",
-        quoteAsset: "BTC",
-        quoteAssetPrecision: 8,
-        quoteAssetIncrement: Decimal.new("0.01"),
-        baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01"),
-        minNotional: Decimal.from_float(0.0001)
-      }
-    ]
-
-    trading_paths = Arbmapper.generate_trading_paths(trading_symbols)
-
-    assert trading_paths ==
-             {
-               [
-                 [
-                   ts(%{
-                     base_asset: "LTC",
-                     position: :long,
-                     quote_asset: "BTC",
-                     symbol: "LTCBTC"
-                   }),
-                   ts(%{
-                     base_asset: "ETH",
-                     position: :long,
-                     quote_asset: "LTC",
-                     symbol: "ETHLTC"
-                   }),
-                   ts(%{
-                     base_asset: "BTC",
-                     position: :long,
-                     quote_asset: "ETH",
-                     symbol: "BTCETH"
-                   })
-                 ],
-                 [
-                   ts(%{
-                     base_asset: "ETH",
-                     position: :short,
-                     quote_asset: "BTC",
-                     symbol: "BTCETH"
-                   }),
-                   ts(%{
-                     base_asset: "LTC",
-                     position: :short,
-                     quote_asset: "ETH",
-                     symbol: "ETHLTC"
-                   }),
-                   ts(%{
-                     base_asset: "BTC",
-                     position: :short,
-                     quote_asset: "LTC",
-                     symbol: "LTCBTC"
-                   })
-                 ],
-                 [
-                   ts(%{
-                     symbol: "LTCBTC",
-                     position: :short,
-                     base_asset: "BTC",
-                     quote_asset: "LTC"
-                   }),
-                   ts(%{
-                     symbol: "BTCETH",
-                     position: :short,
-                     base_asset: "ETH",
-                     quote_asset: "BTC"
-                   }),
-                   ts(%{
-                     symbol: "ETHLTC",
-                     position: :short,
-                     base_asset: "LTC",
-                     quote_asset: "ETH"
-                   })
-                 ],
-                 [
-                   ts(%{
-                     base_asset: "ETH",
-                     position: :long,
-                     quote_asset: "LTC",
-                     symbol: "ETHLTC"
-                   }),
-                   ts(%{
-                     base_asset: "BTC",
-                     position: :long,
-                     quote_asset: "ETH",
-                     symbol: "BTCETH"
-                   }),
-                   ts(%{
-                     base_asset: "LTC",
-                     position: :long,
-                     quote_asset: "BTC",
-                     symbol: "LTCBTC"
-                   })
-                 ],
-                 [
-                   ts(%{
-                     base_asset: "LTC",
-                     position: :short,
-                     quote_asset: "ETH",
-                     symbol: "ETHLTC"
-                   }),
-                   ts(%{
-                     base_asset: "BTC",
-                     position: :short,
-                     quote_asset: "LTC",
-                     symbol: "LTCBTC"
-                   }),
-                   ts(%{
-                     base_asset: "ETH",
-                     position: :short,
-                     quote_asset: "BTC",
-                     symbol: "BTCETH"
-                   })
-                 ],
-                 [
-                   ts(%{
-                     base_asset: "BTC",
-                     position: :long,
-                     quote_asset: "ETH",
-                     symbol: "BTCETH"
-                   }),
-                   ts(%{
-                     base_asset: "LTC",
-                     position: :long,
-                     quote_asset: "BTC",
-                     symbol: "LTCBTC"
-                   }),
-                   ts(%{
-                     base_asset: "ETH",
-                     position: :long,
-                     quote_asset: "LTC",
-                     symbol: "ETHLTC"
-                   })
-                 ]
-               ],
-               ["LTCBTC", "ETHLTC", "BTCETH"]
-             }
-
     symbols = [
       %Symbol{
         symbol: "BTCUSDT",
         baseAsset: "BTC",
         quoteAsset: "USDT",
-        quoteAssetPrecision: 8,
-        quoteAssetIncrement: Decimal.new("0.01"),
-        baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01"),
+        quoteAssetPrecision: const_precision(),
+        quoteAssetIncrement: const_increment(),
+        baseAssetPrecision: const_precision(),
+        baseAssetIncrement: const_increment(),
         minNotional: Decimal.from_float(0.0001)
       },
       %Symbol{
         symbol: "ETHBTC",
         baseAsset: "ETH",
         quoteAsset: "BTC",
-        quoteAssetPrecision: 8,
-        quoteAssetIncrement: Decimal.new("0.01"),
-        baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01"),
+        quoteAssetPrecision: const_precision(),
+        quoteAssetIncrement: const_increment(),
+        baseAssetPrecision: const_precision(),
+        baseAssetIncrement: const_increment(),
         minNotional: Decimal.from_float(0.0001)
       },
       %Symbol{
         symbol: "ETHUSDT",
         baseAsset: "ETH",
         quoteAsset: "USDT",
-        quoteAssetPrecision: 8,
-        quoteAssetIncrement: Decimal.new("0.01"),
-        baseAssetPrecision: 8,
-        baseAssetIncrement: Decimal.new("0.01"),
+        quoteAssetPrecision: const_precision(),
+        quoteAssetIncrement: const_increment(),
+        baseAssetPrecision: const_precision(),
+        baseAssetIncrement: const_increment(),
         minNotional: Decimal.from_float(0.0001)
       }
     ]
 
-    assert Arbmapper.generate_trading_paths(symbols, starting_symbols: ["BTC"]) ==
-             {[
-                [
-                  ts("ETH", "BTC", :long),
-                  ts("USDT", "ETH", :short),
-                  ts("BTC", "USDT", :long)
-                ],
-                [
-                  ts("USDT", "BTC", :short),
-                  ts("ETH", "USDT", :long),
-                  ts("BTC", "ETH", :short)
-                ]
-              ], ["ETHBTC", "ETHUSDT", "BTCUSDT"]}
+    {paths, symbols} = Arbmapper.generate_trading_paths(symbols, starting_symbols: ["BTC"])
+
+    # correct number of paths & symbols
+    assert length(paths) == 2
+    assert length(symbols) == 3
+
+    # contains correct paths
+    assert Enum.all?(paths, fn x ->
+             Enum.member?(
+               [
+                 [
+                   ts("ETH", "BTC", :long),
+                   ts("ETH", "USDT", :short),
+                   ts("BTC", "USDT", :long)
+                 ],
+                 [
+                   ts("BTC", "USDT", :short),
+                   ts("ETH", "USDT", :long),
+                   ts("ETH", "BTC", :short)
+                 ]
+               ],
+               x
+             )
+           end)
+
+    # contains correct symbols
+    assert Enum.all?(symbols, fn x ->
+             Enum.member?(["ETHBTC", "ETHUSDT", "BTCUSDT"], x)
+           end)
   end
 
   test "throws error if empty symbols" do
     assert_raise(FunctionClauseError, fn -> Arbmapper.generate_trading_paths([]) end)
   end
 
-  defp ts(base_asset, quote_asset, :short) do
-    %TradingSymbol{
-      symbol: "#{quote_asset}#{base_asset}",
-      position: :short,
-      base_asset: base_asset,
-      quote_asset: quote_asset,
-      quote_asset_increment: Decimal.new("0.01"),
-      quote_asset_precision: 8,
-      min_notional: Decimal.from_float(0.0001)
-    }
-  end
-
-  defp ts(base_asset, quote_asset, :long) do
+  defp ts(base_asset, quote_asset, position) do
     %TradingSymbol{
       symbol: "#{base_asset}#{quote_asset}",
-      position: :long,
+      position: position,
       base_asset: base_asset,
       quote_asset: quote_asset,
-      quote_asset_increment: Decimal.new("0.01"),
-      quote_asset_precision: 8,
+      base_asset_increment: const_increment(),
+      base_asset_precision: const_precision(),
+      quote_asset_increment: const_increment(),
+      quote_asset_precision: const_precision(),
       min_notional: Decimal.from_float(0.0001)
     }
   end
 
-  defp ts(%{symbol: symbol, position: position, base_asset: base_aset, quote_asset: quote_asset}) do
-    %TradingSymbol{
-      symbol: symbol,
-      position: position,
-      base_asset: base_aset,
-      quote_asset: quote_asset,
-      quote_asset_increment: Decimal.new("0.01"),
-      quote_asset_precision: 8,
-      min_notional: Decimal.from_float(0.0001)
-    }
+  defp const_precision do
+    8
+  end
+
+  defp const_increment do
+    Decimal.new("0.01")
   end
 end

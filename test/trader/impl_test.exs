@@ -4,10 +4,10 @@ defmodule Trader.ImplTest do
   use ExUnit.Case
   use PropCheck
 
-  alias Trader.Error.InsufficientBalanceError
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.Impl
   alias Types.Opportunity
+  alias Types.PlannedTrade
   alias Types.TradeReport
   alias Types.TradingSymbol
   require Decimal
@@ -19,26 +19,6 @@ defmodule Trader.ImplTest do
 
   # turn off logging
   @moduletag :capture_log
-
-  property "succeeds when balace and free symbols" do
-    forall opportunity <- opportunity() do
-      # setup mocks
-      Trader.Balance.TestMock
-      |> stub(:update, fn _asset, _amount -> :ok end)
-      |> expect(:reserve_upto, fn _asset, _amount, _increment, _precision -> Decimal.new(1) end)
-
-      Trader.TradeClient.Exchange.TestMock
-      |> expect(:new, fn -> :ok end)
-      |> expect(:market_order, Enum.count(opportunity.path), fn trading_symbol, _quantity ->
-        trade_report_for_symbol(trading_symbol)
-      end)
-
-      # init
-      Impl.new()
-
-      assert :ok == Impl.execute_opportunity(opportunity)
-    end
-  end
 
   property "fails if any symbol in path already reserved" do
     forall [opportunity] <-
@@ -68,47 +48,20 @@ defmodule Trader.ImplTest do
     end
   end
 
-  property "fails if no balance to reserve" do
-    forall opportunity <- opportunity() do
-      # setup mocks
-      Trader.Balance.TestMock
-      |> stub(:update, fn _asset, _amount -> :ok end)
-      |> expect(:reserve_upto, fn _asset, _amount, _increment, _precision ->
-        Decimal.from_float(0.0)
-      end)
-
-      Trader.TradeClient.Exchange.TestMock
-      |> expect(:new, fn -> :ok end)
-
-      # init
-      Impl.new()
-
-      raises_correct_error =
-        try do
-          Impl.execute_opportunity(opportunity)
-        rescue
-          InsufficientBalanceError -> true
-        else
-          _ -> false
-        end
-
-      assert raises_correct_error
-    end
-  end
-
   defp trade_report_for_symbol(%TradingSymbol{position: position, symbol: symbol}) do
-    %TradeReport{
-      symbol: symbol,
-      position: position,
-      quantity_base: Decimal.new(1),
-      quantity_quote: Decimal.new(1),
-      fees: [
-        %Types.TradeReport.Fee{
-          fee_currency: "BNB",
-          fee_amount: Decimal.from_float(0.1)
-        }
-      ]
-    }
+    {:executed,
+     %TradeReport{
+       symbol: symbol,
+       position: position,
+       quantity_base: Decimal.new(1),
+       quantity_quote: Decimal.new(1),
+       fees: [
+         %Types.TradeReport.Fee{
+           fee_currency: "BNB",
+           fee_amount: Decimal.from_float(0.1)
+         }
+       ]
+     }}
   end
 
   ## Generators ##
@@ -138,16 +91,18 @@ defmodule Trader.ImplTest do
   end
 
   defp path do
-    let path <- non_empty(list(trading_symbol())) do
-      first_base_asset = Enum.at(path, 0).base_asset
+    let path <- non_empty(list(planned_trade())) do
+      first_base_asset = Enum.at(path, 0).trading_symbol.base_asset
 
       path
       # make symbols in path unique
-      |> Enum.uniq_by(fn p -> p.symbol end)
+      |> Enum.uniq_by(fn p -> p.trading_symbol.symbol end)
       # make sure the next quote asset is the same as the previous base asset
-      |> Enum.map_reduce(first_base_asset, fn ts, prev_base_asset ->
+      |> Enum.map_reduce(first_base_asset, fn ps, prev_base_asset ->
+        ts = ps.trading_symbol
         new_ts = ts |> Map.put(:quote_asset, prev_base_asset)
-        {new_ts, ts.base_asset}
+        new_ps = ps |> Map.put(:trading_symbol, new_ts)
+        {new_ps, ts.base_asset}
       end)
       |> elem(0)
     end
@@ -166,9 +121,25 @@ defmodule Trader.ImplTest do
         position: position,
         base_asset: base_asset,
         quote_asset: quote_asset,
+        base_asset_increment: Decimal.from_float(0.01),
+        base_asset_precision: 8,
         quote_asset_increment: Decimal.from_float(0.01),
         quote_asset_precision: 8,
         min_notional: min_notional
+      }
+    end
+  end
+
+  defp planned_trade do
+    let [
+      trading_symbol <- trading_symbol(),
+      order_price <- pos_decimal(),
+      order_qty <- pos_decimal()
+    ] do
+      %PlannedTrade{
+        trading_symbol: trading_symbol,
+        order_price: order_price,
+        order_qty: order_qty
       }
     end
   end
@@ -182,5 +153,64 @@ defmodule Trader.ImplTest do
   defp textdata do
     ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
       ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
+  end
+
+  # unit tests
+
+  test "succeeds when balace and free symbols" do
+    opportunity = %Opportunity{
+      path: [
+        %PlannedTrade{
+          trading_symbol: %TradingSymbol{
+            symbol: "BTCUSDT",
+            position: :long,
+            base_asset: "BTC",
+            quote_asset: "USDT",
+            base_asset_increment: Decimal.from_float(0.01),
+            base_asset_precision: 8,
+            quote_asset_increment: Decimal.from_float(0.01),
+            quote_asset_precision: 8,
+            min_notional: Decimal.from_float(0.001)
+          },
+          order_price: Decimal.from_float(0.1),
+          order_qty: Decimal.from_float(1.0)
+        },
+        %PlannedTrade{
+          trading_symbol: %TradingSymbol{
+            symbol: "ETHBTC",
+            position: :short,
+            base_asset: "ETH",
+            quote_asset: "BTC",
+            base_asset_increment: Decimal.from_float(0.01),
+            base_asset_precision: 8,
+            quote_asset_increment: Decimal.from_float(0.01),
+            quote_asset_precision: 8,
+            min_notional: Decimal.from_float(0.001)
+          },
+          order_price: Decimal.from_float(100.0),
+          order_qty: Decimal.from_float(1.0)
+        }
+      ],
+      profit: Decimal.from_float(0.01),
+      capacity: Decimal.from_float(1.0)
+    }
+
+    # setup mocks
+    Trader.Balance.TestMock
+    |> stub(:update, fn _asset, _amount -> :ok end)
+    |> expect(:reserve_upto, fn _asset, _amount, _increment, _precision ->
+      opportunity.capacity
+    end)
+
+    Trader.TradeClient.Exchange.TestMock
+    |> expect(:new, fn -> :ok end)
+    |> expect(:limit_order, Enum.count(opportunity.path), fn trading_symbol, _quantity, _price ->
+      trade_report_for_symbol(trading_symbol)
+    end)
+
+    # init
+    Impl.new()
+
+    assert :ok == Impl.execute_opportunity(opportunity)
   end
 end

@@ -61,24 +61,18 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
   end
 
   @doc """
-  Construct a market order request message
-
-  ## Parameters
-    * `seq_num` - sequence number
-    * `sender_comp_id` - sender comp id
-    * `trading_symbol` - trading symbol
-    * `quantity` - quantity (in quote asset units)
+  Construct a limit order request message
   """
-  @spec market_order_request(integer(), String.t(), TradingSymbol.t(), Decimal.t(), String.t()) ::
-          binary()
-  def market_order_request(
+  def limit_order_request(
         seq_num,
         sender_comp_id = "" <> _,
         trading_symbol = %TradingSymbol{},
         quantity,
+        price,
         client_order_id = "" <> _
       )
-      when Decimal.is_decimal(quantity) and is_integer(seq_num) and seq_num > 0 do
+      when Decimal.is_decimal(quantity) and Decimal.is_decimal(price) and is_integer(seq_num) and
+             seq_num > 0 do
     side =
       case trading_symbol.position do
         :long -> Const.OrderSide.buy()
@@ -95,10 +89,12 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
         orig_sending_time: nil,
         body: [
           {Const.Tag.cl_order_id(), client_order_id},
-          {Const.Tag.order_type(), Const.OrderType.market()},
+          {Const.Tag.order_type(), Const.OrderType.limit()},
           {Const.Tag.side(), side},
           {Const.Tag.symbol(), symbol},
-          {Const.Tag.cash_order_qty(), Decimal.to_float(quantity)}
+          {Const.Tag.order_qty(), Decimal.to_float(quantity)},
+          {Const.Tag.price(), Decimal.to_float(price)},
+          {Const.Tag.time_in_force(), Const.TimeInForce.fill_or_kill()}
         ]
       },
       timestamp()
@@ -184,10 +180,15 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApi.Impl do
     fees = parse_fees(message)
     reject_text = Map.get(fields, Const.Tag.reject_text(), nil)
 
+    base_quantity = Map.get(fields, Const.Tag.quantity_base(), "0")
+    quote_quantity = Map.get(fields, Const.Tag.quantity_quote(), "0")
+
+    # IO.inspect(fields)
+
     %ExecutionReport{
       order_status: fields[Const.Tag.order_status()],
-      quantity_base: Decimal.new(fields[Const.Tag.quantity_base()]),
-      quantity_quote: Decimal.new(fields[Const.Tag.quantity_quote()]),
+      quantity_base: Decimal.new(base_quantity),
+      quantity_quote: Decimal.new(quote_quantity),
       symbol: fields[Const.Tag.symbol()],
       side: fields[Const.Tag.side()],
       fees: fees,

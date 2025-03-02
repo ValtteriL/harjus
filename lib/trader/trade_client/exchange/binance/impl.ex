@@ -17,8 +17,9 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
   alias Types.TradingSymbol
 
   @order_filled ExecutionReport.OrderStatus.filled()
-  @rejected ExecutionReport.OrderStatus.rejected()
-  @expired ExecutionReport.OrderStatus.expired()
+  @order_canceled ExecutionReport.OrderStatus.canceled()
+  @order_rejected ExecutionReport.OrderStatus.rejected()
+  @order_expired ExecutionReport.OrderStatus.expired()
 
   def new do
     api_key = Application.fetch_env!(:harjus, :binance_ed25519_api_key)
@@ -53,24 +54,26 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
     }
   end
 
-  @spec market_order(
+  @spec limit_order(
           state :: State.t(),
           from :: term(),
           trading_symbol :: TradingSymbol.t(),
-          quantity :: Decimal.t()
+          quantity :: Decimal.t(),
+          price :: Decimal.t()
         ) ::
           State.t()
-  def market_order(state, from, trading_symbol, quantity) do
-    client_order_id = :crypto.strong_rand_bytes(8) |> Base.encode16() |> String.downcase()
+  def limit_order(state, from, trading_symbol, quantity, price) do
+    client_order_id = generate_client_order_id()
 
     :ok =
       :ssl.send(
         state.socket,
-        FixApi.market_order_request(
+        FixApi.limit_order_request(
           state.seq_num,
           state.sender_comp_id,
           trading_symbol,
           quantity,
+          price,
           client_order_id
         )
       )
@@ -104,34 +107,29 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
   defp react_to_fix_message(_s, {:news}), do: raise("FIX connection will be reset")
 
   defp react_to_fix_message(state, {:logon}) do
-    Logger.info("FIX logon successful")
+    Logger.debug("FIX logon successful")
     state
   end
 
   defp react_to_fix_message(state, {:execution_report, execution_report}) do
-    # if complete, reply to trader
-    Logger.info("Execution report: #{inspect(execution_report)}")
-
-    # if order is filled, relay to trader
+    # if order is filled/expired, relay to trader
     case execution_report.order_status do
       @order_filled ->
         from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)
-        GenServer.reply(from, executionreport_to_tradereport(execution_report))
+        GenServer.reply(from, {:executed, executionreport_to_tradereport(execution_report)})
+        delete_outstanding_order(state, execution_report.client_order_id)
 
-        %{
-          state
-          | outstanding_execution_reports:
-              Map.delete(
-                state.outstanding_execution_reports,
-                execution_report.client_order_id
-              )
-        }
+      @order_canceled ->
+        raise("Order canceled: #{inspect(execution_report)}")
 
-      @rejected ->
+      @order_rejected ->
         raise("Order rejected: #{inspect(execution_report)}")
 
-      @expired ->
-        raise("Order expired: #{inspect(execution_report)}")
+      @order_expired ->
+        # FOK orders are expired if they can't be filled immediately
+        from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)
+        GenServer.reply(from, {:expired, nil})
+        delete_outstanding_order(state, execution_report.client_order_id)
 
       _ ->
         state
@@ -142,6 +140,17 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
     Logger.error("Unknown message")
     Logger.debug(inspect(message))
     state
+  end
+
+  defp delete_outstanding_order(state, client_order_id) do
+    %{
+      state
+      | outstanding_execution_reports:
+          Map.delete(
+            state.outstanding_execution_reports,
+            client_order_id
+          )
+    }
   end
 
   @buy_side Const.OrderSide.buy()
@@ -161,5 +170,9 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
       quantity_quote: execution_report.quantity_quote,
       fees: execution_report.fees
     }
+  end
+
+  defp generate_client_order_id do
+    :crypto.strong_rand_bytes(8) |> Base.encode16() |> String.downcase()
   end
 end

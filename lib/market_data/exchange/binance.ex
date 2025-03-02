@@ -19,6 +19,7 @@ defmodule MarketData.Exchange.Binance do
     end
 
     resp.body["symbols"]
+    |> Enum.filter(fn x -> x["isSpotTradingAllowed"] end)
     |> Enum.map(fn x ->
       Map.take(x, [
         "symbol",

@@ -5,6 +5,7 @@ defmodule PortfolioManager.ImplTest do
   alias PortfolioManager.BalanceMock
   alias PortfolioManager.Impl
   alias Types.Opportunity
+  alias Types.PlannedTrade
   alias Types.TradingSymbol
 
   use ExUnit.Case, async: true
@@ -85,7 +86,7 @@ defmodule PortfolioManager.ImplTest do
 
       opportunity = Enum.at(Impl.filter_opportunities(state, opportunities), 0)
 
-      %{path: [%{quote_asset: q} | _]} = opportunity
+      %{path: [%{trading_symbol: %{quote_asset: q}} | _]} = opportunity
 
       ret =
         case(q) do
@@ -121,7 +122,7 @@ defmodule PortfolioManager.ImplTest do
   end
 
   defp path do
-    let p <- non_empty(list(trading_symbol())) do
+    let p <- non_empty(list(planned_trade())) do
       p
     end
   end
@@ -159,9 +160,25 @@ defmodule PortfolioManager.ImplTest do
         position: position,
         base_asset: base_asset,
         quote_asset: quote_asset,
+        base_asset_increment: increment,
+        base_asset_precision: precision,
         quote_asset_increment: increment,
         quote_asset_precision: precision,
         min_notional: min_notional
+      }
+    end
+  end
+
+  defp planned_trade do
+    let [
+      trading_symbol <- trading_symbol(),
+      order_qty <- pos_decimal(),
+      order_price <- pos_decimal()
+    ] do
+      %PlannedTrade{
+        trading_symbol: trading_symbol,
+        order_qty: order_qty,
+        order_price: order_price
       }
     end
   end
@@ -266,14 +283,20 @@ defmodule PortfolioManager.ImplTest do
   defp opportunity(base_asset, quote_asset, profit, capacity) do
     %Opportunity{
       path: [
-        %TradingSymbol{
-          symbol: "#{base_asset}#{quote_asset}",
-          position: :long,
-          base_asset: base_asset,
-          quote_asset: quote_asset,
-          quote_asset_increment: Decimal.new("0.01"),
-          quote_asset_precision: 8,
-          min_notional: Decimal.from_float(0.001)
+        %PlannedTrade{
+          trading_symbol: %TradingSymbol{
+            symbol: "#{base_asset}#{quote_asset}",
+            position: :long,
+            base_asset: base_asset,
+            quote_asset: quote_asset,
+            base_asset_increment: Decimal.new("0.01"),
+            base_asset_precision: 8,
+            quote_asset_increment: Decimal.new("0.01"),
+            quote_asset_precision: 8,
+            min_notional: Decimal.from_float(0.001)
+          },
+          order_price: Decimal.new(1),
+          order_qty: Decimal.new(1)
         }
       ],
       profit: profit,
@@ -282,13 +305,19 @@ defmodule PortfolioManager.ImplTest do
   end
 
   defp get_opportunity_value(opportunity, relative_asset_values) do
-    %{path: [symbol | _], profit: profit, capacity: cap} = opportunity
+    %{path: [pt | _], profit: profit, capacity: cap} = opportunity
+
+    used_asset =
+      case pt.trading_symbol.position do
+        :long -> pt.trading_symbol.quote_asset
+        :short -> pt.trading_symbol.base_asset
+      end
 
     asset_value =
-      Map.get(relative_asset_values, symbol.quote_asset, Decimal.new(0))
+      Map.get(relative_asset_values, used_asset, Decimal.new(0))
 
     Decimal.mult(
-      Decimal.mult(profit, Decimal.min(cap, BalanceMock.get(symbol.quote_asset))),
+      Decimal.mult(profit, Decimal.min(cap, BalanceMock.get(used_asset))),
       asset_value
     )
   end
