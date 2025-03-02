@@ -52,6 +52,8 @@ defmodule Trader.Impl do
     budget =
       case first_ts.position do
         :long ->
+          debug("Reserving budget for long position (asset #{first_ts.quote_asset})")
+
           MyBalance.reserve_upto(
             first_ts.quote_asset,
             opportunity.capacity,
@@ -60,6 +62,8 @@ defmodule Trader.Impl do
           )
 
         :short ->
+          debug("Reserving budget for short position (asset #{first_ts.base_asset})")
+
           MyBalance.reserve_upto(
             first_ts.base_asset,
             opportunity.capacity,
@@ -129,6 +133,8 @@ defmodule Trader.Impl do
          ],
          balance_delta = %{}
        ) do
+    debug("Trading #{qty} of #{trading_symbol.symbol} at #{price}")
+
     case TradeClient.limit_order(trading_symbol, qty, price) do
       {:executed, report} ->
         debug("Trade completed. #{inspect(report)}")
