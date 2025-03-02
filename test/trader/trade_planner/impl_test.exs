@@ -209,4 +209,83 @@ defmodule Trader.TradePlanner.ImplTest do
 
     assert Enum.all?(list_of_booleans, fn b -> b end)
   end
+
+  test "asset from previous trade sufficient for the next one 2" do
+    opportunity = %Opportunity{
+      path: [
+        %Types.PlannedTrade{
+          trading_symbol: %Types.TradingSymbol{
+            symbol: "ADAEUR",
+            position: :short,
+            base_asset: "ADA",
+            quote_asset: "EUR",
+            base_asset_increment: Decimal.new("0.10000000"),
+            base_asset_precision: 8,
+            quote_asset_increment: Decimal.new("0.00010000"),
+            quote_asset_precision: 8,
+            min_notional: Decimal.new("5.00000000")
+          },
+          order_qty: Decimal.new("8117.90000000"),
+          order_price: Decimal.new("0.81700000")
+        },
+        %Types.PlannedTrade{
+          trading_symbol: %Types.TradingSymbol{
+            symbol: "EURUSDC",
+            position: :short,
+            base_asset: "EUR",
+            quote_asset: "USDC",
+            base_asset_increment: Decimal.new("0.10000000"),
+            base_asset_precision: 8,
+            quote_asset_increment: Decimal.new("0.00010000"),
+            quote_asset_precision: 8,
+            min_notional: Decimal.new("5.00000000")
+          },
+          order_qty: Decimal.new("7835.00000000"),
+          order_price: Decimal.new("1.03610000")
+        },
+        %Types.PlannedTrade{
+          trading_symbol: %Types.TradingSymbol{
+            symbol: "ADAUSDC",
+            position: :long,
+            base_asset: "ADA",
+            quote_asset: "USDC",
+            base_asset_increment: Decimal.new("0.10000000"),
+            base_asset_precision: 8,
+            quote_asset_increment: Decimal.new("0.00010000"),
+            quote_asset_precision: 8,
+            min_notional: Decimal.new("5.00000000")
+          },
+          order_qty: Decimal.new("9432.90000000"),
+          order_price: Decimal.new("0.83060000")
+        }
+      ],
+      profit: Decimal.new("0.016080854243446063086925114"),
+      capacity: Decimal.new("6632.355856086596999999999999")
+    }
+
+    budget = Decimal.new(100)
+
+    {:ok, plan} = Impl.plan_execution(opportunity, budget)
+
+    list_of_booleans =
+      plan
+      |> Enum.map_reduce(budget, fn pt, received_qty ->
+        required_qty =
+          case pt.trading_symbol.position do
+            :long -> Decimal.mult(pt.order_qty, pt.order_price)
+            :short -> pt.order_qty
+          end
+
+        newly_received_qty =
+          case pt.trading_symbol.position do
+            :long -> pt.order_qty
+            :short -> Decimal.mult(pt.order_qty, pt.order_price)
+          end
+
+        {Decimal.gte?(received_qty, required_qty), newly_received_qty}
+      end)
+      |> elem(0)
+
+    assert Enum.all?(list_of_booleans, fn b -> b end)
+  end
 end
