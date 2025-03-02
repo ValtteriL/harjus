@@ -107,15 +107,12 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
   defp react_to_fix_message(_s, {:news}), do: raise("FIX connection will be reset")
 
   defp react_to_fix_message(state, {:logon}) do
-    Logger.info("FIX logon successful")
+    Logger.debug("FIX logon successful")
     state
   end
 
   defp react_to_fix_message(state, {:execution_report, execution_report}) do
-    # if complete, reply to trader
-    Logger.info("Execution report: #{inspect(execution_report)}")
-
-    # if order is filled, relay to trader
+    # if order is filled/expired, relay to trader
     case execution_report.order_status do
       @order_filled ->
         from = Map.get(state.outstanding_execution_reports, execution_report.client_order_id)

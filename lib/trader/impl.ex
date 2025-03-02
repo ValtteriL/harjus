@@ -75,7 +75,7 @@ defmodule Trader.Impl do
 
     case TradePlanner.plan_execution(opportunity, budget) do
       {:ok, plan} ->
-        notice("Executing opportunity #{inspect(plan)} with budget: #{budget}")
+        info("Executing opportunity #{inspect(plan)} with budget: #{budget}")
         execute_plan(plan, budget)
 
       {:insufficient_balance, _} ->
@@ -224,5 +224,9 @@ defmodule Trader.Impl do
 
   defp warn(msg) do
     Logger.warning("#{:erlang.pid_to_list(self())}: #{msg}")
+  end
+
+  defp info(msg) do
+    Logger.info("#{:erlang.pid_to_list(self())}: #{msg}")
   end
 end
