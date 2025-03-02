@@ -21,28 +21,6 @@ defmodule Trader.ImplTest do
   # turn off logging
   @moduletag :capture_log
 
-  property "succeeds when balace and free symbols" do
-    forall opportunity <- opportunity() do
-      # setup mocks
-      Trader.Balance.TestMock
-      |> stub(:update, fn _asset, _amount -> :ok end)
-      |> expect(:reserve_upto, fn _asset, _amount, _increment, _precision -> Decimal.new(1) end)
-
-      Trader.TradeClient.Exchange.TestMock
-      |> expect(:new, fn -> :ok end)
-      |> expect(:limit_order, Enum.count(opportunity.path), fn trading_symbol,
-                                                               _quantity,
-                                                               _price ->
-        trade_report_for_symbol(trading_symbol)
-      end)
-
-      # init
-      Impl.new()
-
-      assert :ok == Impl.execute_opportunity(opportunity)
-    end
-  end
-
   property "fails if any symbol in path already reserved" do
     forall [opportunity] <-
              [
@@ -176,5 +154,64 @@ defmodule Trader.ImplTest do
   defp textdata do
     ~c"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" ++
       ~c":;<=>?@ !#$%&'()*+-./[\\]^_`{|}~"
+  end
+
+  # unit tests
+
+  test "succeeds when balace and free symbols" do
+    opportunity = %Opportunity{
+      path: [
+        %PlannedTrade{
+          trading_symbol: %TradingSymbol{
+            symbol: "BTCUSDT",
+            position: :long,
+            base_asset: "BTC",
+            quote_asset: "USDT",
+            base_asset_increment: Decimal.from_float(0.01),
+            base_asset_precision: 8,
+            quote_asset_increment: Decimal.from_float(0.01),
+            quote_asset_precision: 8,
+            min_notional: Decimal.from_float(10.0)
+          },
+          order_price: Decimal.from_float(100.0),
+          order_qty: Decimal.from_float(0.1)
+        },
+        %PlannedTrade{
+          trading_symbol: %TradingSymbol{
+            symbol: "ETHBTC",
+            position: :short,
+            base_asset: "ETH",
+            quote_asset: "BTC",
+            base_asset_increment: Decimal.from_float(0.01),
+            base_asset_precision: 8,
+            quote_asset_increment: Decimal.from_float(0.01),
+            quote_asset_precision: 8,
+            min_notional: Decimal.from_float(0.001)
+          },
+          order_price: Decimal.from_float(0.1),
+          order_qty: Decimal.from_float(0.1)
+        }
+      ],
+      profit: Decimal.from_float(0.01),
+      capacity: Decimal.from_float(0.1)
+    }
+
+    # setup mocks
+    Trader.Balance.TestMock
+    |> stub(:update, fn _asset, _amount -> :ok end)
+    |> expect(:reserve_upto, fn _asset, _amount, _increment, _precision ->
+      opportunity.capacity
+    end)
+
+    Trader.TradeClient.Exchange.TestMock
+    |> expect(:new, fn -> :ok end)
+    |> expect(:limit_order, Enum.count(opportunity.path), fn trading_symbol, _quantity, _price ->
+      trade_report_for_symbol(trading_symbol)
+    end)
+
+    # init
+    Impl.new()
+
+    assert :ok == Impl.execute_opportunity(opportunity)
   end
 end

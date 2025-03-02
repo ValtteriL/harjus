@@ -4,7 +4,6 @@ defmodule Trader.Impl do
   """
 
   alias Trader.Balance, as: MyBalance
-  alias Trader.Error.InsufficientBalanceError
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.TradeClient
   alias Types.Opportunity
@@ -189,9 +188,8 @@ defmodule Trader.Impl do
   @spec plan_execution(Opportunity.t(), Decimal.t()) ::
           {:ok, [PlannedTrade.t()]} | {:insufficient_balance, any()}
   defp plan_execution(
-         opportunity = %Opportunity{
-           path: path = [%PlannedTrade{trading_symbol: ts} | _],
-           profit: profit,
+         %Opportunity{
+           path: path = [%PlannedTrade{} | _],
            capacity: full_capacity
          },
          budget
@@ -202,7 +200,6 @@ defmodule Trader.Impl do
     plan =
       path
       |> Enum.map_reduce(capacity, fn pt, acc ->
-        order_price = pt.order_price
         order_qty = order_qty_for_budget(acc, pt.order_price, pt.trading_symbol)
 
         {

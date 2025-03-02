@@ -25,8 +25,4 @@ defmodule PriceStreamer.Stage do
     # Dispatch newly appeared opportunities immediately
     {:noreply, [update], state}
   end
-
-  @impl GenStage
-  # silence logging of discarded events
-  def format_discarded(_discarded, _state), do: false
 end
