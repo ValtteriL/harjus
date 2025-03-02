@@ -218,7 +218,7 @@ defmodule Trader.Impl do
       plan
       |> Enum.all?(fn pt ->
         notional = Decimal.mult(pt.order_qty, pt.order_price)
-        Decimal.lt?(notional, pt.trading_symbol.min_notional)
+        Decimal.gt?(notional, pt.trading_symbol.min_notional)
       end)
 
     if notional_fulfilled do
