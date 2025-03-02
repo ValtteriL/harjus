@@ -47,9 +47,19 @@ defmodule OpportunityWatcher.OpportunityTest do
       capacity = Opportunity.capacity(trading_path, price_qty_map)
       trades = Opportunity.plan_trades(trading_path, capacity, price_qty_map)
 
-      # plan_trades first order_qty*order_price is always lte capacity
+      # required qty for first trade is lte capacity
       first_trade = Enum.at(trades, 0)
-      assert Decimal.lte?(Decimal.mult(first_trade.order_qty, first_trade.order_price), capacity)
+
+      case first_trade.trading_symbol do
+        %TradingSymbol{position: :long} ->
+          assert Decimal.lte?(
+                   Decimal.mult(first_trade.order_qty, first_trade.order_price),
+                   capacity
+                 )
+
+        %TradingSymbol{position: :short} ->
+          assert Decimal.lte?(first_trade.order_qty, capacity)
+      end
     end
   end
 

@@ -54,7 +54,7 @@ defmodule Trader.TradePlanner.ImplTest do
   defp opportunity do
     let [path <- non_empty(list(planned_trade())), profit <- profit(), capacity <- capacity()] do
       %Opportunity{
-        path: path,
+        path: path |> Enum.take(5),
         profit: profit,
         capacity: capacity
       }

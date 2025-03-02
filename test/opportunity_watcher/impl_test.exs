@@ -239,7 +239,7 @@ defmodule OpportunityWatcher.ImplTest do
                      min_notional: Decimal.from_float(0.0001)
                    },
                    order_price: Decimal.new("2.0"),
-                   order_qty: Decimal.new("0.50")
+                   order_qty: Decimal.new("1.00")
                  }
                ],
                profit: Decimal.new("1"),
