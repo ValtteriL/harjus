@@ -6,6 +6,7 @@ defmodule Trader.Impl do
   alias Trader.Balance, as: MyBalance
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.TradeClient
+  alias Trader.TradePlanner
   alias Types.Opportunity
   alias Types.PlannedTrade
   alias Types.TradeReport
@@ -72,7 +73,7 @@ defmodule Trader.Impl do
           )
       end
 
-    case plan_execution(opportunity, budget) do
+    case TradePlanner.plan_execution(opportunity, budget) do
       {:ok, plan} ->
         notice("Executing opportunity #{inspect(opportunity)} with budget: #{budget}")
         execute_plan(plan, budget)
@@ -208,56 +209,6 @@ defmodule Trader.Impl do
         _ -> raise SymbolAlreadyReservedError
       end
     end)
-  end
-
-  @spec plan_execution(Opportunity.t(), Decimal.t()) ::
-          {:ok, [PlannedTrade.t()]} | {:insufficient_balance, any()}
-  defp plan_execution(
-         %Opportunity{
-           path: path = [%PlannedTrade{} | _],
-           capacity: full_capacity
-         },
-         budget
-       ) do
-    # plan valid qty, price for each trade in opportunity based on budget
-    capacity = Decimal.min(full_capacity, budget)
-
-    plan =
-      path
-      |> Enum.map_reduce(capacity, fn pt, acc ->
-        order_qty = order_qty_for_budget(acc, pt.order_price, pt.trading_symbol)
-
-        {
-          %PlannedTrade{
-            trading_symbol: pt.trading_symbol,
-            order_price: pt.order_price,
-            order_qty: order_qty
-          },
-          order_qty
-        }
-      end)
-      |> elem(0)
-
-    # ensure all trades have notional >= min_notional
-    notional_fulfilled =
-      plan
-      |> Enum.all?(fn pt ->
-        notional = Decimal.mult(pt.order_qty, pt.order_price)
-        Decimal.gt?(notional, pt.trading_symbol.min_notional)
-      end)
-
-    if notional_fulfilled do
-      {:ok, plan}
-    else
-      {:insufficient_balance, nil}
-    end
-  end
-
-  # ensure qty is a multiple of base_asset_increment
-  defp order_qty_for_budget(budget, price, trading_symbol) do
-    Decimal.div(budget, price)
-    |> Decimal.div_int(trading_symbol.base_asset_increment)
-    |> Decimal.mult(trading_symbol.base_asset_increment)
   end
 
   defp used_asset(%TradingSymbol{position: :long, quote_asset: q}), do: q
