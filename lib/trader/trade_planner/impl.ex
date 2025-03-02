@@ -24,7 +24,8 @@ defmodule Trader.TradePlanner.Impl do
     plan =
       path
       |> Enum.map_reduce(capacity, fn pt, acc ->
-        order_qty = order_qty_for_budget(acc, pt.order_price, pt.trading_symbol)
+        {order_qty, received_qty} =
+          order_qty_received_qty_for_budget(acc, pt.order_price, pt.trading_symbol)
 
         {
           %PlannedTrade{
@@ -32,7 +33,7 @@ defmodule Trader.TradePlanner.Impl do
             order_price: pt.order_price,
             order_qty: order_qty
           },
-          order_qty
+          received_qty
         }
       end)
       |> elem(0)
@@ -53,15 +54,34 @@ defmodule Trader.TradePlanner.Impl do
   end
 
   # ensure qty is a multiple of base_asset_increment
-  defp order_qty_for_budget(budget, price, trading_symbol = %TradingSymbol{position: :long}) do
-    Decimal.div(budget, price)
-    |> Decimal.div_int(trading_symbol.base_asset_increment)
-    |> Decimal.mult(trading_symbol.base_asset_increment)
+  defp order_qty_received_qty_for_budget(
+         budget,
+         price,
+         trading_symbol = %TradingSymbol{position: :long}
+       ) do
+    order_qty =
+      Decimal.div(budget, price)
+      |> Decimal.div_int(trading_symbol.base_asset_increment)
+      |> Decimal.mult(trading_symbol.base_asset_increment)
+
+    {order_qty, order_qty}
   end
 
-  defp order_qty_for_budget(budget, _price, trading_symbol = %TradingSymbol{position: :short}) do
-    budget
-    |> Decimal.div_int(trading_symbol.base_asset_increment)
-    |> Decimal.mult(trading_symbol.base_asset_increment)
+  defp order_qty_received_qty_for_budget(
+         budget,
+         price,
+         trading_symbol = %TradingSymbol{position: :short}
+       ) do
+    order_qty =
+      budget
+      |> Decimal.div_int(trading_symbol.base_asset_increment)
+      |> Decimal.mult(trading_symbol.base_asset_increment)
+
+    received_qty =
+      Decimal.mult(order_qty, price)
+      |> Decimal.div_int(trading_symbol.quote_asset_increment)
+      |> Decimal.mult(trading_symbol.quote_asset_increment)
+
+    {order_qty, received_qty}
   end
 end
