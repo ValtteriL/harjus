@@ -157,7 +157,7 @@ defmodule Trader.Impl do
           balance_delta()
   defp update_balance_delta(
          delta,
-         %TradingSymbol{base_asset: base_asset, quote_asset: quote_asset},
+         %TradingSymbol{base_asset: base_asset, quote_asset: quote_asset, position: :long},
          trade_report
        ) do
     delta
@@ -170,8 +170,28 @@ defmodule Trader.Impl do
     # quote
     |> Map.update(
       quote_asset,
-      trade_report.quantity_quote,
-      fn current_qty -> Decimal.add(current_qty, trade_report.quantity_quote) end
+      Decimal.negate(trade_report.quantity_quote),
+      fn current_qty -> Decimal.sub(current_qty, trade_report.quantity_quote) end
+    )
+  end
+
+  defp update_balance_delta(
+         delta,
+         %TradingSymbol{base_asset: base_asset, quote_asset: quote_asset, position: :short},
+         trade_report
+       ) do
+    delta
+    # base
+    |> Map.update(
+      base_asset,
+      Decimal.negate(trade_report.quantity_base),
+      fn current_qty -> Decimal.sub(current_qty, trade_report.quantity_base) end
+    )
+    # quote
+    |> Map.update(
+      quote_asset,
+      Decimal.negate(trade_report.quantity_quote),
+      fn current_qty -> Decimal.sub(current_qty, trade_report.quantity_quote) end
     )
   end
 
