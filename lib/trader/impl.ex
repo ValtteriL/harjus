@@ -74,7 +74,7 @@ defmodule Trader.Impl do
         execute_plan(plan, budget)
 
       {:insufficient_balance, _} ->
-        debug("Insufficient balance for opportunity #{inspect(opportunity)}")
+        debug("Insufficient balance (#{budget}) for opportunity #{inspect(opportunity)}")
         MyBalance.update(used_asset(first_ts), budget)
     end
   end
