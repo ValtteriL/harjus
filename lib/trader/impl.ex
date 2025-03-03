@@ -4,6 +4,7 @@ defmodule Trader.Impl do
   """
 
   alias Trader.Balance, as: MyBalance
+  alias Trader.BalanceDelta
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.TradeClient
   alias Trader.TradePlanner
@@ -88,25 +89,25 @@ defmodule Trader.Impl do
     # execute trades
     balance_delta =
       case trade(plan, reserved_budget) do
-        {:expired, balance_delta} ->
-          warn("Failed execution. Balance delta: #{inspect(balance_delta)}")
+        {:expired, delta} ->
+          warn("Failed execution. Balance delta: #{inspect(delta)}")
           Metrics.report_trade_failed()
-          balance_delta
+          delta
 
-        {:execution, balance_delta} ->
-          notice("Successful execution. Balance delta: #{inspect(balance_delta)}")
+        {:execution, delta} ->
+          notice("Successful execution. Balance delta: #{inspect(delta)}")
 
           Metrics.report_trade_executed()
 
           starting_balance_delta =
-            Decimal.to_float(balance_delta[used_asset(Enum.at(plan, 0).trading_symbol)])
+            Decimal.to_float(delta[used_asset(Enum.at(plan, 0).trading_symbol)])
 
           case starting_balance_delta do
             x when x > 0 -> Metrics.report_trade_winning()
             _ -> Metrics.report_trade_losing()
           end
 
-          balance_delta
+          delta
       end
 
     Metrics.report_trade_report_delta(balance_delta)
@@ -146,7 +147,8 @@ defmodule Trader.Impl do
         end)
 
         # store other balance changes in delta
-        new_balance_delta = update_balance_delta(balance_delta, trading_symbol, report)
+        new_balance_delta =
+          BalanceDelta.update_balance_delta(balance_delta, trading_symbol, report)
 
         # continue with the next trade
         trade(rest, new_balance_delta)
@@ -158,48 +160,6 @@ defmodule Trader.Impl do
   end
 
   defp trade([], balance_delta), do: {:execution, balance_delta}
-
-  @spec update_balance_delta(balance_delta(), TradingSymbol.t(), TradeReport.t()) ::
-          balance_delta()
-  defp update_balance_delta(
-         delta,
-         %TradingSymbol{base_asset: base_asset, quote_asset: quote_asset, position: :long},
-         trade_report
-       ) do
-    delta
-    # base
-    |> Map.update(
-      base_asset,
-      trade_report.quantity_base,
-      fn current_qty -> Decimal.add(current_qty, trade_report.quantity_base) end
-    )
-    # quote
-    |> Map.update(
-      quote_asset,
-      Decimal.negate(trade_report.quantity_quote),
-      fn current_qty -> Decimal.sub(current_qty, trade_report.quantity_quote) end
-    )
-  end
-
-  defp update_balance_delta(
-         delta,
-         %TradingSymbol{base_asset: base_asset, quote_asset: quote_asset, position: :short},
-         trade_report
-       ) do
-    delta
-    # base
-    |> Map.update(
-      base_asset,
-      Decimal.negate(trade_report.quantity_base),
-      fn current_qty -> Decimal.sub(current_qty, trade_report.quantity_base) end
-    )
-    # quote
-    |> Map.update(
-      quote_asset,
-      Decimal.negate(trade_report.quantity_quote),
-      fn current_qty -> Decimal.sub(current_qty, trade_report.quantity_quote) end
-    )
-  end
 
   defp reserve_symbols(pairs) do
     pairs
