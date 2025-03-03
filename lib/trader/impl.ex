@@ -122,7 +122,6 @@ defmodule Trader.Impl do
   defp trade(path = [%PlannedTrade{trading_symbol: ts} | _], reserved_budget)
        when is_list(path) and is_decimal(reserved_budget) do
     used_asset = used_asset(ts)
-    # Todo
     trade(path, %{used_asset => reserved_budget})
   end
 
@@ -147,8 +146,16 @@ defmodule Trader.Impl do
         end)
 
         # store other balance changes in delta
+        # if first trade, remove the reserved budget
+        # reserving necessary to recover if first trade fails
+        delta =
+          case map_size(balance_delta) do
+            1 -> %{}
+            _ -> balance_delta
+          end
+
         new_balance_delta =
-          BalanceDelta.update_balance_delta(balance_delta, trading_symbol, report)
+          BalanceDelta.update_balance_delta(delta, trading_symbol, report)
 
         # continue with the next trade
         trade(rest, new_balance_delta)
