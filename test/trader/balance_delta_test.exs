@@ -5,15 +5,13 @@ defmodule Trader.BalanceDeltaTest do
   use PropCheck
 
   alias Trader.BalanceDelta
-  alias Types.Opportunity
-  alias Types.PlannedTrade
   alias Types.TradeReport
   alias Types.TradingSymbol
 
   property "resulting delta contains same gte number of symbols" do
     forall [delta, {trading_symbol, trade_report}] <- [delta(), trading_symbol_and_trade_report()] do
       new_delta = BalanceDelta.update_balance_delta(delta, trading_symbol, trade_report)
-      assert Map.size(new_delta) >= Map.size(delta)
+      assert map_size(new_delta) >= map_size(delta)
     end
   end
 

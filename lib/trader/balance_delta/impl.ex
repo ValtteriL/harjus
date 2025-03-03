@@ -36,17 +36,15 @@ defmodule Trader.BalanceDelta.Impl do
         trade_report
       ) do
     delta
-    # base TODO INCORRECT
     |> Map.update(
       base_asset,
       Decimal.negate(trade_report.quantity_base),
       fn current_qty -> Decimal.sub(current_qty, trade_report.quantity_base) end
     )
-    # quote TODO: INCORRECT
     |> Map.update(
       quote_asset,
-      Decimal.negate(trade_report.quantity_quote),
-      fn current_qty -> Decimal.sub(current_qty, trade_report.quantity_quote) end
+      trade_report.quantity_quote,
+      fn current_qty -> Decimal.add(current_qty, trade_report.quantity_quote) end
     )
   end
 end
