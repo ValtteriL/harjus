@@ -51,7 +51,7 @@ defmodule Harjus do
           # metrics to cloudwatch
           true ->
             {TelemetryMetricsCloudwatch,
-             [metrics: Metrics.metrics(), namespace: "Harjus", push_interval: 30_000]}
+             [metrics: Metrics.metrics(), namespace: "Harjus", push_interval: 300_000]}
         end,
 
         # utilities
