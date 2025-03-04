@@ -153,8 +153,6 @@ defmodule OpportunityWatcher.OpportunityTest do
   ## Unit tests ##
 
   test "capacity is 0 if min_notional is not met" do
-    commission = Decimal.new(0)
-
     symbol = %TradingSymbol{
       symbol: "BTCUSDT",
       position: :long,

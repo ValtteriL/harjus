@@ -170,6 +170,25 @@ defmodule Trader.BalanceDeltaTest do
     assert_result(%{}, trading_symbol, trade_report)
   end
 
+  test "new returns empty map" do
+    assert BalanceDelta.new() == %{}
+  end
+
+  test "increment_balance_delta increments correctly" do
+    delta = %{"BTC" => Decimal.new(1)}
+    symbol = "BTC"
+    amount = Decimal.new(1)
+
+    new_delta = BalanceDelta.increment_balance_delta(delta, symbol, amount)
+
+    assert new_delta == %{"BTC" => Decimal.new(2)}
+
+    another_symbol = "Anothersymbol"
+    another_delta = BalanceDelta.increment_balance_delta(new_delta, another_symbol, amount)
+
+    assert another_delta == %{"BTC" => Decimal.new(2), another_symbol => amount}
+  end
+
   defp assert_result(delta, trading_symbol, trade_report) do
     new_delta = BalanceDelta.update_balance_delta(delta, trading_symbol, trade_report)
 
