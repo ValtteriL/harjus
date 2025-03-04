@@ -8,6 +8,22 @@ defmodule Trader.BalanceDelta.Impl do
 
   @type balance_delta() :: %{String.t() => Decimal.t()}
 
+  @spec new() :: balance_delta()
+  def new do
+    %{}
+  end
+
+  @spec increment_balance_delta(balance_delta(), String.t(), Decimal.t()) ::
+          balance_delta()
+  def increment_balance_delta(delta, symbol, amount) do
+    delta
+    |> Map.update(
+      symbol,
+      amount,
+      fn current_qty -> Decimal.add(current_qty, amount) end
+    )
+  end
+
   @spec update_balance_delta(balance_delta(), TradingSymbol.t(), TradeReport.t()) ::
           balance_delta()
   def update_balance_delta(

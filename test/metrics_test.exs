@@ -26,14 +26,6 @@ defmodule MetricsTest do
     assert Metrics.report_trade_attempted() == :ok
   end
 
-  test "report_trade_losing" do
-    assert Metrics.report_trade_losing() == :ok
-  end
-
-  test "report_trade_winning" do
-    assert Metrics.report_trade_winning() == :ok
-  end
-
   test "report_trade_report_delta" do
     assert Metrics.report_trade_report_delta(%{"key" => Decimal.new("42.42")}) == :ok
   end

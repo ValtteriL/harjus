@@ -9,8 +9,6 @@ defmodule Metrics.Impl do
   defp trade_executed, do: [:harjus, :trader, :trade, :executed]
   defp trade_failed, do: [:harjus, :trader, :trade, :failed]
   defp trade_attempted, do: [:harjus, :trader, :trade, :attempted]
-  defp trade_losing, do: [:harjus, :trader, :trade, :losing]
-  defp trade_winning, do: [:harjus, :trader, :trade, :winning]
   defp trade_report_delta, do: [:harjus, :trader, :trade, :report]
 
   defp counter_measurement, do: :count
@@ -64,18 +62,6 @@ defmodule Metrics.Impl do
         measurement: counter_measurement(),
         description: "Number of trades attempted"
       ),
-      counter(
-        trade_losing(),
-        event_name: trade_losing(),
-        measurement: counter_measurement(),
-        description: "Number of losing trades"
-      ),
-      counter(
-        trade_winning(),
-        event_name: trade_winning(),
-        measurement: counter_measurement(),
-        description: "Number of winning trades"
-      ),
       summary(
         trade_report_delta(),
         event_name: trade_report_delta(),
@@ -120,16 +106,6 @@ defmodule Metrics.Impl do
   @spec report_trade_attempted() :: :ok
   def report_trade_attempted do
     :telemetry.execute(trade_attempted(), %{counter_measurement() => 1})
-  end
-
-  @spec report_trade_losing() :: :ok
-  def report_trade_losing do
-    :telemetry.execute(trade_losing(), %{counter_measurement() => 1})
-  end
-
-  @spec report_trade_winning() :: :ok
-  def report_trade_winning do
-    :telemetry.execute(trade_winning(), %{counter_measurement() => 1})
   end
 
   @spec report_trade_report_delta(delta :: %{String.t() => Decimal.t()}) :: :ok

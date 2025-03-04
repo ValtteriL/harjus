@@ -13,7 +13,6 @@ defmodule Trader.Impl do
   alias Types.TradeReport
   alias Types.TradingSymbol
   require Logger
-  import Decimal
 
   @type balance_delta() :: %{String.t() => Decimal.t()}
 
@@ -88,7 +87,7 @@ defmodule Trader.Impl do
   defp execute_plan(plan = [%PlannedTrade{} | _], reserved_budget) do
     # execute trades
     balance_delta =
-      case trade(plan, reserved_budget) do
+      case trade(plan) do
         {:expired, delta} ->
           warn("Failed execution. Balance delta: #{inspect(delta)}")
           Metrics.report_trade_failed()
@@ -96,34 +95,28 @@ defmodule Trader.Impl do
 
         {:execution, delta} ->
           notice("Successful execution. Balance delta: #{inspect(delta)}")
-
           Metrics.report_trade_executed()
-
-          starting_balance_delta =
-            Decimal.to_float(delta[used_asset(Enum.at(plan, 0).trading_symbol)])
-
-          case starting_balance_delta do
-            x when x > 0 -> Metrics.report_trade_winning()
-            _ -> Metrics.report_trade_losing()
-          end
-
           delta
       end
 
     Metrics.report_trade_report_delta(balance_delta)
 
+    # add reserved budget back to balance, to get correct amount to release
+    used_asset = used_asset(Enum.at(plan, 0).trading_symbol)
+
+    releasable_delta =
+      BalanceDelta.increment_balance_delta(balance_delta, used_asset, reserved_budget)
+
     # update balances
-    balance_delta
+    releasable_delta
     |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
   end
 
-  @spec trade([PlannedTrade.t()], Decimal.t()) ::
+  @spec trade([PlannedTrade.t()]) ::
           {:execution, balance_delta()} | {:expired, balance_delta()}
-  defp trade(path = [%PlannedTrade{trading_symbol: ts} | _], reserved_budget)
-       when is_list(path) and is_decimal(reserved_budget) do
-    used_asset = used_asset(ts)
-    # Todo
-    trade(path, %{used_asset => reserved_budget})
+  defp trade(path = [%PlannedTrade{} | _])
+       when is_list(path) do
+    trade(path, BalanceDelta.new())
   end
 
   @spec trade([PlannedTrade.t()], balance_delta()) ::
@@ -133,7 +126,7 @@ defmodule Trader.Impl do
            %PlannedTrade{trading_symbol: trading_symbol, order_qty: qty, order_price: price}
            | rest
          ],
-         balance_delta = %{}
+         balance_delta
        ) do
     debug("Trading #{qty} of #{trading_symbol.symbol} at #{price}")
 
@@ -146,7 +139,6 @@ defmodule Trader.Impl do
           MyBalance.update(currency, Decimal.negate(amount))
         end)
 
-        # store other balance changes in delta
         new_balance_delta =
           BalanceDelta.update_balance_delta(balance_delta, trading_symbol, report)
 
