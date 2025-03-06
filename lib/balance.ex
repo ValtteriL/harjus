@@ -31,10 +31,10 @@ defmodule Balance do
   @doc """
   Decrement the balance of an asset
   """
-  @spec reserve(asset :: String.t(), amount :: Decimal.t()) :: :ok
-  def reserve(asset, amount) do
+  @spec reserve!(asset :: String.t(), amount :: Decimal.t()) :: :ok
+  def reserve!(asset, amount) do
     Agent.update(__MODULE__, fn state ->
-      Impl.decrement(state, asset, amount)
+      Impl.decrement!(state, asset, amount)
     end)
   end
 

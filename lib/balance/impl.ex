@@ -16,8 +16,13 @@ defmodule Balance.Impl do
     state
   end
 
-  def decrement(state, asset, amount) do
+  def decrement!(state, asset, amount) do
     Map.update!(state, asset, fn current_balance ->
+      # raise an error if the balance is less than the amount
+      if Decimal.lt?(current_balance, amount) do
+        raise "Insufficient balance"
+      end
+
       Decimal.sub(current_balance, amount)
     end)
   end
