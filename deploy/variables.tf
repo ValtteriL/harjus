@@ -21,12 +21,6 @@ variable "binance_ed25519_private_key" {
   sensitive   = true
 }
 
-variable "number_of_traders" {
-  description = "Max number of concurrent trades to execute"
-  type        = number
-  default     = 1
-}
-
 variable "max_trading_path_length" {
   description = "Max number of trades to execute in a single path"
   type        = number
@@ -39,22 +33,10 @@ variable "start_symbols" {
   default     = ""
 }
 
-variable "min_profit_percentage" {
-  description = "The minimum profit percentage to make a trade"
-  type        = number
-  default     = 0.001
-}
-
 variable "commission" {
   description = "The commission percentage to pay for each trade"
   type        = number
   default     = 0.001
-}
-
-variable "min_capacity" {
-  description = "The minimum capacity to trade with"
-  type        = number
-  default     = 0.0
 }
 
 variable "binance_websocket_stream_uri" {

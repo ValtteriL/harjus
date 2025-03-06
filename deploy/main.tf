@@ -201,10 +201,6 @@ resource "aws_ecs_task_definition" "ecs_td" {
           valueFrom = aws_secretsmanager_secret_version.binance_ed25519_private_key.secret_string
         },
         {
-          name  = "NUMBER_OF_TRADERS"
-          value = "${tostring(var.number_of_traders)}"
-        },
-        {
           name  = "MAX_TRADING_PATH_LENGTH"
           value = "${tostring(var.max_trading_path_length)}"
         },
@@ -213,16 +209,8 @@ resource "aws_ecs_task_definition" "ecs_td" {
           value = var.start_symbols
         },
         {
-          name  = "MIN_PROFIT_PERCENTAGE"
-          value = "${tostring(var.min_profit_percentage)}"
-        },
-        {
           name  = "COMMISSION"
           value = "${tostring(var.commission)}"
-        },
-        {
-          name  = "MIN_CAPACITY"
-          value = "${tostring(var.min_capacity)}"
         },
         {
           name  = "BINANCE_WEBSOCKET_STREAM_URI"
