@@ -8,7 +8,7 @@ defmodule ReservedSymbols do
   use Agent
 
   @doc """
-  Starts the balance process
+  Starts the reserved symbols process
   """
 
   def start_link do
@@ -21,10 +21,30 @@ defmodule ReservedSymbols do
   end
 
   @doc """
-  Gets all balances over 0
+  Get map of reserved symbols
   """
-  @spec get_balances() :: map()
-  def get_balances do
-    Agent.get(__MODULE__, fn state -> Impl.get_balances(state) end)
+  @spec get_reserved() :: list()
+  def get_reserved do
+    Agent.get(__MODULE__, fn state -> Impl.get_reserved(state) end)
+  end
+
+  @doc """
+  Reserves all symbols in a list
+
+  raises Error if any symbol is already reserved
+  """
+  @spec reserve_list!(symbols :: list()) :: :ok
+  def reserve_list!(symbols) do
+    Agent.update(__MODULE__, fn state -> Impl.reserve_list!(state, symbols) end)
+  end
+
+  @doc """
+  Releases all symbols in a list
+
+  raises Error if any symbol is not reserved
+  """
+  @spec release_list!(symbols :: list()) :: :ok
+  def release_list!(symbols) do
+    Agent.update(__MODULE__, fn state -> Impl.release_list!(state, symbols) end)
   end
 end

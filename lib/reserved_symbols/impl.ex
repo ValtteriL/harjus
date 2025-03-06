@@ -12,25 +12,29 @@ defmodule ReservedSymbols.Impl do
     %{}
   end
 
-  def get_balances(state) do
-    state
+  def get_reserved(state) do
+    Map.keys(state)
   end
 
-  def decrement(state, asset, amount) do
-    Map.update!(state, asset, fn current_balance ->
-      Decimal.sub(current_balance, amount)
+  def reserve_list!(state, symbols) do
+    Enum.reduce(symbols, state, fn symbol, acc ->
+      reserve!(acc, symbol)
     end)
   end
 
-  def increment_map(state, asset_map) do
-    Enum.reduce(asset_map, state, fn {asset, amount}, acc ->
-      increment(acc, asset, amount)
+  defp reserve!(state, symbol) do
+    Map.has_key?(state, symbol) && raise "Symbol #{symbol} is already reserved"
+    Map.put_new(state, symbol, true)
+  end
+
+  def release_list!(state, symbols) do
+    Enum.reduce(symbols, state, fn symbol, acc ->
+      release!(acc, symbol)
     end)
   end
 
-  defp increment(state, asset, amount) do
-    Map.update(state, asset, Decimal.new(0), fn current_balance ->
-      Decimal.add(current_balance, amount)
-    end)
+  defp release!(state, symbol) do
+    {_, new_state} = Map.pop!(state, symbol)
+    new_state
   end
 end
