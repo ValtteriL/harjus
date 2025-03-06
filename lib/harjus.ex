@@ -56,6 +56,7 @@ defmodule Harjus do
 
         # utilities
         {Balance, []},
+        {ReservedSymbols, []},
 
         # streamer + pipeline
         {PriceStreamer, symbol_list},
