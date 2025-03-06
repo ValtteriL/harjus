@@ -9,6 +9,7 @@ defmodule Trader.Impl do
   alias Trader.TradeClient
   alias Trader.TradePlanner
   alias Types.Opportunity
+  alias Types.PlannedExecution
   alias Types.PlannedTrade
   alias Types.TradeReport
   alias Types.TradingSymbol
@@ -16,78 +17,14 @@ defmodule Trader.Impl do
 
   @type balance_delta() :: %{String.t() => Decimal.t()}
 
-  @doc """
-  Create initial state
-  """
-  def new do
-    Mutex.start_link(name: ReservedSymbols)
-    TradeClient.new()
-    :does_not_matter
-  end
-
-  @doc """
-  Execute opportunity
-  """
-  @spec execute_opportunity(opportunity :: Opportunity.t()) :: :ok
-  def execute_opportunity(opportunity = %Opportunity{path: path}) when is_list(path) do
-    debug("Attempting execution with: #{inspect(opportunity)}")
-
+  @spec execute(PlannedExecution.t()) :: :ok
+  def execute(planned_execution) do
+    debug("Executing: #{inspect(opportunity)}")
     Metrics.report_trade_attempted()
 
-    pairs = path |> Enum.map(fn %PlannedTrade{trading_symbol: ts} -> ts.symbol end)
-
-    # reserve the trading pairs
-    reserve_symbols(pairs)
-
-    execute_opportunity_after_reserving_symbols(opportunity)
-
-    # release the trading pairs (required to make tests work, as they dont use separate process)
-    Mutex.goodbye(ReservedSymbols)
-    :ok
-  end
-
-  defp execute_opportunity_after_reserving_symbols(opportunity) do
-    first_ts = Enum.at(opportunity.path, 0).trading_symbol
-
-    # reserve budget
-    budget =
-      case first_ts.position do
-        :long ->
-          debug("Reserving budget for long position (asset #{first_ts.quote_asset})")
-
-          MyBalance.reserve_upto(
-            first_ts.quote_asset,
-            opportunity.capacity,
-            first_ts.quote_asset_increment,
-            first_ts.quote_asset_precision
-          )
-
-        :short ->
-          debug("Reserving budget for short position (asset #{first_ts.base_asset})")
-
-          MyBalance.reserve_upto(
-            first_ts.base_asset,
-            opportunity.capacity,
-            first_ts.base_asset_increment,
-            first_ts.base_asset_precision
-          )
-      end
-
-    case TradePlanner.plan_execution(opportunity, budget) do
-      {:ok, plan} ->
-        info("Executing opportunity #{inspect(plan)} with budget: #{budget}")
-        execute_plan(plan, budget)
-
-      {:insufficient_balance, _} ->
-        debug("Insufficient balance (#{budget}) for opportunity #{inspect(opportunity)}")
-        MyBalance.update(used_asset(first_ts), budget)
-    end
-  end
-
-  defp execute_plan(plan = [%PlannedTrade{} | _], reserved_budget) do
     # execute trades
     balance_delta =
-      case trade(plan) do
+      case trade(planned_execution.trades) do
         {:expired, delta} ->
           warn("Failed execution. Balance delta: #{inspect(delta)}")
           Metrics.report_trade_failed()
@@ -110,6 +47,8 @@ defmodule Trader.Impl do
     # update balances
     releasable_delta
     |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
+
+    :ok
   end
 
   @spec trade([PlannedTrade.t()]) ::
