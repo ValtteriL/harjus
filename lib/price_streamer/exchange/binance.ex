@@ -59,7 +59,7 @@ defmodule PriceStreamer.Exchange.Binance do
         :ok
 
       {:book_ticker_update, {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}} ->
-        PriceStreamer.price_update(%PriceUpdate{
+        Pipeline.price_update(%PriceUpdate{
           symbol: symbol,
           ask_price: best_ask_price,
           ask_qty: best_ask_qty,
