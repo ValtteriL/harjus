@@ -164,19 +164,6 @@ let
       beamDeps = [ mime mint nimble_options nimble_pool telemetry ];
     };
 
-    gen_stage = buildMix rec {
-      name = "gen_stage";
-      version = "1.2.1";
-
-      src = fetchHex {
-        pkg = "gen_stage";
-        version = "${version}";
-        sha256 = "83e8be657fa05b992ffa6ac1e3af6d57aa50aace8f691fcf696ff02f8335b001";
-      };
-
-      beamDeps = [];
-    };
-
     hackney = buildRebar3 rec {
       name = "hackney";
       version = "1.20.1";
