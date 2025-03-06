@@ -1,6 +1,6 @@
-defmodule Balance.Impl do
+defmodule ReservedSymbols.Impl do
   @moduledoc """
-  Implementation of the balance process
+  ReservedSymbols implementation
   """
 
   alias Balance.Exchange
@@ -9,7 +9,7 @@ defmodule Balance.Impl do
   require Decimal
 
   def new do
-    Exchange.get_balances()
+    %{}
   end
 
   def get_balances(state) do

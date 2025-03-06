@@ -21,33 +21,28 @@ defmodule Balance do
   end
 
   @doc """
-  Gets the balance of an asset
+  Gets all balances over 0
   """
-  @spec get(asset :: String.t()) :: Decimal.t()
-  def get(asset) do
-    Agent.get(__MODULE__, fn state -> Impl.get(state, asset) end)
+  @spec get_balances() :: map()
+  def get_balances do
+    Agent.get(__MODULE__, fn state -> Impl.get_balances(state) end)
   end
 
   @doc """
-  Updates the balance of an asset
+  Decrement the balance of an asset
   """
-  @spec update(asset :: String.t(), amount :: Decimal.t()) :: :ok
-  def update(asset, amount) do
-    Agent.update(__MODULE__, fn state -> Impl.update(state, asset, amount) end)
-  end
-
-  @doc """
-  Reserves the balance of an asset upto a certain amount
-  """
-  @spec reserve_upto(
-          asset :: String.t(),
-          amount :: Decimal.t(),
-          increment :: Decimal.t(),
-          precision :: integer()
-        ) :: Decimal.t()
-  def reserve_upto(asset, amount, increment, precision) do
-    Agent.get_and_update(__MODULE__, fn state ->
-      Impl.reserve_upto(state, asset, amount, increment, precision)
+  @spec reserve(asset :: String.t(), amount :: Decimal.t()) :: :ok
+  def reserve(asset, amount) do
+    Agent.update(__MODULE__, fn state ->
+      Impl.decrement(state, asset, amount)
     end)
+  end
+
+  @doc """
+  Increment the balance of multiple assets
+  """
+  @spec release(asset_map :: map()) :: :ok
+  def release(asset_map) do
+    Agent.update(__MODULE__, fn state -> Impl.increment_map(state, asset_map) end)
   end
 end

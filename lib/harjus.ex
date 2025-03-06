@@ -57,20 +57,14 @@ defmodule Harjus do
         # utilities
         {Balance, []},
 
-        # pipeline
+        # streamer + pipeline
         {PriceStreamer, symbol_list},
-        {OpportunityWatcher,
-         %OpportunityWatcher.Args{
-           min_profit_percentage: Application.fetch_env!(:harjus, :min_profit_percentage),
-           min_capacity: Application.fetch_env!(:harjus, :min_capacity),
-           commission: Application.fetch_env!(:harjus, :commission),
-           trading_paths: trading_paths
-         }},
-        {PortfolioManager,
-         %PortfolioManager.Args{
-           relative_asset_values: MarketData.relative_values(market_data, "BTC")
-         }},
-        {Trader, Application.fetch_env!(:harjus, :number_of_traders)}
+        {Pipeline,
+         [
+           trading_paths,
+           Application.fetch_env!(:harjus, :commission),
+           MarketData.relative_values(market_data, "BTC")
+         ]}
       ]
 
     # If a child process terminates, all other child processes are terminated
