@@ -19,14 +19,14 @@ defmodule Pipeline.Impl do
     }
   end
 
-  @spec price_update(state :: any(), update :: PriceUpdate.t()) :: any()
+  @spec price_update(state :: any(), update :: tuple()) :: any()
   def price_update(
         %{
           pricing_table: pricing_table,
           commission: commission,
           relative_asset_values: relative_asset_values
         },
-        update
+        update = {_symbol, _ask_price, _ask_qty, _bid_price, _bid_qty}
       ) do
     :ok
   end

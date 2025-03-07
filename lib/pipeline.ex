@@ -24,7 +24,7 @@ defmodule Pipeline do
   @doc """
   Send price update to pipeline
   """
-  @spec price_update(update :: PriceUpdate.t()) :: :ok
+  @spec price_update(update :: tuple()) :: :ok
   def price_update(update) do
     GenServer.cast(__MODULE__, {:price_update, update})
   end
