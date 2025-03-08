@@ -8,7 +8,6 @@ defmodule Trader.Impl do
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.TradeClient
   alias Trader.TradePlanner
-  alias Types.Opportunity
   alias Types.PlannedExecution
   alias Types.PlannedTrade
   alias Types.TradeReport
@@ -19,7 +18,7 @@ defmodule Trader.Impl do
 
   @spec execute(PlannedExecution.t()) :: :ok
   def execute(planned_execution) do
-    debug("Executing: #{inspect(opportunity)}")
+    debug("Executing: #{inspect(planned_execution)}")
     Metrics.report_trade_attempted()
 
     # execute trades
@@ -39,14 +38,14 @@ defmodule Trader.Impl do
     Metrics.report_trade_report_delta(balance_delta)
 
     # add reserved budget back to balance, to get correct amount to release
-    used_asset = used_asset(Enum.at(plan, 0).trading_symbol)
+    # used_asset = used_asset(Enum.at(plan, 0).trading_symbol)
 
-    releasable_delta =
-      BalanceDelta.increment_balance_delta(balance_delta, used_asset, reserved_budget)
+    # releasable_delta =
+    #   BalanceDelta.increment_balance_delta(balance_delta, used_asset, reserved_budget)
 
-    # update balances
-    releasable_delta
-    |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
+    # # update balances
+    # releasable_delta
+    # |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
 
     :ok
   end

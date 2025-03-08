@@ -9,8 +9,8 @@ defmodule OpportunityWatcher.Impl do
   alias OpportunityWatcher.State
   alias Types.PriceUpdate
 
-  @spec new(args :: Args.t()) :: State.t()
-  def new(%Args{
+  @spec new(args :: map()) :: State.t()
+  def new(%{
         trading_paths: trading_paths,
         min_capacity: min_capacity,
         min_profit_percentage: min_profit_percentage,

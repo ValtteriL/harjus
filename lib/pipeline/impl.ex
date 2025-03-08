@@ -4,7 +4,6 @@ defmodule Pipeline.Impl do
   """
 
   alias Pipeline.PricingTable
-  alias Types.PriceUpdate
 
   @spec new(
           trading_paths :: [TradingSymbol.t()],

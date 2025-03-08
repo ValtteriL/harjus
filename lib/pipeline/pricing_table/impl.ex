@@ -3,6 +3,7 @@ defmodule Pipeline.PricingTable.Impl do
   Implementation of the pricing table
   """
   alias Types.PriceUpdate
+  alias Types.TradingSymbol
 
   @spec new(trading_paths :: [TradingSymbol.t()]) :: map()
   def new(trading_paths) do
@@ -32,7 +33,7 @@ defmodule Pipeline.PricingTable.Impl do
   @spec update_get_affected(
           pricing_table :: any(),
           update :: tuple()
-        ) :: {list(), map()}
+        ) :: {map(), list()}
   def update_get_affected(
         state = %{id_to_path_map: id_to_path_map, symbol_to_ids_map: symbol_to_ids_map},
         update = {symbol, _ask_price, _ask_qty, _bid_price, _bid_qty}
@@ -49,7 +50,7 @@ defmodule Pipeline.PricingTable.Impl do
         end)
       end)
 
-    {affected_paths, %{state | id_to_path_map: new_id_to_path_map}}
+    {%{state | id_to_path_map: new_id_to_path_map}, affected_paths}
   end
 
   defp update_path(path, update) do

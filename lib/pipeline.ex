@@ -4,7 +4,6 @@ defmodule Pipeline do
   """
 
   alias Pipeline.Server
-  alias Types.PriceUpdate
 
   @doc """
   Create new pipeline

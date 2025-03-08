@@ -13,10 +13,8 @@ defmodule Types.TradingSymbol do
     :quote_asset_increment,
     :quote_asset_precision,
     :min_notional,
-    :ask_price,
-    :ask_qty,
-    :bid_price,
-    :bid_qty
+    :qty,
+    :price
   ]
   defstruct [
     :symbol,
@@ -28,10 +26,8 @@ defmodule Types.TradingSymbol do
     :quote_asset_increment,
     :quote_asset_precision,
     :min_notional,
-    :ask_price,
-    :ask_qty,
-    :bid_price,
-    :bid_qty
+    :qty,
+    :price
   ]
 
   @type t :: %__MODULE__{
@@ -44,9 +40,7 @@ defmodule Types.TradingSymbol do
           quote_asset_increment: Decimal.t(),
           quote_asset_precision: integer(),
           min_notional: Decimal.t(),
-          ask_price: Decimal.t(),
-          ask_qty: Decimal.t(),
-          bid_price: Decimal.t(),
-          bid_qty: Decimal.t()
+          qty: Decimal.t(),
+          price: Decimal.t()
         }
 end

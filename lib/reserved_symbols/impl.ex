@@ -3,8 +3,6 @@ defmodule ReservedSymbols.Impl do
   ReservedSymbols implementation
   """
 
-  alias Balance.Exchange
-
   use Agent
   require Decimal
 

@@ -4,17 +4,16 @@ defmodule PortfolioManager.Impl do
   """
 
   require Logger
-  alias PortfolioManager.Args
   alias PortfolioManager.Balance
   alias Types.Opportunity
 
-  @spec new(args :: Args.t()) :: Args.t()
-  def new(args = %Args{}), do: args
+  @spec new(args :: any()) :: any()
+  def new(args = %{}), do: args
 
-  @spec filter_opportunities(state :: Args.t(), opportunities :: [Opportunity.t()]) :: [
+  @spec filter_opportunities(state :: any(), opportunities :: [Opportunity.t()]) :: [
           Opportunity.t()
         ]
-  def filter_opportunities(state = %Args{}, opportunities = [%Opportunity{} | _]) do
+  def filter_opportunities(state = %{}, opportunities = [%Opportunity{} | _]) do
     filtered_opportunities =
       opportunities
       # sort by profit * capacity in relative asset value
