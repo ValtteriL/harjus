@@ -6,6 +6,7 @@ defmodule Types.PlannedExecution do
   alias Types.TradingSymbol
 
   @enforce_keys [
+    # this is comparable to other planned executions, as it is in the comparison currency (BTC)
     :total_profit,
     :trades
   ]
