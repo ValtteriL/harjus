@@ -60,6 +60,10 @@ defmodule Pipeline.Impl do
     |> Enum.sort_by(fn planned_execution -> planned_execution.total_profit end, :desc)
     # TODO: take top 2 with different starting currencies and no overlapping tradingsymbols
     |> Enum.to_list()
+    # filter out where total profit lte 0
+    |> Enum.filter(fn planned_execution ->
+      Decimal.lte?(planned_execution.total_profit, Decimal.new(0))
+    end)
     # reserve symbols, balance
     |> Enum.each(fn planned_execution ->
       planned_execution.trades
