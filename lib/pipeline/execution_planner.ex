@@ -1,9 +1,9 @@
-defmodule Pipeline.TradePlanner do
+defmodule Pipeline.ExecutionPlanner do
   @moduledoc """
   Trade planner
   """
 
-  alias Pipeline.TradePlanner.Impl
+  alias Pipeline.ExecutionPlanner.Impl
 
   @doc """
   Generate execution plan for a given trading path, starting asset balance and relative asset values

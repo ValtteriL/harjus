@@ -4,6 +4,7 @@ defmodule Pipeline.Impl do
   """
 
   alias Pipeline.PricingTable
+  alias Types.TradingSymbol
 
   @spec new(
           trading_paths :: [TradingSymbol.t()],
@@ -20,7 +21,7 @@ defmodule Pipeline.Impl do
 
   @spec price_update(state :: any(), update :: tuple()) :: any()
   def price_update(
-        %{
+        state = %{
           pricing_table: pricing_table,
           commission_percentage: commission_percentage,
           relative_asset_values: relative_asset_values

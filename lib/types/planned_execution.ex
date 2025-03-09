@@ -2,7 +2,6 @@ defmodule Types.PlannedExecution do
   @moduledoc """
   Planned execution struct
   """
-  alias Types.PlannedTrade
   alias Types.TradingSymbol
 
   @enforce_keys [
@@ -17,6 +16,6 @@ defmodule Types.PlannedExecution do
 
   @type t :: %__MODULE__{
           total_profit: Decimal.t(),
-          trades: [PlannedTrade.t()]
+          trades: [TradingSymbol.t()]
         }
 end
