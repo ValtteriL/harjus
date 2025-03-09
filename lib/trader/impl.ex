@@ -7,7 +7,6 @@ defmodule Trader.Impl do
   alias Trader.BalanceDelta
   alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.TradeClient
-  alias Trader.TradePlanner
   alias Types.PlannedExecution
   alias Types.PlannedTrade
   alias Types.TradeReport

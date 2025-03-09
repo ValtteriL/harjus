@@ -2,7 +2,6 @@ defmodule Pipeline.PricingTable.Impl do
   @moduledoc """
   Implementation of the pricing table
   """
-  alias Types.PriceUpdate
   alias Types.TradingSymbol
 
   @spec new(trading_paths :: [TradingSymbol.t()]) :: map()
