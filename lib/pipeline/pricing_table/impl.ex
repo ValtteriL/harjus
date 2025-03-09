@@ -72,5 +72,5 @@ defmodule Pipeline.PricingTable.Impl do
     %{ts | price: bid_price, qty: bid_qty}
   end
 
-  defp update_symbol(symbol, update), do: symbol
+  defp update_symbol(symbol, _update), do: symbol
 end
