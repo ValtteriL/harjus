@@ -90,16 +90,6 @@ defmodule Trader.Impl do
 
   defp trade([], balance_delta), do: {:execution, balance_delta}
 
-  defp reserve_symbols(pairs) do
-    pairs
-    |> Enum.each(fn pair ->
-      case Mutex.lock(ReservedSymbols, pair) do
-        {:ok, _} -> :ok
-        _ -> raise SymbolAlreadyReservedError
-      end
-    end)
-  end
-
   defp used_asset(%TradingSymbol{position: :long, quote_asset: q}), do: q
   defp used_asset(%TradingSymbol{position: :short, base_asset: b}), do: b
 
