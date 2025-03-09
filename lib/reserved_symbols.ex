@@ -23,7 +23,7 @@ defmodule ReservedSymbols do
   @doc """
   Get map of reserved symbols
   """
-  @spec get_reserved() :: list()
+  @spec get_reserved() :: list({String.t(), :long | :short})
   def get_reserved do
     Agent.get(__MODULE__, fn state -> Impl.get_reserved(state) end)
   end
@@ -31,9 +31,11 @@ defmodule ReservedSymbols do
   @doc """
   Reserves all symbols in a list
 
+  Reservation is based on symbol and position, thus it is possible to reserve the same symbol 2 times (long and short)
+
   raises Error if any symbol is already reserved
   """
-  @spec reserve_list!(symbols :: list()) :: :ok
+  @spec reserve_list!(symbols :: list(TradingSymbol.t())) :: :ok
   def reserve_list!(symbols) do
     Agent.update(__MODULE__, fn state -> Impl.reserve_list!(state, symbols) end)
   end
@@ -43,7 +45,7 @@ defmodule ReservedSymbols do
 
   raises Error if any symbol is not reserved
   """
-  @spec release_list!(symbols :: list()) :: :ok
+  @spec release_list!(symbols :: list(TradingSymbol.t())) :: :ok
   def release_list!(symbols) do
     Agent.update(__MODULE__, fn state -> Impl.release_list!(state, symbols) end)
   end

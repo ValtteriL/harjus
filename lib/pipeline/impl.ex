@@ -3,6 +3,7 @@ defmodule Pipeline.Impl do
   Implementation of the pipeline
   """
 
+  alias ElixirSense.Core.ReservedWords
   alias Pipeline.PricingTable
   alias Types.TradingSymbol
 
@@ -43,7 +44,7 @@ defmodule Pipeline.Impl do
       first_symbol = path |> List.first()
 
       balances[starting_currency(first_symbol)] >= min_qty(first_symbol) &&
-        path |> Enum.all?(fn ts -> !Enum.member?(reserved_symbols, ts.symbol) end)
+        path |> Enum.all?(fn ts -> !Enum.member?(reserved_symbols, {ts.symbol, ts.position}) end)
     end)
     |> Enum.map(affected_paths, fn path ->
       # plan execution for each affected path
@@ -67,11 +68,7 @@ defmodule Pipeline.Impl do
     end)
     # reserve symbols, balance
     |> Enum.each(fn planned_execution ->
-      planned_execution.trades
-      |> Enum.each(fn trade ->
-        # TODO: reserve by symbol, position
-        ReservedSymbols.reserve(trade.symbol)
-      end)
+      planned_execution.trades |> ReservedSymbols.reserve_list!()
 
       first_symbol = planned_execution.trades |> List.first()
       # assuming symbol qty updated with the correct amount
