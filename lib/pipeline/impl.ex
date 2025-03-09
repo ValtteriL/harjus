@@ -29,6 +29,8 @@ defmodule Pipeline.Impl do
         },
         update = {_symbol, _ask_price, _ask_qty, _bid_price, _bid_qty}
       ) do
+    Metrics.report_price_update()
+
     # update prices, get affected pahts
     {new_pricing_table, affected_paths} = PricingTable.update_get_affected(pricing_table, update)
 
