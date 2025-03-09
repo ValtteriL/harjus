@@ -24,10 +24,4 @@ defmodule Metrics do
 
   @spec report_trade_failed() :: :ok
   defdelegate report_trade_failed(), to: Impl
-
-  @spec report_trade_attempted() :: :ok
-  defdelegate report_trade_attempted(), to: Impl
-
-  @spec report_trade_report_delta(delta :: %{String.t() => Decimal.t()}) :: :ok
-  defdelegate report_trade_report_delta(delta), to: Impl
 end
