@@ -23,8 +23,14 @@ defmodule Pipeline do
   @doc """
   Send price update to pipeline
   """
-  @spec price_update(update :: tuple()) :: :ok
-  def price_update(update) do
-    GenServer.cast(__MODULE__, {:price_update, update})
+  @spec price_update(
+          symbol :: String.t(),
+          ask_price :: Decimal.t(),
+          ask_qty :: Decimal.t(),
+          bid_price :: Decimal.t(),
+          bid_qty :: Decimal.t()
+        ) :: :ok
+  def price_update(symbol, ask_price, ask_qty, bid_price, bid_qty) do
+    GenServer.cast(__MODULE__, {:price_update, {symbol, ask_price, ask_qty, bid_price, bid_qty}})
   end
 end
