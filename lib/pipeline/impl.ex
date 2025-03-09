@@ -3,6 +3,7 @@ defmodule Pipeline.Impl do
   Implementation of the pipeline
   """
 
+  alias Pipeline.ExecutionPlanner
   alias Pipeline.PricingTable
   alias Types.TradingSymbol
 
@@ -45,7 +46,7 @@ defmodule Pipeline.Impl do
       balances[starting_currency(first_symbol)] >= min_qty(first_symbol) &&
         path |> Enum.all?(fn ts -> !Enum.member?(reserved_symbols, {ts.symbol, ts.position}) end)
     end)
-    |> Enum.map(affected_paths, fn path ->
+    |> Enum.map(fn path ->
       # plan execution for each affected path
 
       starting_currency = path |> List.first() |> starting_currency()
