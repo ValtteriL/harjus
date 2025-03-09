@@ -3,7 +3,6 @@ defmodule Pipeline.Impl do
   Implementation of the pipeline
   """
 
-  alias ElixirSense.Core.ReservedWords
   alias Pipeline.PricingTable
   alias Types.TradingSymbol
 

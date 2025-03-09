@@ -5,7 +5,6 @@ defmodule Trader.Impl do
 
   alias Trader.Balance, as: MyBalance
   alias Trader.BalanceDelta
-  alias Trader.Error.SymbolAlreadyReservedError
   alias Trader.TradeClient
   alias Types.PlannedExecution
   alias Types.PlannedTrade
