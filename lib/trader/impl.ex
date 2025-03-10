@@ -14,7 +14,7 @@ defmodule Trader.Impl do
 
   @type balance_delta() :: %{String.t() => Decimal.t()}
 
-  @spec execute(PlannedExecution.t()) :: :ok
+  @spec execute(PlannedExecution.t()) :: %{String.t() => Decimal.t()}
   def execute(planned_execution) do
     debug("Executing: #{inspect(planned_execution)}")
 
@@ -33,16 +33,14 @@ defmodule Trader.Impl do
       end
 
     # add reserved budget back to balance, to get correct amount to release
-    # used_asset = used_asset(Enum.at(plan, 0).trading_symbol)
+    used_asset = used_asset(Enum.at(planned_execution.trades, 0).trading_symbol)
+    used_qty = used_qty(Enum.at(planned_execution.trades, 0).trading_symbol)
 
-    # releasable_delta =
-    #   BalanceDelta.increment_balance_delta(balance_delta, used_asset, reserved_budget)
+    releasable_delta =
+      BalanceDelta.increment_balance_delta(balance_delta, used_asset, used_qty)
 
-    # # update balances
-    # releasable_delta
-    # |> Enum.each(fn {symbol, qty_change} -> MyBalance.update(symbol, qty_change) end)
-
-    :ok
+    # return delta that can be released as is
+    releasable_delta
   end
 
   @spec trade([PlannedTrade.t()]) ::
@@ -69,7 +67,7 @@ defmodule Trader.Impl do
 
         # update fee balance right away
         Enum.each(report.fees, fn %TradeReport.Fee{fee_currency: currency, fee_amount: amount} ->
-          MyBalance.update(currency, Decimal.negate(amount))
+          MyBalance.reserve!(currency, amount)
         end)
 
         new_balance_delta =
@@ -88,6 +86,8 @@ defmodule Trader.Impl do
 
   defp used_asset(%TradingSymbol{position: :long, quote_asset: q}), do: q
   defp used_asset(%TradingSymbol{position: :short, base_asset: b}), do: b
+  defp used_qty(%TradingSymbol{position: :long, qty: q, price: p}), do: Decimal.mult(q, p)
+  defp used_qty(%TradingSymbol{position: :short, qty: q}), do: q
 
   defp notice(msg) do
     Logger.notice("#{:erlang.pid_to_list(self())}: #{msg}")
@@ -99,9 +99,5 @@ defmodule Trader.Impl do
 
   defp warn(msg) do
     Logger.warning("#{:erlang.pid_to_list(self())}: #{msg}")
-  end
-
-  defp info(msg) do
-    Logger.info("#{:erlang.pid_to_list(self())}: #{msg}")
   end
 end

@@ -57,7 +57,9 @@ defmodule Harjus do
         # utilities
         {Balance, []},
         {ReservedSymbols, []},
-        {TradeClient, []},
+
+        # supervisor for looking after trade execution tasks
+        {Task.Supervisor, name: TraderSupervisor},
 
         # streamer + pipeline
         {PriceStreamer, symbol_list},

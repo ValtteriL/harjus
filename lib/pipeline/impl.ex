@@ -82,12 +82,21 @@ defmodule Pipeline.Impl do
 
       first_symbol = planned_execution.trades |> List.first()
       # assuming symbol qty updated with the correct amount
-      Balance.reserve!(starting_currency(first_symbol), first_symbol.qty)
+      Balance.reserve!(starting_currency(first_symbol), starting_qty(first_symbol))
     end)
 
-    # TODO: dispatch trades
+    # dispatch trades
     |> Enum.each(fn planned_execution ->
-      :ok
+      Task.Supervisor.start_child(
+        TraderSupervisor,
+        fn ->
+          delta = Trader.execute(planned_execution)
+
+          # release symbols, balance
+          Balance.release(delta)
+          planned_execution.trades |> ReservedSymbols.release_list!()
+        end
+      )
     end)
 
     %{state | pricing_table: new_pricing_table}
@@ -95,6 +104,8 @@ defmodule Pipeline.Impl do
 
   defp starting_currency(ts = %TradingSymbol{position: :long}), do: ts.quote_asset
   defp starting_currency(ts = %TradingSymbol{position: :short}), do: ts.base_asset
+  defp starting_qty(ts = %TradingSymbol{position: :long}), do: Decimal.mult(ts.qty, ts.price)
+  defp starting_qty(ts = %TradingSymbol{position: :short}), do: ts.qty
 
   defp min_qty(ts = %TradingSymbol{position: :long}), do: ts.min_notional
   defp min_qty(ts = %TradingSymbol{position: :short}), do: Decimal.mult(ts.min_notional, ts.price)

@@ -11,7 +11,7 @@ defmodule Trader do
   @doc """
   Execute planned execution
   """
-  @spec execute(PlannedExecution.t()) :: :ok
+  @spec execute(PlannedExecution.t()) :: %{String.t() => Decimal.t()}
   def execute(planned_execution) do
     Impl.execute(planned_execution)
   end
