@@ -267,7 +267,9 @@ defmodule MarketData.ArbmapperTest do
       base_asset_precision: const_precision(),
       quote_asset_increment: const_increment(),
       quote_asset_precision: const_precision(),
-      min_notional: Decimal.from_float(0.0001)
+      min_notional: Decimal.from_float(0.0001),
+      qty: Decimal.new(0),
+      price: Decimal.new(0)
     }
   end
 

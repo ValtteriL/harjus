@@ -81,7 +81,9 @@ defmodule Trader.BalanceDeltaTest do
       symbol <- non_empty_string(),
       base_asset <- non_empty_string(),
       min_notional <- pos_decimal(),
-      position <- position()
+      position <- position(),
+      qty <- pos_decimal(),
+      price <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
@@ -92,7 +94,9 @@ defmodule Trader.BalanceDeltaTest do
         base_asset_increment: Decimal.from_float(0.000001),
         quote_asset_increment: Decimal.from_float(0.000001),
         min_notional: min_notional,
-        position: position
+        position: position,
+        qty: qty,
+        price: price
       }
     end
   end
@@ -132,7 +136,9 @@ defmodule Trader.BalanceDeltaTest do
       base_asset_increment: Decimal.from_float(0.000001),
       quote_asset_increment: Decimal.from_float(0.000001),
       min_notional: Decimal.new(10),
-      position: :long
+      position: :long,
+      qty: Decimal.new(0),
+      price: Decimal.new(0)
     }
 
     trade_report = %TradeReport{
@@ -156,7 +162,9 @@ defmodule Trader.BalanceDeltaTest do
       base_asset_increment: Decimal.from_float(0.000001),
       quote_asset_increment: Decimal.from_float(0.000001),
       min_notional: Decimal.new(10),
-      position: :short
+      position: :short,
+      qty: Decimal.new(0),
+      price: Decimal.new(0)
     }
 
     trade_report = %TradeReport{

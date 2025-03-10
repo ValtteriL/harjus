@@ -196,7 +196,9 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
       quote_asset <- non_empty_string(),
       precision <- pos_integer(),
       increment <- pos_decimal(),
-      min_notional <- pos_decimal()
+      min_notional <- pos_decimal().qty,
+      qty <- pos_decimal(),
+      price <- pos_decimal()
     ] do
       %TradingSymbol{
         symbol: symbol,
@@ -207,7 +209,9 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
         base_asset_precision: precision,
         quote_asset_increment: increment,
         quote_asset_precision: precision,
-        min_notional: min_notional
+        min_notional: min_notional,
+        qty: qty,
+        price: price
       }
     end
   end
@@ -336,7 +340,9 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
                    base_asset_precision: 8,
                    quote_asset_increment: Decimal.new("0.0001"),
                    quote_asset_precision: 8,
-                   min_notional: Decimal.from_float(0.001)
+                   min_notional: Decimal.from_float(0.001),
+                   qty: Decimal.new(0),
+                   price: Decimal.new(0)
                  },
                  Decimal.new("1"),
                  Decimal.new("1"),

@@ -125,7 +125,9 @@ defmodule Trader.ImplTest do
         base_asset_precision: 8,
         quote_asset_increment: Decimal.from_float(0.01),
         quote_asset_precision: 8,
-        min_notional: min_notional
+        min_notional: min_notional,
+        qty: Decimal.new(0),
+        price: Decimal.new(0)
       }
     end
   end
@@ -170,7 +172,9 @@ defmodule Trader.ImplTest do
             base_asset_precision: 8,
             quote_asset_increment: Decimal.from_float(0.01),
             quote_asset_precision: 8,
-            min_notional: Decimal.from_float(0.001)
+            min_notional: Decimal.from_float(0.001),
+            qty: Decimal.new(0),
+            price: Decimal.new(0)
           },
           order_price: Decimal.from_float(0.1),
           order_qty: Decimal.from_float(1.0)
@@ -185,7 +189,9 @@ defmodule Trader.ImplTest do
             base_asset_precision: 8,
             quote_asset_increment: Decimal.from_float(0.01),
             quote_asset_precision: 8,
-            min_notional: Decimal.from_float(0.001)
+            min_notional: Decimal.from_float(0.001),
+            qty: Decimal.new(0),
+            price: Decimal.new(0)
           },
           order_price: Decimal.from_float(100.0),
           order_qty: Decimal.from_float(1.0)
