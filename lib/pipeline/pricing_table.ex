@@ -4,6 +4,7 @@ defmodule Pipeline.PricingTable do
   """
 
   alias Pipeline.PricingTable.Impl
+  alias Types.TradingSymbol
 
   @doc """
   Create new pricing table

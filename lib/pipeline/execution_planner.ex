@@ -4,6 +4,8 @@ defmodule Pipeline.ExecutionPlanner do
   """
 
   alias Pipeline.ExecutionPlanner.Impl
+  alias Types.PlannedExecution
+  alias Types.TradingSymbol
 
   @doc """
   Generate execution plan for a given trading path, starting asset balance and relative asset values

@@ -4,6 +4,7 @@ defmodule ReservedSymbols do
   """
 
   alias ReservedSymbols.Impl
+  alias Types.TradingSymbol
 
   use Agent
 
