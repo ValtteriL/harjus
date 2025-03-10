@@ -196,7 +196,7 @@ defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
       quote_asset <- non_empty_string(),
       precision <- pos_integer(),
       increment <- pos_decimal(),
-      min_notional <- pos_decimal().qty,
+      min_notional <- pos_decimal(),
       qty <- pos_decimal(),
       price <- pos_decimal()
     ] do
