@@ -116,58 +116,50 @@ defmodule IntegrationTest do
     # Initialize components
     {:ok, _} = Balance.start_link()
 
+    {:ok, _} = ReservedSymbols.start_link()
+
+    commission = Decimal.from_float(0.001)
+    relative_asset_values = MarketData.relative_values(market_data, "BTC")
+    {:ok, _} = Pipeline.start_link({trading_paths, commission, relative_asset_values})
+
     {:ok, _} = PriceStreamer.start_link(symbols)
-
-    {:ok, _} =
-      OpportunityWatcher.start_link(%OpportunityWatcher.Args{
-        min_profit_percentage: Decimal.from_float(0.01),
-        min_capacity: Decimal.from_float(0.01),
-        commission: Decimal.from_float(0.001),
-        trading_paths: trading_paths
-      })
-
-    {:ok, _} =
-      PortfolioManager.start_link(%PortfolioManager.Args{
-        relative_asset_values: MarketData.relative_values(market_data, "BTC")
-      })
-
-    number_of_traders = 1
-    {:ok, _} = Trader.start_link(number_of_traders)
 
     # Simulate price updates
     # there should be multiple opportunities with capacity of 1
-    PriceStreamer.price_update(%Types.PriceUpdate{
-      symbol: "BTCUSDT",
-      ask_price: Decimal.new(1),
-      ask_qty: Decimal.new(1),
-      bid_price: Decimal.new(1),
-      bid_qty: Decimal.new(1)
-    })
+    Pipeline.price_update(
+      "BTCUSDT",
+      Decimal.new(1),
+      Decimal.new(1),
+      Decimal.new(1),
+      Decimal.new(1)
+    )
 
-    PriceStreamer.price_update(%Types.PriceUpdate{
-      symbol: "ETHBTC",
-      ask_price: Decimal.new(1),
-      ask_qty: Decimal.new(1),
-      bid_price: Decimal.new(1),
-      bid_qty: Decimal.new(1)
-    })
+    Pipeline.price_update(
+      "ETHBTC",
+      Decimal.new(1),
+      Decimal.new(1),
+      Decimal.new(1),
+      Decimal.new(1)
+    )
 
-    PriceStreamer.price_update(%Types.PriceUpdate{
-      symbol: "USDTETH",
-      ask_price: Decimal.new("0.5"),
-      ask_qty: Decimal.new(2),
-      bid_price: Decimal.new(1),
-      bid_qty: Decimal.new(1)
-    })
+    Pipeline.price_update(
+      "USDTETH",
+      Decimal.new("0.5"),
+      Decimal.new(2),
+      Decimal.new(1),
+      Decimal.new(1)
+    )
 
     # allow time for execution
     :timer.sleep(100)
 
-    assert Decimal.eq?(Balance.get("BTC"), Decimal.new(0))
-    assert Decimal.eq?(Balance.get("ETH"), Decimal.new(0))
-    assert Decimal.eq?(Balance.get("USDT"), Decimal.new(101))
+    balances = Balance.get_balances()
+
+    assert Decimal.eq?(Map.fetch!(balances, "BTC"), Decimal.new(0))
+    assert Decimal.eq?(Map.fetch!(balances, "ETH"), Decimal.new(0))
+    assert Decimal.eq?(Map.fetch!(balances, "USDT"), Decimal.new(101))
     # 3 trades, with BNB fee each
-    assert Decimal.eq?(Balance.get("BNB"), Decimal.mult(-3, fee))
+    assert Decimal.eq?(Map.fetch!(balances, "BNB"), Decimal.mult(-3, fee))
   end
 
   defp swap_mock_and_get_old(key, new_module) do
