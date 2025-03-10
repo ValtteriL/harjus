@@ -116,7 +116,7 @@ defmodule Pipeline.ExecutionPlannerTest do
       ts("BTCUSDT", :short, Decimal.new(1), Decimal.new(1))
     ]
 
-    starting_asset_balance = Decimal.new(0)
+    starting_asset_balance = Decimal.new(1)
     commission_percentage = Decimal.new(0)
 
     relative_asset_values = %{}

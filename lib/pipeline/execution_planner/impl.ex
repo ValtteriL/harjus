@@ -18,7 +18,7 @@ defmodule Pipeline.ExecutionPlanner.Impl do
       )
       when Decimal.is_decimal(starting_asset_balance) and
              Decimal.is_decimal(commission_percentage) do
-    capacity = capacity(path)
+    capacity = capacity(path, starting_asset_balance)
 
     trades =
       path
@@ -49,12 +49,15 @@ defmodule Pipeline.ExecutionPlanner.Impl do
     }
   end
 
-  defp capacity(trading_path = [firstsymbol = %TradingSymbol{} | _]) do
+  defp capacity(trading_path = [firstsymbol = %TradingSymbol{} | _], starting_asset_balance) do
     qty =
-      case firstsymbol.position do
-        :long -> firstsymbol.qty
-        :short -> Decimal.mult(firstsymbol.qty, firstsymbol.price)
-      end
+      Decimal.min(
+        case firstsymbol.position do
+          :long -> firstsymbol.qty
+          :short -> Decimal.mult(firstsymbol.qty, firstsymbol.price)
+        end,
+        starting_asset_balance
+      )
 
     Enum.reduce(trading_path, qty, fn symbol, acc ->
       quantity =
