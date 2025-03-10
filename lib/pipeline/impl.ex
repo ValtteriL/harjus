@@ -62,11 +62,19 @@ defmodule Pipeline.Impl do
     end)
     # sort by total profit
     |> Enum.sort_by(fn planned_execution -> planned_execution.total_profit end, :desc)
-    # TODO: take top 2 with different starting currencies and no overlapping tradingsymbols
-    |> Enum.to_list()
-    # filter out where total profit lte 0
-    |> Enum.filter(fn planned_execution ->
-      Decimal.lte?(planned_execution.total_profit, Decimal.new(0))
+    # take top 2 with different starting currencies and no overlapping tradingsymbols
+    # consider only those with positive total profit
+    |> Enum.reduce_while([], fn plan, acc ->
+      cond do
+        Decimal.lte?(plan.total_profit, 0) ->
+          {:halt, acc}
+
+        Enum.empty?(acc) ->
+          {:cont, [plan]}
+
+        length(acc) == 1 and no_overlapping_symbols(plan, List.first(acc)) ->
+          {:halt, [plan | acc]}
+      end
     end)
     # reserve symbols, balance
     |> Enum.each(fn planned_execution ->
@@ -90,4 +98,13 @@ defmodule Pipeline.Impl do
 
   defp min_qty(ts = %TradingSymbol{position: :long}), do: ts.min_notional
   defp min_qty(ts = %TradingSymbol{position: :short}), do: Decimal.mult(ts.min_notional, ts.price)
+
+  # symbol and position must be different
+  defp no_overlapping_symbols(planned_execution1, planned_execution2) do
+    Enum.all?(planned_execution1.trades, fn ts1 ->
+      Enum.all?(planned_execution2.trades, fn ts2 ->
+        {ts1.symbol, ts1.position} != {ts2.symbol, ts2.position}
+      end)
+    end)
+  end
 end
