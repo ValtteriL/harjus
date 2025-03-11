@@ -125,7 +125,7 @@ defmodule IntegrationTest do
 
     commission = Decimal.from_float(0.001)
     relative_asset_values = MarketData.relative_values(market_data, "BTC")
-    {:ok, _} = Pipeline.start_link({trading_paths, commission, relative_asset_values})
+    {:ok, _} = Pipeline.start_link(trading_paths, commission, relative_asset_values)
 
     {:ok, _} = PriceStreamer.start_link(symbols)
 

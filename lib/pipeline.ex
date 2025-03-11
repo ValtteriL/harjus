@@ -4,19 +4,28 @@ defmodule Pipeline do
   """
 
   alias Pipeline.Server
+  alias Types.TradingSymbol
+
+  require Decimal
 
   @doc """
   Create new pipeline
   """
-  @spec start_link(args :: tuple()) :: {:ok, pid()}
-  def start_link(args = {_trading_paths, _commission, _relative_asset_values}) do
-    GenServer.start_link(Server, args, name: __MODULE__)
+  @spec start_link(
+          trading_paths :: list(list(TradingSymbol.t())),
+          commission :: Decimal.t(),
+          relative_asset_values :: map()
+        ) :: {:ok, pid()}
+  def start_link(trading_paths, commission, relative_asset_values) do
+    GenServer.start_link(Server, {trading_paths, commission, relative_asset_values},
+      name: __MODULE__
+    )
   end
 
-  def child_spec(args = {_trading_paths, _commission, _relative_asset_values}) do
+  def child_spec(args) do
     %{
       id: __MODULE__,
-      start: {__MODULE__, :start_link, [args]}
+      start: {__MODULE__, :start_link, args}
     }
   end
 
