@@ -7,7 +7,7 @@ defmodule TradeClient.Exchange.Mock do
   alias Types.TradingSymbol
   require Decimal
 
-  def new, do: :ok
+  def new, do: {:ok, self()}
 
   def limit_order(trading_symbol = %TradingSymbol{}, quantity, _price)
       when Decimal.is_decimal(quantity) do

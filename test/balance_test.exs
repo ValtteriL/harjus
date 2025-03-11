@@ -17,7 +17,7 @@ defmodule BalanceTest do
     Balance.Exchange.TestMock
     |> expect(:get_balances, fn -> %{} end)
 
-    {:ok, _} = Balance.start_link()
+    {:ok, _} = Balance.start_link([])
 
     assert Balance.get_balances() == %{}
   end
@@ -26,7 +26,7 @@ defmodule BalanceTest do
     Balance.Exchange.TestMock
     |> expect(:get_balances, fn -> %{"BTC" => Decimal.from_float(1.0)} end)
 
-    {:ok, _} = Balance.start_link()
+    {:ok, _} = Balance.start_link([])
 
     assert Balance.reserve!("BTC", Decimal.from_float(0.5)) == :ok
     assert Balance.get_balances() == %{"BTC" => Decimal.from_float(0.5)}
@@ -36,7 +36,7 @@ defmodule BalanceTest do
     Balance.Exchange.TestMock
     |> expect(:get_balances, fn -> %{"BTC" => Decimal.from_float(1.0)} end)
 
-    {:ok, _} = Balance.start_link()
+    {:ok, _} = Balance.start_link([])
 
     assert Balance.release(%{"BTC" => Decimal.from_float(0.5)}) == :ok
     assert Balance.get_balances() == %{"BTC" => Decimal.from_float(1.5)}

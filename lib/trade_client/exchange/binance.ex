@@ -15,7 +15,7 @@ defmodule TradeClient.Exchange.Binance do
 
   require Decimal
 
-  @spec new() :: any()
+  @spec new() :: {:ok, pid()}
   def new do
     GenServer.start_link(Server, [], name: __MODULE__)
   end

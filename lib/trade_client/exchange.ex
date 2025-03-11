@@ -7,7 +7,7 @@ defmodule TradeClient.Exchange do
 
   require Decimal
 
-  @callback new() :: any()
+  @callback new() :: {:ok, pid()}
   @callback limit_order(TradingSymbol.t(), Decimal.t(), Decimal.t()) ::
               {:executed, TradeReport.t()} | {:expired, any()}
 

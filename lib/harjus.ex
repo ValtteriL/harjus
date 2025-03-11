@@ -61,6 +61,9 @@ defmodule Harjus do
         # supervisor for looking after trade execution tasks
         {Task.Supervisor, name: TraderSupervisor},
 
+        # trade client
+        {TradeClient, []},
+
         # streamer + pipeline
         {PriceStreamer, symbol_list},
         {Pipeline,

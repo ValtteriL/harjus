@@ -10,14 +10,16 @@ defmodule Balance do
   @doc """
   Starts the balance process
   """
-
-  def start_link do
-    start_link([])
-  end
-
   @spec start_link(args :: any()) :: {:ok, pid}
   def start_link(_args) do
-    Agent.start_link(fn -> Impl.new() end, name: __MODULE__)
+    Agent.start_link(
+      fn ->
+        # trap exits to allow for finishing trades on exit
+        Process.flag(:trap_exit, true)
+        Impl.new()
+      end,
+      name: __MODULE__
+    )
   end
 
   @doc """

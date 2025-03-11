@@ -13,9 +13,6 @@ defmodule Pipeline.Impl do
           relative_asset_values :: any()
         ) :: any()
   def new(trading_paths, commission_percentage, relative_asset_values) do
-    # start trade client
-    TradeClient.new()
-
     %{
       pricing_table: PricingTable.new(trading_paths),
       commission_percentage: commission_percentage,
@@ -95,6 +92,9 @@ defmodule Pipeline.Impl do
       Task.Supervisor.start_child(
         TraderSupervisor,
         fn ->
+          # trap exits to allow for finishing trades on exit
+          Process.flag(:trap_exit, true)
+
           delta = Trader.execute(planned_execution)
 
           # release symbols, balance

@@ -80,7 +80,7 @@ defmodule IntegrationTest do
 
     TradeClient.Exchange.TestMock
     |> expect(:new, fn ->
-      :does_not_matter
+      {:ok, self()}
     end)
     # trades
     |> expect(:limit_order, 3, fn trading_symbol, quantity, price ->
@@ -115,11 +115,13 @@ defmodule IntegrationTest do
     {trading_paths, symbols} = MarketData.trading_paths(market_data, ["BTC", "ETH", "USDT"], 3)
 
     # Initialize components
-    {:ok, _} = Balance.start_link()
+    {:ok, _} = Balance.start_link([])
 
-    {:ok, _} = ReservedSymbols.start_link()
+    {:ok, _} = ReservedSymbols.start_link([])
 
     {:ok, _} = Task.Supervisor.start_link(name: TraderSupervisor)
+
+    {:ok, _} = TradeClient.start_link([])
 
     commission = Decimal.from_float(0.001)
     relative_asset_values = MarketData.relative_values(market_data, "BTC")

@@ -9,6 +9,8 @@ defmodule TradeClient.Exchange.Binance.Server do
 
   @impl GenServer
   def init(_args) do
+    # trap exits to allow for finishing trades on exit
+    Process.flag(:trap_exit, true)
     {:ok, Impl.new()}
   end
 

@@ -8,7 +8,7 @@ defmodule ReservedSymbolsTest do
   alias Types.TradingSymbol
 
   setup do
-    {:ok, _} = ReservedSymbols.start_link()
+    {:ok, _} = ReservedSymbols.start_link([])
     :ok
   end
 

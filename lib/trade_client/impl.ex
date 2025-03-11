@@ -9,6 +9,7 @@ defmodule TradeClient.Impl do
   alias Types.TradeReport
   alias Types.TradingSymbol
 
+  @spec new() :: {:ok, pid}
   def new do
     Exchange.new()
   end
