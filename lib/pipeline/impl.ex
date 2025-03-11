@@ -100,7 +100,10 @@ defmodule Pipeline.Impl do
           # release symbols, balance
           Balance.release(delta)
           planned_execution.trades |> ReservedSymbols.release_list!()
-        end
+        end,
+        # never restart
+        restart: :transient,
+        max_restarts: 0
       )
     end)
 

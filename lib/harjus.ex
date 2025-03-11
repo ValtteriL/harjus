@@ -56,7 +56,7 @@ defmodule Harjus do
 
         # supervisor for looking after trade execution tasks
         # if this crashes, balance and reservedsymbols may be incorrect, thus must be restarted too
-        {Task.Supervisor, name: TraderSupervisor, restart: :transient, max_restarts: 0},
+        {Task.Supervisor, name: TraderSupervisor},
 
         # utilities
         {Balance, []},
