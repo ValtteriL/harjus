@@ -39,14 +39,19 @@ defmodule Pipeline.Impl do
     reserved_symbols = ReservedSymbols.get_reserved()
 
     affected_paths
-    |> Enum.filter(fn path ->
-      # filter out affected paths for which we have not enough balance
-      # filter out affected paths that contain reserved symbols
-
+    |> Enum.reject(fn path ->
+      # reject unsuitable paths
       first_symbol = path |> List.first()
 
-      balances[starting_currency(first_symbol)] >= min_qty(first_symbol) &&
-        path |> Enum.all?(fn ts -> !Enum.member?(reserved_symbols, {ts.symbol, ts.position}) end)
+      starting_currency_balance =
+        Map.get(balances, starting_currency(first_symbol), Decimal.new(0))
+
+      # not enough balance
+      # reserved symbols
+      # price lte 0
+      Decimal.lt?(starting_currency_balance, min_qty(first_symbol)) ||
+        path |> Enum.any?(fn ts -> Enum.member?(reserved_symbols, {ts.symbol, ts.position}) end) ||
+        path |> Enum.any?(fn ts -> Decimal.lte?(ts.price, 0) end)
     end)
     |> Enum.map(fn path ->
       # plan execution for each affected path
