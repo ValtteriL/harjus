@@ -37,10 +37,13 @@ defmodule Harjus.MixProject do
     ]
   end
 
+  defp extra_applications(:dev), do: [:wx, :runtime_tools, :observer]
+  defp extra_applications(_), do: []
+
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: extra_applications(Mix.env()) ++ [:logger],
       mod: {Harjus, []}
     ]
   end
