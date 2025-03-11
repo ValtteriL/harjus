@@ -21,6 +21,13 @@ defmodule TradeClient do
     end)
   end
 
+  def child_spec(args) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, [args]}
+    }
+  end
+
   @doc """
   Place a limit order
   """
