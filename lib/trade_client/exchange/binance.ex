@@ -1,4 +1,4 @@
-defmodule Trader.TradeClient.Exchange.Binance do
+defmodule TradeClient.Exchange.Binance do
   @moduledoc """
   Implementation of the trade client for Binance
 
@@ -7,9 +7,9 @@ defmodule Trader.TradeClient.Exchange.Binance do
   https://github.com/binance/binance-spot-api-docs/blob/master/fix-api.md
   """
 
-  @behaviour Trader.TradeClient.Exchange
+  @behaviour TradeClient.Exchange
 
-  alias Trader.TradeClient.Exchange.Binance.Server
+  alias TradeClient.Exchange.Binance.Server
   alias Types.TradeReport
   alias Types.TradingSymbol
 

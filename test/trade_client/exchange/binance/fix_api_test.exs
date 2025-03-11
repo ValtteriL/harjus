@@ -1,11 +1,11 @@
-defmodule Trader.TradeClient.Exchange.Binance.FixApiTest do
+defmodule TradeClient.Exchange.Binance.FixApiTest do
   @moduledoc "Tests for FixApi"
 
-  alias Trader.TradeClient.Exchange.Binance.FixApi
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.MsgType
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.OrderSide
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.OrderType
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Const.Tag
+  alias TradeClient.Exchange.Binance.FixApi
+  alias TradeClient.Exchange.Binance.FixApi.Const.MsgType
+  alias TradeClient.Exchange.Binance.FixApi.Const.OrderSide
+  alias TradeClient.Exchange.Binance.FixApi.Const.OrderType
+  alias TradeClient.Exchange.Binance.FixApi.Const.Tag
   alias Types.TradingSymbol
 
   use ExUnit.Case, async: true

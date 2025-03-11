@@ -1,8 +1,8 @@
-defmodule Trader.TradeClient do
+defmodule TradeClient do
   @moduledoc """
   Client for placing trades
   """
-  alias Trader.TradeClient.Impl
+  alias TradeClient.Impl
 
   defdelegate new(), to: Impl
   defdelegate limit_order(trading_symbol, quantity, price), to: Impl

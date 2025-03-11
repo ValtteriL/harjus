@@ -1,4 +1,4 @@
-defmodule Trader.TradeClient.Exchange do
+defmodule TradeClient.Exchange do
   @moduledoc """
   Exchange behaviour
   """

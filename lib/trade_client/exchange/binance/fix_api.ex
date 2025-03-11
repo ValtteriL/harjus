@@ -1,12 +1,12 @@
-defmodule Trader.TradeClient.Exchange.Binance.FixApi do
+defmodule TradeClient.Exchange.Binance.FixApi do
   @moduledoc """
   Functions for constructing & parsing Binance FIX API messages
 
   https://github.com/binance/binance-spot-api-docs/blob/master/fix-api.md
   """
 
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Impl
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport
+  alias TradeClient.Exchange.Binance.FixApi.Impl
+  alias TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport
   alias Types.TradingSymbol
 
   @doc """

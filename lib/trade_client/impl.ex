@@ -1,11 +1,11 @@
-defmodule Trader.TradeClient.Impl do
+defmodule TradeClient.Impl do
   @moduledoc """
   Implementation of the trade client
   """
 
   require Decimal
 
-  alias Trader.TradeClient.Exchange
+  alias TradeClient.Exchange
   alias Types.TradeReport
   alias Types.TradingSymbol
 

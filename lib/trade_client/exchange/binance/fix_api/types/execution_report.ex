@@ -1,7 +1,7 @@
-defmodule Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport do
+defmodule TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport do
   @moduledoc "execution report type"
 
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport.Fee
+  alias TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport.Fee
 
   @type t :: %__MODULE__{
           order_status: String.t(),

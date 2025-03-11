@@ -1,4 +1,4 @@
-defmodule Trader.TradeClient.Exchange.Binance.FixApi.Const.MsgType do
+defmodule TradeClient.Exchange.Binance.FixApi.Const.MsgType do
   @moduledoc "message type enum"
   def heartbeat, do: "0"
   def test_request, do: "1"

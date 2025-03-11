@@ -1,4 +1,4 @@
-defmodule Trader.TradeClient.Exchange.Binance.Impl do
+defmodule TradeClient.Exchange.Binance.Impl do
   @moduledoc """
   Implementation of the trade client
 
@@ -8,10 +8,10 @@ defmodule Trader.TradeClient.Exchange.Binance.Impl do
   """
 
   require Logger
-  alias Trader.TradeClient.Exchange.Binance.FixApi
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Const
-  alias Trader.TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport
-  alias Trader.TradeClient.Exchange.Binance.State
+  alias TradeClient.Exchange.Binance.FixApi
+  alias TradeClient.Exchange.Binance.FixApi.Const
+  alias TradeClient.Exchange.Binance.FixApi.Types.ExecutionReport
+  alias TradeClient.Exchange.Binance.State
 
   alias Types.TradeReport
   alias Types.TradingSymbol

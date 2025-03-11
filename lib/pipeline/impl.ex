@@ -13,6 +13,9 @@ defmodule Pipeline.Impl do
           relative_asset_values :: any()
         ) :: any()
   def new(trading_paths, commission_percentage, relative_asset_values) do
+    # start trade client
+    TradeClient.new()
+
     %{
       pricing_table: PricingTable.new(trading_paths),
       commission_percentage: commission_percentage,

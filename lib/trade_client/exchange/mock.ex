@@ -1,7 +1,7 @@
-defmodule Trader.TradeClient.Exchange.Mock do
+defmodule TradeClient.Exchange.Mock do
   @moduledoc "Mock for trade client"
 
-  @behaviour Trader.TradeClient.Exchange
+  @behaviour TradeClient.Exchange
 
   alias Types.TradeReport
   alias Types.TradingSymbol

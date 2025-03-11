@@ -78,7 +78,7 @@ defmodule IntegrationTest do
       }
     end)
 
-    Trader.TradeClient.Exchange.TestMock
+    TradeClient.Exchange.TestMock
     |> expect(:new, fn ->
       :does_not_matter
     end)

@@ -1,4 +1,4 @@
-defmodule Trader.TradeClient.Exchange.Binance.State do
+defmodule TradeClient.Exchange.Binance.State do
   @moduledoc """
   State of the trade client
   """
