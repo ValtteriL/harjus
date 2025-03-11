@@ -32,8 +32,8 @@ defmodule Trader.Impl do
       end
 
     # add reserved budget back to balance, to get correct amount to release
-    used_asset = used_asset(Enum.at(planned_execution.trades, 0).trading_symbol)
-    used_qty = used_qty(Enum.at(planned_execution.trades, 0).trading_symbol)
+    used_asset = used_asset(Enum.at(planned_execution.trades, 0))
+    used_qty = used_qty(Enum.at(planned_execution.trades, 0))
 
     releasable_delta =
       BalanceDelta.increment_balance_delta(balance_delta, used_asset, used_qty)
