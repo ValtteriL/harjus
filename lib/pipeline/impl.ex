@@ -81,17 +81,14 @@ defmodule Pipeline.Impl do
           {:halt, [plan | acc]}
       end
     end)
-    # reserve symbols, balance
+    # reserve symbols, balance & dispatch trades
     |> Enum.each(fn planned_execution ->
       planned_execution.trades |> ReservedSymbols.reserve_list!()
 
       first_symbol = planned_execution.trades |> List.first()
-      # assuming symbol qty updated with the correct amount
       Balance.reserve!(starting_currency(first_symbol), starting_qty(first_symbol))
-    end)
 
-    # dispatch trades
-    |> Enum.each(fn planned_execution ->
+      # dispatch trades
       Task.Supervisor.start_child(
         TraderSupervisor,
         fn ->
