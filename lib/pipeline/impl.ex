@@ -79,6 +79,9 @@ defmodule Pipeline.Impl do
 
         length(acc) == 1 and no_overlapping_symbols(plan, List.first(acc)) ->
           {:halt, [plan | acc]}
+
+        true ->
+          {:cont, acc}
       end
     end)
     # reserve symbols, balance & dispatch trades
