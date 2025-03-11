@@ -122,7 +122,12 @@ defmodule Pipeline.ExecutionPlanner.Impl do
       |> Decimal.div_int(trading_symbol.base_asset_increment)
       |> Decimal.mult(trading_symbol.base_asset_increment)
 
-    {order_qty, order_qty}
+    # if min_notional not met, return 0
+    if Decimal.lt?(order_qty, trading_symbol.min_notional) do
+      {Decimal.new(0), Decimal.new(0)}
+    else
+      {order_qty, order_qty}
+    end
   end
 
   defp order_qty_received_qty_for_budget(
@@ -140,7 +145,12 @@ defmodule Pipeline.ExecutionPlanner.Impl do
       |> Decimal.div_int(trading_symbol.quote_asset_increment)
       |> Decimal.mult(trading_symbol.quote_asset_increment)
 
-    {order_qty, received_qty}
+    # if min_notional not met, return 0
+    if Decimal.lt?(received_qty, trading_symbol.min_notional) do
+      {Decimal.new(0), Decimal.new(0)}
+    else
+      {order_qty, received_qty}
+    end
   end
 
   defp used_asset(ts = %TradingSymbol{position: :long}), do: ts.quote_asset
