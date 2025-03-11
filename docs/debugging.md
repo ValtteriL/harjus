@@ -4,12 +4,12 @@
 
 
 # find pids for processes
-Process.whereis PortfolioManager
-Process.whereis OpportunityWatcher
+Process.whereis PriceStreamer
+Process.whereis Pipeline
 Process.whereis Harjus.Supervisor
 
 # find process info
-Process.info(Process.whereis OpportunityWatcher)
+Process.info(Process.whereis Pipeline)
 
 
 Process.info Process.whereis Elixir.Harjus

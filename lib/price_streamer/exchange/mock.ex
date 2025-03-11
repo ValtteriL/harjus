@@ -1,8 +1,6 @@
 defmodule PriceStreamer.Exchange.Mock do
   @moduledoc "Mock for receiving price updates from the exchange"
 
-  alias Types.PriceUpdate
-
   @spec new([String.t()]) :: :ok
   def new(symbols) do
     Task.start_link(fn ->
@@ -23,13 +21,13 @@ defmodule PriceStreamer.Exchange.Mock do
 
     bid_price = ask_price - 1
 
-    PriceStreamer.price_update(%PriceUpdate{
-      symbol: symbol,
-      ask_price: Decimal.new(ask_price),
-      ask_qty: Decimal.new(ask_qty),
-      bid_price: Decimal.new(bid_price),
-      bid_qty: Decimal.new(bid_qty)
-    })
+    Pipeline.price_update(
+      symbol,
+      Decimal.new(ask_price),
+      Decimal.new(ask_qty),
+      Decimal.new(bid_price),
+      Decimal.new(bid_qty)
+    )
 
     :timer.sleep(1000)
     simulate_updates(symbols)

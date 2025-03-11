@@ -8,11 +8,8 @@ defmodule Metrics.Impl do
   defp price_update, do: [:harjus, :price_streamer, :price_update]
   defp trade_executed, do: [:harjus, :trader, :trade, :executed]
   defp trade_failed, do: [:harjus, :trader, :trade, :failed]
-  defp trade_attempted, do: [:harjus, :trader, :trade, :attempted]
-  defp trade_report_delta, do: [:harjus, :trader, :trade, :report]
 
   defp counter_measurement, do: :count
-  defp summary_measurement, do: :delta
 
   @spec metrics() :: [
           Telemetry.Metrics.Counter.t()
@@ -56,19 +53,6 @@ defmodule Metrics.Impl do
         measurement: counter_measurement(),
         description: "Number of trades failed"
       ),
-      counter(
-        trade_attempted(),
-        event_name: trade_attempted(),
-        measurement: counter_measurement(),
-        description: "Number of trades attempted"
-      ),
-      summary(
-        trade_report_delta(),
-        event_name: trade_report_delta(),
-        measurement: summary_measurement(),
-        tags: [:asset],
-        description: "Change in asset balance after execution"
-      ),
 
       # VM Metrics
       last_value("vm.memory.total", unit: :byte),
@@ -101,24 +85,5 @@ defmodule Metrics.Impl do
   @spec report_trade_failed() :: :ok
   def report_trade_failed do
     :telemetry.execute(trade_failed(), %{counter_measurement() => 1})
-  end
-
-  @spec report_trade_attempted() :: :ok
-  def report_trade_attempted do
-    :telemetry.execute(trade_attempted(), %{counter_measurement() => 1})
-  end
-
-  @spec report_trade_report_delta(delta :: %{String.t() => Decimal.t()}) :: :ok
-  def report_trade_report_delta(delta_map) do
-    delta_map
-    |> Enum.each(fn {asset, delta} ->
-      :telemetry.execute(
-        trade_report_delta(),
-        %{summary_measurement() => Decimal.to_float(delta)},
-        %{
-          asset: asset
-        }
-      )
-    end)
   end
 end

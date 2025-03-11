@@ -3,13 +3,12 @@ defmodule PriceStreamer.Exchange.Binance do
   Process for streaming order book updates for trading symbols
 
   Subscribes to realtime updates on given symbols
-  Relays the best ask price and quantity for each symbol to opportunity watcher
+  Relays the best ask price and quantity for each symbol to pipeline
   """
 
   @behaviour PriceStreamer.Exchange
 
   alias PriceStreamer.Exchange.Binance.SpotStream
-  alias Types.PriceUpdate
 
   use WebSockex
   require Logger
@@ -59,13 +58,13 @@ defmodule PriceStreamer.Exchange.Binance do
         :ok
 
       {:book_ticker_update, {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}} ->
-        PriceStreamer.price_update(%PriceUpdate{
-          symbol: symbol,
-          ask_price: best_ask_price,
-          ask_qty: best_ask_qty,
-          bid_price: best_bid_price,
-          bid_qty: best_bid_qty
-        })
+        Pipeline.price_update(
+          symbol,
+          best_ask_price,
+          best_ask_qty,
+          best_bid_price,
+          best_bid_qty
+        )
 
         :ok
 

@@ -37,10 +37,13 @@ defmodule Harjus.MixProject do
     ]
   end
 
+  defp extra_applications(:dev), do: [:wx, :runtime_tools, :observer]
+  defp extra_applications(_), do: []
+
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: extra_applications(Mix.env()) ++ [:logger],
       mod: {Harjus, []}
     ]
   end
@@ -55,7 +58,6 @@ defmodule Harjus.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:castore, "~> 1.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:gen_stage, "~> 1.2.1"},
       {:mutex, "~> 3.0"},
       {:decimal, "~> 2.0"},
       {:telemetry_metrics, "~> 1.0.0"},

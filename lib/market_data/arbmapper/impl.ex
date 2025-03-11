@@ -161,7 +161,9 @@ defmodule MarketData.Arbmapper.Impl do
       base_asset_precision: symbol.baseAssetPrecision,
       quote_asset_increment: symbol.quoteAssetIncrement,
       quote_asset_precision: symbol.quoteAssetPrecision,
-      min_notional: symbol.minNotional
+      min_notional: symbol.minNotional,
+      price: Decimal.new(0),
+      qty: Decimal.new(0)
     }
   end
 end
