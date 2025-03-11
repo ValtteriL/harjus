@@ -39,7 +39,7 @@ defmodule Pipeline.ExecutionPlanner.Impl do
         # total profit = profit * capacity * relative_asset_value
         Decimal.mult(
           Decimal.mult(profit(path, commission_percentage), capacity),
-          Map.fetch!(relative_asset_values, used_asset(first_symbol))
+          Map.get(relative_asset_values, used_asset(first_symbol), Decimal.new(0))
         )
       end
 

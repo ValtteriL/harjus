@@ -111,7 +111,7 @@ defmodule Pipeline.ExecutionPlannerTest do
     assert Decimal.eq?(plan.total_profit, 0)
   end
 
-  test "raises error if used currency does not have relative value" do
+  test "total_profit is 0 if used currency does not have relative value" do
     path = [
       ts("BTCUSDT", :short, Decimal.new(1), Decimal.new(1))
     ]
@@ -121,14 +121,15 @@ defmodule Pipeline.ExecutionPlannerTest do
 
     relative_asset_values = %{}
 
-    assert_raise KeyError, fn ->
+    plan =
       ExecutionPlanner.plan_execution(
         path,
         starting_asset_balance,
         commission_percentage,
         relative_asset_values
       )
-    end
+
+    assert Decimal.eq?(plan.total_profit, 0)
   end
 
   ## helpers
