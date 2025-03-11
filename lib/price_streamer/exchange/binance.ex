@@ -3,7 +3,7 @@ defmodule PriceStreamer.Exchange.Binance do
   Process for streaming order book updates for trading symbols
 
   Subscribes to realtime updates on given symbols
-  Relays the best ask price and quantity for each symbol to opportunity watcher
+  Relays the best ask price and quantity for each symbol to pipeline
   """
 
   @behaviour PriceStreamer.Exchange

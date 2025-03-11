@@ -7,7 +7,6 @@ defmodule Trader.Impl do
   alias Trader.BalanceDelta
   alias Trader.TradeClient
   alias Types.PlannedExecution
-  alias Types.PlannedTrade
   alias Types.TradeReport
   alias Types.TradingSymbol
   require Logger
@@ -43,25 +42,25 @@ defmodule Trader.Impl do
     releasable_delta
   end
 
-  @spec trade([PlannedTrade.t()]) ::
+  @spec trade([TradingSymbol.t()]) ::
           {:execution, balance_delta()} | {:expired, balance_delta()}
-  defp trade(path = [%PlannedTrade{} | _])
+  defp trade(path = [%TradingSymbol{} | _])
        when is_list(path) do
     trade(path, BalanceDelta.new())
   end
 
-  @spec trade([PlannedTrade.t()], balance_delta()) ::
+  @spec trade([TradingSymbol.t()], balance_delta()) ::
           {:execution, balance_delta()} | {:expired, balance_delta()}
   defp trade(
          [
-           %PlannedTrade{trading_symbol: trading_symbol, order_qty: qty, order_price: price}
+           ts = %TradingSymbol{symbol: symbol, qty: qty, price: price}
            | rest
          ],
          balance_delta
        ) do
-    debug("Trading #{qty} of #{trading_symbol.symbol} at #{price}")
+    debug("Trading #{qty} of #{symbol} at #{price}")
 
-    case TradeClient.limit_order(trading_symbol, qty, price) do
+    case TradeClient.limit_order(ts, qty, price) do
       {:executed, report} ->
         debug("Trade completed. #{inspect(report)}")
 
@@ -71,7 +70,7 @@ defmodule Trader.Impl do
         end)
 
         new_balance_delta =
-          BalanceDelta.update_balance_delta(balance_delta, trading_symbol, report)
+          BalanceDelta.update_balance_delta(balance_delta, ts, report)
 
         # continue with the next trade
         trade(rest, new_balance_delta)
