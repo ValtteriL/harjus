@@ -54,18 +54,21 @@ defmodule Harjus do
              [metrics: Metrics.metrics(), namespace: "Harjus", push_interval: 300_000]}
         end,
 
+        # supervisor for looking after trade execution tasks
+        # if this crashes, balance and reservedsymbols may be incorrect, thus must be restarted too
+        {Task.Supervisor, name: TraderSupervisor, restart: :transient, max_restarts: 0},
+
         # utilities
         {Balance, []},
         {ReservedSymbols, []},
 
-        # supervisor for looking after trade execution tasks
-        {Task.Supervisor, name: TraderSupervisor, restart: :transient, max_restarts: 0},
+        # streamer
+        {PriceStreamer, symbol_list},
 
         # trade client
         {TradeClient, []},
 
-        # streamer + pipeline
-        {PriceStreamer, symbol_list},
+        # the pipeline
         {Pipeline,
          [
            trading_paths,
@@ -74,9 +77,9 @@ defmodule Harjus do
          ]}
       ]
 
-    # If a child process terminates, all other child processes are terminated
-    # and then all child processes (including the terminated one) are restarted
-    opts = [strategy: :one_for_all, name: Harjus]
+    # if a child process terminates, the terminated child process
+    # and the rest of the children started after it, are terminated and restarted.
+    opts = [strategy: :rest_for_one, name: Harjus]
 
     Supervisor.start_link(children, opts)
   end
