@@ -33,14 +33,21 @@ defmodule Pipeline.ExecutionPlanner.Impl do
       |> elem(0)
 
     total_profit =
-      if Decimal.eq?(capacity, 0) do
-        Decimal.new(0)
-      else
-        # total profit = profit * capacity * relative_asset_value
-        Decimal.mult(
-          Decimal.mult(profit(path, commission_percentage), capacity),
-          Map.get(relative_asset_values, used_asset(first_symbol), Decimal.new(0))
-        )
+      cond do
+        # if capacity = 0, total profit is 0
+        Decimal.eq?(capacity, 0) ->
+          Decimal.new(0)
+
+        # if any trade has qty = 0, total profit is 0
+        Enum.any?(trades, fn ts -> Decimal.eq?(ts.qty, 0) end) ->
+          Decimal.new(0)
+
+        true ->
+          # total profit = profit * capacity * relative_asset_value
+          Decimal.mult(
+            Decimal.mult(profit(path, commission_percentage), capacity),
+            Map.get(relative_asset_values, used_asset(first_symbol), Decimal.new(0))
+          )
       end
 
     %PlannedExecution{
@@ -68,7 +75,11 @@ defmodule Pipeline.ExecutionPlanner.Impl do
 
       lowest = Decimal.min(Decimal.div(acc, symbol.price), quantity)
 
-      lowest
+      if Decimal.lt?(lowest, symbol.min_notional) do
+        Decimal.new(0)
+      else
+        lowest
+      end
     end)
     |> Decimal.div(Decimal.add(1, profit_without_commission(trading_path)))
   end
@@ -111,12 +122,7 @@ defmodule Pipeline.ExecutionPlanner.Impl do
       |> Decimal.div_int(trading_symbol.base_asset_increment)
       |> Decimal.mult(trading_symbol.base_asset_increment)
 
-    # if min_notional not met, return 0
-    if Decimal.lt?(order_qty, trading_symbol.min_notional) do
-      {Decimal.new(0), Decimal.new(0)}
-    else
-      {order_qty, order_qty}
-    end
+    {order_qty, order_qty}
   end
 
   defp order_qty_received_qty_for_budget(
@@ -134,12 +140,7 @@ defmodule Pipeline.ExecutionPlanner.Impl do
       |> Decimal.div_int(trading_symbol.quote_asset_increment)
       |> Decimal.mult(trading_symbol.quote_asset_increment)
 
-    # if min_notional not met, return 0
-    if Decimal.lt?(received_qty, trading_symbol.min_notional) do
-      {Decimal.new(0), Decimal.new(0)}
-    else
-      {order_qty, received_qty}
-    end
+    {order_qty, received_qty}
   end
 
   defp used_asset(ts = %TradingSymbol{position: :long}), do: ts.quote_asset
