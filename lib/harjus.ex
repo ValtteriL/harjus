@@ -59,7 +59,7 @@ defmodule Harjus do
         {ReservedSymbols, []},
 
         # supervisor for looking after trade execution tasks
-        {Task.Supervisor, name: TraderSupervisor},
+        {Task.Supervisor, name: TraderSupervisor, restart: :transient, max_restarts: 0},
 
         # trade client
         {TradeClient, []},
