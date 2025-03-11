@@ -119,6 +119,8 @@ defmodule IntegrationTest do
 
     {:ok, _} = ReservedSymbols.start_link()
 
+    {:ok, _} = Task.Supervisor.start_link(name: TraderSupervisor)
+
     commission = Decimal.from_float(0.001)
     relative_asset_values = MarketData.relative_values(market_data, "BTC")
     {:ok, _} = Pipeline.start_link({trading_paths, commission, relative_asset_values})
