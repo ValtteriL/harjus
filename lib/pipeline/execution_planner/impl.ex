@@ -123,7 +123,7 @@ defmodule Pipeline.ExecutionPlanner.Impl do
       |> Decimal.mult(trading_symbol.base_asset_increment)
 
     # if min_notional not met, return 0
-    if Decimal.lt?(order_qty, trading_symbol.min_notional) do
+    if Decimal.lt?(Decimal.mult(order_qty, price), trading_symbol.min_notional) do
       {Decimal.new(0), Decimal.new(0)}
     else
       {order_qty, order_qty}
