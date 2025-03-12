@@ -52,12 +52,12 @@ defmodule Trader.Impl do
           {:execution, balance_delta()} | {:expired, balance_delta()}
   defp trade(
          [
-           ts = %TradingSymbol{symbol: symbol, qty: qty, price: price}
+           ts = %TradingSymbol{symbol: symbol, position: position, qty: qty, price: price}
            | rest
          ],
          balance_delta
        ) do
-    debug("Trading #{qty} of #{symbol} at #{price}")
+    debug("Trading #{qty} (#{position}) of #{symbol} at #{price}")
 
     case TradeClient.limit_order(ts, qty, price) do
       {:executed, report} ->
