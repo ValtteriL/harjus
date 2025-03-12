@@ -10,6 +10,7 @@ defmodule Trader.BalanceDelta.Impl do
 
   @spec new() :: balance_delta()
   def new do
+    Decimal.Context.set(%Decimal.Context{Decimal.Context.get() | precision: 16})
     %{}
   end
 

@@ -13,6 +13,8 @@ defmodule Pipeline.Impl do
           relative_asset_values :: any()
         ) :: any()
   def new(trading_paths, commission_percentage, relative_asset_values) do
+    Decimal.Context.set(%Decimal.Context{Decimal.Context.get() | precision: 16})
+
     %{
       pricing_table: PricingTable.new(trading_paths),
       commission_percentage: commission_percentage,
