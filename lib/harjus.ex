@@ -54,16 +54,16 @@ defmodule Harjus do
              [metrics: Metrics.metrics(), namespace: "Harjus", push_interval: 300_000]}
         end,
 
+        # streamer (slowest to start, thus restart the least)
+        {PriceStreamer, symbol_list},
+
         # supervisor for looking after trade execution tasks
         # if this crashes, balance and reservedsymbols may be incorrect, thus must be restarted too
-        {Task.Supervisor, name: TraderSupervisor},
+        {Task.Supervisor, name: TraderSupervisor, auto_shutdown: :any_significant},
 
         # utilities
         {Balance, []},
         {ReservedSymbols, []},
-
-        # streamer
-        {PriceStreamer, symbol_list},
 
         # trade client
         {TradeClient, []},

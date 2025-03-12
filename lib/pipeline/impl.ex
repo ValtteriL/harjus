@@ -108,7 +108,8 @@ defmodule Pipeline.Impl do
         end,
         # never restart
         restart: :transient,
-        max_restarts: 0
+        max_restarts: 0,
+        significant: true
       )
     end)
 
