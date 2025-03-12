@@ -7,6 +7,7 @@ defmodule Pipeline do
   alias Types.TradingSymbol
 
   require Decimal
+  require Logger
 
   @doc """
   Create new pipeline
@@ -17,6 +18,8 @@ defmodule Pipeline do
           relative_asset_values :: map()
         ) :: {:ok, pid()}
   def start_link(trading_paths, commission, relative_asset_values) do
+    Logger.info("Starting pipeline")
+
     GenServer.start_link(Server, {trading_paths, commission, relative_asset_values},
       name: __MODULE__
     )

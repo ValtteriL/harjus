@@ -7,6 +7,7 @@ defmodule PriceStreamer do
   """
 
   alias PriceStreamer.Impl
+  require Logger
   use Agent
 
   @doc """
@@ -17,6 +18,7 @@ defmodule PriceStreamer do
   """
   @spec start_link(symbols :: [String.t()]) :: {:ok, pid()}
   def start_link(symbols) do
+    Logger.info("Starting price streamers")
     Agent.start_link(fn -> Impl.new(symbols) end, name: __MODULE__)
   end
 

@@ -3,6 +3,7 @@ defmodule ReservedSymbols do
   Module for reserving symbols for trading
   """
 
+  require Logger
   alias ReservedSymbols.Impl
   alias Types.TradingSymbol
 
@@ -13,6 +14,8 @@ defmodule ReservedSymbols do
   """
   @spec start_link(args :: any()) :: {:ok, pid()}
   def start_link(_args) do
+    Logger.info("Starting reserved symbols")
+
     Agent.start_link(
       fn ->
         # trap exits to allow for finishing trades on exit

@@ -9,6 +9,7 @@ defmodule Balance.Impl do
   require Decimal
 
   def new do
+    Decimal.Context.set(%Decimal.Context{Decimal.Context.get() | precision: 16})
     Exchange.get_balances()
   end
 

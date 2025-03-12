@@ -3,12 +3,15 @@ defmodule TradeClient do
   Client for placing trades
   """
   alias TradeClient.Impl
+  require Logger
 
   @doc """
   Start trade client process
   """
   @spec start_link(args :: any()) :: {:ok, pid}
   def start_link(_args) do
+    Logger.info("Starting trade client")
+
     Task.start_link(fn ->
       # trap exits to allow for finishing trades on exit
       Process.flag(:trap_exit, true)

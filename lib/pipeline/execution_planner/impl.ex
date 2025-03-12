@@ -44,6 +44,7 @@ defmodule Pipeline.ExecutionPlanner.Impl do
 
         true ->
           # total profit = profit * capacity * relative_asset_value
+          # note: this may be incorrect as it does not account for created dust
           Decimal.mult(
             Decimal.mult(profit(path, commission_percentage), capacity),
             Map.get(relative_asset_values, used_asset(first_symbol), Decimal.new(0))
@@ -123,7 +124,7 @@ defmodule Pipeline.ExecutionPlanner.Impl do
       |> Decimal.mult(trading_symbol.base_asset_increment)
 
     # if min_notional not met, return 0
-    if Decimal.lt?(order_qty, trading_symbol.min_notional) do
+    if Decimal.lt?(Decimal.mult(order_qty, price), trading_symbol.min_notional) do
       {Decimal.new(0), Decimal.new(0)}
     else
       {order_qty, order_qty}
