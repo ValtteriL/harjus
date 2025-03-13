@@ -16,14 +16,15 @@ defmodule MarketData.Impl do
     }
   end
 
-  def trading_paths(%{symbols: symbols}, starting_symbols, depth)
+  def trading_paths(%{symbols: symbols}, starting_symbols, depth, blacklisted_starting_symbols)
       when is_integer(depth) and is_list(starting_symbols) do
     # discover trading paths
 
     Arbmapper.generate_trading_paths(
       symbols,
       starting_symbols: starting_symbols,
-      depth: depth
+      depth: depth,
+      blacklisted_starting_symbols: blacklisted_starting_symbols
     )
   end
 

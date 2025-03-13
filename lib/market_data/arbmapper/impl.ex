@@ -10,6 +10,7 @@ defmodule MarketData.Arbmapper.Impl do
           symbols :: [Symbol.t()],
           opts :: [
             starting_symbols: [String.t()],
+            blacklisted_starting_symbols: [String.t()],
             depth: integer()
           ]
         ) ::
@@ -20,6 +21,7 @@ defmodule MarketData.Arbmapper.Impl do
       )
       when is_list(opts) do
     starting_symbols = Keyword.get(opts, :starting_symbols, [])
+    blacklisted_starting_symbols = Keyword.get(opts, :blacklisted_starting_symbols, [])
     depth = Keyword.get(opts, :depth, 2)
 
     graph = generate_graph(symbols)
@@ -30,6 +32,8 @@ defmodule MarketData.Arbmapper.Impl do
       :digraph.vertices(graph)
       # filter paths that don't start with starting_symbols if any defined
       |> Enum.filter(fn x -> x in starting_symbols or starting_symbols === [] end)
+      # reject paths that start with blacklisted_starting_symbols
+      |> Enum.reject(fn x -> x in blacklisted_starting_symbols end)
       |> Enum.map(fn x -> get_simple_cycles_for_vertex(graph, x, depth) end)
       |> Enum.concat()
       |> Enum.map(fn x -> vertex_path_to_symbols(full_edges, x) end)

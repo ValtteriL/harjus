@@ -19,7 +19,8 @@ defmodule Harjus do
       MarketData.trading_paths(
         market_data,
         Application.fetch_env!(:harjus, :start_symbols),
-        Application.fetch_env!(:harjus, :max_trading_path_length)
+        Application.fetch_env!(:harjus, :max_trading_path_length),
+        Application.fetch_env!(:harjus, :blacklisted_start_symbols)
       )
 
     Logger.info("Trading symbols: #{length(symbol_list)}")
