@@ -13,10 +13,16 @@ defmodule MarketDataTest do
   setup :verify_on_exit!
 
   property "generates correct trading paths and symbols" do
-    forall [{symbols, symbol_prices, comparison_asset}, starting_symbols, depth] <- [
+    forall [
+             {symbols, symbol_prices, comparison_asset},
+             starting_symbols,
+             depth,
+             blacklisted_starting_symbols
+           ] <- [
              gen_symbols_prices_asset(),
              non_empty(list(non_empty_string())),
-             positive_integer()
+             positive_integer(),
+             non_empty(list(non_empty_string()))
            ] do
       # setup mock
       MarketData.Exchange.TestMock
@@ -24,7 +30,10 @@ defmodule MarketDataTest do
       |> expect(:get_symbol_prices, fn -> symbol_prices end)
 
       md = MarketData.new()
-      {paths, symbols} = MarketData.trading_paths(md, starting_symbols, depth)
+
+      {paths, symbols} =
+        MarketData.trading_paths(md, starting_symbols, depth, blacklisted_starting_symbols)
+
       relative_prices = MarketData.relative_values(md, comparison_asset)
 
       input_symbols = symbols |> Enum.map(fn x -> x.symbol end) |> Enum.uniq()
@@ -46,6 +55,9 @@ defmodule MarketDataTest do
 
       # trading paths must start with starting symbols if defined
       assert Enum.all?(paths, fn x -> Enum.member?(starting_symbols, hd(x)) end)
+
+      # trading paths must never start with blacklisted starting symbols
+      assert Enum.all?(paths, fn x -> !Enum.member?(blacklisted_starting_symbols, hd(x)) end)
 
       # trading paths must be of length depth or less if defined
       assert Enum.all?(paths, fn x -> length(x) <= depth end)

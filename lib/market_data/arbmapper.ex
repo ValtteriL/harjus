@@ -21,7 +21,8 @@ defmodule MarketData.Arbmapper do
           symbols :: [Symbol.t()],
           opts :: [
             starting_symbols: [String.t()],
-            depth: integer()
+            depth: integer(),
+            blacklisted_starting_symbols: [String.t()]
           ]
         ) ::
           {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [String.t()]}

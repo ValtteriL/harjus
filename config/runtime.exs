@@ -8,6 +8,7 @@ end
 config :harjus,
   max_trading_path_length: ConfigHelper.get_env("MAX_TRADING_PATH_LENGTH", 2, :int),
   start_symbols: ConfigHelper.get_env("START_SYMBOLS", [], :list),
+  blacklisted_start_symbols: ConfigHelper.get_env("BLACKLISTED_START_SYMBOLS", [], :list),
   commission: ConfigHelper.get_env("COMMISSION", Decimal.from_float(0.001), :decimal),
   binance_ed25519_api_key: ConfigHelper.get_env("BINANCE_ED25519_API_KEY", "", :str),
   binance_ed25519_private_key: ConfigHelper.get_env("BINANCE_ED25519_PRIVATE_KEY", "", :str),

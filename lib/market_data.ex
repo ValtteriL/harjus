@@ -19,10 +19,15 @@ defmodule MarketData do
   @doc """
   Get trading paths from the market data that start with the given symbols, up to the given depth
   """
-  @spec trading_paths(data :: any(), starting_symbols :: [String.t()], depth :: integer()) ::
+  @spec trading_paths(
+          data :: any(),
+          starting_symbols :: [String.t()],
+          depth :: integer(),
+          blacklisted_starting_symbols :: [String.t()]
+        ) ::
           {trading_paths :: [[TradingSymbol.t()]], symbol_list :: [String.t()]}
-  def trading_paths(state, starting_symbols, depth) do
-    Impl.trading_paths(state, starting_symbols, depth)
+  def trading_paths(state, starting_symbols, depth, blacklisted_starting_symbols) do
+    Impl.trading_paths(state, starting_symbols, depth, blacklisted_starting_symbols)
   end
 
   @doc """

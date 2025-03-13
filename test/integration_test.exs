@@ -112,7 +112,8 @@ defmodule IntegrationTest do
     market_data = MarketData.new()
 
     # Get trading paths and symbols
-    {trading_paths, symbols} = MarketData.trading_paths(market_data, ["BTC", "ETH", "USDT"], 3)
+    {trading_paths, symbols} =
+      MarketData.trading_paths(market_data, ["BTC", "ETH", "USDT"], 3, [])
 
     # Initialize components
     {:ok, _} = Balance.start_link([])
