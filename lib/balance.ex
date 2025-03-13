@@ -6,12 +6,15 @@ defmodule Balance do
   alias Balance.Impl
 
   use Agent
+  require Logger
 
   @doc """
   Starts the balance process
   """
   @spec start_link(args :: any()) :: {:ok, pid}
   def start_link(_args) do
+    Logger.info("Starting balance")
+
     Agent.start_link(
       fn ->
         # trap exits to allow for finishing trades on exit
