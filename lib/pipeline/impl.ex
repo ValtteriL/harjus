@@ -107,9 +107,7 @@ defmodule Pipeline.Impl do
           planned_execution.trades |> ReservedSymbols.release_list!()
         end,
         # never restart
-        restart: :transient,
-        max_restarts: 0,
-        significant: true
+        restart: :transient
       )
     end)
 
