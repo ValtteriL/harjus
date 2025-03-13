@@ -193,14 +193,6 @@ resource "aws_ecs_task_definition" "ecs_td" {
           value = var.aws_region
         },
         {
-          name      = "BINANCE_ED25519_API_KEY"
-          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_api_key.secret_string
-        },
-        {
-          name      = "BINANCE_ED25519_PRIVATE_KEY"
-          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_private_key.secret_string
-        },
-        {
           name  = "MAX_TRADING_PATH_LENGTH"
           value = "${tostring(var.max_trading_path_length)}"
         },
@@ -255,6 +247,16 @@ resource "aws_ecs_task_definition" "ecs_td" {
         {
           name  = "BALANCE_EXCHANGE"
           value = var.balance_exchange
+        }
+      ],
+      secrets : [
+        {
+          name      = "BINANCE_ED25519_API_KEY",
+          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_api_key.arn
+        },
+        {
+          name      = "BINANCE_ED25519_PRIVATE_KEY"
+          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_private_key.arn
         }
       ],
       "healthCheck" : {
