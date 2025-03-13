@@ -186,7 +186,7 @@ resource "aws_ecs_task_definition" "ecs_td" {
       essential         = true
       startTimeout      = 60
       stopTimeout       = 60
-      memoryReservation = 256
+      memoryReservation = 1024
       environment = [
         {
           name  = "AWS_REGION"
