@@ -193,11 +193,11 @@ resource "aws_ecs_task_definition" "ecs_td" {
           value = var.aws_region
         },
         {
-          name      = "BINANCE_API_KEY"
+          name      = "BINANCE_ED25519_API_KEY"
           valueFrom = aws_secretsmanager_secret_version.binance_ed25519_api_key.secret_string
         },
         {
-          name      = "BINANCE_PRIVATE_KEY"
+          name      = "BINANCE_ED25519_PRIVATE_KEY"
           valueFrom = aws_secretsmanager_secret_version.binance_ed25519_private_key.secret_string
         },
         {
