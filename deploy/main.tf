@@ -209,6 +209,10 @@ resource "aws_ecs_task_definition" "ecs_td" {
           value = var.start_symbols
         },
         {
+          name  = "BLACKLISTED_START_SYMBOLS"
+          value = var.blacklisted_start_symbols
+        },
+        {
           name  = "COMMISSION"
           value = "${tostring(var.commission)}"
         },

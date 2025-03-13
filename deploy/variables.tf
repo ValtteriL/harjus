@@ -33,6 +33,12 @@ variable "start_symbols" {
   default     = ""
 }
 
+variable "blacklisted_start_symbols" {
+  description = "The symbols to avoid trading with"
+  type        = string
+  default     = ""
+}
+
 variable "commission" {
   description = "The commission percentage to pay for each trade"
   type        = number
