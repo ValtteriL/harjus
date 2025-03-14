@@ -175,10 +175,90 @@ resource "aws_cloudwatch_log_group" "log_group" {
   retention_in_days = 7
 }
 
+resource "aws_iam_role" "task_exec_role" {
+  name = "ecsTaskExecutionRole"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "task_exec_role" {
+  role       = aws_iam_role.task_exec_role.name
+  policy_arn = aws_iam_policy.task_exec_role_policy.arn
+}
+
+resource "aws_iam_policy" "task_exec_role_policy" {
+  name = "policy-618033"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "kms:Decrypt",
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "ecr:GetAuthorizationToken",
+
+        ]
+        Effect = "Allow"
+        Resource = [
+          aws_secretsmanager_secret.binance_ed25519_api_key.arn,
+          aws_secretsmanager_secret.binance_ed25519_private_key.arn,
+        ]
+      },
+      {
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchGetImage",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchCheckLayerAvailability"
+        ]
+        Effect   = "Allow"
+        Resource = ["*"]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "events:PutRule",
+          "events:PutTargets",
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        Resource = ["*"]
+      },
+      {
+        Effect = "Allow",
+        Action = [
+          "events:DescribeRule",
+          "events:ListTargetsByRule",
+          "logs:DescribeLogGroups"
+        ],
+        Resource = ["*"]
+      }
+    ]
+  })
+}
+
 resource "aws_ecs_task_definition" "ecs_td" {
   family                   = "harjus"
   requires_compatibilities = ["EC2"]
   network_mode             = "host"
+  execution_role_arn       = aws_iam_role.task_exec_role.arn
   container_definitions = jsonencode([
     {
       name              = "harjus"
@@ -191,14 +271,6 @@ resource "aws_ecs_task_definition" "ecs_td" {
         {
           name  = "AWS_REGION"
           value = var.aws_region
-        },
-        {
-          name      = "BINANCE_API_KEY"
-          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_api_key.secret_string
-        },
-        {
-          name      = "BINANCE_PRIVATE_KEY"
-          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_private_key.secret_string
         },
         {
           name  = "MAX_TRADING_PATH_LENGTH"
@@ -255,6 +327,16 @@ resource "aws_ecs_task_definition" "ecs_td" {
         {
           name  = "BALANCE_EXCHANGE"
           value = var.balance_exchange
+        }
+      ],
+      secrets : [
+        {
+          name      = "BINANCE_ED25519_API_KEY",
+          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_api_key.arn
+        },
+        {
+          name      = "BINANCE_ED25519_PRIVATE_KEY"
+          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_private_key.arn
         }
       ],
       "healthCheck" : {
