@@ -31,8 +31,7 @@ defmodule TradeClient.Exchange.Binance.Impl do
     opts = [
       :binary,
       {:active, true},
-      {:verify, :verify_none},
-      {:cacerts, :public_key.cacerts_get()}
+      {:verify, :verify_none}
     ]
 
     {:ok, socket} = :ssl.connect(hostname, port, opts)
