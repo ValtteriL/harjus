@@ -66,5 +66,6 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           RELEASE_VERSION: ${{ github.ref_name }}
         run: |
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$RELEASE_VERSION
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$RELEASE_VERSION
+          SEMVER_TAG=$(echo $RELEASE_VERSION | sed 's/^releases\///')
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$SEMVER_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$SEMVER_TAG
