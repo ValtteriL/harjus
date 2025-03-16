@@ -24,5 +24,6 @@
   "elixir.credo.credoConfiguration": "default",
   "elixir.credo.strictMode": true,
   "elixir.credo.lintEverything": true,
-  "elixir.credo.enableDebug": false
+  "elixir.credo.enableDebug": false,
+  "cmake.sourceDirectory": "/home/valtteri/development/harjus/harjus-port"
 }

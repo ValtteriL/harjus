@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.16)
 
 project(harjus-port LANGUAGES CXX)
 
@@ -17,5 +17,8 @@ add_executable(harjus-port
 )
 target_link_libraries(harjus-port Qt${QT_VERSION_MAJOR}::Core)
 
+include(GNUInstallDirs)
 install(TARGETS harjus-port
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)

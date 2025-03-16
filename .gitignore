@@ -72,6 +72,3 @@ result-*
 *.pem
 
 testnet-exchangeinfo.json
-
-# qt creator build director(y/ies)
-build-*
