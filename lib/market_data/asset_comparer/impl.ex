@@ -42,6 +42,7 @@ defmodule MarketData.AssetComparer.Impl do
     btc_prices_quote =
       symbols
       |> Enum.filter(fn x -> x.baseAsset == comparison_asset end)
+      |> Enum.reject(fn %{symbol: s} -> Decimal.eq?(0, symbol_prices[s]) end)
       |> Enum.map(fn %{symbol: s, quoteAsset: q} -> {q, Decimal.div(1, symbol_prices[s])} end)
       |> Enum.into(%{})
 
