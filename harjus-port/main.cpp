@@ -1,22 +1,31 @@
 #include <QCoreApplication>
 #include <iostream>
+#include <QSocketNotifier>
+#include <QTextStream>
+
+
+// object for reading stdin and reacting to input
+class StdinReader : public QObject {
+public:
+    StdinReader() : QObject(nullptr), m_notifier(new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this)) {
+        connect(m_notifier, &QSocketNotifier::activated, this, &StdinReader::handleReadyRead);
+    }
+
+private slots:
+    void handleReadyRead() {
+        QTextStream in(stdin);
+        QString input = in.readLine();
+        std::cout << "Input received: " << input.toStdString() << std::endl;
+        // TODO: Process the input as needed
+    }
+
+private:
+    QSocketNotifier *m_notifier;
+};
 
 int main(int argc, char *argv[])
 {
-    std::cout << "Hello world!" << std::endl;
-
-    QCoreApplication a(argc, argv);
-
-    // Set up code that uses the Qt event loop here.
-    // Call a.quit() or a.exit() to quit the application.
-    // A not very useful example would be including
-    // #include <QTimer>
-    // near the top of the file and calling
-    // QTimer::singleShot(5000, &a, &QCoreApplication::quit);
-    // which quits the application after 5 seconds.
-
-    // If you do not need a running Qt event loop, remove the call
-    // to a.exec() or use the Non-Qt Plain C++ Application template.
-
+    QCoreApplication a{argc, argv};
+    StdinReader reader;
     return a.exec();
 }
