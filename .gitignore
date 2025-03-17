@@ -72,3 +72,4 @@ result-*
 *.pem
 
 testnet-exchangeinfo.json
+build
