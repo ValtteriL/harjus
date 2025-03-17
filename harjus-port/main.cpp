@@ -16,7 +16,7 @@ private slots:
         QTextStream in(stdin);
         QString input = in.readLine();
         std::cout << "Input received: " << input.toStdString() << std::endl;
-        // TODO: Process the input as needed
+        // TODO: process price updates here
     }
 
 private:
@@ -26,6 +26,9 @@ private:
 int main(int argc, char *argv[])
 {
     QCoreApplication a{argc, argv};
+
+    // TODO: read trading paths here
+
     StdinReader reader;
     return a.exec();
 }
