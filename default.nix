@@ -57,6 +57,19 @@ let
       mixNixDeps = import ./deps.nix { inherit lib beamPackages; };
     };
 
+    harjusPortBuild = stdenv.mkDerivation {
+      pname = "harjus-port";
+      version = "1.0.0";
+
+      src = ./harjus-port;
+
+      buildInputs = [ qt6.full ];
+      nativeBuildInputs = [ cmake ninja ];
+
+      # run cmake tests
+      doCheck = true;
+    };
+
     # docker packaging derivation
     docker = pkgs.dockerTools.buildLayeredImage {
       name = "harjus";
@@ -70,7 +83,7 @@ let
         ];
       };
 
-      contents = [ harjusBuild dockerTools.binSh ];
+      contents = [ harjusBuild harjusPortBuild dockerTools.binSh ];
     };
 
   };

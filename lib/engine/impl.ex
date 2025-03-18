@@ -14,7 +14,7 @@ defmodule Engine.Impl do
       )
 
     send(port, {self(), {:command, "hello"}})
-    flush()
+    # flush()
     :ok
   end
 
