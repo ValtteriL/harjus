@@ -33,6 +33,7 @@ let
 
         # C++
         cmake
+        qt6.full
 
         # deployment
         terraform
