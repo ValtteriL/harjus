@@ -10,7 +10,7 @@ let
   packages = rec {
 
     # The shell of our experiment runtime environment
-    devEnv = mkShellNoCC rec {
+    devEnv = mkShell rec {
       name = "devEnv";
 
       # environment variables
@@ -32,6 +32,7 @@ let
         cowsay
 
         # C++
+        cmake
 
         # deployment
         terraform
