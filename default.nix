@@ -33,6 +33,7 @@ let
 
         # C++
         cmake
+        ninja
         qt6.full
 
         # deployment
