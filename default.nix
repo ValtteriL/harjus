@@ -34,6 +34,7 @@ let
         # C++
         cmake
         ninja
+        gdb
         qt6.full
 
         # deployment
