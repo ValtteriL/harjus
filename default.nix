@@ -24,7 +24,7 @@ let
       packages = with pkgs; [
         # for working with nix
         nixpkgs-fmt
-        nixfmt
+        nixfmt-classic
 
         # elixir
         elixir
