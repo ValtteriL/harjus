@@ -4,7 +4,10 @@ defmodule Engine do
   responses to the pipeline
   """
 
-  alias Engine.Impl
+  # alias Engine.Impl
+  alias Engine.Server
+
+  require Logger
 
   @doc """
   Starts the balance process
@@ -14,6 +17,7 @@ defmodule Engine do
     Logger.info("Starting engine")
 
     GenServer.start_link(
+      Server,
       args,
       name: __MODULE__
     )
@@ -22,8 +26,8 @@ defmodule Engine do
   @doc """
   Price update
   """
-  @spec price_update() :: :ok
-  def price_update do
-    :ok
+  @spec price_update(update :: String.t()) :: :ok
+  def price_update(update) do
+    GenServer.cast(__MODULE__, {:price_update, update})
   end
 end

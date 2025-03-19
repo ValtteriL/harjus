@@ -4,21 +4,19 @@ defmodule Engine.Impl do
   """
 
   def new(_trading_paths, _commission, _relative_asset_values) do
-    # TODO: commission from env?
-
+    # get commission from env instead?
     port =
       Port.open(
-        {:spawn,
-         "/home/valtteri/development/harjus/harjus-port/build/Desktop_Qt_6_8_2-Debug/harjus-port"},
+        {:spawn, Application.get_env(:harjus, :path_to_port)},
         [:binary]
       )
 
-    send(port, {self(), {:command, "hello"}})
-    # flush()
-    :ok
+    %{port: port}
   end
 
-  def price_update(_state, _update) do
-    :ok
+  def price_update(state = %{port: port}, update) do
+    send(port, {self(), {:command, update}})
+    send(port, {self(), {:command, "\n"}})
+    state
   end
 end

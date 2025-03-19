@@ -25,7 +25,8 @@ config :harjus,
     ConfigHelper.get_env("TRADE_CLIENT_EXCHANGE", TradeClient.Exchange.Mock, :module),
   balance_exchange: ConfigHelper.get_env("BALANCE_EXCHANGE", Balance.Exchange.Mock, :module),
   console_telemetry: ConfigHelper.get_env("CONSOLE_TELEMETRY", false, :bool),
-  console_silence: ConfigHelper.get_env("CONSOLE_SILENCE", false, :bool)
+  console_silence: ConfigHelper.get_env("CONSOLE_SILENCE", false, :bool),
+  path_to_port: ConfigHelper.get_env("PATH_TO_PORT", "/harjus-port", :str)
 
 # configure logger verbosity
 config :logger, level: ConfigHelper.get_env("VERBOSITY", :debug, :atom)

@@ -6,6 +6,7 @@ defmodule Engine.Server do
   use GenServer
 
   alias Engine.Impl
+  require Logger
 
   @impl GenServer
   def init({trading_paths, commission, relative_asset_values}) do
@@ -15,5 +16,12 @@ defmodule Engine.Server do
   @impl GenServer
   def handle_cast({:price_update, update}, state) do
     {:noreply, Impl.price_update(state, update)}
+  end
+
+  # print out response from port
+  @impl GenServer
+  def handle_info({_port, {:data, msg}}, state) do
+    Logger.debug("Eixir received from port: #{msg}")
+    {:noreply, state}
   end
 end
