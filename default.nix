@@ -63,8 +63,8 @@ let
 
       src = ./harjus-port;
 
-      buildInputs = [ qt6.full ];
-      nativeBuildInputs = [ cmake ninja ];
+      buildInputs = [ qt6.qtbase ];
+      nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsHook ];
 
       # run cmake tests
       doCheck = true;
