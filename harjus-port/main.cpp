@@ -3,16 +3,18 @@
 #include <QSocketNotifier>
 #include <QTextStream>
 
-
 // object for reading stdin and reacting to input
-class StdinReader : public QObject {
+class StdinReader : public QObject
+{
 public:
-    StdinReader() : QObject(nullptr), m_notifier(new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this)) {
+    StdinReader() : QObject(nullptr), m_notifier(new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this))
+    {
         connect(m_notifier, &QSocketNotifier::activated, this, &StdinReader::handleReadyRead);
     }
 
 private slots:
-    void handleReadyRead() {
+    void handleReadyRead()
+    {
         QTextStream in(stdin);
         QString input = in.readLine();
         std::cout << "Input received: " << input.toStdString() << std::endl;
