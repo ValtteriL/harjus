@@ -1,9 +1,17 @@
 #include <QList>
+#include <QJsonObject>
 #include "tradingsymbol.h"
 
-struct PlannedExecution
+class PlannedExecution
 {
-  /* data */
-  double mTotalProfit;
+public:
+  double totalProfit() const { return mTotalProfit; }
+  void update();
+  QJsonObject toJson() const;
+
+private:
   QList<TradingSymbol> mTrades;
+  double mTotalProfit;
+  double mRelativePrice;
+  double mCommission;
 };

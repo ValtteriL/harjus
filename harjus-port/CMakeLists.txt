@@ -17,6 +17,8 @@ add_executable(harjus-port
   engine.h
   plannedexecution.h
   tradingsymbol.h
+  offer.h
+  position.h
 )
 target_link_libraries(harjus-port Qt${QT_VERSION_MAJOR}::Core)
 
