@@ -14,6 +14,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 
 add_executable(harjus-port
   main.cpp
+  engine.cpp
   engine.h
   plannedexecution.h
   tradingsymbol.h
@@ -30,9 +31,17 @@ install(TARGETS harjus-port
 
 # testing related
 enable_testing()
+
 add_executable(testsample test/testsample.cpp)
 target_link_libraries(testsample PUBLIC
   Qt${QT_VERSION_MAJOR}::Core
   Qt${QT_VERSION_MAJOR}::Test
 )
 add_test(NAME testsample COMMAND testsample)
+
+add_executable(testengine test/testengine.cpp)
+target_link_libraries(testengine PUBLIC
+  Qt${QT_VERSION_MAJOR}::Core
+  Qt${QT_VERSION_MAJOR}::Test
+)
+add_test(NAME testengine COMMAND testengine)
