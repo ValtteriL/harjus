@@ -12,6 +12,6 @@ public:
   QList<PlannedExecution> priceUpdate(const QString &symbol, double bidPrice, double bidQty, double askPrice, double askQty);
 
 private:
-  QMultiHash<QString, PlannedExecution &> mSymbolToPlannedExecutions;
-  QHash<QString, Offer &> mSymbolToOffer;
+  QMultiHash<QString, PlannedExecution> mSymbolToPlannedExecutions;
+  QHash<QString, Offer> mSymbolToOffer;
 };
