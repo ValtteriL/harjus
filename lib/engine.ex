@@ -12,15 +12,26 @@ defmodule Engine do
   @doc """
   Starts the balance process
   """
-  @spec start_link(args :: any()) :: {:ok, pid}
-  def start_link(args) do
+  @spec start_link(
+          trading_paths :: list(list(TradingSymbol.t())),
+          commission :: Decimal.t(),
+          relative_asset_values :: map()
+        ) :: {:ok, pid}
+  def start_link(trading_paths, commission, relative_asset_values) do
     Logger.info("Starting engine")
 
     GenServer.start_link(
       Server,
-      args,
+      {trading_paths, commission, relative_asset_values},
       name: __MODULE__
     )
+  end
+
+  def child_spec(args) do
+    %{
+      id: __MODULE__,
+      start: {__MODULE__, :start_link, args}
+    }
   end
 
   @doc """

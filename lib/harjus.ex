@@ -31,9 +31,6 @@ defmodule Harjus do
 
     children =
       [
-        # Starts a worker by calling: HelloWorld.Worker.start_link(arg)
-        # {HelloWorld.Worker, arg}
-
         # processes are started in order
 
         # erlang VM telemetry poller
@@ -56,26 +53,39 @@ defmodule Harjus do
         end,
 
         # streamer (slowest to start, thus restart the least)
-        {PriceStreamer, symbol_list},
+        # TODO: add back in
+        # {PriceStreamer, symbol_list},
 
         # supervisor for looking after trade execution tasks
         # if this crashes, balance and reservedsymbols may be incorrect, thus must be restarted too
-        {Task.Supervisor, name: TraderSupervisor, max_restarts: 0},
+        # TODO: add back in
+        # {Task.Supervisor, name: TraderSupervisor, max_restarts: 0},
 
         # utilities
-        {Balance, []},
-        {ReservedSymbols, []},
+        # TODO: add back in
+        # {Balance, []},
+        # {ReservedSymbols, []},
 
         # trade client
-        {TradeClient, []},
+        # TODO: add back in
+        # {TradeClient, []},
 
-        # the pipeline
-        {Pipeline,
+        # engine
+        {Engine,
          [
            trading_paths,
            Application.fetch_env!(:harjus, :commission),
            MarketData.relative_values(market_data, "BTC")
          ]}
+
+        # the pipeline
+        # TODO: add back in
+        # {Pipeline,
+        #  [
+        #    trading_paths,
+        #    Application.fetch_env!(:harjus, :commission),
+        #    MarketData.relative_values(market_data, "BTC")
+        #  ]}
       ]
 
     # if a child process terminates, the terminated child process

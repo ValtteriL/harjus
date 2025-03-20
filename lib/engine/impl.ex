@@ -3,13 +3,22 @@ defmodule Engine.Impl do
   Implementation of the engine
   """
 
-  def new(_trading_paths, _commission, _relative_asset_values) do
-    # get commission from env instead?
+  def new(trading_paths, commission, relative_asset_values) do
     port =
       Port.open(
         {:spawn, Application.get_env(:harjus, :path_to_port)},
         [:binary]
       )
+
+    parameters = %{
+      trading_paths: trading_paths,
+      commission: commission,
+      relative_asset_values: relative_asset_values
+    }
+
+    # send parameters to port
+    send(port, {self(), {:command, Jason.encode!(parameters)}})
+    send(port, {self(), {:command, "\n"}})
 
     %{port: port}
   end
