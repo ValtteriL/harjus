@@ -14,6 +14,9 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 
 add_executable(harjus-port
   main.cpp
+  engine.h
+  plannedexecution.h
+  tradingsymbol.h
 )
 target_link_libraries(harjus-port Qt${QT_VERSION_MAJOR}::Core)
 
