@@ -101,7 +101,7 @@ QList<PlannedExecution> Engine::priceUpdate(const QJsonObject &json)
 
   // reject unprofitable
   updatedExecutions.removeIf([](const PlannedExecution &execution)
-                             { return execution.totalProfit() < 0; });
+                             { return execution.totalProfit() <= 0; });
 
   // sort by total profit
   std::sort(updatedExecutions.begin(), updatedExecutions.end(), [](const PlannedExecution &a, const PlannedExecution &b)
