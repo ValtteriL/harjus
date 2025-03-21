@@ -1,3 +1,5 @@
+#pragma once
+
 #include <QMultiHash>
 #include <QList>
 #include <QHash>

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <QList>
 #include <QJsonObject>
 #include "tradingsymbol.h"
