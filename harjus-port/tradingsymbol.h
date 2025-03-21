@@ -7,6 +7,8 @@
 class TradingSymbol
 {
 public:
+  TradingSymbol(QString symbol, Position position, QString base_asset, QString quote_asset, double baseAssetIncrement, int baseAssetPrecision, double quoteAssetIncrement, int quoteAssetPrecision, double minNotional)
+      : mSymbol(symbol), mPosition(position), base_asset(base_asset), quote_asset(quote_asset), mBaseAssetIncrement(baseAssetIncrement), mBaseAssetPrecision(baseAssetPrecision), mQuoteAssetIncrement(quoteAssetIncrement), mQuoteAssetPrecision(quoteAssetPrecision), mMinNotional(minNotional) {}
   QJsonObject toJson() const;
   static TradingSymbol fromJson(const QJsonObject &json);
   double price() const { return *mPrice; }
@@ -29,7 +31,9 @@ private:
   double mQuoteAssetIncrement;
   int mQuoteAssetPrecision;
   double mMinNotional;
-  double *mPrice;
-  double mQty;
-  double *mMaxQty;
+  double *mPrice = nullptr;
+  double mQty = 0;
+  double *mMaxQty = nullptr;
 };
+
+QJsonValue get_from_json(const QJsonObject &json, const QString &key);

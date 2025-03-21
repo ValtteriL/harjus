@@ -1,26 +1,12 @@
 #include "engine.h"
+#include "tradingsymbol.h"
 
 Engine Engine::fromJson(const QJsonObject &json)
 {
-  double commission;
-  QJsonObject relativeAssetValues;
-  QJsonArray tradingPaths;
-
   // get values from json
-  if (const QJsonValue v = json["commission"]; v.isDouble())
-    commission = v.toDouble();
-  else
-    throw std::runtime_error("commission is not a double");
-
-  if (const QJsonValue v = json["relative_asset_values"]; v.isObject())
-    relativeAssetValues = v.toObject();
-  else
-    throw std::runtime_error("relative_asset_values is not an object");
-
-  if (const QJsonValue v = json["trading_paths"]; v.isArray())
-    tradingPaths = v.toArray();
-  else
-    throw std::runtime_error("trading_paths is not an array");
+  double commission = get_from_json(json, "commission").toDouble();
+  QJsonObject relativeAssetValues = get_from_json(json, "relative_asset_values").toObject();
+  QJsonArray tradingPaths = get_from_json(json, "trading_paths").toArray();
 
   // Convert relativeAssetValues to a QHash<QString, double>
   QHash<QString, double> relativePrices;
@@ -71,6 +57,10 @@ Engine Engine::fromJson(const QJsonObject &json)
 
       tradingSymbolsList.append(ts);
     }
+
+    // throw if tradingSymbolsList is empty
+    if (tradingSymbolsList.isEmpty())
+      throw std::runtime_error("tradingSymbolsList is empty");
 
     // create PlannedExecution
     auto usedAsset = tradingSymbolsList.first().usedAsset();
