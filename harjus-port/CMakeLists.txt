@@ -19,6 +19,7 @@ add_executable(harjus-port
   engine.cpp
   engine.h
   plannedexecution.h
+  plannedexecution.cpp
   tradingsymbol.h
   tradingsymbol.cpp
   offer.h
@@ -48,6 +49,8 @@ add_executable(testengine
   engine.h
   tradingsymbol.h
   tradingsymbol.cpp
+  plannedexecution.h
+  plannedexecution.cpp
 )
 target_link_libraries(testengine PUBLIC
   Qt${QT_VERSION_MAJOR}::Core

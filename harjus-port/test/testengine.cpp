@@ -11,12 +11,13 @@ class TestEngine : public QObject
 {
   Q_OBJECT
 private slots:
-  void fromJson();
+  void fromJson_update();
 };
 
-void TestEngine::fromJson()
+void TestEngine::fromJson_update()
 {
-  QByteArray json = R"(
+  QString symbol = "ETHBTC";
+  QString jsonStr = R"(
   {
     "commission": 0.001,
     "relative_asset_values": {
@@ -36,7 +37,7 @@ void TestEngine::fromJson()
         "quote_asset": "BTC",
         "quote_asset_increment": "0.00000001",
         "quote_asset_precision": 8,
-        "symbol": "ETHBTC"
+        "symbol": "%1"
       }
     ],
     [
@@ -51,7 +52,7 @@ void TestEngine::fromJson()
         "quote_asset": "BTC",
         "quote_asset_increment": "0.00000001",
         "quote_asset_precision": 8,
-        "symbol": "ETHBTC"
+        "symbol": "BTCUSDT"
       },
       {
         "base_asset": "DOGE",
@@ -64,15 +65,33 @@ void TestEngine::fromJson()
         "quote_asset": "SOL",
         "quote_asset_increment": "0.00000001",
         "quote_asset_precision": 8,
-        "symbol": "ETHBTC"
+        "symbol": "%1"
       }
     ]
     ]
   }
   )";
-  Engine engine = Engine::fromJson(QJsonDocument::fromJson(json).object());
 
-  QCOMPARE(1, 1);
+  QByteArray json = jsonStr.arg(symbol).toUtf8();
+  auto engine = Engine::fromJson(QJsonDocument::fromJson(json).object());
+
+  QString priceUpdateStr = R"(
+    {
+      "s": "%1",
+      "b": "0.00000001",
+      "B": "1.0",
+      "a": "0.00000001",
+      "A": "1.0"
+    }
+  )";
+
+  QByteArray priceUpdateJson = priceUpdateStr.arg(symbol).toUtf8();
+
+  auto opportunities = engine.priceUpdate(QJsonDocument::fromJson(priceUpdateJson).object());
+
+  // no opportunities with positive profit should be found
+  // as default profit is 0 and no update has been implemented
+  QCOMPARE(opportunities.size(), 0);
 }
 
 QTEST_MAIN(TestEngine)
