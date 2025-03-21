@@ -24,11 +24,21 @@ void TestEngine::fromJson()
       "ETH": 0.5
     },
     "trading_paths": [
+    [
       {
-        "from": "BTC",
-        "to": "ETH",
-        "fee": 0.002
+        "base_asset": "ETH",
+        "base_asset_increment": "0.00000001",
+        "base_asset_precision": 8,
+        "min_notional": "1.0",
+        "position": "long",
+        "price": "0",
+        "qty": "0",
+        "quote_asset": "BTC",
+        "quote_asset_increment": "0.00000001",
+        "quote_asset_precision": 8,
+        "symbol": "ETHBTC"
       }
+    ]
     ]
   }
   )";
