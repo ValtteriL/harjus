@@ -14,7 +14,8 @@
     "html-eex": "html"
   },
   "files.associations": {
-    "*.heex": "phoenix-heex"
+    "*.heex": "phoenix-heex",
+    "qmultihash": "cpp"
   },
   "elixirLS.suggestSpecs": false,
   "elixirLS.mixEnv": "dev",
