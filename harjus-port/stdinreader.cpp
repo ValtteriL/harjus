@@ -2,6 +2,19 @@
 #include <iostream>
 #include <QTextStream>
 #include <QCoreApplication>
+#include <QJsonDocument>
+
+QJsonObject readJson()
+{
+  QTextStream in(stdin);
+  QString input = in.readLine();
+  return QJsonDocument::fromJson(input.toUtf8()).object();
+}
+
+StdinReader::StdinReader() : QObject(nullptr), m_notifier(new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this)), m_engine(Engine::fromJson(readJson()))
+{
+  connect(m_notifier, &QSocketNotifier::activated, this, &StdinReader::handleReadyRead);
+}
 
 void StdinReader::handleReadyRead()
 {

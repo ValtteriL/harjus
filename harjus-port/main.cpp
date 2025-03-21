@@ -7,9 +7,6 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a{argc, argv};
-
-    // TODO: read trading paths here
-
     StdinReader reader;
     return a.exec();
 }
