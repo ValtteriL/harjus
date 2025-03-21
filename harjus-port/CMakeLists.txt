@@ -14,6 +14,8 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 
 add_executable(harjus-port
   main.cpp
+  stdinreader.cpp
+  stdinreader.h
   engine.cpp
   engine.h
   plannedexecution.h

@@ -2,35 +2,7 @@
 #include <iostream>
 #include <QSocketNotifier>
 #include <QTextStream>
-
-// object for reading stdin and reacting to input
-class StdinReader : public QObject
-{
-public:
-    StdinReader() : QObject(nullptr), m_notifier(new QSocketNotifier(fileno(stdin), QSocketNotifier::Read, this))
-    {
-        connect(m_notifier, &QSocketNotifier::activated, this, &StdinReader::handleReadyRead);
-    }
-
-private slots:
-    void handleReadyRead()
-    {
-        QTextStream in(stdin);
-        QString input = in.readLine();
-
-        // quit if stdin closed
-        if (input.isNull())
-        {
-            QCoreApplication::quit();
-            return;
-        }
-        std::cout << "Input received: " << input.toStdString() << std::endl;
-        // TODO: process price updates here
-    }
-
-private:
-    QSocketNotifier *m_notifier;
-};
+#include "stdinreader.h"
 
 int main(int argc, char *argv[])
 {
