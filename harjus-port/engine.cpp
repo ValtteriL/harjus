@@ -75,3 +75,36 @@ Engine Engine::fromJson(const QJsonObject &json)
 
   return Engine{symbolToPlannedExecutions, symbolToOffer};
 }
+
+QList<PlannedExecution> Engine::priceUpdate(const QJsonObject &json)
+{
+  QString symbol = get_from_json(json, "s").toString();
+  auto askPrice = get_from_json(json, "a").toDouble();
+  auto bidPrice = get_from_json(json, "b").toDouble();
+  auto askQty = get_from_json(json, "A").toDouble();
+  auto bidQty = get_from_json(json, "B").toDouble();
+
+  // update existing offer for symbol
+  auto offer = mSymbolToOffer.value(symbol);
+  offer.askPrice = askPrice;
+  offer.bidPrice = bidPrice;
+  offer.askQty = askQty;
+  offer.bidQty = bidQty;
+
+  // update all planned executions that use this symbol
+  QList<PlannedExecution> updatedExecutions = mSymbolToPlannedExecutions.values(symbol);
+  for (auto &execution : updatedExecutions)
+  {
+    execution.update();
+  }
+
+  // reject unprofitable
+  updatedExecutions.removeIf([](const PlannedExecution &execution)
+                             { return execution.totalProfit() < 0; });
+
+  // sort by total profit
+  std::sort(updatedExecutions.begin(), updatedExecutions.end(), [](const PlannedExecution &a, const PlannedExecution &b)
+            { return a.totalProfit() > b.totalProfit(); });
+
+  return updatedExecutions;
+}

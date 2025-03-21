@@ -11,7 +11,7 @@ class Engine
 public:
   static Engine fromJson(const QJsonObject &json);
   Engine(QMultiHash<QString, PlannedExecution> symbolToPlannedExecutions, QHash<QString, Offer> symbolToOffer) : mSymbolToPlannedExecutions(symbolToPlannedExecutions), mSymbolToOffer(symbolToOffer) {};
-  QList<PlannedExecution> priceUpdate(const QString &symbol, double bidPrice, double bidQty, double askPrice, double askQty);
+  QList<PlannedExecution> priceUpdate(const QJsonObject &json);
 
 private:
   QMultiHash<QString, PlannedExecution> mSymbolToPlannedExecutions;
