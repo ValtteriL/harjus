@@ -38,6 +38,34 @@ void TestEngine::fromJson()
         "quote_asset_precision": 8,
         "symbol": "ETHBTC"
       }
+    ],
+    [
+      {
+        "base_asset": "ETH",
+        "base_asset_increment": "0.00000001",
+        "base_asset_precision": 8,
+        "min_notional": "1.0",
+        "position": "long",
+        "price": "0",
+        "qty": "0",
+        "quote_asset": "BTC",
+        "quote_asset_increment": "0.00000001",
+        "quote_asset_precision": 8,
+        "symbol": "ETHBTC"
+      },
+      {
+        "base_asset": "DOGE",
+        "base_asset_increment": "0.00000001",
+        "base_asset_precision": 8,
+        "min_notional": "1.0",
+        "position": "long",
+        "price": "0",
+        "qty": "0",
+        "quote_asset": "SOL",
+        "quote_asset_increment": "0.00000001",
+        "quote_asset_precision": 8,
+        "symbol": "ETHBTC"
+      }
     ]
     ]
   }
