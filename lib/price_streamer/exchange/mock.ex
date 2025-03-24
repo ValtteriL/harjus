@@ -21,12 +21,15 @@ defmodule PriceStreamer.Exchange.Mock do
 
     bid_price = ask_price - 1
 
-    Pipeline.price_update(
-      symbol,
-      Decimal.new(ask_price),
-      Decimal.new(ask_qty),
-      Decimal.new(bid_price),
-      Decimal.new(bid_qty)
+    Engine.price_update(
+      Jason.encode!(%{
+        u: 123_456_789,
+        s: symbol,
+        a: Decimal.new(ask_price),
+        A: Decimal.new(ask_qty),
+        b: Decimal.new(bid_price),
+        B: Decimal.new(bid_qty)
+      })
     )
 
     :timer.sleep(1000)

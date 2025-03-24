@@ -34,14 +34,8 @@ defmodule PriceStreamer.Exchange.Binance.SpotStream do
             {:sub_ack}
 
           has_keys?(message, ["u", "s", "b", "B", "a", "A"]) ->
-            symbol = message["s"]
-            best_ask_price = Decimal.new(message["a"])
-            best_ask_qty = Decimal.new(message["A"])
-            best_bid_price = Decimal.new(message["b"])
-            best_bid_qty = Decimal.new(message["B"])
-
-            {:book_ticker_update,
-             {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}}
+            # book ticker update
+            {:book_ticker_update, msg}
 
           true ->
             {:unknown, message}

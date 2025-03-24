@@ -57,15 +57,8 @@ defmodule PriceStreamer.Exchange.Binance do
         Logger.debug("Websocket subscribtion acknowledged")
         :ok
 
-      {:book_ticker_update, {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}} ->
-        Pipeline.price_update(
-          symbol,
-          best_ask_price,
-          best_ask_qty,
-          best_bid_price,
-          best_bid_qty
-        )
-
+      {:book_ticker_update, update} ->
+        Engine.price_update(update)
         :ok
 
       {:unknown, message} ->
