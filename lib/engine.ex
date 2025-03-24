@@ -6,6 +6,7 @@ defmodule Engine do
 
   # alias Engine.Impl
   alias Engine.Server
+  alias Types.TradingSymbol
 
   require Logger
 

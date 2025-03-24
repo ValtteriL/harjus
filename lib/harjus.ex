@@ -53,22 +53,18 @@ defmodule Harjus do
         end,
 
         # streamer (slowest to start, thus restart the least)
-        # TODO: add back in
-        # {PriceStreamer, symbol_list},
+        {PriceStreamer, symbol_list},
 
         # supervisor for looking after trade execution tasks
         # if this crashes, balance and reservedsymbols may be incorrect, thus must be restarted too
-        # TODO: add back in
-        # {Task.Supervisor, name: TraderSupervisor, max_restarts: 0},
+        {Task.Supervisor, name: TraderSupervisor, max_restarts: 0},
 
         # utilities
-        # TODO: add back in
-        # {Balance, []},
-        # {ReservedSymbols, []},
+        {Balance, []},
+        {ReservedSymbols, []},
 
         # trade client
-        # TODO: add back in
-        # {TradeClient, []},
+        {TradeClient, []},
 
         # engine
         {Engine,
@@ -76,16 +72,15 @@ defmodule Harjus do
            trading_paths,
            Application.fetch_env!(:harjus, :commission),
            MarketData.relative_values(market_data, "BTC")
-         ]}
+         ]},
 
         # the pipeline
-        # TODO: add back in
-        # {Pipeline,
-        #  [
-        #    trading_paths,
-        #    Application.fetch_env!(:harjus, :commission),
-        #    MarketData.relative_values(market_data, "BTC")
-        #  ]}
+        {Pipeline,
+         [
+           trading_paths,
+           Application.fetch_env!(:harjus, :commission),
+           MarketData.relative_values(market_data, "BTC")
+         ]}
       ]
 
     # if a child process terminates, the terminated child process

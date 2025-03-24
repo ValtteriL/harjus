@@ -18,9 +18,7 @@ defmodule PriceStreamer.Exchange.Binance.SpotStream do
   @spec parse_message(msg :: String.t()) ::
           {:error, any()}
           | {:sub_ack}
-          | {:book_ticker_update,
-             {symbol :: String.t(), best_ask_price :: Decimal.t(), best_ask_qty :: Decimal.t(),
-              best_bid_price :: Decimal.t(), best_bid_qty :: Decimal.t()}}
+          | {:book_ticker_update, msg :: String.t()}
           | {:unknown, map()}
   def parse_message(msg) do
     case Poison.decode(msg) do
