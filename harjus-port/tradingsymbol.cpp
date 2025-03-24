@@ -1,4 +1,5 @@
 #include "tradingsymbol.h"
+#include <string.h>
 
 /*
       {
@@ -22,6 +23,11 @@ QJsonValue get_from_json(const QJsonObject &json, const QString &key)
     return v;
   else
     throw std::runtime_error(key.toStdString() + " is not defined");
+}
+
+double get_double_from_json(const QJsonObject &json, const QString &key)
+{
+  return std::stod(get_from_json(json, key).toString().toStdString());
 }
 
 QJsonObject TradingSymbol::toJson() const
@@ -49,10 +55,10 @@ TradingSymbol TradingSymbol::fromJson(const QJsonObject &json)
   QString quoteAsset = get_from_json(json, "quote_asset").toString();
   QString symbol = get_from_json(json, "symbol").toString();
   QString position = get_from_json(json, "position").toString();
-  double baseAssetIncrement = get_from_json(json, "base_asset_increment").toDouble();
+  double baseAssetIncrement = get_double_from_json(json, "base_asset_increment");
   int baseAssetPrecision = get_from_json(json, "base_asset_precision").toInt();
-  double minNotional = get_from_json(json, "min_notional").toDouble();
-  double quoteAssetIncrement = get_from_json(json, "quote_asset_increment").toDouble();
+  double minNotional = get_double_from_json(json, "min_notional");
+  double quoteAssetIncrement = get_double_from_json(json, "quote_asset_increment");
   int quoteAssetPrecision = get_from_json(json, "quote_asset_precision").toInt();
 
   Position pos = position == "long" ? Position::LONG : Position::SHORT;
