@@ -51,3 +51,17 @@ QJsonObject PlannedExecution::toJson() const
 
   return json;
 }
+
+double capacity(std::vector<TradingSymbol> trades)
+{
+  auto maxCap = std::numeric_limits<double>::max();
+  for (auto &ts : trades)
+  {
+    if (ts.position() == Position::LONG)
+      maxCap = std::min(maxCap, ts.maxQty() * ts.price());
+    else
+      maxCap = std::min(maxCap, ts.maxQty());
+  }
+
+  return maxCap;
+}
