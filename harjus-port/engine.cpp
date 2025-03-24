@@ -79,13 +79,18 @@ Engine Engine::fromJson(const QJsonObject &json)
   return Engine{symbolToPlannedExecutions, symbolToOffer};
 }
 
+double get_double_from_json(const QJsonObject &json, const QString &key)
+{
+  return std::stod(get_from_json(json, key).toString().toStdString());
+}
+
 QList<PlannedExecution> Engine::priceUpdate(const QJsonObject &json)
 {
   QString symbol = get_from_json(json, "s").toString();
-  auto askPrice = get_from_json(json, "a").toDouble();
-  auto bidPrice = get_from_json(json, "b").toDouble();
-  auto askQty = get_from_json(json, "A").toDouble();
-  auto bidQty = get_from_json(json, "B").toDouble();
+  auto askPrice = get_double_from_json(json, "a");
+  auto bidPrice = get_double_from_json(json, "b");
+  auto askQty = get_double_from_json(json, "A");
+  auto bidQty = get_double_from_json(json, "B");
 
   // update existing offer for symbol
   auto &offer = mSymbolToOffer[symbol];

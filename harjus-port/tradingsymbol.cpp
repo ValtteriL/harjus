@@ -1,5 +1,5 @@
 #include "tradingsymbol.h"
-#include <string.h>
+#include "engine.h"
 
 /*
       {
@@ -23,11 +23,6 @@ QJsonValue get_from_json(const QJsonObject &json, const QString &key)
     return v;
   else
     throw std::runtime_error(key.toStdString() + " is not defined");
-}
-
-double get_double_from_json(const QJsonObject &json, const QString &key)
-{
-  return std::stod(get_from_json(json, key).toString().toStdString());
 }
 
 QJsonObject TradingSymbol::toJson() const
