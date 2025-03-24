@@ -6,7 +6,7 @@
 struct Offer
 {
   double askPrice = 0;
-  double askQty = 1;
+  double askQty = 0;
   double bidPrice = 0;
-  double bidQty = 1;
+  double bidQty = 0;
 };
