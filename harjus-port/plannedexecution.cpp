@@ -1,9 +1,32 @@
 #include "plannedexecution.h"
 #include <QJsonArray>
+#include <cmath>
 
 void PlannedExecution::update()
 {
-  // TODO
+  // calculate capacity
+  auto cap = capacity(mTrades);
+
+  // update quantitities
+  auto lastcap = cap;
+  for (auto &ts : mTrades)
+  {
+    if (ts.position() == Position::LONG)
+      lastcap = ts.setQtyUpto(lastcap / ts.price());
+    else
+      lastcap = ts.setQtyUpto(lastcap);
+  }
+
+  // calculate total profit
+  // total commission = start_balance * (1 + commission)^n - start_balance
+  // profit = end_balance - start_balance - commission
+  // total_profit = profit * relative_price
+  auto startBalance = mTrades.front().usedAmount();
+  auto endBalance = mTrades.back().receiveivedAmount();
+
+  auto totalCommission = startBalance * std::pow((1 + mCommission), mTrades.size()) - startBalance;
+  auto profit = endBalance - startBalance - totalCommission;
+  mTotalProfit = profit * mRelativePrice;
 }
 
 /*

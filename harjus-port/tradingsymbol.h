@@ -20,6 +20,8 @@ public:
   double setQtyUpto(double qty); // TODO: take into account minNotional, increments, precisions. Return the actual qty set.
   Position position() const { return mPosition; }
   QString usedAsset() const { return mPosition == Position::LONG ? quote_asset : base_asset; }
+  double receiveivedAmount() const { return mPosition == Position::LONG ? mQty : mQty * *mPrice; }
+  double usedAmount() const { return mPosition == Position::LONG ? mQty * *mPrice : mQty; }
 
 private:
   QString mSymbol;
