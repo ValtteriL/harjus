@@ -17,6 +17,9 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 # Optimize debug builds for speed
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")
 
+# Optimize release builds for performance and link statically
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -static")
+
 add_executable(harjus-port
   main.cpp
   stdinreader.cpp
