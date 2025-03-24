@@ -65,7 +65,8 @@ Engine Engine::fromJson(const QJsonObject &json)
 
     // create PlannedExecution
     auto usedAsset = tradingSymbolsList.at(0).usedAsset();
-    PlannedExecution execution{tradingSymbolsList, relativePrices[usedAsset], commission};
+    auto relativeValue = relativePrices.value(usedAsset, 0.000001); // very low value if not found
+    PlannedExecution execution{tradingSymbolsList, relativeValue, commission};
 
     // make all symbols on path point to the same PlannedExecution
     for (const auto &tradingSymbol : tradingSymbolsList)
