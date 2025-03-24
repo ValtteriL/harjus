@@ -5,6 +5,7 @@ defmodule Pipeline.Impl do
 
   alias Pipeline.ExecutionPlanner
   alias Pipeline.PricingTable
+  alias Types.PlannedExecution
   alias Types.TradingSymbol
 
   @spec new(
@@ -20,6 +21,12 @@ defmodule Pipeline.Impl do
       commission_percentage: commission_percentage,
       relative_asset_values: relative_asset_values
     }
+  end
+
+  @spec handle_opportunities(state :: any(), opportunities :: [PlannedExecution.t()]) :: any()
+  def handle_opportunities(state = %{pricing_table: pricing_table}, opportunities) do
+    # TODO
+    state
   end
 
   @spec price_update(state :: any(), update :: tuple()) :: any()

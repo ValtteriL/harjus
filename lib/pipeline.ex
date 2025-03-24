@@ -4,6 +4,7 @@ defmodule Pipeline do
   """
 
   alias Pipeline.Server
+  alias Types.PlannedExecution
   alias Types.TradingSymbol
 
   require Decimal
@@ -33,16 +34,10 @@ defmodule Pipeline do
   end
 
   @doc """
-  Send price update to pipeline
+  Handle opportunities
   """
-  @spec price_update(
-          symbol :: String.t(),
-          ask_price :: Decimal.t(),
-          ask_qty :: Decimal.t(),
-          bid_price :: Decimal.t(),
-          bid_qty :: Decimal.t()
-        ) :: :ok
-  def price_update(symbol, ask_price, ask_qty, bid_price, bid_qty) do
-    GenServer.cast(__MODULE__, {:price_update, {symbol, ask_price, ask_qty, bid_price, bid_qty}})
+  @spec handle_opportunities(opportunities :: list(PlannedExecution.t())) :: :ok
+  def handle_opportunities(opportunities) do
+    GenServer.cast(__MODULE__, {:handle_opportunities, opportunities})
   end
 end

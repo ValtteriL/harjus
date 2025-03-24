@@ -28,4 +28,16 @@ defmodule Engine.Impl do
     send(port, {self(), {:command, "\n"}})
     state
   end
+
+  # decode, relay opportunities to pipeline
+  def relay_opportunities(state, msg) do
+    opportunities = decode_opportunities(msg)
+    Pipeline.handle_opportunities(opportunities)
+    state
+  end
+
+  defp decode_opportunities(msg) do
+    # TODO
+    :ok
+  end
 end

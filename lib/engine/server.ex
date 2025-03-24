@@ -18,10 +18,9 @@ defmodule Engine.Server do
     {:noreply, Impl.price_update(state, update)}
   end
 
-  # print out response from port
+  # handle responses from port
   @impl GenServer
   def handle_info({_port, {:data, msg}}, state) do
-    Logger.debug("Eixir received from port: #{msg}")
-    {:noreply, state}
+    {:noreply, Impl.relay_opportunities(state, msg)}
   end
 end
