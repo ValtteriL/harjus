@@ -15,7 +15,9 @@
   },
   "files.associations": {
     "*.heex": "phoenix-heex",
-    "qmultihash": "cpp"
+    "qmultihash": "cpp",
+    "array": "cpp",
+    "vector": "cpp"
   },
   "elixirLS.suggestSpecs": false,
   "elixirLS.mixEnv": "dev",

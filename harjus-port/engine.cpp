@@ -40,7 +40,7 @@ Engine Engine::fromJson(const QJsonObject &json)
   {
     // convert tradingSymbols in JSON to QList<TradingSymbol>
     auto tradingSymbols = path.toArray();
-    QList<TradingSymbol> tradingSymbolsList;
+    std::vector<TradingSymbol> tradingSymbolsList;
     for (const auto &tradingSymbol : tradingSymbols)
     {
       auto obj = tradingSymbol.toObject();
@@ -56,15 +56,15 @@ Engine Engine::fromJson(const QJsonObject &json)
       ts.setMaxQty(maxQtyReference);
       ts.setPrice(priceReference);
 
-      tradingSymbolsList.append(ts);
+      tradingSymbolsList.push_back(ts);
     }
 
     // throw if tradingSymbolsList is empty
-    if (tradingSymbolsList.isEmpty())
+    if (tradingSymbolsList.size() == 0)
       throw std::runtime_error("tradingSymbolsList is empty");
 
     // create PlannedExecution
-    auto usedAsset = tradingSymbolsList.first().usedAsset();
+    auto usedAsset = tradingSymbolsList.at(0).usedAsset();
     PlannedExecution execution{tradingSymbolsList, relativePrices[usedAsset], commission};
 
     // make all symbols on path point to the same PlannedExecution
