@@ -49,8 +49,6 @@ TradingSymbol TradingSymbol::fromJson(const QJsonObject &json)
   QString quoteAsset = get_from_json(json, "quote_asset").toString();
   QString symbol = get_from_json(json, "symbol").toString();
   QString position = get_from_json(json, "position").toString();
-  double price = get_from_json(json, "price").toDouble();
-  double qty = get_from_json(json, "qty").toDouble();
   double baseAssetIncrement = get_from_json(json, "base_asset_increment").toDouble();
   int baseAssetPrecision = get_from_json(json, "base_asset_precision").toInt();
   double minNotional = get_from_json(json, "min_notional").toDouble();
