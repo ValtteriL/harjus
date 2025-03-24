@@ -7,35 +7,35 @@
 class TradingSymbol
 {
 public:
-  TradingSymbol(QString symbol, Position position, QString base_asset, QString quote_asset, double baseAssetIncrement, int baseAssetPrecision, double quoteAssetIncrement, int quoteAssetPrecision, double minNotional)
+  TradingSymbol(QString symbol, Position position, QString base_asset, QString quote_asset, long double baseAssetIncrement, int baseAssetPrecision, long double quoteAssetIncrement, int quoteAssetPrecision, long double minNotional)
       : mSymbol{symbol}, mPosition{position}, base_asset{base_asset}, quote_asset{quote_asset}, mBaseAssetIncrement{baseAssetIncrement}, mBaseAssetPrecision{baseAssetPrecision}, mQuoteAssetIncrement{quoteAssetIncrement}, mQuoteAssetPrecision{quoteAssetPrecision}, mMinNotional{minNotional} {}
   QJsonObject toJson() const;
   static TradingSymbol fromJson(const QJsonObject &json);
-  double price() const { return *mPrice; }
-  double qty() const { return mQty; }
+  long double price() const { return *mPrice; }
+  long double qty() const { return mQty; }
   QString symbol() const { return mSymbol; }
-  double maxQty() const { return *mMaxQty; }
-  void setPrice(double &price) { mPrice = &price; }
-  void setMaxQty(double &qty) { mMaxQty = &qty; }
-  double setQtyUpto(double qty);
+  long double maxQty() const { return *mMaxQty; }
+  void setPrice(long double &price) { mPrice = &price; }
+  void setMaxQty(long double &qty) { mMaxQty = &qty; }
+  long double setQtyUpto(long double qty);
   Position position() const { return mPosition; }
   QString usedAsset() const { return mPosition == Position::LONG ? quote_asset : base_asset; }
-  double receiveivedAmount() const { return mPosition == Position::LONG ? mQty : mQty * *mPrice; }
-  double usedAmount() const { return mPosition == Position::LONG ? mQty * *mPrice : mQty; }
+  long double receiveivedAmount() const { return mPosition == Position::LONG ? mQty : mQty * *mPrice; }
+  long double usedAmount() const { return mPosition == Position::LONG ? mQty * *mPrice : mQty; }
 
 private:
   QString mSymbol;
   Position mPosition;
   QString base_asset;
   QString quote_asset;
-  double mBaseAssetIncrement;
+  long double mBaseAssetIncrement;
   int mBaseAssetPrecision;
-  double mQuoteAssetIncrement;
+  long double mQuoteAssetIncrement;
   int mQuoteAssetPrecision;
-  double mMinNotional;
-  double *mPrice = nullptr;
-  double mQty = 0;
-  double *mMaxQty = nullptr;
+  long double mMinNotional;
+  long double *mPrice = nullptr;
+  long double mQty = 0;
+  long double *mMaxQty = nullptr;
 };
 
 QJsonValue get_from_json(const QJsonObject &json, const QString &key);

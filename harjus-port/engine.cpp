@@ -6,15 +6,15 @@
 Engine Engine::fromJson(const QJsonObject &json)
 {
   // get values from json
-  double commission = std::stod(get_from_json(json, "commission").toString().toStdString());
+  long double commission = std::stold(get_from_json(json, "commission").toString().toStdString());
   QJsonObject relativeAssetValues = get_from_json(json, "relative_asset_values").toObject();
   QJsonArray tradingPaths = get_from_json(json, "trading_paths").toArray();
 
-  // Convert relativeAssetValues to a QHash<QString, double>
-  QHash<QString, double> relativePrices;
+  // Convert relativeAssetValues to a QHash<QString, long double>
+  QHash<QString, long double> relativePrices;
   for (const auto &key : relativeAssetValues.keys())
   {
-    relativePrices[key] = std::stod(relativeAssetValues[key].toString().toStdString());
+    relativePrices[key] = std::stold(relativeAssetValues[key].toString().toStdString());
   }
 
   QHash<QString, Offer> symbolToOffer;
@@ -50,8 +50,8 @@ Engine Engine::fromJson(const QJsonObject &json)
 
       QString symbol = obj["symbol"].toString();
 
-      double &priceReference = ts.position() == Position::LONG ? symbolToOffer[symbol].askPrice : symbolToOffer[symbol].bidPrice;
-      double &maxQtyReference = ts.position() == Position::LONG ? symbolToOffer[symbol].askQty : symbolToOffer[symbol].bidQty;
+      long double &priceReference = ts.position() == Position::LONG ? symbolToOffer[symbol].askPrice : symbolToOffer[symbol].bidPrice;
+      long double &maxQtyReference = ts.position() == Position::LONG ? symbolToOffer[symbol].askQty : symbolToOffer[symbol].bidQty;
 
       // set price and maxQty
       ts.setMaxQty(maxQtyReference);
@@ -79,9 +79,9 @@ Engine Engine::fromJson(const QJsonObject &json)
   return Engine{symbolToPlannedExecutions, symbolToOffer};
 }
 
-double get_double_from_json(const QJsonObject &json, const QString &key)
+long double get_double_from_json(const QJsonObject &json, const QString &key)
 {
-  return std::stod(get_from_json(json, key).toString().toStdString());
+  return std::stold(get_from_json(json, key).toString().toStdString());
 }
 
 QList<PlannedExecution> Engine::priceUpdate(const QJsonObject &json)

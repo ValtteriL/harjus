@@ -2,9 +2,9 @@
 #include <QJsonArray>
 #include <cmath>
 
-double capacity(std::vector<TradingSymbol> trades)
+long double capacity(std::vector<TradingSymbol> trades)
 {
-  auto maxCap = std::numeric_limits<double>::max();
+  auto maxCap = std::numeric_limits<long double>::max();
   for (auto &ts : trades)
   {
     if (ts.position() == Position::LONG)
@@ -56,7 +56,7 @@ QJsonObject PlannedExecution::toJson() const
 {
   QJsonObject json;
 
-  json["total_profit"] = mTotalProfit;
+  json["total_profit"] = static_cast<double>(mTotalProfit);
 
   QJsonArray tradeArray;
   for (const TradingSymbol &ts : mTrades)

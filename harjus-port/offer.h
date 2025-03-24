@@ -5,8 +5,8 @@
 
 struct Offer
 {
-  double askPrice = 0;
-  double askQty = 0;
-  double bidPrice = 0;
-  double bidQty = 0;
+  long double askPrice = 0;
+  long double askQty = 0;
+  long double bidPrice = 0;
+  long double bidQty = 0;
 };

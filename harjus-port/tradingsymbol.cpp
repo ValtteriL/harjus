@@ -33,13 +33,13 @@ QJsonObject TradingSymbol::toJson() const
   json["position"] = mPosition == Position::LONG ? "long" : "short";
   json["base_asset"] = base_asset;
   json["quote_asset"] = quote_asset;
-  json["min_notional"] = mMinNotional;
-  json["base_asset_increment"] = mBaseAssetIncrement;
+  json["min_notional"] = static_cast<double>(mMinNotional);
+  json["base_asset_increment"] = static_cast<double>(mBaseAssetIncrement);
   json["base_asset_precision"] = mBaseAssetPrecision;
-  json["quote_asset_increment"] = mQuoteAssetIncrement;
+  json["quote_asset_increment"] = static_cast<double>(mQuoteAssetIncrement);
   json["quote_asset_precision"] = mQuoteAssetPrecision;
-  json["qty"] = mQty;
-  json["price"] = *mPrice;
+  json["qty"] = static_cast<double>(mQty);
+  json["price"] = static_cast<double>(*mPrice);
 
   return json;
 }
@@ -50,10 +50,10 @@ TradingSymbol TradingSymbol::fromJson(const QJsonObject &json)
   QString quoteAsset = get_from_json(json, "quote_asset").toString();
   QString symbol = get_from_json(json, "symbol").toString();
   QString position = get_from_json(json, "position").toString();
-  double baseAssetIncrement = get_double_from_json(json, "base_asset_increment");
+  long double baseAssetIncrement = get_double_from_json(json, "base_asset_increment");
   int baseAssetPrecision = get_from_json(json, "base_asset_precision").toInt();
-  double minNotional = get_double_from_json(json, "min_notional");
-  double quoteAssetIncrement = get_double_from_json(json, "quote_asset_increment");
+  long double minNotional = get_double_from_json(json, "min_notional");
+  long double quoteAssetIncrement = get_double_from_json(json, "quote_asset_increment");
   int quoteAssetPrecision = get_from_json(json, "quote_asset_precision").toInt();
 
   Position pos = position == "long" ? Position::LONG : Position::SHORT;
@@ -64,7 +64,7 @@ TradingSymbol TradingSymbol::fromJson(const QJsonObject &json)
 // set mQty to the highest quantity upto to the given qty, taking into account minNotional, increments & precision
 // return the actual qty set
 // if set qty would not satisfy minNotional, set qty to 0
-double TradingSymbol::setQtyUpto(double qty)
+long double TradingSymbol::setQtyUpto(long double qty)
 {
   auto maxQty = std::min(*mMaxQty, qty);
 
