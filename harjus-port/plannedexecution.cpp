@@ -2,6 +2,20 @@
 #include <QJsonArray>
 #include <cmath>
 
+double capacity(std::vector<TradingSymbol> trades)
+{
+  auto maxCap = std::numeric_limits<double>::max();
+  for (auto &ts : trades)
+  {
+    if (ts.position() == Position::LONG)
+      maxCap = std::min(maxCap, ts.maxQty() * ts.price());
+    else
+      maxCap = std::min(maxCap, ts.maxQty());
+  }
+
+  return maxCap;
+}
+
 void PlannedExecution::update()
 {
   // calculate capacity
@@ -50,18 +64,4 @@ QJsonObject PlannedExecution::toJson() const
   json["trades"] = tradeArray;
 
   return json;
-}
-
-double capacity(std::vector<TradingSymbol> trades)
-{
-  auto maxCap = std::numeric_limits<double>::max();
-  for (auto &ts : trades)
-  {
-    if (ts.position() == Position::LONG)
-      maxCap = std::min(maxCap, ts.maxQty() * ts.price());
-    else
-      maxCap = std::min(maxCap, ts.maxQty());
-  }
-
-  return maxCap;
 }

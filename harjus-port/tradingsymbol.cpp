@@ -61,3 +61,27 @@ TradingSymbol TradingSymbol::fromJson(const QJsonObject &json)
 
   return TradingSymbol{symbol, pos, baseAsset, quoteAsset, baseAssetIncrement, baseAssetPrecision, quoteAssetIncrement, quoteAssetPrecision, minNotional};
 }
+
+// set mQty to the highest quantity upto to the given qty, taking into account minNotional, increments & precision
+// return the actual qty set
+// if set qty would not satisfy minNotional, set qty to 0
+double TradingSymbol::setQtyUpto(double qty)
+{
+  auto maxQty = std::min(*mMaxQty, qty);
+
+  // make maxQty a multiple of baseAssetIncrement
+  maxQty = std::floor(maxQty / mBaseAssetIncrement) * mBaseAssetIncrement;
+
+  // if minNotional is not satisfied, maxQty = 0
+  if (mPosition == Position::LONG && maxQty < mMinNotional)
+  {
+    maxQty = 0;
+  }
+  else if (mPosition == Position::SHORT && maxQty * *mPrice < mMinNotional)
+  {
+    maxQty = 0;
+  }
+
+  mQty = maxQty;
+  return mQty;
+}

@@ -17,7 +17,7 @@ public:
   double maxQty() const { return *mMaxQty; }
   void setPrice(double &price) { mPrice = &price; }
   void setMaxQty(double &qty) { mMaxQty = &qty; }
-  double setQtyUpto(double qty); // TODO: take into account minNotional, increments, precisions. Return the actual qty set.
+  double setQtyUpto(double qty);
   Position position() const { return mPosition; }
   QString usedAsset() const { return mPosition == Position::LONG ? quote_asset : base_asset; }
   double receiveivedAmount() const { return mPosition == Position::LONG ? mQty : mQty * *mPrice; }
