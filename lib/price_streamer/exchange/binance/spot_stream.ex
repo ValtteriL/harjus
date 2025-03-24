@@ -33,7 +33,9 @@ defmodule PriceStreamer.Exchange.Binance.SpotStream do
             # subscription ack
             {:sub_ack}
 
-          has_keys?(message, ["u", "s", "b", "B", "a", "A"]) ->
+          # https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md#individual-symbol-book-ticker-streams
+          # contains also other fields, but assuming correct message based on this for performance reasons
+          Map.has_key?(message, "B") ->
             # book ticker update
             {:book_ticker_update, msg}
 
@@ -41,10 +43,5 @@ defmodule PriceStreamer.Exchange.Binance.SpotStream do
             {:unknown, message}
         end
     end
-  end
-
-  @spec has_keys?(map :: map(), keys :: [String.t()]) :: boolean()
-  defp has_keys?(map, keys) do
-    Enum.all?(keys, &Map.has_key?(map, &1))
   end
 end
