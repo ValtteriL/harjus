@@ -6,9 +6,9 @@
 Engine Engine::fromJson(const QJsonObject &json)
 {
   // get values from json
-  long double commission = std::stold(get_from_json(json, "commission").toString().toStdString());
-  QJsonObject relativeAssetValues = get_from_json(json, "relative_asset_values").toObject();
-  QJsonArray tradingPaths = get_from_json(json, "trading_paths").toArray();
+  long double commission = get_long_double_from_json(json, "commission");
+  QJsonObject relativeAssetValues = get_object_from_json(json, "relative_asset_values");
+  QJsonArray tradingPaths = get_array_from_json(json, "trading_paths");
 
   // Convert relativeAssetValues to a QHash<QString, long double>
   QHash<QString, long double> relativePrices;
@@ -79,18 +79,13 @@ Engine Engine::fromJson(const QJsonObject &json)
   return Engine{symbolToPlannedExecutions, symbolToOffer};
 }
 
-long double get_double_from_json(const QJsonObject &json, const QString &key)
-{
-  return std::stold(get_from_json(json, key).toString().toStdString());
-}
-
 QList<PlannedExecution> Engine::priceUpdate(const QJsonObject &json)
 {
-  QString symbol = get_from_json(json, "s").toString();
-  auto askPrice = get_double_from_json(json, "a");
-  auto bidPrice = get_double_from_json(json, "b");
-  auto askQty = get_double_from_json(json, "A");
-  auto bidQty = get_double_from_json(json, "B");
+  QString symbol = get_string_from_json(json, "s");
+  auto askPrice = get_long_double_from_json(json, "a");
+  auto bidPrice = get_long_double_from_json(json, "b");
+  auto askQty = get_long_double_from_json(json, "A");
+  auto bidQty = get_long_double_from_json(json, "B");
 
   // update existing offer for symbol
   auto &offer = mSymbolToOffer[symbol];

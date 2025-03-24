@@ -19,4 +19,3 @@ private:
   QMultiHash<QString, PlannedExecution> mSymbolToPlannedExecutions;
   QHash<QString, Offer> mSymbolToOffer;
 };
-long double get_double_from_json(const QJsonObject &json, const QString &key);

@@ -2,6 +2,7 @@
 
 #include <QString>
 #include <QJsonObject>
+#include <QJsonArray>
 #include "position.h"
 
 class TradingSymbol
@@ -38,4 +39,7 @@ private:
   long double *mMaxQty = nullptr;
 };
 
-QJsonValue get_from_json(const QJsonObject &json, const QString &key);
+long double get_long_double_from_json(const QJsonObject &json, const QString &key);
+QString get_string_from_json(const QJsonObject &json, const QString &key);
+QJsonObject get_object_from_json(const QJsonObject &json, const QString &key);
+QJsonArray get_array_from_json(const QJsonObject &json, const QString &key);

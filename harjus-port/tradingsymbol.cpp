@@ -1,5 +1,5 @@
 #include "tradingsymbol.h"
-#include "engine.h"
+#include <string.h>
 
 /*
       {
@@ -25,6 +25,31 @@ QJsonValue get_from_json(const QJsonObject &json, const QString &key)
     throw std::runtime_error(key.toStdString() + " is not defined");
 }
 
+int get_int_from_json(const QJsonObject &json, const QString &key)
+{
+  return get_from_json(json, key).toInt();
+}
+
+QString get_string_from_json(const QJsonObject &json, const QString &key)
+{
+  return get_from_json(json, key).toString();
+}
+
+long double get_long_double_from_json(const QJsonObject &json, const QString &key)
+{
+  return std::stold(get_from_json(json, key).toString().toStdString());
+}
+
+QJsonObject get_object_from_json(const QJsonObject &json, const QString &key)
+{
+  return get_from_json(json, key).toObject();
+}
+
+QJsonArray get_array_from_json(const QJsonObject &json, const QString &key)
+{
+  return get_from_json(json, key).toArray();
+}
+
 QJsonObject TradingSymbol::toJson() const
 {
   QJsonObject json;
@@ -46,15 +71,15 @@ QJsonObject TradingSymbol::toJson() const
 
 TradingSymbol TradingSymbol::fromJson(const QJsonObject &json)
 {
-  QString baseAsset = get_from_json(json, "base_asset").toString();
-  QString quoteAsset = get_from_json(json, "quote_asset").toString();
-  QString symbol = get_from_json(json, "symbol").toString();
-  QString position = get_from_json(json, "position").toString();
-  long double baseAssetIncrement = get_double_from_json(json, "base_asset_increment");
-  int baseAssetPrecision = get_from_json(json, "base_asset_precision").toInt();
-  long double minNotional = get_double_from_json(json, "min_notional");
-  long double quoteAssetIncrement = get_double_from_json(json, "quote_asset_increment");
-  int quoteAssetPrecision = get_from_json(json, "quote_asset_precision").toInt();
+  QString baseAsset = get_string_from_json(json, "base_asset");
+  QString quoteAsset = get_string_from_json(json, "quote_asset");
+  QString symbol = get_string_from_json(json, "symbol");
+  QString position = get_string_from_json(json, "position");
+  long double baseAssetIncrement = get_long_double_from_json(json, "base_asset_increment");
+  int baseAssetPrecision = get_int_from_json(json, "base_asset_precision");
+  long double minNotional = get_long_double_from_json(json, "min_notional");
+  long double quoteAssetIncrement = get_long_double_from_json(json, "quote_asset_increment");
+  int quoteAssetPrecision = get_int_from_json(json, "quote_asset_precision");
 
   Position pos = position == "long" ? Position::LONG : Position::SHORT;
 
