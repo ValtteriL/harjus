@@ -24,6 +24,25 @@ QJsonValue get_from_json(const QJsonObject &json, const QString &key)
     throw std::runtime_error(key.toStdString() + " is not defined");
 }
 
+QJsonObject TradingSymbol::toJson() const
+{
+  QJsonObject json;
+
+  json["symbol"] = mSymbol;
+  json["position"] = mPosition == Position::LONG ? "long" : "short";
+  json["base_asset"] = base_asset;
+  json["quote_asset"] = quote_asset;
+  json["min_notional"] = mMinNotional;
+  json["base_asset_increment"] = mBaseAssetIncrement;
+  json["base_asset_precision"] = mBaseAssetPrecision;
+  json["quote_asset_increment"] = mQuoteAssetIncrement;
+  json["quote_asset_precision"] = mQuoteAssetPrecision;
+  json["qty"] = mQty;
+  json["price"] = *mPrice;
+
+  return json;
+}
+
 TradingSymbol TradingSymbol::fromJson(const QJsonObject &json)
 {
   QString baseAsset = get_from_json(json, "base_asset").toString();
