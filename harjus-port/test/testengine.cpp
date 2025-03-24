@@ -19,10 +19,10 @@ void TestEngine::fromJson_update()
   QString symbol = "ETHBTC";
   QString jsonStr = R"(
   {
-    "commission": 0.001,
+    "commission": "0.001",
     "relative_asset_values": {
-      "BTC": 1.0,
-      "ETH": 0.5
+      "BTC": "1.0",
+      "ETH": "0.5"
     },
     "trading_paths": [
     [
