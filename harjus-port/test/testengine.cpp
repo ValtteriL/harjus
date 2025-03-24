@@ -89,9 +89,10 @@ void TestEngine::fromJson_update()
 
   auto opportunities = engine.priceUpdate(QJsonDocument::fromJson(priceUpdateJson).object());
 
-  // no opportunities with positive profit should be found
+  // only single opportunity with positive profit should be found
   // as default profit is 0 and no update has been implemented
-  QCOMPARE(opportunities.size(), 0);
+  QCOMPARE(opportunities.size(), 1);
+  QVERIFY(opportunities.at(0).totalProfit() > 0);
 }
 
 QTEST_MAIN(TestEngine)
