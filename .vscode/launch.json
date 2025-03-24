@@ -27,6 +27,17 @@
                 "test/**/test_helper.exs",
                 "test/**/*_test.exs"
             ]
+        },
+        {
+            "name": "(ctest) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            // Resolved by CMake Tools:
+            "cwd": "${cmake.testWorkingDirectory}",
+            "program": "${cmake.testProgram}",
+            "args": [
+                "${cmake.testArgs}"
+            ],
         }
     ]
 }
