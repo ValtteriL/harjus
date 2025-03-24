@@ -87,7 +87,7 @@ QList<PlannedExecution> Engine::priceUpdate(const QJsonObject &json)
   auto bidQty = get_from_json(json, "B").toDouble();
 
   // update existing offer for symbol
-  auto offer = mSymbolToOffer.value(symbol);
+  auto &offer = mSymbolToOffer[symbol];
   offer.askPrice = askPrice;
   offer.bidPrice = bidPrice;
   offer.askQty = askQty;
