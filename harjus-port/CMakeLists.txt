@@ -14,6 +14,9 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 # Enable all warnings
 add_compile_options(-Wall -Wextra -Wpedantic)
 
+# Optimize debug builds for speed
+set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+
 add_executable(harjus-port
   main.cpp
   stdinreader.cpp
