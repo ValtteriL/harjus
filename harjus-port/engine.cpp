@@ -1,11 +1,12 @@
 #include "engine.h"
 #include "tradingsymbol.h"
 #include "plannedexecution.h"
+#include <string.h>
 
 Engine Engine::fromJson(const QJsonObject &json)
 {
   // get values from json
-  double commission = get_from_json(json, "commission").toDouble();
+  double commission = std::stod(get_from_json(json, "commission").toString().toStdString());
   QJsonObject relativeAssetValues = get_from_json(json, "relative_asset_values").toObject();
   QJsonArray tradingPaths = get_from_json(json, "trading_paths").toArray();
 
@@ -13,7 +14,7 @@ Engine Engine::fromJson(const QJsonObject &json)
   QHash<QString, double> relativePrices;
   for (const auto &key : relativeAssetValues.keys())
   {
-    relativePrices[key] = relativeAssetValues[key].toDouble();
+    relativePrices[key] = std::stod(relativeAssetValues[key].toString().toStdString());
   }
 
   QHash<QString, Offer> symbolToOffer;
