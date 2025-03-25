@@ -22,8 +22,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 add_executable(harjus-port
   main.cpp
-  stdinreader.cpp
-  stdinreader.h
   engine.cpp
   engine.h
   plannedexecution.h
