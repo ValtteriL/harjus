@@ -15,67 +15,50 @@ defmodule Pipeline.Impl do
         ) :: any()
   def new(trading_paths, commission_percentage, relative_asset_values) do
     Decimal.Context.set(%Decimal.Context{Decimal.Context.get() | precision: 16})
-
-    %{
-      pricing_table: PricingTable.new(trading_paths),
-      commission_percentage: commission_percentage,
-      relative_asset_values: relative_asset_values
-    }
+    %{}
   end
 
   @spec handle_opportunities(state :: any(), opportunities :: [PlannedExecution.t()]) :: any()
-  def handle_opportunities(state = %{pricing_table: pricing_table}, opportunities) do
-    # TODO
-    state
-  end
-
-  @spec price_update(state :: any(), update :: tuple()) :: any()
-  def price_update(
-        state = %{
-          pricing_table: pricing_table,
-          commission_percentage: commission_percentage,
-          relative_asset_values: relative_asset_values
-        },
-        update = {_symbol, _ask_price, _ask_qty, _bid_price, _bid_qty}
-      ) do
-    Metrics.report_price_update()
-
-    # update prices, get affected pahts
-    {new_pricing_table, affected_paths} = PricingTable.update_get_affected(pricing_table, update)
-
+  def handle_opportunities(state, opportunities) do
     # get balances, reserved symbols
     balances = Balance.get_balances()
     reserved_symbols = ReservedSymbols.get_reserved()
 
-    affected_paths
-    |> Enum.reject(fn path ->
+    opportunities
+    |> Enum.reject(fn planned_execution ->
       # reject unsuitable paths
-      first_symbol = path |> List.first()
+      first_symbol = planned_execution.trades |> List.first()
 
       starting_currency_balance =
         Map.get(balances, starting_currency(first_symbol), Decimal.new(0))
 
-      # not enough balance
+      # balance under notional
       # reserved symbols
-      # price lte 0
       Decimal.lt?(starting_currency_balance, min_qty(first_symbol)) ||
-        path |> Enum.any?(fn ts -> Enum.member?(reserved_symbols, {ts.symbol, ts.position}) end) ||
-        path |> Enum.any?(fn ts -> Decimal.lte?(ts.price, 0) end)
+        planned_execution.trades
+        |> Enum.any?(fn ts -> Enum.member?(reserved_symbols, {ts.symbol, ts.position}) end)
     end)
+    # sort by total profit * balance
+    |> Enum.sort_by(
+      fn planned_execution ->
+        Decimal.mult(
+          planned_execution.total_profit,
+          Map.get(balances, starting_currency_for_path(planned_execution.trades), Decimal.new(0))
+        )
+      end,
+      &Decimal.gte?/2
+    )
+    # TODO: update quantities
     |> Enum.map(fn path ->
       # plan execution for each affected path
 
       starting_currency = path |> List.first() |> starting_currency()
 
-      ExecutionPlanner.plan_execution(
+      ExecutionPlanner.update_qtys(
         path,
-        balances[starting_currency],
-        commission_percentage,
-        relative_asset_values
+        balances[starting_currency]
       )
     end)
-    # sort by total profit
-    |> Enum.sort_by(fn planned_execution -> planned_execution.total_profit end, :desc)
     # take top 2 with different starting currencies and no overlapping tradingsymbols
     # consider only those with positive total profit
     |> Enum.reduce_while([], fn plan, acc ->
@@ -118,9 +101,10 @@ defmodule Pipeline.Impl do
       )
     end)
 
-    %{state | pricing_table: new_pricing_table}
+    state
   end
 
+  defp starting_currency_for_path(path), do: path |> List.first() |> starting_currency()
   defp starting_currency(ts = %TradingSymbol{position: :long}), do: ts.quote_asset
   defp starting_currency(ts = %TradingSymbol{position: :short}), do: ts.base_asset
   defp starting_qty(ts = %TradingSymbol{position: :long}), do: Decimal.mult(ts.qty, ts.price)
