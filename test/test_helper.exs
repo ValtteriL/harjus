@@ -18,4 +18,6 @@ Application.put_env(:harjus, :balance, Trader.Balance.TestMock)
 Mox.defmock(PriceStreamer.Exchange.TestMock, for: PriceStreamer.Exchange)
 Application.put_env(:harjus, :price_streamer_exchange, PriceStreamer.Exchange.TestMock)
 
+Application.put_env(:harjus, :path_to_port, "./build/harjus-port")
+
 ExUnit.start()
