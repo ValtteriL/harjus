@@ -19,8 +19,9 @@ defmodule Engine.Server do
   end
 
   # handle responses from port
+  # handle only complete messages (eol) https://www.erlang.org/doc/apps/erts/erlang.html#open_port/2
   @impl GenServer
-  def handle_info({_port, {:data, msg}}, state) do
+  def handle_info({_port, {:data, {:eol, msg}}}, state) do
     {:noreply, Impl.relay_opportunities(state, msg)}
   end
 end
