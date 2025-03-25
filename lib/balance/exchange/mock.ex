@@ -6,7 +6,8 @@ defmodule Balance.Exchange.Mock do
   def get_balances do
     %{
       "USDT" => Decimal.new("100.0"),
-      "BTC" => Decimal.new("1.0")
+      "BTC" => Decimal.new("1.0"),
+      "BNB" => Decimal.new("100000.0")
     }
   end
 end
