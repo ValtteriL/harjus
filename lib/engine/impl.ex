@@ -79,8 +79,8 @@ defmodule Engine.Impl do
        }) do
     pos_atom =
       case position do
-        "buy" -> :buy
-        "sell" -> :sell
+        "long" -> :long
+        "short" -> :short
       end
 
     %TradingSymbol{
