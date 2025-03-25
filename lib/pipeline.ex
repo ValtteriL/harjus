@@ -22,7 +22,7 @@ defmodule Pipeline do
   def child_spec(_args) do
     %{
       id: __MODULE__,
-      start: {__MODULE__, :start_link}
+      start: {__MODULE__, :start_link, []}
     }
   end
 
