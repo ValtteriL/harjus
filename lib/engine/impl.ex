@@ -7,6 +7,7 @@ defmodule Engine.Impl do
 
   alias Types.PlannedExecution
   alias Types.TradingSymbol
+  require Logger
 
   def new(trading_paths, commission, relative_asset_values) do
     port =
@@ -23,8 +24,7 @@ defmodule Engine.Impl do
     }
 
     # send parameters to port
-    send(port, {self(), {:command, Jason.encode!(parameters)}})
-    send(port, {self(), {:command, "\n"}})
+    Port.command(port, Jason.encode!(parameters) <> "\n")
 
     receive do
       {^port, {:data, _ready_msg}} ->
@@ -40,8 +40,7 @@ defmodule Engine.Impl do
 
   def price_update(state = %{port: port}, update) do
     Metrics.report_price_update()
-    send(port, {self(), {:command, update}})
-    send(port, {self(), {:command, "\n"}})
+    Port.command(port, update <> "\n")
     state
   end
 
