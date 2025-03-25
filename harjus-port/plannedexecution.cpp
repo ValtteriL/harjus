@@ -56,7 +56,7 @@ QJsonObject PlannedExecution::toJson() const
 {
   QJsonObject json;
 
-  json["total_profit"] = static_cast<double>(mTotalProfit);
+  json["total_profit"] = QString::number(mTotalProfit, 'f', 16);
 
   QJsonArray tradeArray;
   for (const TradingSymbol &ts : mTrades)

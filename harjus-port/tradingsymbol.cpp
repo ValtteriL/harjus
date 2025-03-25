@@ -58,13 +58,13 @@ QJsonObject TradingSymbol::toJson() const
   json["position"] = mPosition == Position::LONG ? "long" : "short";
   json["base_asset"] = base_asset;
   json["quote_asset"] = quote_asset;
-  json["min_notional"] = static_cast<double>(mMinNotional);
-  json["base_asset_increment"] = static_cast<double>(mBaseAssetIncrement);
+  json["min_notional"] = QString::number(mMinNotional, 'f', 16);
+  json["base_asset_increment"] = QString::number(mBaseAssetIncrement, 'f', 16);
   json["base_asset_precision"] = mBaseAssetPrecision;
-  json["quote_asset_increment"] = static_cast<double>(mQuoteAssetIncrement);
+  json["quote_asset_increment"] = QString::number(mQuoteAssetIncrement, 'f', 16);
   json["quote_asset_precision"] = mQuoteAssetPrecision;
-  json["qty"] = static_cast<double>(mQty);
-  json["price"] = static_cast<double>(*mPrice);
+  json["qty"] = QString::number(mQty, 'f', 16);
+  json["price"] = QString::number(*mPrice, 'f', 16);
 
   return json;
 }
