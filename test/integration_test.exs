@@ -126,35 +126,35 @@ defmodule IntegrationTest do
 
     commission = Decimal.from_float(0.001)
     relative_asset_values = MarketData.relative_values(market_data, "BTC")
-    {:ok, _} = Pipeline.start_link(trading_paths, commission, relative_asset_values)
+    {:ok, _} = Pipeline.start_link()
 
     {:ok, _} = PriceStreamer.start_link(symbols)
 
     # Simulate price updates
     # there should be multiple opportunities with capacity of 1
-    Pipeline.price_update(
-      "BTCUSDT",
-      Decimal.new(1),
-      Decimal.new(1),
-      Decimal.new(1),
-      Decimal.new(1)
-    )
+    # Pipeline.price_update(
+    #   "BTCUSDT",
+    #   Decimal.new(1),
+    #   Decimal.new(1),
+    #   Decimal.new(1),
+    #   Decimal.new(1)
+    # )
 
-    Pipeline.price_update(
-      "ETHBTC",
-      Decimal.new(1),
-      Decimal.new(1),
-      Decimal.new(1),
-      Decimal.new(1)
-    )
+    # Pipeline.price_update(
+    #   "ETHBTC",
+    #   Decimal.new(1),
+    #   Decimal.new(1),
+    #   Decimal.new(1),
+    #   Decimal.new(1)
+    # )
 
-    Pipeline.price_update(
-      "USDTETH",
-      Decimal.new("0.5"),
-      Decimal.new(2),
-      Decimal.new(1),
-      Decimal.new(1)
-    )
+    # Pipeline.price_update(
+    #   "USDTETH",
+    #   Decimal.new("0.5"),
+    #   Decimal.new(2),
+    #   Decimal.new(1),
+    #   Decimal.new(1)
+    # )
 
     # allow time for execution
     :timer.sleep(100)

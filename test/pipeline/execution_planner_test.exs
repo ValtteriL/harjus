@@ -13,37 +13,26 @@ defmodule Pipeline.ExecutionPlannerTest do
   test "returns correct execution plan" do
     # path that allows for 1 BTC profit
     path = [
-      ts("BTCUSDT", :short, Decimal.new(1), Decimal.new(1)),
+      ts("BTCUSDT", :short, Decimal.new(1), Decimal.new(2)),
       ts("ETHUSDT", :long, Decimal.new(1), Decimal.new(1)),
       ts("BTCETH", :long, Decimal.from_float(0.5), Decimal.new(2))
     ]
 
-    starting_asset_balance = Decimal.new(1)
-    commission_percentage = Decimal.from_float(0.1)
-
-    # BTC relative value is 3, ETH 2, USDT 1
-    relative_asset_values = %{
-      "BTCUSDT_base" => Decimal.new(3),
-      "BTCUSDT_quote" => Decimal.new(1),
-      "ETHUSDT_base" => Decimal.new(2),
-      "ETHUSDT_quote" => Decimal.new(1),
-      "BTCETH_base" => Decimal.new(3),
-      "BTCETH_quote" => Decimal.new(2)
+    old_plan = %PlannedExecution{
+      total_profit: Decimal.new(2),
+      trades: path
     }
 
+    starting_asset_balance = Decimal.new(1)
+
     plan =
-      ExecutionPlanner.plan_execution(
-        path,
-        starting_asset_balance,
-        commission_percentage,
-        relative_asset_values
+      ExecutionPlanner.recalculate_with_balance(
+        old_plan,
+        starting_asset_balance
       )
 
-    # total profit is nBTC * relative value of BTC
-    # nBTC = (1 * (1-0.1) * 1 * (1-0.1) * 2 * (1-0.1)) - 1 = 0,458 // 0.1 is the commission percentage
-    # relative value of BTC = 3
-    # total profit = 1.374
-    assert Decimal.eq?(plan.total_profit, "1.374")
+    # total profit is old/2 as we have half the qty
+    assert Decimal.eq?(plan.total_profit, 1)
     assert length(plan.trades) == 3
     assert %PlannedExecution{} = plan
 
@@ -60,16 +49,16 @@ defmodule Pipeline.ExecutionPlannerTest do
     ]
 
     starting_asset_balance = Decimal.new(0)
-    commission_percentage = Decimal.new(0)
 
-    relative_asset_values = %{"BTCUSDT_base" => Decimal.new(3), "BTCUSDT_quote" => Decimal.new(1)}
+    old_plan = %PlannedExecution{
+      total_profit: Decimal.new(1),
+      trades: path
+    }
 
     plan =
-      ExecutionPlanner.plan_execution(
-        path,
-        starting_asset_balance,
-        commission_percentage,
-        relative_asset_values
+      ExecutionPlanner.recalculate_with_balance(
+        old_plan,
+        starting_asset_balance
       )
 
     assert Decimal.eq?(plan.total_profit, 0)
@@ -96,37 +85,16 @@ defmodule Pipeline.ExecutionPlannerTest do
     ]
 
     starting_asset_balance = Decimal.new(100)
-    commission_percentage = Decimal.new(0)
 
-    relative_asset_values = %{"BTCUSDT_base" => Decimal.new(3), "BTCUSDT_quote" => Decimal.new(1)}
-
-    plan =
-      ExecutionPlanner.plan_execution(
-        path,
-        starting_asset_balance,
-        commission_percentage,
-        relative_asset_values
-      )
-
-    assert Decimal.eq?(plan.total_profit, 0)
-  end
-
-  test "total_profit is 0 if used currency does not have relative value" do
-    path = [
-      ts("BTCUSDT", :short, Decimal.new(1), Decimal.new(1))
-    ]
-
-    starting_asset_balance = Decimal.new(1)
-    commission_percentage = Decimal.new(0)
-
-    relative_asset_values = %{}
+    old_plan = %PlannedExecution{
+      total_profit: Decimal.new(1),
+      trades: path
+    }
 
     plan =
-      ExecutionPlanner.plan_execution(
-        path,
-        starting_asset_balance,
-        commission_percentage,
-        relative_asset_values
+      ExecutionPlanner.recalculate_with_balance(
+        old_plan,
+        starting_asset_balance
       )
 
     assert Decimal.eq?(plan.total_profit, 0)

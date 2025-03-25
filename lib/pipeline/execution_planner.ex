@@ -5,18 +5,15 @@ defmodule Pipeline.ExecutionPlanner do
 
   alias Pipeline.ExecutionPlanner.Impl
   alias Types.PlannedExecution
-  alias Types.TradingSymbol
 
   @doc """
-  Generate execution plan for a given trading path, starting asset balance and relative asset values
+  Recalculate execution plan given starting asset balance
   """
-  @spec plan_execution([TradingSymbol.t()], Decimal.t(), Decimal.t(), map()) ::
+  @spec recalculate_with_balance(PlannedExecution.t(), Decimal.t()) ::
           PlannedExecution.t()
-  defdelegate plan_execution(
-                path,
-                starting_asset_balance,
-                commission_percentage,
-                relative_asset_values
+  defdelegate recalculate_with_balance(
+                planned_execution,
+                starting_asset_balance
               ),
               to: Impl
 end

@@ -75,12 +75,7 @@ defmodule Harjus do
          ]},
 
         # the pipeline
-        {Pipeline,
-         [
-           trading_paths,
-           Application.fetch_env!(:harjus, :commission),
-           MarketData.relative_values(market_data, "BTC")
-         ]}
+        {Pipeline, []}
       ]
 
     # if a child process terminates, the terminated child process

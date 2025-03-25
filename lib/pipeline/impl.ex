@@ -4,18 +4,13 @@ defmodule Pipeline.Impl do
   """
 
   alias Pipeline.ExecutionPlanner
-  alias Pipeline.PricingTable
   alias Types.PlannedExecution
   alias Types.TradingSymbol
 
-  @spec new(
-          trading_paths :: [TradingSymbol.t()],
-          commission_percentage :: Decimal.t(),
-          relative_asset_values :: any()
-        ) :: any()
-  def new(trading_paths, commission_percentage, relative_asset_values) do
+  @spec new :: :ok
+  def new do
     Decimal.Context.set(%Decimal.Context{Decimal.Context.get() | precision: 16})
-    %{}
+    :ok
   end
 
   @spec handle_opportunities(state :: any(), opportunities :: [PlannedExecution.t()]) :: any()
@@ -48,16 +43,24 @@ defmodule Pipeline.Impl do
       end,
       &Decimal.gte?/2
     )
-    # TODO: update quantities
-    |> Enum.map(fn path ->
-      # plan execution for each affected path
+    # update quantities
+    |> Enum.map(fn planned_execution ->
+      first_symbol = planned_execution.trades |> List.first()
+      starting_currency = first_symbol |> starting_currency()
+      starting_qty = first_symbol |> starting_qty()
 
-      starting_currency = path |> List.first() |> starting_currency()
-
-      ExecutionPlanner.update_qtys(
-        path,
-        balances[starting_currency]
-      )
+      # if balance less than planned, update quantities
+      if Decimal.lt?(
+           Map.get(balances, starting_currency, Decimal.new(0)),
+           starting_qty
+         ) do
+        planned_execution
+      else
+        ExecutionPlanner.recalculate_with_balance(
+          planned_execution,
+          balances[starting_currency]
+        )
+      end
     end)
     # take top 2 with different starting currencies and no overlapping tradingsymbols
     # consider only those with positive total profit

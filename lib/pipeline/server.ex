@@ -8,8 +8,8 @@ defmodule Pipeline.Server do
   alias Pipeline.Impl
 
   @impl GenServer
-  def init({trading_paths, commission, relative_asset_values}) do
-    {:ok, Impl.new(trading_paths, commission, relative_asset_values)}
+  def init(_args) do
+    {:ok, Impl.new()}
   end
 
   @impl GenServer
