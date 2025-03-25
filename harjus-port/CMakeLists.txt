@@ -15,7 +15,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 # Optimize debug builds for speed
-set(CMAKE_CXX_FLAGS_DEBUG "-O0")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 # Optimize release builds for performance
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
