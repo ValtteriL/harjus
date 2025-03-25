@@ -3,6 +3,8 @@ defmodule Engine.Impl do
   Implementation of the engine
   """
 
+  @read_chunk_size 65_536
+
   alias Types.PlannedExecution
   alias Types.TradingSymbol
 
@@ -10,7 +12,8 @@ defmodule Engine.Impl do
     port =
       Port.open(
         {:spawn, Application.get_env(:harjus, :path_to_port)},
-        [:binary]
+        # use binary mode, get exit status if port exits, deliver messages line by line back to elixir
+        [:binary, :exit_status, {:line, @read_chunk_size}]
       )
 
     parameters = %{
