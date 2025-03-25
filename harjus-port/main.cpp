@@ -8,5 +8,6 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a{argc, argv};
     StdinReader reader;
+    std::cout << "ready" << std::endl;
     return a.exec();
 }

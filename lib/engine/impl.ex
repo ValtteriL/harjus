@@ -23,6 +23,15 @@ defmodule Engine.Impl do
     send(port, {self(), {:command, Jason.encode!(parameters)}})
     send(port, {self(), {:command, "\n"}})
 
+    receive do
+      {^port, {:data, _ready_msg}} ->
+        Logger.info("Engine port started successfully")
+    after
+      5000 ->
+        Logger.error("Timeout waiting for Engine port to start")
+        throw(:timeout)
+    end
+
     %{port: port}
   end
 
