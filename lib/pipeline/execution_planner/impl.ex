@@ -17,18 +17,18 @@ defmodule Pipeline.ExecutionPlanner.Impl do
         },
         starting_asset_balance
       ) do
-    max_starting_qty =
+    max_starting_asset_qty =
       Decimal.min(
         case firstsymbol.position do
-          :long -> firstsymbol.qty
-          :short -> Decimal.mult(firstsymbol.qty, firstsymbol.price)
+          :long -> Decimal.mult(firstsymbol.qty, firstsymbol.price)
+          :short -> firstsymbol.qty
         end,
         starting_asset_balance
       )
 
     new_trades =
       trades
-      |> Enum.map_reduce(max_starting_qty, fn symbol, acc ->
+      |> Enum.map_reduce(max_starting_asset_qty, fn symbol, acc ->
         {order_qty, received_qty} = order_qty_received_qty_for_budget(acc, symbol.price, symbol)
 
         {
