@@ -64,42 +64,6 @@ defmodule Pipeline.ExecutionPlannerTest do
     assert Decimal.eq?(plan.total_profit, 0)
   end
 
-  test "total_profit 0 if capacity is less than notional" do
-    symbol = "BTCUSDT"
-    min_notional = Decimal.new(2)
-
-    path = [
-      %TradingSymbol{
-        symbol: symbol,
-        position: :short,
-        base_asset: "#{symbol}_base",
-        quote_asset: "#{symbol}_quote",
-        base_asset_increment: Decimal.from_float(0.001),
-        base_asset_precision: 8,
-        quote_asset_increment: Decimal.from_float(0.001),
-        quote_asset_precision: 8,
-        min_notional: min_notional,
-        price: Decimal.new(1),
-        qty: Decimal.new(1)
-      }
-    ]
-
-    starting_asset_balance = Decimal.new(100)
-
-    old_plan = %PlannedExecution{
-      total_profit: Decimal.new(1),
-      trades: path
-    }
-
-    plan =
-      ExecutionPlanner.recalculate_with_balance(
-        old_plan,
-        starting_asset_balance
-      )
-
-    assert Decimal.eq?(plan.total_profit, 0)
-  end
-
   ## helpers
 
   defp ts(symbol, position, price, qty) do

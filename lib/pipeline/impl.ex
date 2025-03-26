@@ -62,6 +62,10 @@ defmodule Pipeline.Impl do
         )
       end
     end)
+    # reject those with trades with qty lt min_notional
+    |> Enum.reject(fn planned_execution ->
+      planned_execution.trades |> Enum.any?(fn ts -> Decimal.lt?(ts.qty, min_qty(ts)) end)
+    end)
     # take top 2 with different starting currencies and no overlapping tradingsymbols
     # consider only those with positive total profit
     |> Enum.reduce_while([], fn plan, acc ->
