@@ -63,3 +63,18 @@ target_link_libraries(testengine PUBLIC
   Qt${QT_VERSION_MAJOR}::Test
 )
 add_test(NAME testengine COMMAND testengine)
+
+add_executable(testplannedexecution 
+  test/testplannedexecution.cpp 
+  engine.cpp
+  engine.h
+  tradingsymbol.h
+  tradingsymbol.cpp
+  plannedexecution.h
+  plannedexecution.cpp
+)
+target_link_libraries(testplannedexecution PUBLIC
+  Qt${QT_VERSION_MAJOR}::Core
+  Qt${QT_VERSION_MAJOR}::Test
+)
+add_test(NAME testplannedexecution COMMAND testplannedexecution)

@@ -1,7 +1,9 @@
 #include "plannedexecution.h"
 #include <QJsonArray>
 #include <cmath>
-
+/**
+ *  Calculate maximum capacity for execution. In starting currency.
+ */
 long double capacity(std::vector<TradingSymbol> trades)
 {
   auto maxCap = std::numeric_limits<long double>::max();
