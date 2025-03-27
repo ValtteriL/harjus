@@ -1,9 +1,7 @@
 #include "plannedexecution.h"
 #include <QJsonArray>
 #include <cmath>
-/**
- *  Calculate maximum capacity for execution. In starting currency.
- */
+
 long double capacity(std::vector<TradingSymbol> trades)
 {
   auto maxCap = std::numeric_limits<long double>::max();
@@ -30,7 +28,7 @@ void PlannedExecution::update()
     if (ts.position() == Position::LONG)
       lastcap = ts.setQtyUpto(lastcap / ts.price());
     else
-      lastcap = ts.setQtyUpto(lastcap);
+      lastcap = {ts.setQtyUpto(lastcap) * ts.price()}; // when position is short, we will receive qty * ts.price()
   }
 
   // calculate total profit
