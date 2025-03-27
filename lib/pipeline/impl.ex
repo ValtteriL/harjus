@@ -48,17 +48,18 @@ defmodule Pipeline.Impl do
       first_symbol = planned_execution.trades |> List.first()
       starting_currency = first_symbol |> starting_currency()
       starting_qty = first_symbol |> starting_qty()
+      balance_in_starting_currency = Map.get(balances, starting_currency, Decimal.new(0))
 
       # if balance less than planned, update quantities
-      if Decimal.lt?(
-           Map.get(balances, starting_currency, Decimal.new(0)),
+      if Decimal.gt?(
+           balance_in_starting_currency,
            starting_qty
          ) do
         planned_execution
       else
         ExecutionPlanner.recalculate_with_balance(
           planned_execution,
-          balances[starting_currency]
+          balance_in_starting_currency
         )
       end
     end)
