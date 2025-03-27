@@ -11,7 +11,7 @@ defmodule TradeClient.Impl do
 
   @spec new() :: {:ok, pid}
   def new do
-    Decimal.Context.set(%Decimal.Context{Decimal.Context.get() | precision: 16})
+    Decimal.Context.set(%Decimal.Context{Decimal.Context.get() | rounding: :down})
     Exchange.new()
   end
 

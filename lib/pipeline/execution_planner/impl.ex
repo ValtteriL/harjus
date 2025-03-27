@@ -17,6 +17,8 @@ defmodule Pipeline.ExecutionPlanner.Impl do
         },
         starting_asset_balance
       ) do
+    Decimal.Context.set(%Decimal.Context{Decimal.Context.get() | rounding: :down})
+
     max_starting_asset_qty =
       Decimal.min(
         case firstsymbol.position do
