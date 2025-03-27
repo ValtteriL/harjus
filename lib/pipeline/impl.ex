@@ -66,6 +66,10 @@ defmodule Pipeline.Impl do
     |> Enum.reject(fn planned_execution ->
       planned_execution.trades |> Enum.any?(fn ts -> Decimal.lt?(ts.qty, min_qty(ts)) end)
     end)
+    # remove duplicate starting currencies
+    |> Enum.uniq_by(fn planned_execution ->
+      starting_currency_for_path(planned_execution.trades)
+    end)
     # take top 2 with different starting currencies and no overlapping tradingsymbols
     # consider only those with positive total profit
     |> Enum.reduce_while([], fn plan, acc ->
