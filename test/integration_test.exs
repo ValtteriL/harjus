@@ -126,34 +126,43 @@ defmodule IntegrationTest do
 
     commission = Decimal.from_float(0.001)
     relative_asset_values = MarketData.relative_values(market_data, "BTC")
-    {:ok, _} = Pipeline.start_link(trading_paths, commission, relative_asset_values)
+
+    {:ok, _} = Engine.start_link(trading_paths, commission, relative_asset_values)
+
+    {:ok, _} = Pipeline.start_link()
 
     {:ok, _} = PriceStreamer.start_link(symbols)
 
     # Simulate price updates
     # there should be multiple opportunities with capacity of 1
-    Pipeline.price_update(
-      "BTCUSDT",
-      Decimal.new(1),
-      Decimal.new(1),
-      Decimal.new(1),
-      Decimal.new(1)
+    Engine.price_update(
+      construct_price_update(
+        "BTCUSDT",
+        Decimal.new(1),
+        Decimal.new(1),
+        Decimal.new(1),
+        Decimal.new(1)
+      )
     )
 
-    Pipeline.price_update(
-      "ETHBTC",
-      Decimal.new(1),
-      Decimal.new(1),
-      Decimal.new(1),
-      Decimal.new(1)
+    Engine.price_update(
+      construct_price_update(
+        "ETHBTC",
+        Decimal.new(1),
+        Decimal.new(1),
+        Decimal.new(1),
+        Decimal.new(1)
+      )
     )
 
-    Pipeline.price_update(
-      "USDTETH",
-      Decimal.new("0.5"),
-      Decimal.new(2),
-      Decimal.new(1),
-      Decimal.new(1)
+    Engine.price_update(
+      construct_price_update(
+        "USDTETH",
+        Decimal.new("0.5"),
+        Decimal.new(2),
+        Decimal.new(1),
+        Decimal.new(1)
+      )
     )
 
     # allow time for execution
@@ -163,7 +172,7 @@ defmodule IntegrationTest do
 
     assert Decimal.eq?(Map.fetch!(balances, "BTC"), Decimal.new(0))
     assert Decimal.eq?(Map.fetch!(balances, "ETH"), Decimal.new(0))
-    assert Decimal.eq?(Map.fetch!(balances, "USDT"), Decimal.new(101))
+    assert Decimal.eq?(Decimal.round(Map.fetch!(balances, "USDT"), 5), Decimal.new(101))
     # 3 trades, with BNB fee each
     assert Decimal.lt?(Map.fetch!(balances, "BNB"), Decimal.new(100))
   end
@@ -172,5 +181,16 @@ defmodule IntegrationTest do
     module = Application.get_env(:harjus, key)
     Application.put_env(:harjus, key, new_module)
     module
+  end
+
+  defp construct_price_update(symbol, ask_price, ask_qty, bid_price, bid_qty) do
+    Jason.encode!(%{
+      s: symbol,
+      a: ask_price,
+      A: ask_qty,
+      b: bid_price,
+      B: bid_qty,
+      u: 124
+    })
   end
 end

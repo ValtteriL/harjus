@@ -1,10 +1,8 @@
-{ pkgs ? import
-    (fetchTarball {
-      url = "https://github.com/NixOS/nixpkgs/archive/3f0a8ac25fb674611b98089ca3a5dd6480175751.tar.gz";
-      sha256 = "sha256:10i7fllqjzq171afzhdf2d9r1pk9irvmq5n55h92rc47vlaabvr4";
-    })
-    { config.allowUnfree = true; }
-}:
+{ pkgs ? import (fetchTarball {
+  url =
+    "https://github.com/NixOS/nixpkgs/archive/3f0a8ac25fb674611b98089ca3a5dd6480175751.tar.gz";
+  sha256 = "sha256:10i7fllqjzq171afzhdf2d9r1pk9irvmq5n55h92rc47vlaabvr4";
+}) { config.allowUnfree = true; } }:
 
 with pkgs;
 
@@ -12,24 +10,36 @@ let
   packages = rec {
 
     # The shell of our experiment runtime environment
-    devEnv = mkShellNoCC rec {
+    devEnv = mkShell rec {
       name = "devEnv";
 
       # environment variables
       ELIXIR_ERL_OPTIONS = "+fnu";
-      LC_ALL = "C";
       ERL_AFLAGS = "-kernel shell_history enabled -enable-feature maybe_expr";
       PROPCHECK_VERBOSE = "1"; # print exceptions in propcheck
-      AWS_PROFILE="137068223640_AdministratorAccess";
+      AWS_PROFILE = "137068223640_AdministratorAccess";
 
       # packages to be installed in env
       packages = with pkgs; [
+        # for working with nix
+        glibcLocales
         nixpkgs-fmt
+        nixfmt-classic
+
+        # elixir
         elixir
         mix2nix
         cowsay
-	terraform
-	awscli2
+
+        # C++
+        cmake
+        ninja
+        gdb
+        qt6.full
+
+        # deployment
+        terraform
+        awscli2
       ];
 
       # this is executed when shell entered
@@ -47,31 +57,34 @@ let
       mixNixDeps = import ./deps.nix { inherit lib beamPackages; };
     };
 
+    harjusPortBuild = stdenv.mkDerivation {
+      pname = "harjus-port";
+      version = "1.0.0";
+
+      src = ./harjus-port;
+
+      buildInputs = [ qt6.qtbase ];
+      nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsHook ];
+
+      # run cmake tests
+      doCheck = true;
+    };
+
     # docker packaging derivation
     docker = pkgs.dockerTools.buildLayeredImage {
       name = "harjus";
       created = "now";
-      config =
-        {
-          Cmd = [
-            "harjus"
-            "start"
-          ];
-          Env = [
-            "ELIXIR_ERL_OPTIONS=+fnu"
-            "LC_ALL=C"
-            "ERL_AFLAGS='-kernel shell_history enabled -enable-feature maybe_expr'"
-          ];
-        };
+      config = {
+        Cmd = [ "harjus" "start" ];
+        Env = [
+          "ELIXIR_ERL_OPTIONS=+fnu"
+          "LC_ALL=C.UTF-8"
+          "ERL_AFLAGS='-kernel shell_history enabled -enable-feature maybe_expr'"
+        ];
+      };
 
-      contents = [
-        harjusBuild
-        dockerTools.binSh
-      ];
+      contents = [ glibcLocales harjusBuild harjusPortBuild dockerTools.binSh ];
     };
 
-
-
   };
-in
-packages
+in packages

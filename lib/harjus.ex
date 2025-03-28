@@ -31,9 +31,6 @@ defmodule Harjus do
 
     children =
       [
-        # Starts a worker by calling: HelloWorld.Worker.start_link(arg)
-        # {HelloWorld.Worker, arg}
-
         # processes are started in order
 
         # erlang VM telemetry poller
@@ -69,13 +66,16 @@ defmodule Harjus do
         # trade client
         {TradeClient, []},
 
-        # the pipeline
-        {Pipeline,
+        # engine
+        {Engine,
          [
            trading_paths,
            Application.fetch_env!(:harjus, :commission),
            MarketData.relative_values(market_data, "BTC")
-         ]}
+         ]},
+
+        # the pipeline
+        {Pipeline, []}
       ]
 
     # if a child process terminates, the terminated child process

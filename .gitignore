@@ -72,3 +72,6 @@ result-*
 *.pem
 
 testnet-exchangeinfo.json
+build
+parameters.json
+parameters2.json

@@ -18,6 +18,9 @@ defmodule Harjus.MixProject do
           "format",
           "credo --strict",
           "compile --all-warnings --warnings-as-errors",
+          "cmd cmake -S harjus-port -B build",
+          "cmd cmake --build build --config Debug --target all --",
+          "cmd ctest -j10 -C Debug -T test --output-on-failure --test-dir build/",
           "test --no-start --include integration:true",
           "credo --strict",
           "dialyzer --ignore-exit-status"
@@ -26,6 +29,9 @@ defmodule Harjus.MixProject do
           "format --check-formatted",
           "credo --strict",
           "compile --all-warnings --warnings-as-errors",
+          "cmd cmake -S harjus-port -B build",
+          "cmd cmake --build build --config Debug --target all --",
+          "cmd ctest -j10 -C Debug -T test --output-on-failure --test-dir build/",
           "test --no-start --include integration:true",
           "credo --strict",
           "dialyzer"

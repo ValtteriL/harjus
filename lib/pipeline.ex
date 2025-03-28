@@ -4,7 +4,7 @@ defmodule Pipeline do
   """
 
   alias Pipeline.Server
-  alias Types.TradingSymbol
+  alias Types.PlannedExecution
 
   require Decimal
   require Logger
@@ -12,37 +12,25 @@ defmodule Pipeline do
   @doc """
   Create new pipeline
   """
-  @spec start_link(
-          trading_paths :: list(list(TradingSymbol.t())),
-          commission :: Decimal.t(),
-          relative_asset_values :: map()
-        ) :: {:ok, pid()}
-  def start_link(trading_paths, commission, relative_asset_values) do
+  @spec start_link() :: {:ok, pid()}
+  def start_link do
     Logger.info("Starting pipeline")
 
-    GenServer.start_link(Server, {trading_paths, commission, relative_asset_values},
-      name: __MODULE__
-    )
+    GenServer.start_link(Server, [], name: __MODULE__)
   end
 
-  def child_spec(args) do
+  def child_spec(_args) do
     %{
       id: __MODULE__,
-      start: {__MODULE__, :start_link, args}
+      start: {__MODULE__, :start_link, []}
     }
   end
 
   @doc """
-  Send price update to pipeline
+  Handle opportunities
   """
-  @spec price_update(
-          symbol :: String.t(),
-          ask_price :: Decimal.t(),
-          ask_qty :: Decimal.t(),
-          bid_price :: Decimal.t(),
-          bid_qty :: Decimal.t()
-        ) :: :ok
-  def price_update(symbol, ask_price, ask_qty, bid_price, bid_qty) do
-    GenServer.cast(__MODULE__, {:price_update, {symbol, ask_price, ask_qty, bid_price, bid_qty}})
+  @spec handle_opportunities(opportunities :: list(PlannedExecution.t())) :: :ok
+  def handle_opportunities(opportunities) do
+    GenServer.cast(__MODULE__, {:handle_opportunities, opportunities})
   end
 end

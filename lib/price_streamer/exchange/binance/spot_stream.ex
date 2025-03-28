@@ -18,9 +18,7 @@ defmodule PriceStreamer.Exchange.Binance.SpotStream do
   @spec parse_message(msg :: String.t()) ::
           {:error, any()}
           | {:sub_ack}
-          | {:book_ticker_update,
-             {symbol :: String.t(), best_ask_price :: Decimal.t(), best_ask_qty :: Decimal.t(),
-              best_bid_price :: Decimal.t(), best_bid_qty :: Decimal.t()}}
+          | {:book_ticker_update, msg :: String.t()}
           | {:unknown, map()}
   def parse_message(msg) do
     case Poison.decode(msg) do
@@ -33,24 +31,15 @@ defmodule PriceStreamer.Exchange.Binance.SpotStream do
             # subscription ack
             {:sub_ack}
 
-          has_keys?(message, ["u", "s", "b", "B", "a", "A"]) ->
-            symbol = message["s"]
-            best_ask_price = Decimal.new(message["a"])
-            best_ask_qty = Decimal.new(message["A"])
-            best_bid_price = Decimal.new(message["b"])
-            best_bid_qty = Decimal.new(message["B"])
-
-            {:book_ticker_update,
-             {symbol, best_ask_price, best_ask_qty, best_bid_price, best_bid_qty}}
+          # https://github.com/binance/binance-spot-api-docs/blob/master/web-socket-streams.md#individual-symbol-book-ticker-streams
+          # contains also other fields, but assuming correct message based on this for performance reasons
+          Map.has_key?(message, "B") ->
+            # book ticker update
+            {:book_ticker_update, msg}
 
           true ->
             {:unknown, message}
         end
     end
-  end
-
-  @spec has_keys?(map :: map(), keys :: [String.t()]) :: boolean()
-  defp has_keys?(map, keys) do
-    Enum.all?(keys, &Map.has_key?(map, &1))
   end
 end

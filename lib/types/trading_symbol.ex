@@ -2,6 +2,7 @@ defmodule Types.TradingSymbol do
   @moduledoc """
   Trading symbol module
   """
+  require Jason
 
   @enforce_keys [
     :symbol,
@@ -16,6 +17,7 @@ defmodule Types.TradingSymbol do
     :qty,
     :price
   ]
+  @derive Jason.Encoder
   defstruct [
     :symbol,
     :position,
