@@ -107,3 +107,18 @@ terraform -chdir=deploy apply -var-file="$env.tfvars" -var "image_tag=$image_tag
 ```bash
 ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ec2-user@$(terraform -chdir=deploy output ecs_instance_ip|sed 's/"//g')
 ```
+
+### Inspect containers running on runner
+
+```bash
+docker ps
+
+# top processes in container
+docker top <id>
+
+# get cpu, memory usage for containers
+docker stats
+
+# get detailed configuration and status for container
+docker inspect <id>
+```
