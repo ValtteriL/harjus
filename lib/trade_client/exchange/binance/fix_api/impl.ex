@@ -204,7 +204,12 @@ defmodule TradeClient.Exchange.Binance.FixApi.Impl do
       tag == Const.Tag.fee_currency() or tag == Const.Tag.fee_amount()
     end)
     |> Enum.chunk_every(2)
-    |> Enum.map(fn [{_, currency}, {_, amount}] ->
+    |> Enum.map(fn fee_pair ->
+      currency =
+        fee_pair |> Enum.find(fn {tag, _} -> tag == Const.Tag.fee_currency() end) |> elem(1)
+
+      amount = fee_pair |> Enum.find(fn {tag, _} -> tag == Const.Tag.fee_amount() end) |> elem(1)
+
       %ExecutionReport.Fee{
         fee_currency: currency,
         fee_amount: Decimal.from_float(String.to_float(amount))
