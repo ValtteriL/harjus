@@ -7,6 +7,21 @@
 with pkgs;
 
 let
+
+  src = nix-gitignore.gitignoreSource [''
+    harjus-port
+    deploy
+    docs
+    test''] ./.;
+  version = "1.0.0";
+  pname = "harjus";
+
+  mixFodDeps = beamPackages.fetchMixDeps {
+    pname = "mix-deps-${pname}";
+    inherit src version;
+    hash = "sha256-o1ROk8FwQA5DLggx18y3eDVkw2p0BFDrFYmcq/Na0AI=";
+  };
+
   packages = rec {
 
     # The shell of our experiment runtime environment
@@ -28,7 +43,6 @@ let
 
         # elixir
         elixir
-        mix2nix
         cowsay
 
         # C++
@@ -50,16 +64,13 @@ let
 
     # build derivation
     harjusBuild = beamPackages.mixRelease rec {
-      pname = "harjus";
-      version = "1.0.0";
-      src = ./.;
+      inherit mixFodDeps src version pname;
       removeCookie = false;
-      mixNixDeps = import ./deps.nix { inherit lib beamPackages; };
     };
 
     harjusPortBuild = stdenv.mkDerivation {
-      pname = "harjus-port";
-      version = "1.0.0";
+      inherit version;
+      pname = "${pname}-port";
 
       src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
@@ -72,12 +83,12 @@ let
       name = "harjus";
       created = "now";
       config = {
-      Cmd = [ "harjus" "start" ];
-      Env = [
-        "ELIXIR_ERL_OPTIONS=+fnu"
-        "LC_ALL=C.UTF-8"
-        "ERL_AFLAGS='-kernel shell_history enabled -enable-feature maybe_expr'"
-      ];
+        Cmd = [ "harjus" "start" ];
+        Env = [
+          "ELIXIR_ERL_OPTIONS=+fnu"
+          "LC_ALL=C.UTF-8"
+          "ERL_AFLAGS='-kernel shell_history enabled -enable-feature maybe_expr'"
+        ];
       };
 
       # Minimize the size by using only runtime dependencies
