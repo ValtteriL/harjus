@@ -1,20 +1,20 @@
 /*
- * testengine.cpp
+ * EngineTest.cpp
  * Testing the engine class
  */
 
 #include <QTest>
 #include <QJsonDocument>
-#include "../engine.h"
+#include "Engine.h"
 
-class TestEngine : public QObject
+class EngineTest : public QObject
 {
   Q_OBJECT
 private slots:
   void fromJson_update();
 };
 
-void TestEngine::fromJson_update()
+void EngineTest::fromJson_update()
 {
   QString symbol = "ETHBTC";
   QString jsonStr = R"(
@@ -95,5 +95,4 @@ void TestEngine::fromJson_update()
   QVERIFY(opportunities.at(0).totalProfit() > 0);
 }
 
-QTEST_MAIN(TestEngine)
-#include "testengine.moc"
+#include "EngineTest.moc"

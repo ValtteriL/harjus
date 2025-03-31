@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QJsonObject>
-#include "tradingsymbol.h"
+#include "TradingSymbol.h"
 
 /**
  *  Planned Execution class. Contains all information requried to execute arbitrage opportunity.

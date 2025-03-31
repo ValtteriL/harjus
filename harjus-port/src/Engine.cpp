@@ -1,6 +1,6 @@
-#include "engine.h"
-#include "tradingsymbol.h"
-#include "plannedexecution.h"
+#include "Engine.h"
+#include "TradingSymbol.h"
+#include "PlannedExecution.h"
 #include <string.h>
 
 Engine Engine::fromJson(const QJsonObject &json)

@@ -20,16 +20,13 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 # Optimize release builds for performance
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+include_directories(include)
+
 add_executable(harjus-port
-  main.cpp
-  engine.cpp
-  engine.h
-  plannedexecution.h
-  plannedexecution.cpp
-  tradingsymbol.h
-  tradingsymbol.cpp
-  offer.h
-  position.h
+  src/Main.cpp
+  src/Engine.cpp
+  src/PlannedExecution.cpp
+  src/TradingSymbol.cpp
 )
 target_link_libraries(harjus-port Qt${QT_VERSION_MAJOR}::Core)
 
@@ -42,39 +39,18 @@ install(TARGETS harjus-port
 # testing related
 enable_testing()
 
-add_executable(testsample test/testsample.cpp)
-target_link_libraries(testsample PUBLIC
-  Qt${QT_VERSION_MAJOR}::Core
-  Qt${QT_VERSION_MAJOR}::Test
+# gather all test files
+file(GLOB TEST_FILES
+  tests/*.cpp
 )
-add_test(NAME testsample COMMAND testsample)
 
-add_executable(testengine 
-  test/testengine.cpp 
-  engine.cpp
-  engine.h
-  tradingsymbol.h
-  tradingsymbol.cpp
-  plannedexecution.h
-  plannedexecution.cpp
+add_executable(all-tests ${TEST_FILES}
+  src/PlannedExecution.cpp
+  src/TradingSymbol.cpp
+  src/Engine.cpp
 )
-target_link_libraries(testengine PUBLIC
+target_link_libraries(all-tests PUBLIC
   Qt${QT_VERSION_MAJOR}::Core
   Qt${QT_VERSION_MAJOR}::Test
 )
-add_test(NAME testengine COMMAND testengine)
-
-add_executable(testplannedexecution 
-  test/testplannedexecution.cpp 
-  engine.cpp
-  engine.h
-  tradingsymbol.h
-  tradingsymbol.cpp
-  plannedexecution.h
-  plannedexecution.cpp
-)
-target_link_libraries(testplannedexecution PUBLIC
-  Qt${QT_VERSION_MAJOR}::Core
-  Qt${QT_VERSION_MAJOR}::Test
-)
-add_test(NAME testplannedexecution COMMAND testplannedexecution)
+add_test(NAME all-tests COMMAND all-tests)

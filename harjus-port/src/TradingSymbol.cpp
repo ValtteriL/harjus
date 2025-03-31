@@ -1,4 +1,4 @@
-#include "tradingsymbol.h"
+#include "TradingSymbol.h"
 #include <string.h>
 
 /*
