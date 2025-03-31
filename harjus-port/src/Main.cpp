@@ -5,7 +5,7 @@
 #include <QTextStream>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "engine.h"
+#include "Engine.h"
 
 QJsonObject readJson()
 {

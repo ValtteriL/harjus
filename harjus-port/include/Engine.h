@@ -5,8 +5,8 @@
 #include <QHash>
 #include <QJsonObject>
 #include <QJsonArray>
-#include "plannedexecution.h"
-#include "offer.h"
+#include "PlannedExecution.h"
+#include "Offer.h"
 
 class Engine
 {

@@ -1,11 +1,11 @@
 /*
- * testsample.cpp
+ * MainTest.cpp
  * Testing the testing framework
  */
 
 #include <QTest>
 
-class TestSample : public QObject
+class MainTest : public QObject
 {
   Q_OBJECT
 private slots:
@@ -13,15 +13,15 @@ private slots:
   void test2();
 };
 
-void TestSample::test1()
+void MainTest::test1()
 {
   QCOMPARE(1, 1);
 }
 
-void TestSample::test2()
+void MainTest::test2()
 {
   QVERIFY(1 == 1);
 }
 
-QTEST_MAIN(TestSample)
-#include "testsample.moc"
+QTEST_MAIN(MainTest)
+#include "MainTest.moc"

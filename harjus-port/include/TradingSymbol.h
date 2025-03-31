@@ -3,7 +3,7 @@
 #include <QString>
 #include <QJsonObject>
 #include <QJsonArray>
-#include "position.h"
+#include "Position.h"
 
 class TradingSymbol
 {

@@ -1,22 +1,22 @@
 /*
- * testplannedexecution.cpp
+ * PlannedExecutionTest.cpp
  * Testing the PlannedExecution class
  */
 
 #include <QTest>
 #include <QJsonDocument>
 #include <QString>
-#include "../plannedexecution.h"
+#include "PlannedExecution.h"
 #include <iostream>
 
-class TestPlannedExecution : public QObject
+class PlannedExecutionTest : public QObject
 {
   Q_OBJECT
 private slots:
   void update();
 };
 
-void TestPlannedExecution::update()
+void PlannedExecutionTest::update()
 {
   // prices with no special arbitrage opportunities
   // but calculation properties should hold
@@ -67,5 +67,4 @@ void TestPlannedExecution::update()
   }
 }
 
-QTEST_MAIN(TestPlannedExecution)
-#include "testplannedexecution.moc"
+#include "PlannedExecutionTest.moc"
