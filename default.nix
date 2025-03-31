@@ -61,7 +61,7 @@ let
       pname = "harjus-port";
       version = "1.0.0";
 
-      src = ./harjus-port;
+      src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
       buildInputs = [ qt6.qtbase ];
       nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsHook ];
