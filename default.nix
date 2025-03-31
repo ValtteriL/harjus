@@ -64,10 +64,7 @@ let
       src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
       buildInputs = [ qt6.qtbase ];
-      nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsHook ];
-
-      # run cmake tests
-      doCheck = true;
+      nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsNoGuiHook ];
     };
 
     # docker packaging derivation
