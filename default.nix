@@ -72,15 +72,16 @@ let
       name = "harjus";
       created = "now";
       config = {
-        Cmd = [ "harjus" "start" ];
-        Env = [
-          "ELIXIR_ERL_OPTIONS=+fnu"
-          "LC_ALL=C.UTF-8"
-          "ERL_AFLAGS='-kernel shell_history enabled -enable-feature maybe_expr'"
-        ];
+      Cmd = [ "harjus" "start" ];
+      Env = [
+        "ELIXIR_ERL_OPTIONS=+fnu"
+        "LC_ALL=C.UTF-8"
+        "ERL_AFLAGS='-kernel shell_history enabled -enable-feature maybe_expr'"
+      ];
       };
 
-      contents = [ glibcLocales harjusBuild harjusPortBuild dockerTools.binSh ];
+      # Minimize the size by using only runtime dependencies
+      contents = [ glibcLocales harjusBuild harjusPortBuild ];
     };
 
   };
