@@ -11,6 +11,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 
+
+# Google Test
+find_package(GTest REQUIRED)
+
 # Enable all warnings
 add_compile_options(-Wall -Wextra -Wpedantic)
 
@@ -38,19 +42,36 @@ install(TARGETS harjus-port
 
 # testing related
 enable_testing()
+include(GoogleTest)
 
-# gather all test files
-file(GLOB TEST_FILES
-  tests/*.cpp
+add_executable(MainTest tests/MainTest.cpp)
+target_link_libraries(MainTest PRIVATE
+  Qt${QT_VERSION_MAJOR}::Core
+  gtest_main
 )
 
-add_executable(all-tests ${TEST_FILES}
+gtest_discover_tests(MainTest)
+
+add_executable(EngineTest tests/EngineTest.cpp
   src/PlannedExecution.cpp
   src/TradingSymbol.cpp
   src/Engine.cpp
 )
-target_link_libraries(all-tests PUBLIC
+target_link_libraries(EngineTest PRIVATE
   Qt${QT_VERSION_MAJOR}::Core
-  Qt${QT_VERSION_MAJOR}::Test
+  gtest_main
 )
-add_test(NAME all-tests COMMAND all-tests)
+
+gtest_discover_tests(EngineTest)
+
+add_executable(PlannedExecutionTest tests/PlannedExecutionTest.cpp
+  src/PlannedExecution.cpp
+  src/TradingSymbol.cpp
+  src/Engine.cpp
+)
+target_link_libraries(PlannedExecutionTest PRIVATE
+  Qt${QT_VERSION_MAJOR}::Core
+  gtest_main
+)
+
+gtest_discover_tests(PlannedExecutionTest)

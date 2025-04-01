@@ -3,25 +3,19 @@
  * Testing the testing framework
  */
 
-#include <QTest>
+#include <gtest/gtest.h>
 
-class MainTest : public QObject
+TEST(MainTest, oneEqualToOne)
 {
-  Q_OBJECT
-private slots:
-  void test1();
-  void test2();
-};
-
-void MainTest::test1()
-{
-  QCOMPARE(1, 1);
+  EXPECT_EQ(1, 1);
 }
 
-void MainTest::test2()
+TEST(MainTest, oneDoesNotEqualToTwo)
 {
-  QVERIFY(1 == 1);
+  ASSERT_NE(1, 2);
 }
 
-QTEST_MAIN(MainTest)
-#include "MainTest.moc"
+TEST(MainTest, OneIsOne)
+{
+  EXPECT_TRUE(1 == 1);
+}
