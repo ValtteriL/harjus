@@ -3,18 +3,11 @@
  * Testing the engine class
  */
 
-#include <QTest>
+#include <gtest/gtest.h>
 #include <QJsonDocument>
 #include "Engine.h"
 
-class EngineTest : public QObject
-{
-  Q_OBJECT
-private slots:
-  void fromJson_update();
-};
-
-void EngineTest::fromJson_update()
+TEST(EngineTest, fromJson_update)
 {
   QString symbol = "ETHBTC";
   QString jsonStr = R"(
@@ -91,8 +84,6 @@ void EngineTest::fromJson_update()
 
   // only single opportunity with positive profit should be found
   // as default profit is 0 and no update has been implemented
-  QCOMPARE(opportunities.size(), 1);
-  QVERIFY(opportunities.at(0).totalProfit() > 0);
+  ASSERT_EQ(opportunities.size(), 1);
+  ASSERT_TRUE(opportunities.at(0).totalProfit() > 0);
 }
-
-#include "EngineTest.moc"

@@ -3,20 +3,13 @@
  * Testing the PlannedExecution class
  */
 
-#include <QTest>
+#include <gtest/gtest.h>
 #include <QJsonDocument>
 #include <QString>
 #include "PlannedExecution.h"
 #include <iostream>
 
-class PlannedExecutionTest : public QObject
-{
-  Q_OBJECT
-private slots:
-  void update();
-};
-
-void PlannedExecutionTest::update()
+TEST(PlannedExecutionTest, update)
 {
   // prices with no special arbitrage opportunities
   // but calculation properties should hold
@@ -51,8 +44,8 @@ void PlannedExecutionTest::update()
   plan.update();
 
   // properties are set correctly
-  QCOMPARE_EQ(relativePrice, plan.mRelativePrice);
-  QCOMPARE_EQ(commission, plan.mCommission);
+  ASSERT_EQ(relativePrice, plan.mRelativePrice);
+  ASSERT_EQ(commission, plan.mCommission);
 
   // in each trade, the used balance lte the received in previous trade
   auto received = plan.mTrades.front().usedAmount();
@@ -62,9 +55,7 @@ void PlannedExecutionTest::update()
 
     std::cerr << "used: " << used << " received: " << received << std::endl;
 
-    QVERIFY(received >= used);
+    ASSERT_GE(received, used);
     received = trade.receiveivedAmount();
   }
 }
-
-#include "PlannedExecutionTest.moc"

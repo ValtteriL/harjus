@@ -50,6 +50,7 @@ let
         ninja
         gdb
         qt6.full
+        gtest
 
         # deployment
         terraform
