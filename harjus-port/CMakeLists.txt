@@ -19,7 +19,7 @@ find_package(GTest REQUIRED)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 # Optimize debug builds for speed
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+set(CMAKE_CXX_FLAGS_DEBUG "-O3 -g")
 
 # Optimize release builds for performance
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
