@@ -41,7 +41,7 @@ install(TARGETS harjus-port
 )
 
 # testing related
-enable_testing()
+include(CTest)
 include(GoogleTest)
 
 add_executable(MainTest tests/MainTest.cpp)
