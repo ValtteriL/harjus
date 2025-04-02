@@ -75,3 +75,15 @@ target_link_libraries(PlannedExecutionTest PRIVATE
 )
 
 gtest_discover_tests(PlannedExecutionTest)
+
+
+add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
+  src/ReservedTrades.cpp
+  src/TradingSymbol.cpp
+)
+target_link_libraries(ReservedTradesTest PRIVATE
+  Qt${QT_VERSION_MAJOR}::Core
+  gtest_main
+)
+
+gtest_discover_tests(ReservedTradesTest)
