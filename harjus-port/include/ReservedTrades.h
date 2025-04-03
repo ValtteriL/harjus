@@ -35,7 +35,27 @@ public:
 
 private:
   /**
+   *  Custom hash and equality for ITrade.
+   */
+  struct ITradeHash
+  {
+    std::size_t operator()(const ITrade *trade) const
+    {
+      return trade->hash();
+    }
+  };
+
+  struct ITradeEqual
+  {
+    bool operator()(const ITrade *lhs, const ITrade *rhs) const
+    {
+      return *lhs == *rhs;
+    }
+  };
+
+  /**
    *  Reserved symbols list.
    */
-  std::unordered_set<ITrade *> reservedTrades;
+  std::unordered_set<ITrade *, ITradeHash, ITradeEqual> reservedTrades;
 };
+;
