@@ -19,7 +19,7 @@ class ReservedTradesTest : public testing::Test
 protected:
   ReservedTradesTest()
   {
-    std::string symbol{"BTCETH"};
+    std::string &symbol = *symbolPtr;
 
     // trade1 and trade2 are identical trades
     // trade3 is a different (different position)
@@ -39,6 +39,8 @@ protected:
     EXPECT_CALL(trade3, getPosition())
         .WillRepeatedly(Return(Position::SHORT));
   }
+
+  std::unique_ptr<std::string> symbolPtr = std::make_unique<std::string>("BTCETH");
 
   MockTrade trade1;
   MockTrade trade2;
