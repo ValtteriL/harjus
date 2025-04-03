@@ -51,6 +51,7 @@ let
         gdb
         qt6.full
         gtest
+        boost
 
         # deployment
         terraform
@@ -75,7 +76,7 @@ let
 
       src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
-      buildInputs = [ qt6.qtbase ];
+      buildInputs = [ qt6.qtbase boost ];
       nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsNoGuiHook ];
     };
 
