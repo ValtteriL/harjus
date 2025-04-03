@@ -1,7 +1,7 @@
 #pragma once
 
 #include <unordered_set>
-#include "Trade.h"
+#include "ITrade.h"
 
 /**
  * ReservedTrades class. Contains logic for bookkeeping reserved trades.
@@ -21,21 +21,21 @@ public:
   /**
    *  Reserve a trade.
    */
-  void reserve(const Trade &trade);
+  void reserve(ITrade &trade);
 
   /**
    *  Release a trade.
    */
-  void release(const Trade &trade);
+  void release(ITrade &trade);
 
   /**
    *  Check if a trade is reserved.
    */
-  bool isReserved(const Trade &trade) const;
+  bool isReserved(ITrade &trade) const;
 
 private:
   /**
    *  Reserved symbols list.
    */
-  std::unordered_set<Trade> reservedTrades;
+  std::unordered_set<ITrade *> reservedTrades;
 };

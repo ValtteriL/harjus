@@ -84,6 +84,7 @@ add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
 target_link_libraries(ReservedTradesTest PRIVATE
   Qt${QT_VERSION_MAJOR}::Core
   gtest_main
+  GTest::gmock
 )
 
 gtest_discover_tests(ReservedTradesTest)

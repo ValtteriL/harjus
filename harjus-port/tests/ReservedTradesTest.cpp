@@ -4,9 +4,67 @@
  */
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include "ReservedTrades.h"
+#include "Trade_test.h"
+using ::testing::Return;
+using ::testing::ReturnRef;
 
-TEST(ReservedTradesTest, oneEqualToTwo)
+/**
+ * Test fixture for ReservedTrades.
+ */
+
+class ReservedTradesTest : public testing::Test
 {
-  EXPECT_EQ(1, 2);
+protected:
+  ReservedTradesTest()
+  {
+    std::string symbol{"BTCETH"};
+
+    // trade1 and trade2 are identical trades
+    // trade3 is a different (different position)
+
+    EXPECT_CALL(trade1, getSymbol())
+        .WillRepeatedly(ReturnRef(symbol));
+    EXPECT_CALL(trade1, getPosition())
+        .WillRepeatedly(Return(Position::LONG));
+
+    EXPECT_CALL(trade2, getSymbol())
+        .WillRepeatedly(ReturnRef(symbol));
+    EXPECT_CALL(trade2, getPosition())
+        .WillRepeatedly(Return(Position::LONG));
+
+    EXPECT_CALL(trade3, getSymbol())
+        .WillRepeatedly(ReturnRef(symbol));
+    EXPECT_CALL(trade3, getPosition())
+        .WillRepeatedly(Return(Position::SHORT));
+  }
+
+  MockTrade trade1;
+  MockTrade trade2;
+  MockTrade trade3;
+  ReservedTrades reservedTrades;
+};
+
+TEST_F(ReservedTradesTest, checkReserveCheckReleaseCheck)
+{
+  EXPECT_FALSE(reservedTrades.isReserved(trade1));
+
+  reservedTrades.reserve(trade1);
+  EXPECT_TRUE(reservedTrades.isReserved(trade1));
+
+  reservedTrades.release(trade1);
+  EXPECT_FALSE(reservedTrades.isReserved(trade1));
+}
+
+TEST_F(ReservedTradesTest, reserveCheckIdenticalTrade)
+{
+  reservedTrades.reserve(trade1);
+  EXPECT_TRUE(reservedTrades.isReserved(trade2));
+}
+
+TEST_F(ReservedTradesTest, reserveCheckDifferentTrade)
+{
+  reservedTrades.reserve(trade1);
+  EXPECT_FALSE(reservedTrades.isReserved(trade3));
 }

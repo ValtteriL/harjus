@@ -1,16 +1,16 @@
 #include "ReservedTrades.h"
 
-void ReservedTrades::reserve(const Trade &trade)
+void ReservedTrades::reserve(ITrade &trade)
 {
-  reservedTrades.insert(trade);
+  reservedTrades.insert(&trade);
 }
 
-void ReservedTrades::release(const Trade &trade)
+void ReservedTrades::release(ITrade &trade)
 {
-  reservedTrades.erase(trade);
+  reservedTrades.erase(&trade);
 }
 
-bool ReservedTrades::isReserved(const Trade &trade) const
+bool ReservedTrades::isReserved(ITrade &trade) const
 {
-  return reservedTrades.contains(trade);
+  return reservedTrades.contains(&trade);
 }
