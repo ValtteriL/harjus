@@ -5,7 +5,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
@@ -19,7 +19,7 @@ find_package(GTest REQUIRED)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 # Optimize debug builds for speed
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
+set(CMAKE_CXX_FLAGS_DEBUG "-O3 -g")
 
 # Optimize release builds for performance
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -41,7 +41,7 @@ install(TARGETS harjus-port
 )
 
 # testing related
-enable_testing()
+include(CTest)
 include(GoogleTest)
 
 add_executable(MainTest tests/MainTest.cpp)
@@ -75,3 +75,16 @@ target_link_libraries(PlannedExecutionTest PRIVATE
 )
 
 gtest_discover_tests(PlannedExecutionTest)
+
+
+add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
+  src/ReservedTrades.cpp
+  src/TradingSymbol.cpp
+)
+target_link_libraries(ReservedTradesTest PRIVATE
+  Qt${QT_VERSION_MAJOR}::Core
+  gtest_main
+  GTest::gmock
+)
+
+gtest_discover_tests(ReservedTradesTest)
