@@ -1,17 +1,14 @@
-#include <QCoreApplication>
 #include <iostream>
 #include <string>
-#include <QSocketNotifier>
-#include <QTextStream>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include "Engine.h"
 
 QJsonObject readJson()
 {
-    QTextStream in(stdin);
-    QString input = in.readLine();
-    return QJsonDocument::fromJson(input.toUtf8()).object();
+    std::string input;
+    std::getline(std::cin, input);
+    return QJsonDocument::fromJson(QByteArray::fromStdString(input)).object();
 }
 
 int main()
@@ -19,13 +16,12 @@ int main()
     auto engine = Engine::fromJson(readJson());
     std::cout << "ready" << std::endl;
 
-    QTextStream in(stdin);
-    QString input;
+    std::string input;
 
-    while (!(input = in.readLine()).isNull())
+    while (std::getline(std::cin, input))
     {
         // handle price update
-        auto json = QJsonDocument::fromJson(input.toUtf8()).object();
+        auto json = QJsonDocument::fromJson(QByteArray::fromStdString(input)).object();
         auto opportunities = engine.priceUpdate(json);
 
         if (opportunities.size() > 0)
