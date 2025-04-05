@@ -13,11 +13,13 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 
 # Boost
-find_package(Boost REQUIRED)
-
+find_package(Boost REQUIRED COMPONENTS urls)
 
 # Google Test
 find_package(GTest REQUIRED)
+
+# Find OpenSSL
+find_package(OpenSSL REQUIRED)
 
 # Enable all warnings
 add_compile_options(-Wall -Wextra -Wpedantic)
@@ -36,7 +38,7 @@ add_executable(harjus-port
   src/PlannedExecution.cpp
   src/TradingSymbol.cpp
 )
-target_link_libraries(harjus-port Qt${QT_VERSION_MAJOR}::Core)
+target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::urls)
 
 include(GNUInstallDirs)
 install(TARGETS harjus-port
@@ -101,4 +103,17 @@ target_link_libraries(BalanceTest PRIVATE
   GTest::gmock
 )
 
-gtest_discover_tests(BalanceTest)
+gtest_discover_tests(ReservedTradesTest)
+
+add_executable(HttpClientTest tests/HttpClientTest.cpp
+  src/HttpClient.cpp
+)
+target_link_libraries(HttpClientTest PRIVATE
+  gtest_main
+  GTest::gmock
+  OpenSSL::SSL
+  OpenSSL::Crypto
+  Boost::urls
+)
+
+gtest_discover_tests(HttpClientTest)
