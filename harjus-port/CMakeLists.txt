@@ -92,3 +92,13 @@ target_link_libraries(ReservedTradesTest PRIVATE
 )
 
 gtest_discover_tests(ReservedTradesTest)
+
+add_executable(BalanceTest tests/BalanceTest.cpp
+  src/Balance.cpp
+)
+target_link_libraries(BalanceTest PRIVATE
+  gtest_main
+  GTest::gmock
+)
+
+gtest_discover_tests(BalanceTest)
