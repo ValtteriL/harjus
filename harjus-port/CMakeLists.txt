@@ -24,6 +24,10 @@ find_package(GTest REQUIRED)
 # OpenSSL
 find_package(OpenSSL REQUIRED)
 
+# Sodium
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBSODIUM REQUIRED libsodium)
+
 # cpp-netlib
 find_package(cppnetlib REQUIRED)
 
@@ -44,7 +48,7 @@ add_executable(harjus-port
   src/PlannedExecution.cpp
   src/TradingSymbol.cpp
 )
-target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::urls)
+target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url ${LIBSODIUM_LIBRARIES} cppnetlib-client-connections)
 
 include(GNUInstallDirs)
 install(TARGETS harjus-port
