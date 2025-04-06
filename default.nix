@@ -53,6 +53,9 @@ let
         gtest
         boost
         openssl
+        cpp-netlib
+        pkg-config
+        libsodium
 
         # deployment
         terraform
@@ -77,8 +80,8 @@ let
 
       src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
-      buildInputs = [ qt6.qtbase boost openssl ];
-      nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsNoGuiHook ];
+      buildInputs = [ qt6.qtbase boost openssl cpp-netlib libsodium ];
+      nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsNoGuiHook pkg-config ];
     };
 
     # docker packaging derivation

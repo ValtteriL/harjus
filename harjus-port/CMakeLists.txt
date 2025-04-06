@@ -13,13 +13,19 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 
 # Boost
-find_package(Boost REQUIRED COMPONENTS urls)
+if(POLICY CMP0167)
+  cmake_policy(SET CMP0167 NEW)
+endif()
+find_package(Boost REQUIRED COMPONENTS url system thread)
 
 # Google Test
 find_package(GTest REQUIRED)
 
-# Find OpenSSL
+# OpenSSL
 find_package(OpenSSL REQUIRED)
+
+# cpp-netlib
+find_package(cppnetlib REQUIRED)
 
 # Enable all warnings
 add_compile_options(-Wall -Wextra -Wpedantic)
@@ -104,16 +110,3 @@ target_link_libraries(BalanceTest PRIVATE
 )
 
 gtest_discover_tests(ReservedTradesTest)
-
-add_executable(HttpClientTest tests/HttpClientTest.cpp
-  src/HttpClient.cpp
-)
-target_link_libraries(HttpClientTest PRIVATE
-  gtest_main
-  GTest::gmock
-  OpenSSL::SSL
-  OpenSSL::Crypto
-  Boost::urls
-)
-
-gtest_discover_tests(HttpClientTest)
