@@ -8,10 +8,10 @@
 std::string Ed25519::base64_encode(const unsigned char *data, size_t length)
 {
   // construct a buffer to hold the base64 encoded string
-  const size_t b64Length = sodium_base64_encoded_len(length, sodium_base64_VARIANT_ORIGINAL_NO_PADDING);
+  const size_t b64Length = sodium_base64_encoded_len(length, sodium_base64_VARIANT_ORIGINAL);
   std::vector<char> b64Buffer(b64Length, 0);
 
-  char *encoded = sodium_bin2base64(b64Buffer.data(), b64Length, data, length, sodium_base64_VARIANT_ORIGINAL_NO_PADDING);
+  char *encoded = sodium_bin2base64(b64Buffer.data(), b64Length, data, length, sodium_base64_VARIANT_ORIGINAL);
 
   if (!encoded)
   {
@@ -29,7 +29,7 @@ std::string Ed25519::base64_decode(const std::string encoded)
 
   if (sodium_base642bin(
           decoded.data(), decoded.size(), encoded.c_str(), encoded.size(),
-          nullptr, &decoded_length, nullptr, sodium_base64_VARIANT_ORIGINAL_NO_PADDING) != 0)
+          nullptr, &decoded_length, nullptr, sodium_base64_VARIANT_ORIGINAL) != 0)
   {
     throw std::runtime_error("Failed to decode base64 string");
   }

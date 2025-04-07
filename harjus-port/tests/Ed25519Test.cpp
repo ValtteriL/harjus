@@ -12,7 +12,7 @@ using namespace std::string_literals;
 TEST(Ed25519Test, base64EncodeDecode)
 {
   std::string input{"Hello, World!"};
-  std::string expectedOutput{"SGVsbG8sIFdvcmxkIQ"};
+  std::string expectedOutput{"SGVsbG8sIFdvcmxkIQ=="};
 
   // Encode the input string to base64
   std::string encoded = Ed25519::base64_encode(reinterpret_cast<const unsigned char *>(input.c_str()), input.size());
@@ -28,7 +28,7 @@ TEST(Ed25519Test, signatureIsValid)
 {
 
   // base64-encoded seed for a ed25519 keypair
-  std::string extracted_seed{"MC4CAQAwBQYDK2VwBCIEIG8WQL/z+p+GpQhT/2jMHGsr7ENyABR+SxcuxV8ppJI3"};
+  std::string extracted_seed{"3+iB1KqYOP2UgJ+jG6Mu0mac5kqjdjZjVlc5R6vGJ9Q="};
 
   // Decode the base64 encoded seed and convert to byte array
   auto seedDecoded = Ed25519::base64_decode(extracted_seed);
