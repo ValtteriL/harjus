@@ -35,7 +35,7 @@ find_package(cppnetlib REQUIRED)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 # Optimize debug builds for speed
-set(CMAKE_CXX_FLAGS_DEBUG "-O3 -g")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 
 # Optimize release builds for performance
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -114,3 +114,14 @@ target_link_libraries(BalanceTest PRIVATE
 )
 
 gtest_discover_tests(ReservedTradesTest)
+
+add_executable(Ed25519Test tests/Ed25519Test.cpp
+  src/Ed25519.cpp
+)
+target_link_libraries(Ed25519Test PRIVATE
+  gtest_main
+  GTest::gmock
+  ${LIBSODIUM_LIBRARIES}
+)
+
+gtest_discover_tests(Ed25519Test)
