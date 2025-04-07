@@ -28,6 +28,7 @@
                 "test/**/*_test.exs"
             ]
         },
+        // use this for debugging C++ tests
         {
             "name": "(ctest) Launch",
             "type": "cppdbg",
