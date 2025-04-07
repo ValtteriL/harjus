@@ -28,7 +28,7 @@ TEST(Ed25519Test, signatureIsValid)
 {
 
   // base64-encoded seed for a ed25519 keypair
-  std::string extracted_seed{"MC4CAQAwBQYDK2VwBCIEIJpJm/MC4CAQAwBQYDK2VwBCIEIG8WQL/z+p+GpQhT/2jMHGsr7ENyABR+SxcuxV8ppJI3"};
+  std::string extracted_seed{"MC4CAQAwBQYDK2VwBCIEIG8WQL/z+p+GpQhT/2jMHGsr7ENyABR+SxcuxV8ppJI3"};
 
   // Decode the base64 encoded seed and convert to byte array
   auto seedDecoded = Ed25519::base64_decode(extracted_seed);
