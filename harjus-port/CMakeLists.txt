@@ -44,9 +44,6 @@ include_directories(include)
 
 add_executable(harjus-port
   src/Main.cpp
-  src/Engine.cpp
-  src/PlannedExecution.cpp
-  src/TradingSymbol.cpp
   src/Configuration.cpp
   src/Exchange.cpp
   src/Ed25519.cpp
@@ -72,34 +69,8 @@ target_link_libraries(MainTest PRIVATE
 
 gtest_discover_tests(MainTest)
 
-add_executable(EngineTest tests/EngineTest.cpp
-  src/PlannedExecution.cpp
-  src/TradingSymbol.cpp
-  src/Engine.cpp
-)
-target_link_libraries(EngineTest PRIVATE
-  Qt${QT_VERSION_MAJOR}::Core
-  gtest_main
-)
-
-gtest_discover_tests(EngineTest)
-
-add_executable(PlannedExecutionTest tests/PlannedExecutionTest.cpp
-  src/PlannedExecution.cpp
-  src/TradingSymbol.cpp
-  src/Engine.cpp
-)
-target_link_libraries(PlannedExecutionTest PRIVATE
-  Qt${QT_VERSION_MAJOR}::Core
-  gtest_main
-)
-
-gtest_discover_tests(PlannedExecutionTest)
-
-
 add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
   src/ReservedTrades.cpp
-  src/TradingSymbol.cpp
 )
 target_link_libraries(ReservedTradesTest PRIVATE
   Qt${QT_VERSION_MAJOR}::Core
