@@ -45,7 +45,16 @@ std::string Ed25519::sign(std::string extracted_seed, std::string payload)
   }
 
   // Decode the base64 encoded seed and convert to byte array
-  auto seedDecoded = base64_decode(extracted_seed);
+  std::string seedDecoded;
+  try
+  {
+    seedDecoded = base64_decode(extracted_seed);
+  }
+  catch (const std::exception &e)
+  {
+    throw std::runtime_error("Failed to decode base64 seed: " + std::string(e.what()));
+  }
+
   std::vector<unsigned char> seedBytes{seedDecoded.begin(), seedDecoded.end()};
 
   unsigned char seed[crypto_sign_SEEDBYTES];
