@@ -117,3 +117,14 @@ target_link_libraries(ExchangeTest PRIVATE
 )
 
 gtest_discover_tests(ExchangeTest)
+
+
+add_executable(ArbmapperTest tests/ArbmapperTest.cpp
+  src/Arbmapper.cpp
+)
+target_link_libraries(ArbmapperTest PRIVATE
+  gtest_main
+  GTest::gmock
+)
+
+gtest_discover_tests(ArbmapperTest)
