@@ -51,11 +51,19 @@ let
         gdb
         qt6.full
         gtest
+        boost
+        openssl
+        libcpr
+        pkg-config
+        libsodium
 
         # deployment
         terraform
         awscli2
       ];
+
+      # disable hardenings (for better debugging experience)
+      hardeningDisable = [ "all" ];
 
       # this is executed when shell entered
       shellHook = ''
@@ -75,8 +83,8 @@ let
 
       src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
-      buildInputs = [ qt6.qtbase ];
-      nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsNoGuiHook ];
+      buildInputs = [ qt6.qtbase boost openssl cpp-netlib libsodium ];
+      nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsNoGuiHook pkg-config ];
     };
 
     # docker packaging derivation

@@ -2,17 +2,18 @@
 
 #include "Position.h"
 #include "TradingSymbol.h"
+#include <boost/multiprecision/cpp_dec_float.hpp>
 
 class ITrade
 {
 public:
   virtual Position getPosition() const = 0;
-  virtual long double getOrderQty() const = 0;
-  virtual long double getOrderPrice() const = 0;
+  virtual boost::multiprecision::cpp_dec_float_50 getOrderQty() const = 0;
+  virtual boost::multiprecision::cpp_dec_float_50 getOrderPrice() const = 0;
   virtual const std::string &getSymbol() const = 0;
-  virtual void setBudget(long double budget) = 0;
-  virtual long double getRecvQty() const = 0;
-  virtual long double getUsedQty() const = 0;
+  virtual void setBudget(boost::multiprecision::cpp_dec_float_50 budget) = 0;
+  virtual boost::multiprecision::cpp_dec_float_50 getRecvQty() const = 0;
+  virtual boost::multiprecision::cpp_dec_float_50 getUsedQty() const = 0;
   virtual std::string_view getRecvCurrency() const = 0;
   virtual std::string_view getUsedCurrency() const = 0;
 

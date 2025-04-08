@@ -28,6 +28,7 @@
                 "test/**/*_test.exs"
             ]
         },
+        // use this for debugging C++ tests
         {
             "name": "(ctest) Launch",
             "type": "cppdbg",
@@ -38,6 +39,24 @@
             "args": [
                 "${cmake.testArgs}"
             ],
+        },
+        // use this for debugging harjus-port
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            // Resolved by CMake Tools:
+            "program": "${command:cmake.launchTargetPath}",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }

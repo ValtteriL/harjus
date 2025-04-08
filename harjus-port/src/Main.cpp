@@ -1,41 +1,17 @@
 #include <iostream>
 #include <string>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include "Engine.h"
-
-QJsonObject readJson()
-{
-    std::string input;
-    std::getline(std::cin, input);
-    return QJsonDocument::fromJson(QByteArray::fromStdString(input)).object();
-}
+#include "Configuration.h"
+#include "Exchange.h"
 
 int main()
 {
-    auto engine = Engine::fromJson(readJson());
-    std::cout << "ready" << std::endl;
+    Configuration config;
+    std::cout << "Binance REST API URI: " << config.getBinanceRESTApiUri() << std::endl;
+    std::cout << "Binance FIX API Hostname: " << config.getBinanceFIXApiHostname() << std::endl;
+    std::cout << "Binance FIX API Port: " << config.getBinanceFIXApiPort() << std::endl;
 
-    std::string input;
+    Balance balance = getBalance(config);
 
-    while (std::getline(std::cin, input))
-    {
-        // handle price update
-        auto json = QJsonDocument::fromJson(QByteArray::fromStdString(input)).object();
-        auto opportunities = engine.priceUpdate(json);
-
-        if (opportunities.size() > 0)
-        {
-            QJsonArray arr;
-            for (const auto &opportunity : opportunities)
-            {
-                arr.append(opportunity.toJson());
-            }
-
-            // print resulting array of opportunities in single line
-            std::cout << QJsonDocument(arr).toJson(QJsonDocument::Compact).toStdString() << std::endl;
-        }
-    }
-
+    std::cout << "Hello, World!" << std::endl;
     return 0;
 }
