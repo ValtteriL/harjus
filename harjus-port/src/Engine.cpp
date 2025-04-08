@@ -1,5 +1,5 @@
 #include "Engine.h"
-#include "TradingSymbol.h"
+#include "Symbol.h"
 #include "PlannedExecution.h"
 #include <string.h>
 

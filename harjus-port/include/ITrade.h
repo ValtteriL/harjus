@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Position.h"
-#include "TradingSymbol.h"
+#include "Symbol.h"
 #include <boost/multiprecision/cpp_dec_float.hpp>
 
 class ITrade
@@ -10,7 +10,7 @@ public:
   virtual Position getPosition() const = 0;
   virtual boost::multiprecision::cpp_dec_float_50 getOrderQty() const = 0;
   virtual boost::multiprecision::cpp_dec_float_50 getOrderPrice() const = 0;
-  virtual const std::string &getSymbol() const = 0;
+  virtual const Symbol &getSymbol() const = 0;
   virtual void setBudget(boost::multiprecision::cpp_dec_float_50 budget) = 0;
   virtual boost::multiprecision::cpp_dec_float_50 getRecvQty() const = 0;
   virtual boost::multiprecision::cpp_dec_float_50 getUsedQty() const = 0;
@@ -23,7 +23,7 @@ public:
    */
   bool operator==(const ITrade &other) const
   {
-    return getSymbol() == other.getSymbol() && getPosition() == other.getPosition() && getOrderQty() == other.getOrderQty();
+    return getSymbol().symbol == other.getSymbol().symbol && getPosition() == other.getPosition() && getOrderQty() == other.getOrderQty();
   }
 
   /**
@@ -33,7 +33,7 @@ public:
    */
   std::size_t hash() const
   {
-    return std::hash<std::string>()(getSymbol()) ^ std::hash<Position>()(getPosition());
+    return std::hash<std::string>()(getSymbol().symbol) ^ std::hash<Position>()(getPosition());
   }
 };
 
