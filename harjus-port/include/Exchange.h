@@ -1,5 +1,6 @@
 #pragma once
 
 #include "Balance.h"
+#include "IConfiguration.h"
 
-Balance getBalance();
+Balance getBalance(IConfiguration &config);

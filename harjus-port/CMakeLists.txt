@@ -16,7 +16,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
 endif()
-find_package(Boost REQUIRED COMPONENTS url system thread)
+find_package(Boost REQUIRED COMPONENTS url system thread json)
 
 # Google Test
 find_package(GTest REQUIRED)
@@ -48,8 +48,11 @@ add_executable(harjus-port
   src/PlannedExecution.cpp
   src/TradingSymbol.cpp
   src/Configuration.cpp
+  src/Exchange.cpp
+  src/Ed25519.cpp
+  src/Balance.cpp
 )
-target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url ${LIBSODIUM_LIBRARIES} cpr::cpr)
+target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json ${LIBSODIUM_LIBRARIES} cpr::cpr)
 
 include(GNUInstallDirs)
 install(TARGETS harjus-port
@@ -126,3 +129,20 @@ target_link_libraries(Ed25519Test PRIVATE
 )
 
 gtest_discover_tests(Ed25519Test)
+
+
+add_executable(ExchangeTest tests/ExchangeTest.cpp
+  src/Exchange.cpp
+  src/Ed25519.cpp
+  src/Balance.cpp
+)
+target_link_libraries(ExchangeTest PRIVATE
+  gtest_main
+  GTest::gmock
+  Boost::url
+  ${LIBSODIUM_LIBRARIES}
+  cpr::cpr
+  Boost::json
+)
+
+gtest_discover_tests(ExchangeTest)
