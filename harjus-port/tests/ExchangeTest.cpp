@@ -31,7 +31,7 @@ protected:
   MockConfiguration config;
 };
 
-TEST_F(ExchangeTest, getBalance) // add DISABLED_ prefix once works
+TEST_F(ExchangeTest, DISABLED_getBalance) // DISABLED_ prefix makes gtest skip this by default
 {
   auto balance = getBalance(config);
   EXPECT_TRUE(balance.getBalance("BTC") > 0); // assuming the testnet has some BTC
