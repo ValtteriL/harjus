@@ -28,8 +28,8 @@ find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 
-# cpp-netlib
-find_package(cppnetlib REQUIRED)
+# cpr https://github.com/libcpr/cpr
+find_package(cpr REQUIRED)
 
 # Enable all warnings
 add_compile_options(-Wall -Wextra -Wpedantic)
@@ -49,7 +49,7 @@ add_executable(harjus-port
   src/TradingSymbol.cpp
   src/Configuration.cpp
 )
-target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url ${LIBSODIUM_LIBRARIES} cppnetlib-client-connections)
+target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url ${LIBSODIUM_LIBRARIES} cpr::cpr)
 
 include(GNUInstallDirs)
 install(TARGETS harjus-port

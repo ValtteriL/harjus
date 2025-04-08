@@ -53,7 +53,7 @@ let
         gtest
         boost
         openssl
-        cpp-netlib
+        libcpr
         pkg-config
         libsodium
 
