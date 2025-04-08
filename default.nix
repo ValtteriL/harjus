@@ -62,6 +62,9 @@ let
         awscli2
       ];
 
+      # disable hardenings (for better debugging experience)
+      hardeningDisable = [ "all" ];
+
       # this is executed when shell entered
       shellHook = ''
         cowsay "Harjus!"
