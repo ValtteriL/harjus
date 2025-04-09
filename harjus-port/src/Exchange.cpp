@@ -2,6 +2,7 @@
 #include "Ed25519.h"
 #include <cpr/cpr.h>
 #include <boost/json.hpp>
+#include <stdexcept>
 
 /**
  * * @brief Create a signature for the request
@@ -81,4 +82,69 @@ Balance getBalance(IConfiguration &config)
   }
 
   return balance;
+}
+
+std::unordered_map<std::string, Symbol> getSymbols(IConfiguration &config)
+{
+  std::unordered_map<std::string, Symbol> symbols;
+
+  // Fetch exchange info from Binance API
+  std::string uri = config.getBinanceRESTApiUri() + "/api/v3/exchangeInfo";
+  cpr::Response r = cpr::Get(cpr::Url{uri});
+
+  if (r.status_code != 200)
+  {
+    throw std::runtime_error("Error fetching exchange info from Binance API: (" + std::to_string(r.status_code) + "), " + r.text);
+  }
+
+  // Parse JSON response
+  try
+  {
+    boost::json::value json = boost::json::parse(r.text);
+    boost::json::object obj = json.as_object();
+
+    for (const auto &item : obj["symbols"].as_array())
+    {
+      boost::json::object symbolObj = item.as_object();
+
+      if (!symbolObj["isSpotTradingAllowed"].as_bool())
+      {
+        continue;
+      }
+
+      Symbol symbol;
+      symbol.symbol = symbolObj["symbol"].as_string().c_str();
+      symbol.baseAsset = symbolObj["baseAsset"].as_string().c_str();
+      symbol.quoteAsset = symbolObj["quoteAsset"].as_string().c_str();
+      symbol.baseAssetPrecision = symbolObj["baseAssetPrecision"].as_int64();
+      symbol.quoteAssetPrecision = symbolObj["quoteAssetPrecision"].as_int64();
+
+      for (const auto &filter : symbolObj["filters"].as_array())
+      {
+        boost::json::object filterObj = filter.as_object();
+        std::string filterType = filterObj["filterType"].as_string().c_str();
+
+        if (filterType == "NOTIONAL")
+        {
+          symbol.minNotional = boost::multiprecision::cpp_dec_float_50(filterObj["minNotional"].as_string().c_str());
+        }
+        else if (filterType == "LOT_SIZE")
+        {
+          symbol.baseAssetIncrement = boost::multiprecision::cpp_dec_float_50(filterObj["stepSize"].as_string().c_str());
+        }
+        else if (filterType == "PRICE_FILTER")
+        {
+          symbol.quoteAssetIncrement = boost::multiprecision::cpp_dec_float_50(filterObj["tickSize"].as_string().c_str());
+        }
+      }
+
+      symbols[symbol.symbol] = symbol;
+    }
+  }
+  catch (const boost::json::system_error &e)
+  {
+    throw std::runtime_error("Failed to parse JSON response: " + std::string(e.what()));
+  }
+
+  return symbols;
 }

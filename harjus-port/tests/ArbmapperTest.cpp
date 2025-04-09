@@ -10,10 +10,10 @@
 TEST(ArbmapperTest, detectOpportunities)
 {
   // Create a vector of symbols
-  std::vector<Symbol> symbols{};
+  std::unordered_map<std::string, Symbol> symbolMap{};
   int depth = 3;
-  std::vector<Symbol> skipSymbols{};
-  auto opportunities = getTradingPaths(symbols, depth, skipSymbols);
+  std::vector<std::string> skipSymbols{};
+  auto opportunities = getTradingPaths(&symbolMap, depth, skipSymbols);
 
   EXPECT_TRUE(false);
 }
