@@ -16,7 +16,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
 endif()
-find_package(Boost REQUIRED COMPONENTS url system thread json)
+find_package(Boost REQUIRED COMPONENTS url system thread json graph)
 
 # Google Test
 find_package(GTest REQUIRED)
@@ -49,7 +49,7 @@ add_executable(harjus-port
   src/Ed25519.cpp
   src/Balance.cpp
 )
-target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json ${LIBSODIUM_LIBRARIES} cpr::cpr)
+target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph ${LIBSODIUM_LIBRARIES} cpr::cpr)
 
 include(GNUInstallDirs)
 install(TARGETS harjus-port
@@ -125,6 +125,7 @@ add_executable(ArbmapperTest tests/ArbmapperTest.cpp
 target_link_libraries(ArbmapperTest PRIVATE
   gtest_main
   GTest::gmock
+  Boost::graph
 )
 
 gtest_discover_tests(ArbmapperTest)
