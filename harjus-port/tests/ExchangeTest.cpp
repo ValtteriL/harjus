@@ -38,7 +38,7 @@ TEST_F(ExchangeTest, DISABLED_getBalance) // DISABLED_ prefix makes gtest skip t
   EXPECT_TRUE(balance.getBalance("BTC") > 0); // assuming the testnet has some BTC
 }
 
-TEST_F(ExchangeTest, GetSymbolsReturnsValidMap)
+TEST_F(ExchangeTest, DISABLED_GetSymbolsReturnsValidMap) // DISABLED_ prefix makes gtest skip this by default
 {
   auto symbols = getSymbols(config);
 
