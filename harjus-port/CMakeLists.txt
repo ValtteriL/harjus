@@ -121,6 +121,7 @@ gtest_discover_tests(ExchangeTest)
 
 add_executable(ArbmapperTest tests/ArbmapperTest.cpp
   src/Arbmapper.cpp
+  src/Trade.cpp
 )
 target_link_libraries(ArbmapperTest PRIVATE
   gtest_main

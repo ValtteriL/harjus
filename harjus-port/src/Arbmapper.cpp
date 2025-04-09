@@ -1,4 +1,5 @@
 #include "Arbmapper.h"
+#include "Trade.h"
 #include <boost/graph/adjacency_list.hpp>
 
 struct VertexProperties
@@ -7,7 +8,7 @@ struct VertexProperties
 };
 struct EdgeProperties
 {
-  ITrade trade;
+  Trade trade;
 };
 
 // Define the graph structure

@@ -7,7 +7,7 @@
 class ITrade
 {
 public:
-  virtual Position getPosition() const = 0;
+  virtual enum Position getPosition() const = 0;
   virtual boost::multiprecision::cpp_dec_float_50 getOrderQty() const = 0;
   virtual boost::multiprecision::cpp_dec_float_50 getOrderPrice() const = 0;
   virtual const Symbol &getSymbol() const = 0;
