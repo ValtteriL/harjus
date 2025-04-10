@@ -66,7 +66,9 @@ struct CycleVisitor
 {
   // This struct is used to visit each cycle found by tiernan_all_cycles
 
-  std::vector<std::vector<Trade>> cycles;
+  std::vector<std::vector<Trade>> &cycles;
+
+  CycleVisitor(std::vector<std::vector<Trade>> &cycles) : cycles(cycles) {}
 
   // This function is called for each cycle found
   void cycle(auto const &path, Graph const &g)
@@ -100,9 +102,11 @@ struct CycleVisitor
 std::vector<std::vector<Trade>> findCycles(const Graph &graph, const int maxDepth)
 {
   // Create a visitor to process the cycles
-  CycleVisitor visitor;
+  // the cycles need to be stored here, as the visitor is destroyed after the function returns
+  // and visitor must be passed by value
+  std::vector<std::vector<Trade>> cycles;
+  CycleVisitor visitor{cycles};
 
-  // Call tiernan_all_cycles with the graph, visitor, and depth constraints
   boost::tiernan_all_cycles(graph, visitor, 3, maxDepth);
 
   return visitor.cycles;
