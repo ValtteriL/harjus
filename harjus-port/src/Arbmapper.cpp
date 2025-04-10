@@ -92,7 +92,7 @@ struct CycleVisitor
 };
 
 /**
- * Given a directed graph, finds all cycles of length gte 2 and lte maxDepth.
+ * Given a directed graph, finds all cycles of length gte 3 and lte maxDepth.
  * The cycles are returned as a vector of vectors, where each inner vector represents a cycle.
  * The cycles are represented as a vector of Trade objects.
  * Each Trade is a copy of the original Trade object in the graph, so the original graph is not modified.
@@ -103,7 +103,7 @@ std::vector<std::vector<Trade>> findCycles(const Graph &graph, const int maxDept
   CycleVisitor visitor;
 
   // Call tiernan_all_cycles with the graph, visitor, and depth constraints
-  boost::tiernan_all_cycles(graph, visitor, 2, maxDepth);
+  boost::tiernan_all_cycles(graph, visitor, 3, maxDepth);
 
   return visitor.cycles;
 }
