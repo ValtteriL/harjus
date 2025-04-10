@@ -14,5 +14,8 @@
 			"*.heex": "phoenix-heex"
 		},
 		"files.autoSave": "afterDelay",
+		// prevent standard C++ libraries from being added to the file associations
+		// https://stackoverflow.com/questions/65220185/how-to-stop-vs-code-to-keep-adding-standard-c-libraries-to-the-file-associatio
+		"C_Cpp.autoAddFileAssociations": false
 	}
 }
