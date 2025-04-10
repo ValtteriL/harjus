@@ -48,12 +48,12 @@ void buildGraph(Graph &graph, const std::unordered_map<std::string, Symbol> *sym
     auto vertex2 = vertexMap[symbol.quoteAsset];
 
     // long
-    // TODO: construct the trade object
-    boost::add_edge(vertex1, vertex2, EdgeProperties{}, graph);
+    Trade longTrade{symbol, Position::LONG};
+    boost::add_edge(vertex1, vertex2, EdgeProperties{longTrade}, graph);
 
     // short
-    // TODO: construct the trade object
-    boost::add_edge(vertex2, vertex1, EdgeProperties{}, graph);
+    Trade shortTrade{symbol, Position::SHORT};
+    boost::add_edge(vertex2, vertex1, EdgeProperties{shortTrade}, graph);
   }
 }
 
