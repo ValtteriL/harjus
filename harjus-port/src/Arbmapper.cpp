@@ -57,7 +57,18 @@ void buildGraph(Graph &graph, const std::unordered_map<std::string, Symbol> *sym
   }
 }
 
-std::vector<std::vector<ITrade>> getTradingPaths(std::unordered_map<std::string, Symbol> *symbolMap, int maxDepth, std::vector<std::string> &skipSymbols)
+/**
+ * Given a directed graph, finds all cycles of length gte 2 and lte maxDepth.
+ * The cycles are returned as a vector of vectors, where each inner vector represents a cycle.
+ * The cycles are represented as a vector of Trade objects.
+ * Each Trade is a copy of the original Trade object in the graph, so the original graph is not modified.
+ */
+std::vector<std::vector<Trade>> findCycles(const Graph &graph, const int maxDepth)
+{
+  // TODO: implement
+}
+
+std::vector<std::vector<Trade>> getTradingPaths(std::unordered_map<std::string, Symbol> *symbolMap, int maxDepth, std::vector<std::string> &skipSymbols)
 {
   // Create a graph
   Graph graph;
@@ -65,5 +76,14 @@ std::vector<std::vector<ITrade>> getTradingPaths(std::unordered_map<std::string,
   // Build the graph with the given symbols
   buildGraph(graph, symbolMap);
 
-  // TODO: find & return cycles in the graph
+  // find & return cycles in the graph
+  auto cycles = findCycles(graph, maxDepth);
+
+  // reject cycles where the first usedCurrency is in skipSymbols
+  std::erase_if(cycles, [&skipSymbols](const auto &cycle)
+                {
+    auto firstTrade = cycle.front();
+    return std::find(skipSymbols.begin(), skipSymbols.end(), firstTrade.getUsedCurrency()) != skipSymbols.end(); });
+
+  return cycles;
 }
