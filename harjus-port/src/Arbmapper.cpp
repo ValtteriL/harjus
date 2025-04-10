@@ -1,18 +1,25 @@
 #include "Arbmapper.h"
 #include "Trade.h"
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/tiernan_all_cycles.hpp>
 
 struct VertexProperties
 {
   std::string asset;
 };
+
 struct EdgeProperties
 {
-  Trade trade;
+  std::shared_ptr<Trade> tradePtr;
 };
 
 // Define the graph structure
-typedef boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, VertexProperties, EdgeProperties> Graph;
+using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, VertexProperties, EdgeProperties>;
+
+namespace boost
+{
+  void renumber_vertex_indices(Graph const &) {}
+}
 
 // Function to build the graph
 void buildGraph(Graph &graph, const std::unordered_map<std::string, Symbol> *symbolMap)
@@ -48,14 +55,41 @@ void buildGraph(Graph &graph, const std::unordered_map<std::string, Symbol> *sym
     auto vertex2 = vertexMap[symbol.quoteAsset];
 
     // long
-    Trade longTrade{symbol, Position::LONG};
-    boost::add_edge(vertex1, vertex2, EdgeProperties{longTrade}, graph);
+    boost::add_edge(vertex1, vertex2, EdgeProperties{std::shared_ptr<Trade>{new Trade{symbol, Position::LONG}}}, graph);
 
     // short
-    Trade shortTrade{symbol, Position::SHORT};
-    boost::add_edge(vertex2, vertex1, EdgeProperties{shortTrade}, graph);
+    boost::add_edge(vertex2, vertex1, EdgeProperties{std::shared_ptr<Trade>{new Trade{symbol, Position::SHORT}}}, graph);
   }
 }
+
+struct CycleVisitor
+{
+  // This struct is used to visit each cycle found by tiernan_all_cycles
+
+  std::vector<std::vector<Trade>> cycles;
+
+  // This function is called for each cycle found
+  void cycle(auto const &path, Graph const &g)
+  {
+    std::vector<Trade> tradePath;
+
+    // get th edges (trades) in the tradePath
+    for (size_t i = 0; i < path.size(); ++i)
+    {
+      auto u = path[i];
+      auto v = path[(i + 1) % path.size()];
+
+      auto edge = boost::edge(u, v, g);
+      if (edge.second)
+      {
+        tradePath.push_back(*g[edge.first].tradePtr);
+      }
+    }
+
+    // Add the cycle to the cycles vector
+    cycles.push_back(tradePath);
+  }
+};
 
 /**
  * Given a directed graph, finds all cycles of length gte 2 and lte maxDepth.
@@ -65,7 +99,13 @@ void buildGraph(Graph &graph, const std::unordered_map<std::string, Symbol> *sym
  */
 std::vector<std::vector<Trade>> findCycles(const Graph &graph, const int maxDepth)
 {
-  // TODO: implement
+  // Create a visitor to process the cycles
+  CycleVisitor visitor;
+
+  // Call tiernan_all_cycles with the graph, visitor, and depth constraints
+  boost::tiernan_all_cycles(graph, visitor, 2, maxDepth);
+
+  return visitor.cycles;
 }
 
 std::vector<std::vector<Trade>> getTradingPaths(std::unordered_map<std::string, Symbol> *symbolMap, int maxDepth, std::vector<std::string> &skipSymbols)
