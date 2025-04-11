@@ -49,7 +49,6 @@ let
         cmake
         ninja
         gdb
-        qt6.full
         gtest
         boost
         openssl
@@ -83,8 +82,8 @@ let
 
       src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
-      buildInputs = [ qt6.qtbase boost openssl cpp-netlib libsodium ];
-      nativeBuildInputs = [ cmake ninja qt6.wrapQtAppsNoGuiHook pkg-config ];
+      buildInputs = [ boost openssl cpp-netlib libsodium ];
+      nativeBuildInputs = [ cmake ninja pkg-config ];
     };
 
     # docker packaging derivation

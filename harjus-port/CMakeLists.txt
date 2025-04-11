@@ -1,16 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(harjus-port LANGUAGES CXX)
-set(CMAKE_AUTOUIC ON)
-set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-# Qt
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 
 # Boost
 if(POLICY CMP0167)
@@ -51,7 +44,7 @@ add_executable(harjus-port
   src/Trade.cpp
   src/Arbmapper.cpp
 )
-target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph ${LIBSODIUM_LIBRARIES} cpr::cpr)
+target_link_libraries(harjus-port PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph ${LIBSODIUM_LIBRARIES} cpr::cpr)
 
 include(GNUInstallDirs)
 install(TARGETS harjus-port
@@ -65,7 +58,6 @@ include(GoogleTest)
 
 add_executable(MainTest tests/MainTest.cpp)
 target_link_libraries(MainTest PRIVATE
-  Qt${QT_VERSION_MAJOR}::Core
   gtest_main
 )
 
@@ -75,7 +67,6 @@ add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
   src/ReservedTrades.cpp
 )
 target_link_libraries(ReservedTradesTest PRIVATE
-  Qt${QT_VERSION_MAJOR}::Core
   gtest_main
   GTest::gmock
 )
