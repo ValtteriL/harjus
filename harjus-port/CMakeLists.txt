@@ -48,6 +48,8 @@ add_executable(harjus-port
   src/Exchange.cpp
   src/Ed25519.cpp
   src/Balance.cpp
+  src/Trade.cpp
+  src/Arbmapper.cpp
 )
 target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph ${LIBSODIUM_LIBRARIES} cpr::cpr)
 

@@ -2,6 +2,8 @@
 #include <string>
 #include "Configuration.h"
 #include "Exchange.h"
+#include "Trade.h"
+#include "Arbmapper.h"
 
 int main()
 {
@@ -14,7 +16,10 @@ int main()
     Balance balance = getBalance(config);
     std::unordered_map<std::string, Symbol> symbolMap = getSymbols(config);
 
-    // TODO: calculate trading paths
+    // calculate trading paths
+    std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
+    int maxDepth = config.getMaxTradingPathLength();
+    std::vector<std::vector<Trade>> tradingPaths = getTradingPaths(&symbolMap, maxDepth, skipSymbols);
 
     std::cout << "Hello, World!" << std::endl;
     return 0;
