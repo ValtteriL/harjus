@@ -62,6 +62,28 @@ void buildGraph(Graph &graph, const std::unordered_map<std::string, Symbol> *sym
   }
 }
 
+template <typename ForwardIt>
+std::vector<typename std::iterator_traits<ForwardIt>::value_type>
+rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle, ForwardIt last)
+{
+  using ValueType = typename std::iterator_traits<ForwardIt>::value_type;
+  std::vector<ValueType> result;
+
+  // Copy the second part (from middle to last)
+  for (auto it = middle; it != last; ++it)
+  {
+    result.push_back(Trade{it->getSymbol(), it->getPosition()});
+  }
+
+  // Copy the first part (from first to middle)
+  for (auto it = first; it != middle; ++it)
+  {
+    result.push_back(Trade{it->getSymbol(), it->getPosition()});
+  }
+
+  return result;
+}
+
 struct CycleVisitor
 {
   // This struct is used to visit each cycle found by tiernan_all_cycles
@@ -88,8 +110,13 @@ struct CycleVisitor
       }
     }
 
-    // Add the cycle to the cycles vector
-    cycles.push_back(tradePath);
+    // construct cycles with different starting trades from the cycle
+    // Add them to the cycles vector
+    for (size_t i = 0; i < tradePath.size(); ++i)
+    {
+      auto copy = rotate_copy_with_copy_constructor(tradePath.begin(), tradePath.begin() + i, tradePath.end());
+      cycles.push_back(copy);
+    }
   }
 };
 
