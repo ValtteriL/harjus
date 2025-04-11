@@ -19,8 +19,6 @@ class ReservedTradesTest : public testing::Test
 protected:
   ReservedTradesTest()
   {
-    std::string &symbol = *symbolPtr;
-
     // trade1 and trade2 are identical trades
     // trade3 is a different (different position)
 
@@ -40,8 +38,7 @@ protected:
         .WillRepeatedly(Return(Position::SHORT));
   }
 
-  std::unique_ptr<std::string> symbolPtr = std::make_unique<std::string>("BTCETH");
-
+  Symbol symbol;
   MockTrade trade1;
   MockTrade trade2;
   MockTrade trade3;

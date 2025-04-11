@@ -16,7 +16,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Test)
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
 endif()
-find_package(Boost REQUIRED COMPONENTS url system thread json)
+find_package(Boost REQUIRED COMPONENTS url system thread json graph)
 
 # Google Test
 find_package(GTest REQUIRED)
@@ -44,15 +44,14 @@ include_directories(include)
 
 add_executable(harjus-port
   src/Main.cpp
-  src/Engine.cpp
-  src/PlannedExecution.cpp
-  src/TradingSymbol.cpp
   src/Configuration.cpp
   src/Exchange.cpp
   src/Ed25519.cpp
   src/Balance.cpp
+  src/Trade.cpp
+  src/Arbmapper.cpp
 )
-target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json ${LIBSODIUM_LIBRARIES} cpr::cpr)
+target_link_libraries(harjus-port PRIVATE Qt${QT_VERSION_MAJOR}::Core OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph ${LIBSODIUM_LIBRARIES} cpr::cpr)
 
 include(GNUInstallDirs)
 install(TARGETS harjus-port
@@ -72,34 +71,8 @@ target_link_libraries(MainTest PRIVATE
 
 gtest_discover_tests(MainTest)
 
-add_executable(EngineTest tests/EngineTest.cpp
-  src/PlannedExecution.cpp
-  src/TradingSymbol.cpp
-  src/Engine.cpp
-)
-target_link_libraries(EngineTest PRIVATE
-  Qt${QT_VERSION_MAJOR}::Core
-  gtest_main
-)
-
-gtest_discover_tests(EngineTest)
-
-add_executable(PlannedExecutionTest tests/PlannedExecutionTest.cpp
-  src/PlannedExecution.cpp
-  src/TradingSymbol.cpp
-  src/Engine.cpp
-)
-target_link_libraries(PlannedExecutionTest PRIVATE
-  Qt${QT_VERSION_MAJOR}::Core
-  gtest_main
-)
-
-gtest_discover_tests(PlannedExecutionTest)
-
-
 add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
   src/ReservedTrades.cpp
-  src/TradingSymbol.cpp
 )
 target_link_libraries(ReservedTradesTest PRIVATE
   Qt${QT_VERSION_MAJOR}::Core
@@ -146,3 +119,16 @@ target_link_libraries(ExchangeTest PRIVATE
 )
 
 gtest_discover_tests(ExchangeTest)
+
+
+add_executable(ArbmapperTest tests/ArbmapperTest.cpp
+  src/Arbmapper.cpp
+  src/Trade.cpp
+)
+target_link_libraries(ArbmapperTest PRIVATE
+  gtest_main
+  GTest::gmock
+  Boost::graph
+)
+
+gtest_discover_tests(ArbmapperTest)

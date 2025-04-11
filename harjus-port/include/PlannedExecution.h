@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QJsonObject>
-#include "TradingSymbol.h"
+#include "ITrade.h"
 
 /**
  *  Planned Execution class. Contains all information requried to execute arbitrage opportunity.
@@ -28,12 +28,12 @@ public:
   /**
    *  Constructor. Create a new planned execution with given trades, relative price and commission.
    */
-  PlannedExecution(std::vector<TradingSymbol> trades, long double relativePrice, long double commission) : mTrades{trades}, mTotalProfit{0}, mRelativePrice(relativePrice), mCommission(commission) {};
+  PlannedExecution(std::vector<ITrade> trades, long double relativePrice, long double commission) : mTrades{trades}, mTotalProfit{0}, mRelativePrice(relativePrice), mCommission(commission) {};
 
   /**
    * Trades. Get all trades in this execution plan.
    */
-  std::vector<TradingSymbol> mTrades;
+  std::vector<ITrade> mTrades;
 
   /**
    * Total profit. Total profit in relative price.
