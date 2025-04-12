@@ -18,6 +18,11 @@ jobs:
       - name: Cache Nix store
         uses: DeterminateSystems/magic-nix-cache-action@main
 
-      - name: Activate nix-shell and run mix quality.ci
+      - name: Build
         run: |
-          nix-shell -A devEnv --run "mix local.hex --force && mix deps.get && mix quality.ci"
+          nix-shell -A devEnv --run "cmake -S harjus-port -B build"
+          nix-shell -A devEnv --run "cmake --build build --config Debug --target all --"
+
+      - name: Test
+        run: |
+          nix-shell -A devEnv --run "ctest -j10 -C Debug -T test --output-on-failure --test-dir build/"
