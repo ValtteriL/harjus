@@ -5,8 +5,32 @@
 #include "Trade.h"
 #include "Arbmapper.h"
 
+void banner() {
+    std::cout << R"(
+                      :=======:.
+                    :============.
+                  .-==+++=++======-
+              .:==========++*+++==+=.
+           :==-=--=---===+=====++=:
+        :=**=::--=====Harjus======+=:.
+      :++++=:-:=-=-==-==============+++=:
+     ==+=::-:-=-=========+=====+===++===+*=:
+    :=++=:::==:-=====-::::::-========+*+++++=.
+    :++--:-:-:::::::..    .=+==+=::--==++++++=.
+     ..                     :.  .    :=*+-+++***=:
+                                       :+:.=**+*=:
+                                           :***.
+                                            =++:
+                                            .*+:
+                                             =+:
+                                             :=
+
+    )" << std::endl;
+}
+
 int main()
 {
+    banner();
     Configuration config;
     std::cout << "Binance REST API URI: " << config.getBinanceRESTApiUri() << std::endl;
     std::cout << "Binance FIX API Hostname: " << config.getBinanceFIXApiHostname() << std::endl;
