@@ -148,3 +148,72 @@ std::unordered_map<std::string, Symbol> getSymbols(IConfiguration &config)
 
   return symbols;
 }
+
+std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50> getRelativeValues(IConfiguration &config, const std::unordered_map<std::string, Symbol> &symbols)
+{
+  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50> relativeValues;
+
+  // Fetch symbol prices from Binance API
+  std::string uri = config.getBinanceRESTApiUri() + "/api/v3/ticker/price";
+  cpr::Response r = cpr::Get(cpr::Url{uri});
+
+  if (r.status_code != 200)
+  {
+    throw std::runtime_error("Error fetching symbol prices from Binance API: (" + std::to_string(r.status_code) + "), " + r.text);
+  }
+
+  // Parse JSON response
+  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50> symbolPrices;
+  try
+  {
+    boost::json::value json = boost::json::parse(r.text);
+    for (const auto &item : json.as_array())
+    {
+      boost::json::object priceObj = item.as_object();
+      std::string symbol = priceObj["symbol"].as_string().c_str();
+      boost::multiprecision::cpp_dec_float_50 price(priceObj["price"].as_string().c_str());
+      symbolPrices[symbol] = price;
+    }
+  }
+  catch (const boost::json::system_error &e)
+  {
+    throw std::runtime_error("Failed to parse JSON response: " + std::string(e.what()));
+  }
+
+  // Calculate relative values in Bitcoin
+  boost::multiprecision::cpp_dec_float_50 lowestValue = std::numeric_limits<boost::multiprecision::cpp_dec_float_50>::max();
+  for (const auto &[symbolName, symbol] : symbols)
+  {
+    if (symbol.quoteAsset == "BTC")
+    {
+      // price already in BTC (shorting gets btc)
+      relativeValues[symbol.baseAsset] = symbolPrices[symbolName];
+      lowestValue = std::min(lowestValue, symbolPrices[symbolName]);
+    }
+    else if (symbol.baseAsset == "BTC")
+    {
+      // price in 1 / BTC (longing gets btc)
+      boost::multiprecision::cpp_dec_float_50 value = 1 / symbolPrices[symbolName];
+      relativeValues[symbol.quoteAsset] = value;
+      lowestValue = std::min(lowestValue, value);
+    }
+  }
+
+  // Assign lowest value to currencies not tradable to Bitcoin
+  for (const auto &[symbolName, symbol] : symbols)
+  {
+    if (relativeValues.find(symbol.baseAsset) == relativeValues.end())
+    {
+      relativeValues[symbol.baseAsset] = lowestValue;
+    }
+    if (relativeValues.find(symbol.quoteAsset) == relativeValues.end())
+    {
+      relativeValues[symbol.quoteAsset] = lowestValue;
+    }
+  }
+
+  // Set Bitcoin's value to 1
+  relativeValues["BTC"] = 1;
+
+  return relativeValues;
+}

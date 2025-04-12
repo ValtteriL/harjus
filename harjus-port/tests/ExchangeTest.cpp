@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include "Exchange.h"
 #include "Configuration_test.h"
+#include <unordered_set>
 
 using ::testing::Return;
 
@@ -55,4 +56,78 @@ TEST_F(ExchangeTest, DISABLED_GetSymbolsReturnsValidMap) // DISABLED_ prefix mak
   EXPECT_EQ(btcEthSymbol.minNotional, boost::multiprecision::cpp_dec_float_50{"0.0001"});
   EXPECT_EQ(btcEthSymbol.baseAssetIncrement, boost::multiprecision::cpp_dec_float_50{"0.0001"});
   EXPECT_EQ(btcEthSymbol.quoteAssetIncrement, boost::multiprecision::cpp_dec_float_50{"0.00001"});
+}
+
+TEST_F(ExchangeTest, DISABLED_GetRelativeValuesReturnsValidMap) // DISABLED_ prefix makes gtest skip this by default
+{
+  // Create a mock input map of symbols
+  std::unordered_map<std::string, Symbol> symbols;
+
+  Symbol btcSymbol;
+  btcSymbol.symbol = "BTCUSDT";
+  btcSymbol.baseAsset = "BTC";
+  btcSymbol.quoteAsset = "USDT";
+  symbols[btcSymbol.symbol] = btcSymbol;
+
+  Symbol ethSymbol;
+  ethSymbol.symbol = "ETHBTC";
+  ethSymbol.baseAsset = "ETH";
+  ethSymbol.quoteAsset = "BTC";
+  symbols[ethSymbol.symbol] = ethSymbol;
+
+  Symbol xrpSymbol;
+  xrpSymbol.symbol = "XRPBTC";
+  xrpSymbol.baseAsset = "XRP";
+  xrpSymbol.quoteAsset = "BTC";
+  symbols[xrpSymbol.symbol] = xrpSymbol;
+
+  // Call the function under test
+  auto relativeValues = getRelativeValues(config, symbols);
+
+  // Verify the price of Bitcoin is 1
+  EXPECT_EQ(relativeValues["BTC"], 1);
+
+  // Verify all values are greater than 0
+  for (const auto &[asset, value] : relativeValues)
+  {
+    EXPECT_GT(value, 0);
+  }
+
+  // Verify the size of relativeValues equals the number of different assets in the symbols map
+  std::unordered_set<std::string> uniqueAssets;
+  for (const auto &[symbolName, symbol] : symbols)
+  {
+    uniqueAssets.insert(symbol.baseAsset);
+    uniqueAssets.insert(symbol.quoteAsset);
+  }
+  EXPECT_EQ(relativeValues.size(), uniqueAssets.size());
+
+  // Verify the value of assets that cannot be traded with Bitcoin equals the lowest value
+  boost::multiprecision::cpp_dec_float_50 lowestValue = std::numeric_limits<boost::multiprecision::cpp_dec_float_50>::max();
+  for (const auto &[symbolName, symbol] : symbols)
+  {
+    if (symbol.quoteAsset == "BTC")
+    {
+      lowestValue = std::min(lowestValue, relativeValues[symbol.baseAsset]);
+    }
+  }
+
+  for (const auto &[asset, value] : relativeValues)
+  {
+    bool isRelatedToBTC = false;
+    for (const auto &[symbolName, symbol] : symbols)
+    {
+      if (asset == "BTC" ||
+          (symbol.baseAsset == asset && symbol.quoteAsset == "BTC") ||
+          (symbol.quoteAsset == asset && symbol.baseAsset == "BTC"))
+      {
+        isRelatedToBTC = true;
+        break;
+      }
+    }
+    if (!isRelatedToBTC)
+    {
+      EXPECT_EQ(value, lowestValue);
+    }
+  }
 }
