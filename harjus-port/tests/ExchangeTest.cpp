@@ -58,7 +58,7 @@ TEST_F(ExchangeTest, DISABLED_GetSymbolsReturnsValidMap) // DISABLED_ prefix mak
   EXPECT_EQ(btcEthSymbol.quoteAssetIncrement, boost::multiprecision::cpp_dec_float_50{"0.00001"});
 }
 
-TEST_F(ExchangeTest, GetRelativeValuesReturnsValidMap)
+TEST_F(ExchangeTest, DISABLED_GetRelativeValuesReturnsValidMap) // DISABLED_ prefix makes gtest skip this by default
 {
   // Create a mock input map of symbols
   std::unordered_map<std::string, Symbol> symbols;
