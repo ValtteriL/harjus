@@ -82,7 +82,7 @@ let
 
       src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
-      buildInputs = [ boost openssl cpp-netlib libsodium ];
+      buildInputs = [ boost openssl libcpr pkg-config libsodium ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
     };
 
