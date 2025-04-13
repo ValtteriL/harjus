@@ -25,6 +25,9 @@ pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 # cpr https://github.com/libcpr/cpr
 find_package(cpr REQUIRED)
 
+# quickfix
+pkg_check_modules(QUICKFIX REQUIRED quickfix)
+
 # Enable all warnings
 add_compile_options(-Wall -Wextra -Wpedantic)
 
@@ -45,7 +48,7 @@ add_executable(harjus-port
   src/Trade.cpp
   src/Arbmapper.cpp
 )
-target_link_libraries(harjus-port PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph ${LIBSODIUM_LIBRARIES} cpr::cpr)
+target_link_libraries(harjus-port PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
 
 include(GNUInstallDirs)
 install(TARGETS harjus-port

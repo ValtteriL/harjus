@@ -55,6 +55,7 @@ let
         libcpr
         pkg-config
         libsodium
+        quickfix
 
         # deployment
         terraform
@@ -82,7 +83,7 @@ let
 
       src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
-      buildInputs = [ boost openssl libcpr pkg-config libsodium ];
+      buildInputs = [ boost openssl libcpr pkg-config libsodium quickfix ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
     };
 
