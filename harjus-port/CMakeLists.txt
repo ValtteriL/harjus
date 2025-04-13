@@ -41,6 +41,7 @@ include_directories(include)
 
 add_executable(harjus-port
   src/Main.cpp
+  src/Application.cpp
   src/Configuration.cpp
   src/Exchange.cpp
   src/Ed25519.cpp
