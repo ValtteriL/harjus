@@ -40,9 +40,57 @@ int main()
 {
   banner();
   Configuration config;
-  std::cout << "Binance REST API URI: " << config.getBinanceRESTApiUri() << std::endl;
-  std::cout << "Binance FIX API Hostname: " << config.getBinanceFIXApiHostname() << std::endl;
-  std::cout << "Binance FIX API Port: " << config.getBinanceFIXApiPort() << std::endl;
+
+  // FIX Engine config
+  std::string fixConfig = R"(
+  # default settings for sessions
+  [DEFAULT]
+  ConnectionType=initiator
+  ReconnectInterval=60
+  SenderCompID=TW
+
+  # session definition
+  [SESSION]
+  # inherit ConnectionType, ReconnectInterval and SenderCompID from default
+  BeginString=FIX.4.1
+  TargetCompID=ARCA
+  StartTime=12:30:00
+  EndTime=23:30:00
+  HeartBtInt=20
+  SocketConnectPort=9823
+  SocketConnectHost=123.123.123.123
+  DataDictionary=somewhere/FIX41.xml
+
+  [SESSION]
+  BeginString=FIX.4.0
+  TargetCompID=ISLD
+  StartTime=12:00:00
+  EndTime=23:00:00
+  HeartBtInt=30
+  SocketConnectPort=8323
+  SocketConnectHost=23.23.23.23
+  DataDictionary=somewhere/FIX40.xml
+
+  [SESSION]
+  BeginString=FIX.4.2
+  TargetCompID=INCA
+  StartTime=12:30:00
+  EndTime=21:30:00
+  # overide default setting for RecconnectInterval
+  ReconnectInterval=30
+  HeartBtInt=30
+  SocketConnectPort=6523
+  SocketConnectHost=3.3.3.3
+  # (optional) alternate connection ports and hosts to cycle through on failover
+  SocketConnectPort1=8392
+  SocketConnectHost1=8.8.8.8
+  SocketConnectPort2=2932
+  SocketConnectHost2=12.12.12.12
+  DataDictionary=somewhere/FIX42.xml
+  )";
+
+  // stream to the string
+  std::istringstream fixConfigStream{fixConfig};
 
   // get balance, available symbols & relative values
   Balance balance = getBalance(config);
@@ -58,7 +106,7 @@ int main()
 
   try
   {
-    FIX::SessionSettings settings{"thisdoesnotexist.cfg"};
+    FIX::SessionSettings settings{fixConfigStream};
 
     Application application;
     FIX::FileStoreFactory storeFactory{settings};
