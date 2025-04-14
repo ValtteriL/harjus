@@ -24,6 +24,7 @@ let
 
   packages = rec {
 
+    # build quickfix properly with SSL support
     myQuickfix = stdenv.mkDerivation {
       pname = "quickfix";
       version = "1.15.1";
@@ -42,26 +43,16 @@ let
             "https://github.com/quickfix/quickfix/commit/a46708090444826c5f46a5dbf2ba4b069b413c58.diff";
           sha256 = "1wlk4j0wmck0zm6a70g3nrnq8fz0id7wnyxn81f7w048061ldhyd";
         })
-        ./disableUnitTests.patch
+        ./quickfix/00001-fix-build.patch
+        ./quickfix/fix_wsl_symlink_error.patch
       ];
 
-      # autoreconfHook does not work
-      nativeBuildInputs = [ autoconf automake libtool ];
+      # enable SSL
+      cmakeFlags = [ "-DHAVE_SSL=ON" ];
 
+      nativeBuildInputs = [ cmake ninja ];
+      buildInputs = [ openssl ];
       enableParallelBuilding = true;
-
-      postPatch = ''
-        substituteInPlace bootstrap --replace-fail glibtoolize libtoolize
-      '';
-
-      preConfigure = ''
-        ./bootstrap
-      '';
-
-      # More hacking out of the unittests
-      preBuild = ''
-        substituteInPlace Makefile --replace 'UnitTest++' ' '
-      '';
     };
 
     # The shell of our experiment runtime environment
