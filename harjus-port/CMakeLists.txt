@@ -26,8 +26,7 @@ pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 find_package(cpr REQUIRED)
 
 # quickfix
-add_definitions(-DHAVE_SSL)
-pkg_check_modules(QUICKFIX REQUIRED quickfix)
+find_package(quickfix REQUIRED)
 
 # Enable all warnings
 add_compile_options(-Wall -Wextra -Wpedantic)

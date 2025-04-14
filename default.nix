@@ -24,6 +24,37 @@ let
 
   packages = rec {
 
+    # build quickfix properly with SSL support
+    myQuickfix = stdenv.mkDerivation {
+      pname = "quickfix";
+      version = "1.15.1";
+
+      src = fetchFromGitHub {
+        owner = "quickfix";
+        repo = "quickfix";
+        rev = "v${version}";
+        sha256 = "1fgpwgvyw992mbiawgza34427aakn5zrik3sjld0i924a9d17qwg";
+      };
+
+      patches = [
+        # Improved C++17 compatibility
+        (fetchpatch {
+          url =
+            "https://github.com/quickfix/quickfix/commit/a46708090444826c5f46a5dbf2ba4b069b413c58.diff";
+          sha256 = "1wlk4j0wmck0zm6a70g3nrnq8fz0id7wnyxn81f7w048061ldhyd";
+        })
+        ./quickfix/00001-fix-build.patch
+        ./quickfix/fix_wsl_symlink_error.patch
+      ];
+
+      # enable SSL
+      cmakeFlags = [ "-DHAVE_SSL=ON" ];
+
+      nativeBuildInputs = [ cmake ninja ];
+      buildInputs = [ openssl ];
+      enableParallelBuilding = true;
+    };
+
     # The shell of our experiment runtime environment
     devEnv = mkShell rec {
       name = "devEnv";
@@ -55,7 +86,7 @@ let
         libcpr
         pkg-config
         libsodium
-        quickfix
+        myQuickfix
 
         # deployment
         terraform
@@ -83,7 +114,7 @@ let
 
       src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
 
-      buildInputs = [ boost openssl libcpr pkg-config libsodium quickfix ];
+      buildInputs = [ boost openssl libcpr pkg-config libsodium myQuickfix ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
     };
 
