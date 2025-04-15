@@ -84,14 +84,13 @@ int main()
   {
     FIX::SessionSettings settings{fixConfigStream};
 
-    Application application;
+    Application application{config};
     FIX::FileStoreFactory storeFactory{settings};
     FIX::ScreenLogFactory logFactory{settings};
 
     auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::ThreadedSSLSocketInitiator{application, storeFactory, settings, logFactory});
 
     initiator->start();
-    application.run();
     initiator->stop();
 
     return 0;

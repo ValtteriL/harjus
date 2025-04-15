@@ -7,6 +7,8 @@
  * implements the FIX::Application interface and handles FIX messages.
  */
 
+#include "IConfiguration.h"
+
 #include <quickfix/Application.h>
 #include <quickfix/MessageCracker.h>
 #include <quickfix/Mutex.h>
@@ -21,14 +23,11 @@
 
 class Application : public FIX::Application, public FIX::MessageCracker
 {
-public:
-  /**
-   * @brief starts the application.
-   * @details This function initializes the application and starts the message processing loop.
-   */
-  void run();
 
 private:
+  std::string username;
+  std::string privateKeySeed;
+
   /**
    * Called when quickfix creates a new session.
    * A session comes into and remains in existence for the life of the application.
@@ -56,7 +55,7 @@ private:
    * Notice that the FIX::Message is not const.
    * This allows you to add fields to an adminstrative message before it is sent out.
    */
-  void toAdmin(FIX::Message &, const FIX::SessionID &) {}
+  void toAdmin(FIX::Message &, const FIX::SessionID &);
 
   /**
    * This is a callback for application messages that are being sent to a counterparty.
@@ -96,4 +95,7 @@ private:
    */
   void onMessage(const FIX44::ExecutionReport &, const FIX::SessionID &);
   void onMessage(const FIX44::OrderCancelReject &, const FIX::SessionID &);
+
+public:
+  Application(IConfiguration &conf) : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()) {};
 };

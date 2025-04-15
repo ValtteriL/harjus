@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "Ed25519.h"
 #include <quickfix/Session.h>
 #include <iostream>
 
@@ -12,6 +13,27 @@ void Application::onLogout(const FIX::SessionID &sessionID)
 {
   std::cout << std::endl
             << "Logout - " << sessionID << std::endl;
+}
+
+void Application::toAdmin(FIX::Message &message, const FIX::SessionID &)
+{
+  FIX::MsgType msgType;
+  message.getHeader().getField(msgType);
+
+  // Binance requires username and password in the logon message
+  if (msgType.getValue() == FIX::MsgType_Logon)
+  {
+    FIX::Header &header = message.getHeader();
+
+    // set username
+    header.setField(FIX::Username(username.c_str()));
+    header.setField(FIX::RawDataLength(username.length()));
+
+    // set password (Binance expects password in RawData field)
+    std::string password = Ed25519::sign(privateKeySeed, message.toString());
+    header.setField(FIX::RawData(password.c_str()));
+    header.setField(FIX::RawDataLength(password.length()));
+  }
 }
 
 void Application::fromApp(const FIX::Message &message, const FIX::SessionID &sessionID)
@@ -43,8 +65,3 @@ void Application::toApp(FIX::Message &message, const FIX::SessionID &) EXCEPT(FI
 
 void Application::onMessage(const FIX44::ExecutionReport &, const FIX::SessionID &) {}
 void Application::onMessage(const FIX44::OrderCancelReject &, const FIX::SessionID &) {}
-
-void Application::run()
-{
-  // TODO: implement application logic
-}
