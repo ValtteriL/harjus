@@ -49,7 +49,7 @@ int main()
   SenderCompID=HARJUS
   TargetCompID=SPOT
   DefaultApplVerID=FIX.4.4
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-oe.xml
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
   SocketConnectPort=)" + config.getBinanceFIXApiPort() +
                           R"(
   SocketConnectHost=)" + config.getBinanceFIXApiHostname() +
@@ -88,7 +88,7 @@ int main()
     FIX::FileStoreFactory storeFactory{settings};
     FIX::ScreenLogFactory logFactory{settings};
 
-    auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::ThreadedSSLSocketInitiator{application, storeFactory, settings, logFactory});
+    auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::SSLSocketInitiator{application, storeFactory, settings, logFactory});
 
     initiator->start();
 
