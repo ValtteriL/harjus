@@ -46,47 +46,23 @@ int main()
   # default settings for sessions
   [DEFAULT]
   ConnectionType=initiator
-  ReconnectInterval=60
-  SenderCompID=TW
+  SenderCompID=HARJUS
+  TargetCompID=SPOT
+  DefaultApplVerID=FIX.4.4
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-oe.xml
+  SocketConnectPort=)" + config.getBinanceFIXApiPort() +
+                          R"(
+  SocketConnectHost=)" + config.getBinanceFIXApiHostname() +
+                          R"(
 
-  # session definition
-  [SESSION]
-  # inherit ConnectionType, ReconnectInterval and SenderCompID from default
-  BeginString=FIX.4.1
-  TargetCompID=ARCA
-  StartTime=12:30:00
-  EndTime=23:30:00
-  HeartBtInt=20
-  SocketConnectPort=9823
-  SocketConnectHost=123.123.123.123
-  DataDictionary=somewhere/FIX41.xml
+  # set TCP_NODELAY (disable Nagle's algorithm)
+  # this is required for low latency
+  SocketNodelay=Y
 
+  # market data session
   [SESSION]
-  BeginString=FIX.4.0
-  TargetCompID=ISLD
-  StartTime=12:00:00
-  EndTime=23:00:00
-  HeartBtInt=30
-  SocketConnectPort=8323
-  SocketConnectHost=23.23.23.23
-  DataDictionary=somewhere/FIX40.xml
+  SessionQualifier=MARKETDATA
 
-  [SESSION]
-  BeginString=FIX.4.2
-  TargetCompID=INCA
-  StartTime=12:30:00
-  EndTime=21:30:00
-  # overide default setting for RecconnectInterval
-  ReconnectInterval=30
-  HeartBtInt=30
-  SocketConnectPort=6523
-  SocketConnectHost=3.3.3.3
-  # (optional) alternate connection ports and hosts to cycle through on failover
-  SocketConnectPort1=8392
-  SocketConnectHost1=8.8.8.8
-  SocketConnectPort2=2932
-  SocketConnectHost2=12.12.12.12
-  DataDictionary=somewhere/FIX42.xml
   )";
 
   // stream to the string
