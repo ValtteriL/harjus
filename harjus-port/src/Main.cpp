@@ -91,6 +91,12 @@ int main()
     auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::ThreadedSSLSocketInitiator{application, storeFactory, settings, logFactory});
 
     initiator->start();
+
+    // wait for any key to be pressed
+    std::cout << "Press any key to stop the initiator..." << std::endl;
+    std::cin.get();
+
+    // stop the initiator
     initiator->stop();
 
     return 0;
