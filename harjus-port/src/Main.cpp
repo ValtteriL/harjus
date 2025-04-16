@@ -49,7 +49,6 @@ int main()
   SenderCompID=HARJUS
   TargetCompID=SPOT
   DefaultApplVerID=FIX.4.4
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
   SocketConnectPort=)" + config.getBinanceFIXApiPort() +
                           R"(
   SocketConnectHost=)" + config.getBinanceFIXApiHostname() +
@@ -62,6 +61,8 @@ int main()
   # market data session
   [SESSION]
   SessionQualifier=MARKETDATA
+  SocketConnectHost=fix-md.binance.com
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
 
   )";
 
