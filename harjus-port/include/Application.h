@@ -8,6 +8,7 @@
  */
 
 #include "IConfiguration.h"
+#include "PriceUpdate.h"
 
 #include <quickfix/Application.h>
 #include <quickfix/MessageCracker.h>
@@ -16,10 +17,15 @@
 
 #include <quickfix/fix44/ExecutionReport.h>
 #include <quickfix/fix44/MarketDataRequest.h>
+#include <quickfix/fix44/MarketDataSnapshotFullRefresh.h>
+#include <quickfix/fix44/MarketDataIncrementalRefresh.h>
 #include <quickfix/fix44/NewOrderSingle.h>
 #include <quickfix/fix44/OrderCancelReject.h>
 #include <quickfix/fix44/OrderCancelReplaceRequest.h>
 #include <quickfix/fix44/OrderCancelRequest.h>
+
+#include <boost/lockfree/queue.hpp>
+#include <vector>
 
 class Application : public FIX::Application, public FIX::MessageCracker
 {
@@ -27,6 +33,8 @@ class Application : public FIX::Application, public FIX::MessageCracker
 private:
   std::string username;
   std::string privateKeySeed;
+  boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue;
+  FIX::SessionID marketDataSessionID;
 
   /**
    * Called when quickfix creates a new session.
@@ -35,7 +43,13 @@ private:
    * As soon as a session is created, you can begin sending messages to it.
    * If no one is logged on, the messages will be sent at the time a connection is established with the counterparty.
    */
-  void onCreate(const FIX::SessionID &) {}
+  void onCreate(const FIX::SessionID &sessionID)
+  {
+    if (sessionID.getSessionQualifier() == "MARKETDATA")
+    {
+      marketDataSessionID = sessionID;
+    }
+  }
 
   /**
    * This notifies you when a valid logon has been established with a counter party.
@@ -95,7 +109,20 @@ private:
    */
   void onMessage(const FIX44::ExecutionReport &, const FIX::SessionID &);
   void onMessage(const FIX44::OrderCancelReject &, const FIX::SessionID &);
+  void onMessage(const FIX44::MarketDataSnapshotFullRefresh &message, const FIX::SessionID &sessionID);
+  void onMessage(const FIX44::MarketDataIncrementalRefresh &message, const FIX::SessionID &sessionID);
 
 public:
-  Application(IConfiguration &conf) : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()) {};
+  Application(IConfiguration &conf, boost::lockfree::queue<PriceUpdate *> &queue)
+      : username(conf.getEd25519ApiKey()),
+        privateKeySeed(conf.getEd25519Seed()),
+        priceUpdateQueue(queue) {}
+
+  /**
+   * @brief Subscribe to market data for a list of symbols
+   * @param symbols Vector of trading symbols to subscribe to
+   * @param depth Market depth (defaults to 1 for top of book)
+   * @return true if subscription request was sent successfully
+   */
+  bool subscribeToSymbols(const std::vector<std::string> &symbols);
 };
