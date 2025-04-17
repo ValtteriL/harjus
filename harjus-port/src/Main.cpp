@@ -68,7 +68,7 @@ void processPriceQueue(boost::lockfree::queue<PriceUpdate *> &queue)
       if (update)
       {
         updateCount++;
-        std::cout << "Update #" << updateCount << ": " << *update << std::endl;
+        std::cout << "Update #" << updateCount << " - symbol:" << update->symbol << std::endl;
         delete update; // Clean up the heap allocated update
       }
     }
