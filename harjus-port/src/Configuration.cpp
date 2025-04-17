@@ -42,12 +42,12 @@ std::string Configuration::getBinanceFIXApiPort() const
 }
 std::string Configuration::getEd25519Seed() const
 {
-  return dotenv::getenv("ED25519_SEED", "");
+  return dotenv::getenv("BINANCE_ED25519_SEED", "");
 }
 
 std::string Configuration::getEd25519ApiKey() const
 {
-  return dotenv::getenv("ED25519_API_KEY", "");
+  return dotenv::getenv("BINANCE_ED25519_API_KEY", "");
 }
 
 int Configuration::getMaxTradingPathLength() const
