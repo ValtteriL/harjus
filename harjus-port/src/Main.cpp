@@ -110,6 +110,7 @@ int main()
   SenderCompID=HARJUS
   TargetCompID=SPOT
   DefaultApplVerID=FIX.4.4
+  BeginString=FIX.4.4
   SocketConnectPort=)" +
                           config.getBinanceFIXApiPort() +
                           R"(
