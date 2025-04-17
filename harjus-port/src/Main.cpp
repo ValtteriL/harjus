@@ -83,34 +83,6 @@ int main()
   banner();
   Configuration config;
 
-  // FIX Engine config
-  std::string fixConfig = R"(
-  # default settings for sessions
-  [DEFAULT]
-  ConnectionType=initiator
-  SenderCompID=HARJUS
-  TargetCompID=SPOT
-  DefaultApplVerID=FIX.4.4
-  SocketConnectPort=)" + config.getBinanceFIXApiPort() +
-                          R"(
-  SocketConnectHost=)" + config.getBinanceFIXApiHostname() +
-                          R"(
-
-  # set TCP_NODELAY (disable Nagle's algorithm)
-  # this is required for low latency
-  SocketNodelay=Y
-
-  # market data session
-  [SESSION]
-  SessionQualifier=MARKETDATA
-  SocketConnectHost=fix-md.binance.com
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
-
-  )";
-
-  // stream to the string
-  std::istringstream fixConfigStream{fixConfig};
-
   // get balance, available symbols & relative values
   Balance balance = getBalance(config);
   std::unordered_map<std::string, Symbol> symbolMap = getSymbols(config);
@@ -129,6 +101,36 @@ int main()
 
   // Log the number of symbols we'll subscribe to
   std::cout << "Subscribing to " << symbols.size() << " trading symbols" << std::endl;
+
+  // FIX Engine config
+  std::string fixConfig = R"(
+  # default settings for sessions
+  [DEFAULT]
+  ConnectionType=initiator
+  SenderCompID=HARJUS
+  TargetCompID=SPOT
+  DefaultApplVerID=FIX.4.4
+  SocketConnectPort=)" +
+                          config.getBinanceFIXApiPort() +
+                          R"(
+  SocketConnectHost=)" +
+                          config.getBinanceFIXApiHostname() +
+                          R"(
+    
+  # set TCP_NODELAY (disable Nagle's algorithm)
+  # this is required for low latency
+  SocketNodelay=Y
+    
+  # market data session
+  [SESSION]
+  SessionQualifier=MARKETDATA
+  SocketConnectHost=fix-md.binance.com
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
+    
+  )";
+
+  // stream to the string
+  std::istringstream fixConfigStream{fixConfig};
 
   try
   {
