@@ -40,7 +40,7 @@ void Application::toAdmin(FIX::Message &message, const FIX::SessionID &)
 void Application::fromApp(const FIX::Message &message, const FIX::SessionID &sessionID)
     EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::UnsupportedMessageType)
 {
-  crack(message, sessionID);
+  crack(message, sessionID); // crack the message to the appropriate handler
   std::cout << std::endl
             << "IN: " << message << std::endl;
 }
@@ -116,7 +116,6 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols)
 }
 
 void Application::onMessage(const FIX44::ExecutionReport &, const FIX::SessionID &) {}
-void Application::onMessage(const FIX44::OrderCancelReject &, const FIX::SessionID &) {}
 
 void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message, const FIX::SessionID &sessionID)
 {
