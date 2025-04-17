@@ -122,6 +122,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
   try
   {
     FIX::Symbol symbol;
+
     message.get(symbol);
 
     std::string symbolValue = symbol.getValue();
@@ -132,7 +133,9 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
     boost::multiprecision::cpp_dec_float_50 askPrice = 0;
     boost::multiprecision::cpp_dec_float_50 askQuantity = 0;
 
-    int numEntries = FIX::IntField(message.getField(FIX::FIELD::NoMDEntries)).getValue();
+    FIX::NoMDEntries noMDEntries;
+    message.get(noMDEntries);
+    int numEntries = noMDEntries.getValue();
 
     for (int i = 1; i <= numEntries; i++)
     {
@@ -184,7 +187,9 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message, 
   try
   {
     // Check if we have any MD entries
-    int numEntries = FIX::IntField(message.getField(FIX::FIELD::NoMDEntries)).getValue();
+    FIX::NoMDEntries noMDEntries;
+    message.get(noMDEntries);
+    int numEntries = noMDEntries.getValue();
 
     // We may get updates for multiple symbols in a single message
     std::map<std::string, PriceUpdate *> updates;
@@ -228,12 +233,12 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message, 
           if (entryType == '0')
           { // Bid
             updates[symbolValue]->bidPrice = boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-            updates[symbolValue]->bidQuantity = boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+            updates[symbolValue]->bidQty = boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
           }
           else if (entryType == '1')
           { // Ask/Offer
             updates[symbolValue]->askPrice = boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-            updates[symbolValue]->askQuantity = boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+            updates[symbolValue]->askQty = boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
           }
         }
       }
