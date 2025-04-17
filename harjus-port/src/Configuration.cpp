@@ -3,6 +3,13 @@
 #include <string>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <filesystem>
+#include <stdexcept> // For std::runtime_error
+
+const std::string BINANCE_REST_API_URI = "BINANCE_REST_API_URI";
+const std::string BINANCE_FIX_API_HOSTNAME = "BINANCE_FIX_API_HOSTNAME";
+const std::string BINANCE_FIX_API_PORT = "BINANCE_FIX_API_PORT";
+const std::string BINANCE_ED25519_SEED = "BINANCE_ED25519_SEED";
+const std::string BINANCE_ED25519_API_KEY = "BINANCE_ED25519_API_KEY";
 
 std::vector<std::string> split(const std::string &s, char delimiter)
 {
@@ -24,16 +31,40 @@ Configuration::Configuration()
   {
     dotenv::init(filename.c_str());
   }
+
+  // Check for required environment variables
+  std::vector<std::string> requiredVars = {
+      BINANCE_REST_API_URI,
+      BINANCE_FIX_API_HOSTNAME,
+      BINANCE_FIX_API_PORT,
+      BINANCE_ED25519_SEED,
+      BINANCE_ED25519_API_KEY};
+  std::string missingVars;
+
+  for (const auto &var : requiredVars)
+  {
+    if (dotenv::getenv(var.c_str(), "").empty())
+    {
+      if (!missingVars.empty())
+        missingVars += ", ";
+      missingVars += var;
+    }
+  }
+
+  if (!missingVars.empty())
+  {
+    throw std::runtime_error("Missing required environment variables: " + missingVars);
+  }
 }
 
 std::string Configuration::getBinanceRESTApiUri() const
 {
-  return dotenv::getenv("BINANCE_REST_API_URI");
+  return dotenv::getenv(BINANCE_REST_API_URI.c_str());
 }
 
 std::string Configuration::getBinanceFIXApiHostname() const
 {
-  return dotenv::getenv("BINANCE_FIX_API_HOSTNAME");
+  return dotenv::getenv(BINANCE_FIX_API_HOSTNAME.c_str());
 }
 
 std::string Configuration::getBinanceFIXApiPort() const
@@ -42,12 +73,12 @@ std::string Configuration::getBinanceFIXApiPort() const
 }
 std::string Configuration::getEd25519Seed() const
 {
-  return dotenv::getenv("BINANCE_ED25519_SEED", "");
+  return dotenv::getenv(BINANCE_ED25519_SEED.c_str());
 }
 
 std::string Configuration::getEd25519ApiKey() const
 {
-  return dotenv::getenv("BINANCE_ED25519_API_KEY", "");
+  return dotenv::getenv(BINANCE_ED25519_API_KEY.c_str());
 }
 
 int Configuration::getMaxTradingPathLength() const
