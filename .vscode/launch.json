@@ -40,7 +40,7 @@
                 "${cmake.testArgs}"
             ],
         },
-        // use this for debugging harjus-port
+        // use this for debugging harjus
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",

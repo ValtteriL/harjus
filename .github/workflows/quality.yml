@@ -17,7 +17,7 @@ jobs:
 
       - name: Build
         run: |
-          nix-shell -A devEnv --run "cmake -S harjus-port -B build"
+          nix-shell -A devEnv --run "cmake -S harjus -B build"
           nix-shell -A devEnv --run "cmake --build build --config Debug --target all --"
 
       - name: Test
