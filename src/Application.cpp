@@ -117,7 +117,7 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols)
 
 void Application::onMessage(const FIX44::ExecutionReport &, const FIX::SessionID &) {}
 
-void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message, const FIX::SessionID &sessionID)
+void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message, const FIX::SessionID &)
 {
   try
   {
@@ -182,7 +182,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
   }
 }
 
-void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message, const FIX::SessionID &sessionID)
+void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message, const FIX::SessionID &)
 {
   try
   {
