@@ -56,9 +56,8 @@ let
         # for working with nix
         glibcLocales
         nixpkgs-fmt
-        nixfmt-classic
+nixfmt-classic
 
-        # elixir
         cowsay
 
         # C++
@@ -95,12 +94,11 @@ let
         deploy
         docs
         quickfix
-        tests
         scripts
         .vscode
       ''] ./.;
 
-      buildInputs = [ boost openssl libcpr pkg-config libsodium myQuickfix ];
+      buildInputs = [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
     };
 
