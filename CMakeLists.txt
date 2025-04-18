@@ -64,6 +64,7 @@ include(GoogleTest)
 add_executable(MainTest tests/MainTest.cpp)
 target_link_libraries(MainTest PRIVATE
   gtest_main
+  gtest
 )
 
 gtest_discover_tests(MainTest)
