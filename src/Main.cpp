@@ -5,6 +5,9 @@
 #include "PriceUpdate.h"
 #include "Trade.h"
 #include <boost/lockfree/queue.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
 #include <chrono>
 #include <iostream>
 #include <quickfix/FileStore.h>
@@ -73,17 +76,33 @@ void processPriceQueue(boost::lockfree::queue<PriceUpdate *> &queue) {
   }
 }
 
+void initLogging(int logLevel) {
+  boost::log::core::get()->set_filter(boost::log::trivial::severity >=
+                                      logLevel);
+}
+
 int main() {
   banner();
   Configuration config;
 
+  // config logging
+  initLogging(config.getLogLevel());
+
+  BOOST_LOG_TRIVIAL(info) << "Starting Harjus";
+
+  BOOST_LOG_TRIVIAL(debug) << "Getting balance";
   // get balance, available symbols & relative values
   Balance balance = getBalance(config);
+
+  BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
   std::unordered_map<std::string, Symbol> symbolMap = getSymbols(config);
+
+  BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       relativeValueMap = getRelativeValues(config, symbolMap);
 
   // calculate trading paths
+  BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
   std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
   int maxDepth = config.getMaxTradingPathLength();
   std::vector<std::vector<Trade>> tradingPaths =
@@ -97,8 +116,8 @@ int main() {
   std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
 
   // Log the number of symbols we'll subscribe to
-  std::cout << "Subscribing to " << symbols.size() << " trading symbols"
-            << std::endl;
+  BOOST_LOG_TRIVIAL(info) << "Subscribing to " << symbols.size()
+                          << " trading symbols";
 
   // FIX Engine config
   std::string fixConfig = R"(
@@ -141,19 +160,19 @@ int main() {
             application, storeFactory, settings, logFactory});
 
     initiator->start();
-    std::cout << "FIX initiator started successfully." << std::endl;
+    BOOST_LOG_TRIVIAL(debug) << "FIX initiator started successfully.";
 
     // Subscribe to market data for all symbols
     if (application.subscribeToSymbols(symbols)) {
-      std::cout << "Successfully subscribed to " << symbols.size()
-                << " symbols." << std::endl;
+      BOOST_LOG_TRIVIAL(debug) << "Subscribed to symbols: " << symbols.size();
     } else {
       std::cerr << "Failed to subscribe to market data." << std::endl;
+      BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
     }
 
     // Start processing price updates in the main thread
-    std::cout << "Starting to process price updates. Press Ctrl+C to exit."
-              << std::endl;
+    BOOST_LOG_TRIVIAL(info)
+        << "Starting to process price updates. Press Ctrl+C to exit.";
     processPriceQueue(priceUpdateQueue);
 
     // This is unreachable with the current implementation since

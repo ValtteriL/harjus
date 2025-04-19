@@ -16,4 +16,5 @@ public:
               (const, override));
   MOCK_METHOD(boost::multiprecision::cpp_dec_float_50, getCommission, (),
               (const, override));
+  MOCK_METHOD(int, getLogLevel, (), (const, override));
 };

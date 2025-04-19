@@ -66,4 +66,11 @@ public:
    * @return The commission as a boost::multiprecision::cpp_dec_float_50.
    */
   boost::multiprecision::cpp_dec_float_50 getCommission() const override;
+
+  /**
+   * @brief Get the Logging level
+   * @return The minimum verbosity level messages to be logged.
+   * @details 0 = trace, 1 = debug, 2 = info, 3 = warning, 4 = error, 5 = fatal
+   */
+  int getLogLevel() const override;
 };

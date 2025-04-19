@@ -86,3 +86,8 @@ boost::multiprecision::cpp_dec_float_50 Configuration::getCommission() const {
   auto commission = dotenv::getenv("COMMISSION", "0.001");
   return boost::multiprecision::cpp_dec_float_50(commission);
 }
+
+int Configuration::getLogLevel() const {
+  auto logLevel = dotenv::getenv("LOG_LEVEL", "1");
+  return std::stoi(logLevel);
+}

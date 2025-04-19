@@ -10,7 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for clangd
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
 endif()
-find_package(Boost REQUIRED COMPONENTS url system thread json graph)
+find_package(Boost REQUIRED COMPONENTS url system thread json graph log)
 
 # Google Test
 find_package(GTest REQUIRED)
@@ -49,7 +49,7 @@ add_executable(harjus
   src/Trade.cpp
   src/Arbmapper.cpp
 )
-target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
+target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
 
 include(GNUInstallDirs)
 install(TARGETS harjus
