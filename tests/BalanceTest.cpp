@@ -3,11 +3,10 @@
  * Testing the Balance class.
  */
 
-#include <gtest/gtest.h>
 #include "Balance.h"
+#include <gtest/gtest.h>
 
-TEST(BalanceTest, insertUpdateBalance)
-{
+TEST(BalanceTest, insertUpdateBalance) {
   // By default, the balance is 0
   Balance balance;
   std::string currency = "BTC";

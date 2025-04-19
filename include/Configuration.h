@@ -9,8 +9,7 @@
  * from environment variables or default values.
  */
 
-class Configuration : public IConfiguration
-{
+class Configuration : public IConfiguration {
 public:
   Configuration();
 

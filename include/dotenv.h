@@ -34,13 +34,13 @@
 ///
 #pragma once
 
-#include <string>
+#include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <fstream>
-#include <iostream>
-#include <algorithm>
 #include <functional>
-#include <cctype>
+#include <iostream>
+#include <string>
 
 ///
 /// Utility class for loading environment variables from a file.
@@ -76,8 +76,8 @@
 /// Compile and run the program, e.g. using,
 ///
 /// \code
-/// c++ example.cpp -o example -I/usr/local/include/laserpants/dotenv-0.9.3 && ./example
-/// \endcode
+/// c++ example.cpp -o example -I/usr/local/include/laserpants/dotenv-0.9.3 &&
+/// ./example \endcode
 ///
 /// and the output is:
 ///
@@ -88,8 +88,7 @@
 ///
 /// \see https://github.com/laserpants/dotenv-cpp
 ///
-class dotenv
-{
+class dotenv {
 public:
   dotenv() = delete;
   ~dotenv() = delete;
@@ -107,13 +106,16 @@ private:
   static void do_init(int flags, const char *filename);
   static std::string strip_quotes(const std::string &str);
 
-  static std::pair<std::string, bool> resolve_vars(size_t iline, const std::string &str);
+  static std::pair<std::string, bool> resolve_vars(size_t iline,
+                                                   const std::string &str);
   static void ltrim(std::string &s);
   static void rtrim(std::string &s);
   static void trim(std::string &s);
   static std::string trim_copy(std::string s);
-  static size_t find_var_start(const std::string &str, size_t pos, std::string &start_tag);
-  static size_t find_var_end(const std::string &str, size_t pos, const std::string &start_tag);
+  static size_t find_var_start(const std::string &str, size_t pos,
+                               std::string &start_tag);
+  static size_t find_var_end(const std::string &str, size_t pos,
+                             const std::string &start_tag);
 };
 
 ///
@@ -122,8 +124,7 @@ private:
 ///
 /// \param filename a file to read environment variables from
 ///
-inline void dotenv::init(const char *filename)
-{
+inline void dotenv::init(const char *filename) {
   dotenv::do_init(OptionsNone, filename);
 }
 
@@ -131,9 +132,9 @@ inline void dotenv::init(const char *filename)
 /// Read and initialize environment variables using the provided configuration
 /// flags.
 ///
-/// By default, if a name is already present in the environment, `dotenv::init()`
-/// will replace it with the new value. To preserve existing variables, you
-/// must pass the `Preserve` flag.
+/// By default, if a name is already present in the environment,
+/// `dotenv::init()` will replace it with the new value. To preserve existing
+/// variables, you must pass the `Preserve` flag.
 ///
 /// \code
 /// dotenv::init(dotenv::Preserve);
@@ -142,8 +143,7 @@ inline void dotenv::init(const char *filename)
 /// \param flags    configuration flags
 /// \param filename a file to read environment variables from
 ///
-inline void dotenv::init(int flags, const char *filename)
-{
+inline void dotenv::init(int flags, const char *filename) {
   dotenv::do_init(flags, filename);
 }
 
@@ -157,8 +157,7 @@ inline void dotenv::init(int flags, const char *filename)
 /// \returns the value of the environment variable \a name, or \a def if the
 ///          variable is not set
 ///
-inline std::string dotenv::getenv(const char *name, const std::string &def)
-{
+inline std::string dotenv::getenv(const char *name, const std::string &def) {
   const char *str = std::getenv(name);
   return str ? std::string(str) : def;
 }
@@ -166,12 +165,10 @@ inline std::string dotenv::getenv(const char *name, const std::string &def)
 #ifdef _MSC_VER
 
 // https://stackoverflow.com/questions/17258029/c-setenv-undefined-identifier-in-visual-studio
-inline int setenv(const char *name, const char *value, int overwrite)
-{
+inline int setenv(const char *name, const char *value, int overwrite) {
   int errcode = 0;
 
-  if (!overwrite)
-  {
+  if (!overwrite) {
     size_t envsize = 0;
     errcode = getenv_s(&envsize, NULL, 0, name);
     if (errcode || envsize)
@@ -190,10 +187,11 @@ inline int setenv(const char *name, const char *value, int overwrite)
 /// \param pos  in:  search from position
 /// \param pos  out: start tag found
 ///
-/// \returns The start position of next variable expression or std::string::npos if not found
+/// \returns The start position of next variable expression or std::string::npos
+/// if not found
 ///
-inline size_t dotenv::find_var_start(const std::string &str, size_t pos, std::string &start_tag)
-{
+inline size_t dotenv::find_var_start(const std::string &str, size_t pos,
+                                     std::string &start_tag) {
   size_t p1 = str.find('$', pos);
   size_t p2 = str.find("${", pos);
   size_t pos_var = (std::min)(p1, p2);
@@ -210,10 +208,11 @@ inline size_t dotenv::find_var_start(const std::string &str, size_t pos, std::st
 /// \param pos  in:  search from position (result from find_var_start)
 /// \param pos  in:  start tag
 ///
-/// \returns The next end position of variable expression or std::string::npos if not found
+/// \returns The next end position of variable expression or std::string::npos
+/// if not found
 ///
-inline size_t dotenv::find_var_end(const std::string &str, size_t pos, const std::string &start_tag)
-{
+inline size_t dotenv::find_var_end(const std::string &str, size_t pos,
+                                   const std::string &start_tag) {
   char end_tag = (start_tag == "${") ? '}' : ' ';
   size_t pos_end = str.find(end_tag, pos);
   // special case when $VARIABLE is at end of str with no trailing whitespace
@@ -223,31 +222,27 @@ inline size_t dotenv::find_var_end(const std::string &str, size_t pos, const std
 }
 
 // trim whitespace from left (in place)
-inline void dotenv::ltrim(std::string &s)
-{
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c)
-                                  { return !std::isspace(c); }));
+inline void dotenv::ltrim(std::string &s) {
+  s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+                                  [](int c) { return !std::isspace(c); }));
 }
 
 // trim whitespace from right (in place)
-inline void dotenv::rtrim(std::string &s)
-{
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](int c)
-                       { return !std::isspace(c); })
-              .base(),
-          s.end());
+inline void dotenv::rtrim(std::string &s) {
+  s.erase(
+      std::find_if(s.rbegin(), s.rend(), [](int c) { return !std::isspace(c); })
+          .base(),
+      s.end());
 }
 
 // trim both ends (in place)
-inline void dotenv::trim(std::string &s)
-{
+inline void dotenv::trim(std::string &s) {
   ltrim(s);
   rtrim(s);
 }
 
 // trim from both ends (copying)
-inline std::string dotenv::trim_copy(std::string s)
-{
+inline std::string dotenv::trim_copy(std::string s) {
   trim(s);
   return s;
 }
@@ -257,12 +252,13 @@ inline std::string dotenv::trim_copy(std::string s)
 ///
 /// \param iline line number in .env file
 /// \param str   the string to be resolved, containing 0 or more variables
-/// \param ok    true on return if no variables found or all variables resolved ok
+/// \param ok    true on return if no variables found or all variables resolved
+/// ok
 ///
 /// \returns pair with <resolved, true> if ok, or <partial, false> if error
 ///
-inline std::pair<std::string, bool> dotenv::resolve_vars(size_t iline, const std::string &str)
-{
+inline std::pair<std::string, bool>
+dotenv::resolve_vars(size_t iline, const std::string &str) {
   std::string resolved;
 
   size_t pos = 0;
@@ -270,13 +266,11 @@ inline std::pair<std::string, bool> dotenv::resolve_vars(size_t iline, const std
   size_t nvar = 0;
 
   bool finished = false;
-  while (!finished)
-  {
+  while (!finished) {
     // look for start of variable expression after pos
     std::string start_tag;
     pos = find_var_start(str, pos, start_tag);
-    if (pos != std::string::npos)
-    {
+    if (pos != std::string::npos) {
       // a variable definition detected
       nvar++;
 
@@ -291,8 +285,7 @@ inline std::pair<std::string, bool> dotenv::resolve_vars(size_t iline, const std
 
       // look for end of variable expression
       pos = find_var_end(str, pos, start_tag);
-      if (pos != std::string::npos)
-      {
+      if (pos != std::string::npos) {
         // variable name with decoration
         std::string var = str.substr(pos_start, pos - pos_start + 1);
 
@@ -303,31 +296,26 @@ inline std::pair<std::string, bool> dotenv::resolve_vars(size_t iline, const std
         rtrim(env_var);
 
         // evaluate environment variable
-        if (const char *env_str = std::getenv(env_var.c_str()))
-        {
+        if (const char *env_str = std::getenv(env_var.c_str())) {
           resolved += env_str;
           nvar--; // decrement to indicate variable resolved
-        }
-        else
-        {
+        } else {
           // could not resolve the variable, so don't decrement
-          std::cout << "dotenv: Variable " << var << " is not defined on line " << iline << std::endl;
+          std::cout << "dotenv: Variable " << var << " is not defined on line "
+                    << iline << std::endl;
         }
 
         // skip end tag
         pre_pos = pos + lend;
       }
-    }
-    else
-    {
+    } else {
       // no more variables
       finished = true;
     }
   }
 
   // add possible trailing non-whitespace after last variable
-  if (pre_pos < str.length())
-  {
+  if (pre_pos < str.length()) {
     resolved += str.substr(pre_pos);
   }
 
@@ -335,41 +323,32 @@ inline std::pair<std::string, bool> dotenv::resolve_vars(size_t iline, const std
   return std::make_pair(resolved, (nvar == 0));
 }
 
-inline void dotenv::do_init(int flags, const char *filename)
-{
+inline void dotenv::do_init(int flags, const char *filename) {
   std::ifstream file;
   std::string line;
 
   file.open(filename);
 
-  if (file)
-  {
+  if (file) {
     unsigned int i = 1;
 
-    while (getline(file, line))
-    {
+    while (getline(file, line)) {
       const auto pos = line.find("=");
 
-      if (pos == std::string::npos)
-      {
-        std::cout << "dotenv: Ignoring ill-formed assignment on line "
-                  << i << ": '" << line << "'" << std::endl;
-      }
-      else
-      {
+      if (pos == std::string::npos) {
+        std::cout << "dotenv: Ignoring ill-formed assignment on line " << i
+                  << ": '" << line << "'" << std::endl;
+      } else {
         auto name = trim_copy(line.substr(0, pos));
         auto line_stripped = strip_quotes(trim_copy(line.substr(pos + 1)));
 
         // resolve any contained variable expressions in 'line_stripped'
         auto p = resolve_vars(i, line_stripped);
         bool ok = p.second;
-        if (!ok)
-        {
-          std::cout << "dotenv: Ignoring ill-formed assignment on line "
-                    << i << ": '" << line << "'" << std::endl;
-        }
-        else
-        {
+        if (!ok) {
+          std::cout << "dotenv: Ignoring ill-formed assignment on line " << i
+                    << ": '" << line << "'" << std::endl;
+        } else {
 
           // variable resolved ok, set as environment variable
           const auto &val = p.first;
@@ -381,8 +360,7 @@ inline void dotenv::do_init(int flags, const char *filename)
   }
 }
 
-inline std::string dotenv::strip_quotes(const std::string &str)
-{
+inline std::string dotenv::strip_quotes(const std::string &str) {
   const std::size_t len = str.length();
 
   if (len < 2)

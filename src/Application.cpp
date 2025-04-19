@@ -1,29 +1,22 @@
 #include "Application.h"
 #include "Ed25519.h"
-#include <quickfix/Session.h>
 #include <iostream>
-#include <sstream>
+#include <quickfix/Session.h>
 
-void Application::onLogon(const FIX::SessionID &sessionID)
-{
-  std::cout << std::endl
-            << "Logon - " << sessionID << std::endl;
+void Application::onLogon(const FIX::SessionID &sessionID) {
+  std::cout << std::endl << "Logon - " << sessionID << std::endl;
 }
 
-void Application::onLogout(const FIX::SessionID &sessionID)
-{
-  std::cout << std::endl
-            << "Logout - " << sessionID << std::endl;
+void Application::onLogout(const FIX::SessionID &sessionID) {
+  std::cout << std::endl << "Logout - " << sessionID << std::endl;
 }
 
-void Application::toAdmin(FIX::Message &message, const FIX::SessionID &)
-{
+void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
   FIX::MsgType msgType;
   message.getHeader().getField(msgType);
 
   // Binance requires username and password in the logon message
-  if (msgType.getValue() == FIX::MsgType_Logon)
-  {
+  if (msgType.getValue() == FIX::MsgType_Logon) {
     FIX::Header &header = message.getHeader();
 
     // set username
@@ -37,43 +30,35 @@ void Application::toAdmin(FIX::Message &message, const FIX::SessionID &)
   }
 }
 
-void Application::fromApp(const FIX::Message &message, const FIX::SessionID &sessionID)
-    EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::UnsupportedMessageType)
-{
+void Application::fromApp(const FIX::Message &message,
+                          const FIX::SessionID &sessionID)
+    EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue,
+           FIX::UnsupportedMessageType) {
   crack(message, sessionID); // crack the message to the appropriate handler
-  std::cout << std::endl
-            << "IN: " << message << std::endl;
+  std::cout << std::endl << "IN: " << message << std::endl;
 }
 
-void Application::toApp(FIX::Message &message, const FIX::SessionID &) EXCEPT(FIX::DoNotSend)
-{
-  try
-  {
+void Application::toApp(FIX::Message &message, const FIX::SessionID &)
+    EXCEPT(FIX::DoNotSend) {
+  try {
     FIX::PossDupFlag possDupFlag;
     message.getHeader().getField(possDupFlag);
-    if (possDupFlag)
-    {
+    if (possDupFlag) {
       throw FIX::DoNotSend();
     }
-  }
-  catch (FIX::FieldNotFound &)
-  {
+  } catch (FIX::FieldNotFound &) {
   }
 
-  std::cout << std::endl
-            << "OUT: " << message << std::endl;
+  std::cout << std::endl << "OUT: " << message << std::endl;
 }
 
-bool Application::subscribeToSymbols(const std::vector<std::string> &symbols)
-{
-  if (marketDataSessionID == FIX::SessionID())
-  {
+bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
+  if (marketDataSessionID == FIX::SessionID()) {
     std::cerr << "No market data session available" << std::endl;
     return false;
   }
 
-  try
-  {
+  try {
     FIX44::MarketDataRequest marketDataRequest;
 
     // Generate a unique request ID
@@ -98,8 +83,7 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols)
     marketDataRequest.addGroup(entryTypeGroup);
 
     // Add all requested symbols
-    for (const auto &symbol : symbols)
-    {
+    for (const auto &symbol : symbols) {
       FIX44::MarketDataRequest::NoRelatedSym symbolGroup;
       symbolGroup.set(FIX::Symbol(symbol));
       marketDataRequest.addGroup(symbolGroup);
@@ -107,20 +91,18 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols)
 
     FIX::Session::sendToTarget(marketDataRequest, marketDataSessionID);
     return true;
-  }
-  catch (const std::exception &e)
-  {
+  } catch (const std::exception &e) {
     std::cerr << "Error sending market data request: " << e.what() << std::endl;
     return false;
   }
 }
 
-void Application::onMessage(const FIX44::ExecutionReport &, const FIX::SessionID &) {}
+void Application::onMessage(const FIX44::ExecutionReport &,
+                            const FIX::SessionID &) {}
 
-void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message, const FIX::SessionID &)
-{
-  try
-  {
+void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
+                            const FIX::SessionID &) {
+  try {
     FIX::Symbol symbol;
 
     message.get(symbol);
@@ -137,8 +119,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
     message.get(noMDEntries);
     int numEntries = noMDEntries.getValue();
 
-    for (int i = 1; i <= numEntries; i++)
-    {
+    for (int i = 1; i <= numEntries; i++) {
       FIX44::MarketDataSnapshotFullRefresh::NoMDEntries group;
       message.getGroup(i, group);
 
@@ -146,46 +127,47 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
       group.get(entryType);
 
       // Process bid (0) or ask (1) entries
-      if (entryType == '0')
-      { // Bid
+      if (entryType == '0') { // Bid
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
 
         group.get(entryPrice);
         group.get(entrySize);
 
-        bidPrice = boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-        bidQuantity = boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
-      }
-      else if (entryType == '1')
-      { // Ask/Offer
+        bidPrice =
+            boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
+        bidQuantity =
+            boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+      } else if (entryType == '1') { // Ask/Offer
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
 
         group.get(entryPrice);
         group.get(entrySize);
 
-        askPrice = boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-        askQuantity = boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+        askPrice =
+            boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
+        askQuantity =
+            boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
       }
     }
 
     // Create price update and add to the queue
-    PriceUpdate *update = new PriceUpdate{symbolValue, bidPrice, askPrice, bidQuantity, askQuantity};
+    PriceUpdate *update = new PriceUpdate{symbolValue, bidPrice, askPrice,
+                                          bidQuantity, askQuantity};
 
-    // Push to the queue - if queue is full, this may fail but we don't want to block
+    // Push to the queue - if queue is full, this may fail but we don't want to
+    // block
     priceUpdateQueue.push(update);
-  }
-  catch (const std::exception &e)
-  {
-    std::cerr << "Error processing market data snapshot: " << e.what() << std::endl;
+  } catch (const std::exception &e) {
+    std::cerr << "Error processing market data snapshot: " << e.what()
+              << std::endl;
   }
 }
 
-void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message, const FIX::SessionID &)
-{
-  try
-  {
+void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
+                            const FIX::SessionID &) {
+  try {
     // Check if we have any MD entries
     FIX::NoMDEntries noMDEntries;
     message.get(noMDEntries);
@@ -194,8 +176,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message, 
     // We may get updates for multiple symbols in a single message
     std::map<std::string, PriceUpdate *> updates;
 
-    for (int i = 1; i <= numEntries; i++)
-    {
+    for (int i = 1; i <= numEntries; i++) {
       FIX44::MarketDataIncrementalRefresh::NoMDEntries group;
       message.getGroup(i, group);
 
@@ -208,8 +189,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message, 
       std::string symbolValue = symbol.getValue();
 
       // Check if we already have an update for this symbol
-      if (updates.find(symbolValue) == updates.end())
-      {
+      if (updates.find(symbolValue) == updates.end()) {
         // Create a new update
         updates[symbolValue] = new PriceUpdate();
         updates[symbolValue]->symbol = symbolValue;
@@ -220,38 +200,35 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message, 
       group.get(action);
 
       // Only process "New" or "Change" actions (0 or 1)
-      if (action.getValue() == '0' || action.getValue() == '1')
-      {
+      if (action.getValue() == '0' || action.getValue() == '1') {
         FIX::MDEntryPx entryPrice;
         group.get(entryPrice);
 
-        if (group.isSetField(FIX::FIELD::MDEntrySize))
-        {
+        if (group.isSetField(FIX::FIELD::MDEntrySize)) {
           FIX::MDEntrySize entrySize;
           group.get(entrySize);
 
-          if (entryType == '0')
-          { // Bid
-            updates[symbolValue]->bidPrice = boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-            updates[symbolValue]->bidQty = boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
-          }
-          else if (entryType == '1')
-          { // Ask/Offer
-            updates[symbolValue]->askPrice = boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-            updates[symbolValue]->askQty = boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+          if (entryType == '0') { // Bid
+            updates[symbolValue]->bidPrice =
+                boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
+            updates[symbolValue]->bidQty =
+                boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+          } else if (entryType == '1') { // Ask/Offer
+            updates[symbolValue]->askPrice =
+                boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
+            updates[symbolValue]->askQty =
+                boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
           }
         }
       }
     }
 
     // Add all updates to the queue
-    for (const auto &[symbol, update] : updates)
-    {
+    for (const auto &[symbol, update] : updates) {
       priceUpdateQueue.push(update);
     }
-  }
-  catch (const std::exception &e)
-  {
-    std::cerr << "Error processing incremental refresh: " << e.what() << std::endl;
+  } catch (const std::exception &e) {
+    std::cerr << "Error processing incremental refresh: " << e.what()
+              << std::endl;
   }
 }

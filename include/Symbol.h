@@ -1,11 +1,10 @@
 #pragma once
 
-#include <string>
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include "Position.h"
+#include <boost/multiprecision/cpp_dec_float.hpp>
+#include <string>
 
-class Symbol
-{
+class Symbol {
 public:
   std::string symbol;
   std::string baseAsset;

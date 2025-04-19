@@ -3,12 +3,11 @@
  * Testing the Arbmapper function.
  */
 
-#include <gtest/gtest.h>
 #include "Arbmapper.h"
+#include <gtest/gtest.h>
 #include <unordered_set>
 
-TEST(ArbmapperTest, noPathsWhenDepthIsZero)
-{
+TEST(ArbmapperTest, noPathsWhenDepthIsZero) {
   // Create a vector of symbols
   std::unordered_map<std::string, Symbol> symbolMap{};
   int depth = 0;
@@ -18,13 +17,15 @@ TEST(ArbmapperTest, noPathsWhenDepthIsZero)
   EXPECT_TRUE(opportunities.empty());
 }
 
-TEST(ArbmapperTest, detectsAllTradingOpportunities)
-{
+TEST(ArbmapperTest, detectsAllTradingOpportunities) {
   // Create a vector of symbols
   std::unordered_map<std::string, Symbol> symbolMap{
-      {"BTCETH", {"BTCETH", "BTC", "ETH", 30000, 30010, 1, 1, 10, 0.0001, 0.01, 8, 2}},
-      {"ETHDOGE", {"ETHDOGE", "ETH", "DOGE", 0.07, 0.071, 1, 1, 10, 0.0001, 0.01, 8, 8}},
-      {"DOGEBTC", {"DOGEBTC", "DOGE", "BTC", 1400, 1410, 1, 1, 10, 0.0001, 0.01, 8, 8}}};
+      {"BTCETH",
+       {"BTCETH", "BTC", "ETH", 30000, 30010, 1, 1, 10, 0.0001, 0.01, 8, 2}},
+      {"ETHDOGE",
+       {"ETHDOGE", "ETH", "DOGE", 0.07, 0.071, 1, 1, 10, 0.0001, 0.01, 8, 8}},
+      {"DOGEBTC",
+       {"DOGEBTC", "DOGE", "BTC", 1400, 1410, 1, 1, 10, 0.0001, 0.01, 8, 8}}};
 
   int depth = 3;
   std::vector<std::string> skipSymbols{};
@@ -34,23 +35,20 @@ TEST(ArbmapperTest, detectsAllTradingOpportunities)
   EXPECT_EQ(opportunities.size(), 6);
 
   // Verify that all paths are of length 3
-  for (const auto &path : opportunities)
-  {
+  for (const auto &path : opportunities) {
     EXPECT_EQ(path.size(), 3);
   }
 
   // Verify that no trades are the same object (their addresses are different)
   int totalTrades = 0;
-  for (const auto &path : opportunities)
-  {
+  for (const auto &path : opportunities) {
     totalTrades += path.size();
   }
   std::unordered_set<std::string> uniqueTradeAddresses;
-  for (const auto &path : opportunities)
-  {
-    for (const auto &trade : path)
-    {
-      uniqueTradeAddresses.insert(std::to_string(reinterpret_cast<std::uintptr_t>(&trade)));
+  for (const auto &path : opportunities) {
+    for (const auto &trade : path) {
+      uniqueTradeAddresses.insert(
+          std::to_string(reinterpret_cast<std::uintptr_t>(&trade)));
     }
   }
   EXPECT_EQ(uniqueTradeAddresses.size(), totalTrades);
@@ -58,8 +56,7 @@ TEST(ArbmapperTest, detectsAllTradingOpportunities)
   // Verify that the returned trading paths contain at least one path
   // with each of the following as the first usedCurrency: BTC, ETH, DOGE
   std::unordered_set<std::string> firstUsedCurrencies;
-  for (const auto &path : opportunities)
-  {
+  for (const auto &path : opportunities) {
     firstUsedCurrencies.insert(std::string{path.front().getUsedCurrency()});
   }
   EXPECT_TRUE(firstUsedCurrencies.count("BTC"));

@@ -3,11 +3,10 @@
  * Testing the HttpClient class.
  */
 
-#include <gtest/gtest.h>
 #include "HttpClient.h"
+#include <gtest/gtest.h>
 
-TEST(HttpClientTest, getUri)
-{
+TEST(HttpClientTest, getUri) {
   // Test with a valid URI
   std::string uri = "https://api.example.com/data";
   std::string response = get(uri);

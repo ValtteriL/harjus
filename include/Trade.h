@@ -6,16 +6,17 @@
 /**
  * Trade class representing a trade in the system.
  */
-class Trade : ITrade
-{
+class Trade : ITrade {
 public:
   Trade(const Symbol &symbol, Position position)
-      : symbol_(symbol),
-        position_(position),
+      : symbol_(symbol), position_(position),
         offerQty_(position == Position::LONG ? symbol.askQty : symbol.bidQty),
-        orderPrice_(position == Position::LONG ? symbol.askPrice : symbol.bidPrice),
-        recvCurrency_(position == Position::LONG ? symbol.baseAsset : symbol.quoteAsset),
-        usedCurrency_(position == Position::LONG ? symbol.quoteAsset : symbol.baseAsset) {}
+        orderPrice_(position == Position::LONG ? symbol.askPrice
+                                               : symbol.bidPrice),
+        recvCurrency_(position == Position::LONG ? symbol.baseAsset
+                                                 : symbol.quoteAsset),
+        usedCurrency_(position == Position::LONG ? symbol.quoteAsset
+                                                 : symbol.baseAsset) {}
 
   /**
    * Get the position of the trade.
@@ -42,7 +43,8 @@ public:
   const Symbol &getSymbol() const override;
 
   /**
-   * Set the budget for the trade. Updates the order quantity and price to the maximum allowed by the budget and best offers.
+   * Set the budget for the trade. Updates the order quantity and price to the
+   * maximum allowed by the budget and best offers.
    * @param budget The budget (in used asset) to be set.
    */
   void setBudget(boost::multiprecision::cpp_dec_float_50 budget) override;

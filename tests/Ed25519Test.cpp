@@ -3,19 +3,19 @@
  * Testing the Ed25519 class.
  */
 
-#include <gtest/gtest.h>
 #include "Ed25519.h"
+#include <gtest/gtest.h>
 #include <sodium.h>
 
 using namespace std::string_literals;
 
-TEST(Ed25519Test, base64EncodeDecode)
-{
+TEST(Ed25519Test, base64EncodeDecode) {
   std::string input{"Hello, World!"};
   std::string expectedOutput{"SGVsbG8sIFdvcmxkIQ=="};
 
   // Encode the input string to base64
-  std::string encoded = Ed25519::base64_encode(reinterpret_cast<const unsigned char *>(input.c_str()), input.size());
+  std::string encoded = Ed25519::base64_encode(
+      reinterpret_cast<const unsigned char *>(input.c_str()), input.size());
 
   // Decode the base64 encoded string back to original
   std::string decoded = Ed25519::base64_decode(encoded);
@@ -24,8 +24,7 @@ TEST(Ed25519Test, base64EncodeDecode)
   ASSERT_EQ(decoded, input);
 }
 
-TEST(Ed25519Test, signatureIsValid)
-{
+TEST(Ed25519Test, signatureIsValid) {
 
   // base64-encoded seed for a ed25519 keypair
   std::string extracted_seed{"3+iB1KqYOP2UgJ+jG6Mu0mac5kqjdjZjVlc5R6vGJ9Q="};
@@ -46,8 +45,7 @@ TEST(Ed25519Test, signatureIsValid)
   // Generate the Libsodium keypair
   crypto_sign_seed_keypair(publicKey, privateKey, seed);
 
-  if (sodium_init() < 0)
-  {
+  if (sodium_init() < 0) {
     throw std::runtime_error("Failed to initialize libsodium");
   }
 
@@ -59,9 +57,9 @@ TEST(Ed25519Test, signatureIsValid)
 
   // verify the signature
   // https://libsodium.gitbook.io/doc/public-key_cryptography/public-key_signatures#notes
-  const int verifStatus = crypto_sign_verify_detached(reinterpret_cast<const unsigned char *>(b64SignatureDecoded.data()),
-                                                      reinterpret_cast<const unsigned char *>(payload.data()),
-                                                      payload.size(),
-                                                      publicKey);
+  const int verifStatus = crypto_sign_verify_detached(
+      reinterpret_cast<const unsigned char *>(b64SignatureDecoded.data()),
+      reinterpret_cast<const unsigned char *>(payload.data()), payload.size(),
+      publicKey);
   ASSERT_EQ(verifStatus, 0);
 }

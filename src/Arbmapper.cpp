@@ -3,43 +3,39 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/tiernan_all_cycles.hpp>
 
-struct VertexProperties
-{
+struct VertexProperties {
   std::string asset;
 };
 
-struct EdgeProperties
-{
+struct EdgeProperties {
   std::shared_ptr<Trade> tradePtr;
 };
 
 // Define the graph structure
-using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, VertexProperties, EdgeProperties>;
+using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS,
+                                    VertexProperties, EdgeProperties>;
 
-namespace boost
-{
-  void renumber_vertex_indices(Graph const &) {}
-}
+namespace boost {
+void renumber_vertex_indices(Graph const &) {}
+} // namespace boost
 
 // Function to build the graph
-void buildGraph(Graph &graph, const std::unordered_map<std::string, Symbol> *symbolMap)
-{
+void buildGraph(Graph &graph,
+                const std::unordered_map<std::string, Symbol> *symbolMap) {
 
   // Create a map to store vertexes by asset
   std::unordered_map<std::string, std::size_t> vertexMap;
 
   // get unique asset names
   std::unordered_set<std::string> uniqueAssets;
-  for (const auto &pair : *symbolMap)
-  {
+  for (const auto &pair : *symbolMap) {
     const auto &symbol = pair.second;
     uniqueAssets.insert(symbol.baseAsset);
     uniqueAssets.insert(symbol.quoteAsset);
   }
 
   // Add vertices to the graph
-  for (const auto &asset : uniqueAssets)
-  {
+  for (const auto &asset : uniqueAssets) {
     auto vertex = boost::add_vertex(VertexProperties{asset}, graph);
 
     // insert the vertex into the map
@@ -47,45 +43,47 @@ void buildGraph(Graph &graph, const std::unordered_map<std::string, Symbol> *sym
   }
 
   // Add edges to the graph
-  for (const auto &pair : *symbolMap)
-  {
+  for (const auto &pair : *symbolMap) {
     const auto &symbol = pair.second;
 
     auto vertex1 = vertexMap[symbol.baseAsset];
     auto vertex2 = vertexMap[symbol.quoteAsset];
 
     // long
-    boost::add_edge(vertex1, vertex2, EdgeProperties{std::shared_ptr<Trade>{new Trade{symbol, Position::LONG}}}, graph);
+    boost::add_edge(vertex1, vertex2,
+                    EdgeProperties{std::shared_ptr<Trade>{
+                        new Trade{symbol, Position::LONG}}},
+                    graph);
 
     // short
-    boost::add_edge(vertex2, vertex1, EdgeProperties{std::shared_ptr<Trade>{new Trade{symbol, Position::SHORT}}}, graph);
+    boost::add_edge(vertex2, vertex1,
+                    EdgeProperties{std::shared_ptr<Trade>{
+                        new Trade{symbol, Position::SHORT}}},
+                    graph);
   }
 }
 
 template <typename ForwardIt>
 std::vector<typename std::iterator_traits<ForwardIt>::value_type>
-rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle, ForwardIt last)
-{
+rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
+                                  ForwardIt last) {
   using ValueType = typename std::iterator_traits<ForwardIt>::value_type;
   std::vector<ValueType> result;
 
   // Copy the second part (from middle to last)
-  for (auto it = middle; it != last; ++it)
-  {
+  for (auto it = middle; it != last; ++it) {
     result.push_back(Trade{it->getSymbol(), it->getPosition()});
   }
 
   // Copy the first part (from first to middle)
-  for (auto it = first; it != middle; ++it)
-  {
+  for (auto it = first; it != middle; ++it) {
     result.push_back(Trade{it->getSymbol(), it->getPosition()});
   }
 
   return result;
 }
 
-struct CycleVisitor
-{
+struct CycleVisitor {
   // This struct is used to visit each cycle found by tiernan_all_cycles
 
   std::vector<std::vector<Trade>> &cycles;
@@ -93,28 +91,25 @@ struct CycleVisitor
   CycleVisitor(std::vector<std::vector<Trade>> &cycles) : cycles(cycles) {}
 
   // This function is called for each cycle found
-  void cycle(auto const &path, Graph const &g)
-  {
+  void cycle(auto const &path, Graph const &g) {
     std::vector<Trade> tradePath;
 
     // get th edges (trades) in the tradePath
-    for (size_t i = 0; i < path.size(); ++i)
-    {
+    for (size_t i = 0; i < path.size(); ++i) {
       auto u = path[i];
       auto v = path[(i + 1) % path.size()];
 
       auto edge = boost::edge(u, v, g);
-      if (edge.second)
-      {
+      if (edge.second) {
         tradePath.push_back(*g[edge.first].tradePtr);
       }
     }
 
     // construct cycles with different starting trades from the cycle
     // Add them to the cycles vector
-    for (size_t i = 0; i < tradePath.size(); ++i)
-    {
-      auto copy = rotate_copy_with_copy_constructor(tradePath.begin(), tradePath.begin() + i, tradePath.end());
+    for (size_t i = 0; i < tradePath.size(); ++i) {
+      auto copy = rotate_copy_with_copy_constructor(
+          tradePath.begin(), tradePath.begin() + i, tradePath.end());
       cycles.push_back(copy);
     }
   }
@@ -122,15 +117,16 @@ struct CycleVisitor
 
 /**
  * Given a directed graph, finds all cycles of length gte 3 and lte maxDepth.
- * The cycles are returned as a vector of vectors, where each inner vector represents a cycle.
- * The cycles are represented as a vector of Trade objects.
- * Each Trade is a copy of the original Trade object in the graph, so the original graph is not modified.
+ * The cycles are returned as a vector of vectors, where each inner vector
+ * represents a cycle. The cycles are represented as a vector of Trade objects.
+ * Each Trade is a copy of the original Trade object in the graph, so the
+ * original graph is not modified.
  */
-std::vector<std::vector<Trade>> findCycles(const Graph &graph, const int maxDepth)
-{
+std::vector<std::vector<Trade>> findCycles(const Graph &graph,
+                                           const int maxDepth) {
   // Create a visitor to process the cycles
-  // the cycles need to be stored here, as the visitor is destroyed after the function returns
-  // and visitor must be passed by value
+  // the cycles need to be stored here, as the visitor is destroyed after the
+  // function returns and visitor must be passed by value
   std::vector<std::vector<Trade>> cycles;
   CycleVisitor visitor{cycles};
 
@@ -139,8 +135,9 @@ std::vector<std::vector<Trade>> findCycles(const Graph &graph, const int maxDept
   return visitor.cycles;
 }
 
-std::vector<std::vector<Trade>> getTradingPaths(std::unordered_map<std::string, Symbol> *symbolMap, int maxDepth, std::vector<std::string> &skipSymbols)
-{
+std::vector<std::vector<Trade>>
+getTradingPaths(std::unordered_map<std::string, Symbol> *symbolMap,
+                int maxDepth, std::vector<std::string> &skipSymbols) {
   // Create a graph
   Graph graph;
 
@@ -151,10 +148,11 @@ std::vector<std::vector<Trade>> getTradingPaths(std::unordered_map<std::string, 
   auto cycles = findCycles(graph, maxDepth);
 
   // reject cycles where the first usedCurrency is in skipSymbols
-  std::erase_if(cycles, [&skipSymbols](const auto &cycle)
-                {
+  std::erase_if(cycles, [&skipSymbols](const auto &cycle) {
     auto firstTrade = cycle.front();
-    return std::find(skipSymbols.begin(), skipSymbols.end(), firstTrade.getUsedCurrency()) != skipSymbols.end(); });
+    return std::find(skipSymbols.begin(), skipSymbols.end(),
+                     firstTrade.getUsedCurrency()) != skipSymbols.end();
+  });
 
   return cycles;
 }

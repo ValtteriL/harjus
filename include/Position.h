@@ -1,7 +1,3 @@
 #pragma once
 
-enum class Position
-{
-  LONG,
-  SHORT
-};
+enum class Position { LONG, SHORT };

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <unordered_set>
 #include "ITrade.h"
+#include <unordered_set>
 
 /**
  * ReservedTrades class. Contains logic for bookkeeping reserved trades.
@@ -10,8 +10,7 @@
  * Trades with same symbol and position are treated as equal.
  */
 
-class ReservedTrades
-{
+class ReservedTrades {
 public:
   /**
    *  Constructor. Create a new reserved trades object.
@@ -37,18 +36,12 @@ private:
   /**
    *  Custom hash and equality for ITrade.
    */
-  struct ITradeHash
-  {
-    std::size_t operator()(const ITrade *trade) const
-    {
-      return trade->hash();
-    }
+  struct ITradeHash {
+    std::size_t operator()(const ITrade *trade) const { return trade->hash(); }
   };
 
-  struct ITradeEqual
-  {
-    bool operator()(const ITrade *lhs, const ITrade *rhs) const
-    {
+  struct ITradeEqual {
+    bool operator()(const ITrade *lhs, const ITrade *rhs) const {
       return *lhs == *rhs;
     }
   };
