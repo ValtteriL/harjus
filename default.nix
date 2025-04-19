@@ -56,14 +56,14 @@ let
         # for working with nix
         glibcLocales
         nixpkgs-fmt
-nixfmt-classic
-
+        nixfmt-classic
         cowsay
 
         # C++
         cmake
         ninja
         gdb
+        clang-tools
         gtest
         boost
         openssl
@@ -98,7 +98,8 @@ nixfmt-classic
         .vscode
       ''] ./.;
 
-      buildInputs = [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
+      buildInputs =
+        [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
     };
 

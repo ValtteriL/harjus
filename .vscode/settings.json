@@ -1,7 +1,6 @@
 {
   "files.autoSave": "afterDelay",
   "editor.formatOnSave": true,
-  "editor.formatOnSaveMode": "modificationsIfAvailable",
   "editor.tabSize": 2,
   "cmake.sourceDirectory": "/home/valtteri/development/harjus"
 }
