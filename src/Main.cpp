@@ -123,6 +123,10 @@ int main() {
   std::string fixConfig = R"(
   # default settings for sessions
   [DEFAULT]
+  StartTime=00:00:00
+  EndTime=00:00:00
+  HeartBtInt=30
+  FileStorePath=.
   ConnectionType=initiator
   SenderCompID=HARJUS
   TargetCompID=SPOT
