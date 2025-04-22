@@ -166,6 +166,11 @@ int main() {
     initiator->start();
     BOOST_LOG_TRIVIAL(debug) << "FIX initiator started successfully.";
 
+    // Wait for the session to be established
+    while (!initiator->isLoggedOn()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
     // Subscribe to market data for all symbols
     if (application.subscribeToSymbols(symbols)) {
       BOOST_LOG_TRIVIAL(debug) << "Subscribed to symbols: " << symbols.size();
