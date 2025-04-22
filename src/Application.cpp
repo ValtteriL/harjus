@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Ed25519.h"
 #include <iostream>
+#include <quickfix/Field.h>
 #include <quickfix/Session.h>
 
 void Application::onLogon(const FIX::SessionID &sessionID) {
@@ -18,6 +19,10 @@ void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
   // Binance requires username and password in the logon message
   if (msgType.getValue() == FIX::MsgType_Logon) {
     FIX::Header &header = message.getHeader();
+
+    // add required fields to the header
+    header.setField(FIX::ResetSeqNumFlag('Y')); // Reset sequence numbers
+    header.setField(FIX::IntField(25035, 1));   // unordered messages for perf
 
     // set username
     header.setField(FIX::Username(username.c_str()));
