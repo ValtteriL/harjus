@@ -19,6 +19,8 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <filesystem>
+#include <fstream>
 
 void banner() {
   std::cout << R"(
@@ -81,6 +83,14 @@ void initLogging(int logLevel) {
                                       logLevel);
 }
 
+void deleteSessionFiles(const std::string &dir) {
+  for (const auto &entry : std::filesystem::directory_iterator(dir)) {
+    if (entry.path().extension() == ".session") {
+      std::filesystem::remove(entry.path());
+    }
+  }
+}
+
 int main() {
   banner();
   Configuration config;
@@ -89,6 +99,14 @@ int main() {
   initLogging(config.getLogLevel());
 
   BOOST_LOG_TRIVIAL(info) << "Starting Harjus";
+
+  // Create directory if it doesn't exist
+  std::string fixFileDir = config.getFixFileDir();
+
+  std::filesystem::create_directory(fixFileDir);
+
+  // Delete .session files if directory exists
+  deleteSessionFiles(fixFileDir);
 
   BOOST_LOG_TRIVIAL(debug) << "Getting balance";
   // get balance, available symbols & relative values

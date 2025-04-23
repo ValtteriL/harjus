@@ -16,4 +16,5 @@ public:
   virtual std::vector<std::string> getBlacklistedStartSymbols() const = 0;
   virtual boost::multiprecision::cpp_dec_float_50 getCommission() const = 0;
   virtual int getLogLevel() const = 0;
+  virtual std::string getFixFileDir() const = 0;
 };

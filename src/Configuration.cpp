@@ -10,6 +10,7 @@ const std::string BINANCE_FIX_API_HOSTNAME = "BINANCE_FIX_API_HOSTNAME";
 const std::string BINANCE_FIX_API_PORT = "BINANCE_FIX_API_PORT";
 const std::string BINANCE_ED25519_SEED = "BINANCE_ED25519_SEED";
 const std::string BINANCE_ED25519_API_KEY = "BINANCE_ED25519_API_KEY";
+const std::string FIX_FILE_DIR = "FIX_FILE_DIR";
 
 std::vector<std::string> split(const std::string &s, char delimiter) {
   std::vector<std::string> tokens;
@@ -90,4 +91,8 @@ boost::multiprecision::cpp_dec_float_50 Configuration::getCommission() const {
 int Configuration::getLogLevel() const {
   auto logLevel = dotenv::getenv("LOG_LEVEL", "1");
   return std::stoi(logLevel);
+}
+
+std::string Configuration::getFixFileDir() const {
+  return dotenv::getenv(FIX_FILE_DIR.c_str(), "./fix-file-dir");
 }
