@@ -83,7 +83,9 @@ void initLogging(int logLevel) {
                                       logLevel);
 }
 
-void deleteSessionFiles(const std::string &dir) {
+void prepareFixFileDir(const std::string &dir) {
+  std::filesystem::create_directory(dir);
+
   for (const auto &entry : std::filesystem::directory_iterator(dir)) {
     if (entry.path().extension() == ".session") {
       std::filesystem::remove(entry.path());
@@ -100,13 +102,9 @@ int main() {
 
   BOOST_LOG_TRIVIAL(info) << "Starting Harjus";
 
-  // Create directory if it doesn't exist
+  // Create directory if it doesn't exist and delete .session files
   std::string fixFileDir = config.getFixFileDir();
-
-  std::filesystem::create_directory(fixFileDir);
-
-  // Delete .session files if directory exists
-  deleteSessionFiles(fixFileDir);
+  prepareFixFileDir(fixFileDir);
 
   BOOST_LOG_TRIVIAL(debug) << "Getting balance";
   // get balance, available symbols & relative values
