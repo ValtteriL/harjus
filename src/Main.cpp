@@ -87,7 +87,10 @@ void prepareFixFileStore(const std::string &dir) {
   std::filesystem::create_directory(dir);
 
   for (const auto &entry : std::filesystem::directory_iterator(dir)) {
-    if (entry.path().extension() == ".session") {
+    if (entry.path().extension() == ".session" ||
+        entry.path().extension() == ".body" ||
+        entry.path().extension() == ".header" ||
+        entry.path().extension() == ".seqnums") {
       std::filesystem::remove(entry.path());
     }
   }
