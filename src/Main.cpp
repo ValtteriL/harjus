@@ -9,6 +9,8 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <quickfix/FileStore.h>
 #include <quickfix/Log.h>
@@ -81,6 +83,19 @@ void initLogging(int logLevel) {
                                       logLevel);
 }
 
+void prepareFixFileStore(const std::string &dir) {
+  std::filesystem::create_directory(dir);
+
+  for (const auto &entry : std::filesystem::directory_iterator(dir)) {
+    if (entry.path().extension() == ".session" ||
+        entry.path().extension() == ".body" ||
+        entry.path().extension() == ".header" ||
+        entry.path().extension() == ".seqnums") {
+      std::filesystem::remove(entry.path());
+    }
+  }
+}
+
 int main() {
   banner();
   Configuration config;
@@ -90,30 +105,35 @@ int main() {
 
   BOOST_LOG_TRIVIAL(info) << "Starting Harjus";
 
-  BOOST_LOG_TRIVIAL(debug) << "Getting balance";
+  // Create directory if it doesn't exist and delete .session files
+  std::string fixFileStorePath = config.getFixFileStorePath();
+  prepareFixFileStore(fixFileStorePath);
+
   // get balance, available symbols & relative values
-  Balance balance = getBalance(config);
+  // BOOST_LOG_TRIVIAL(debug) << "Getting balance";
+  // Balance balance = getBalance(config);
 
-  BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
-  std::unordered_map<std::string, Symbol> symbolMap = getSymbols(config);
+  // BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
+  // std::unordered_map<std::string, Symbol> symbolMap = getSymbols(config);
 
-  BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      relativeValueMap = getRelativeValues(config, symbolMap);
+  // BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
+  // std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+  //     relativeValueMap = getRelativeValues(config, symbolMap);
 
   // calculate trading paths
-  BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
-  std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
-  int maxDepth = config.getMaxTradingPathLength();
-  std::vector<std::vector<Trade>> tradingPaths =
-      getTradingPaths(&symbolMap, maxDepth, skipSymbols);
+  // BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
+  // std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
+  // int maxDepth = config.getMaxTradingPathLength();
+  // std::vector<std::vector<Trade>> tradingPaths =
+  //     getTradingPaths(&symbolMap, maxDepth, skipSymbols);
 
   // Create lockfree queue for price updates
   boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(
       1000); // Queue size of 1000 updates
 
   // Extract the list of symbols for subscription
-  std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
+  // std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
+  std::vector<std::string> symbols = {"ETHBTC", "LTCBTC", "BNBBTC", "TRXBTC"};
 
   // Log the number of symbols we'll subscribe to
   BOOST_LOG_TRIVIAL(info) << "Subscribing to " << symbols.size()
@@ -126,7 +146,8 @@ int main() {
   StartTime=00:00:00
   EndTime=00:00:00
   HeartBtInt=30
-  FileStorePath=.
+  FileStorePath=)" + config.getFixFileStorePath() +
+                          R"(
   ConnectionType=initiator
   SenderCompID=HARJUS
   TargetCompID=SPOT

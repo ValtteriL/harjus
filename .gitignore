@@ -159,3 +159,6 @@ CMakeLists.txt.user*
 /build*/
 
 .cache
+
+# Ignore fix-file-dir directory
+fix-file-dir/
