@@ -93,6 +93,6 @@ int Configuration::getLogLevel() const {
   return std::stoi(logLevel);
 }
 
-std::string Configuration::getFixFileDir() const {
+std::string Configuration::getFixFileStorePath() const {
   return dotenv::getenv(FIX_FILE_DIR.c_str(), "./fix-file-dir");
 }
