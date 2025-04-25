@@ -8,17 +8,15 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Build') {
+        stage('Build & Test') {
             steps {
                 sh """
-                  nix-shell -A devEnv --run "cmake -B build"
-                  nix-shell -A devEnv --run "cmake --build build --config Debug --target all --"
+                  nix-shell --pure -A devEnv --run "
+                    cmake -B build
+                    cmake --build build --config Debug --target all --
+                    ctest -j8 -C Debug -T test --output-on-failure --test-dir build/
+                    "
                 """
-            }
-        }
-        stage('Test') {
-            steps {
-                sh 'nix-shell -A devEnv --run "ctest -j8 -C Debug -T test --output-on-failure --test-dir build/"'
             }
         }
     }
