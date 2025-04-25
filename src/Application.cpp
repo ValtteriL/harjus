@@ -2,6 +2,7 @@
 #include "Ed25519.h"
 #include <iostream>
 #include <quickfix/Field.h>
+#include <quickfix/FixFields.h>
 #include <quickfix/Session.h>
 
 void Application::onLogon(const FIX::SessionID &sessionID) {
@@ -28,8 +29,25 @@ void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
     header.setField(FIX::Username(username.c_str()));
     header.setField(FIX::RawDataLength(username.length()));
 
+    // The signature payload is a text string constructed by concatenating the
+    // values of the following fields in this exact order, separated by the SOH
+    // character:
+    // 1. 35 (MsgType)
+    // 2. 49 (SenderCompID)
+    // 3. 56 (TargetCompID)
+    // 4. 34 (MsgSeqNum)
+    // 5. 52 (SendingTime)
+    std::string payload =
+        msgType.getValue() + std::string("\x01") +
+        header.getField(FIX::SenderCompID().getTag()) + std::string("\x01") +
+        header.getField(FIX::TargetCompID().getTag()) + std::string("\x01") +
+        header.getField(FIX::MsgSeqNum().getTag()) + std::string("\x01") +
+        header.getField(FIX::SendingTime().getTag());
+
+    std::cout << "Payload: " << payload << std::endl;
+
     // set password (Binance expects password in RawData field)
-    std::string password = Ed25519::sign(privateKeySeed, message.toString());
+    std::string password = Ed25519::sign(privateKeySeed, payload);
     header.setField(FIX::RawData(password.c_str()));
     header.setField(FIX::RawDataLength(password.length()));
   }
