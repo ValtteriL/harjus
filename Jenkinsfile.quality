@@ -1,0 +1,35 @@
+pipeline {
+    
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build') {
+            steps {
+                sh """
+                  nix-shell -A devEnv --run "cmake -S harjus -B build"
+                  nix-shell -A devEnv --run "cmake --build build --config Debug --target all --"
+                """
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'nix-shell -A devEnv --run "ctest -j8 -C Debug -T test --output-on-failure --test-dir build/"'
+            }
+        }
+    }
+
+    post {
+        failure {
+             mail \
+                subject: "Failed Job: ${env.JOB_NAME} build ${env.BUILD_NUMBER}", \
+                body: "Failed CI job -> <a href=\"${env.BUILD_URL}\">${env.JOB_NAME} build ${env.BUILD_NUMBER}</a>", \
+                mimeType: 'text/html', \
+                to: "valtteri@shufflingbytes.com";
+        }
+    }
+}
