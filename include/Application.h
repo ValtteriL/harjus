@@ -33,7 +33,7 @@ private:
   std::string username;
   std::string privateKeySeed;
   boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue;
-  FIX::SessionID marketDataSessionID;
+  std::vector<FIX::SessionID> marketDataSessionIDs;
 
   /**
    * Called when quickfix creates a new session.
@@ -44,8 +44,9 @@ private:
    * is established with the counterparty.
    */
   void onCreate(const FIX::SessionID &sessionID) {
-    if (sessionID.getSessionQualifier() == "MARKETDATA") {
-      marketDataSessionID = sessionID;
+    // store markert data session IDs if Qualifier starts with MARKETDATA
+    if (sessionID.getSessionQualifier().starts_with("MARKETDATA")) {
+      marketDataSessionIDs.push_back(sessionID);
     }
   }
 

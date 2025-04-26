@@ -83,43 +83,73 @@ void Application::toApp(FIX::Message &message, const FIX::SessionID &)
 }
 
 bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
-  if (marketDataSessionID == FIX::SessionID()) {
-    std::cerr << "No market data session available" << std::endl;
-    return false;
+  if (marketDataSessionIDs.empty()) {
+    throw std::runtime_error(
+        "No market data sessions available for subscription");
   }
 
+  // check at least one session for every 1000 symbols
+  if (marketDataSessionIDs.size() < symbols.size() / 1000) {
+    throw std::runtime_error(
+        "Not enough market data sessions available for subscription");
+  }
+
+  // Split symbols into chunks for each market data session
+  // Distribute symbols evenly across sessions
+
+  size_t numSessions = marketDataSessionIDs.size();
+  size_t totalSymbols = symbols.size();
+  size_t symbolsPerSession = totalSymbols / numSessions;
+  size_t remainder = totalSymbols % numSessions;
+
   try {
-    FIX44::MarketDataRequest marketDataRequest;
+    size_t symbolIndex = 0;
+    for (size_t i = 0; i < numSessions; ++i) {
+      size_t numSymbolsForThisSession =
+          symbolsPerSession + (i < remainder ? 1 : 0);
+      if (numSymbolsForThisSession == 0)
+        continue; // Skip if no symbols for this session
 
-    // Generate a unique request ID
-    std::string reqId = "MDReq-" + std::to_string(std::time(nullptr));
-    marketDataRequest.set(FIX::MDReqID(reqId));
+      // Get the chunk of symbols for this session
+      auto startIt = symbols.begin() + symbolIndex;
+      auto endIt = startIt + numSymbolsForThisSession;
+      std::vector<std::string> chunk(startIt, endIt);
+      symbolIndex += numSymbolsForThisSession;
 
-    // Set subscription type (1 = Subscribe)
-    marketDataRequest.set(FIX::SubscriptionRequestType('1'));
+      FIX44::MarketDataRequest marketDataRequest;
 
-    // Set market depth
-    marketDataRequest.set(FIX::MarketDepth(1)); // 1 = Top of book
+      // Generate a unique request ID for this session's request
+      std::string reqId = "MDReq-" + std::to_string(std::time(nullptr)) + "-" +
+                          std::to_string(i);
+      marketDataRequest.set(FIX::MDReqID(reqId));
 
-    // Create NoMDEntryTypes group for requesting BID and OFFER
-    FIX44::MarketDataRequest::NoMDEntryTypes entryTypeGroup;
+      // Set subscription type (1 = Subscribe)
+      marketDataRequest.set(FIX::SubscriptionRequestType('1'));
 
-    // Add BID entry type (0)
-    entryTypeGroup.set(FIX::MDEntryType('0'));
-    marketDataRequest.addGroup(entryTypeGroup);
+      // Set market depth
+      marketDataRequest.set(FIX::MarketDepth(1)); // 1 = Top of book
 
-    // Add OFFER entry type (1)
-    entryTypeGroup.set(FIX::MDEntryType('1'));
-    marketDataRequest.addGroup(entryTypeGroup);
+      // Create NoMDEntryTypes group for requesting BID and OFFER
+      FIX44::MarketDataRequest::NoMDEntryTypes entryTypeGroup;
 
-    // Add all requested symbols
-    for (const auto &symbol : symbols) {
-      FIX44::MarketDataRequest::NoRelatedSym symbolGroup;
-      symbolGroup.set(FIX::Symbol(symbol));
-      marketDataRequest.addGroup(symbolGroup);
+      // Add BID entry type (0)
+      entryTypeGroup.set(FIX::MDEntryType('0'));
+      marketDataRequest.addGroup(entryTypeGroup);
+
+      // Add OFFER entry type (1)
+      entryTypeGroup.set(FIX::MDEntryType('1'));
+      marketDataRequest.addGroup(entryTypeGroup);
+
+      // Add all symbols in the current chunk
+      FIX44::MarketDataRequest::NoRelatedSym symbolGroup; // Reuse group object
+      for (const auto &symbol : chunk) {
+        symbolGroup.set(FIX::Symbol(symbol));
+        marketDataRequest.addGroup(symbolGroup);
+      }
+
+      // Send the request to the corresponding market data session
+      FIX::Session::sendToTarget(marketDataRequest, marketDataSessionIDs[i]);
     }
-
-    FIX::Session::sendToTarget(marketDataRequest, marketDataSessionID);
     return true;
   } catch (const std::exception &e) {
     std::cerr << "Error sending market data request: " << e.what() << std::endl;

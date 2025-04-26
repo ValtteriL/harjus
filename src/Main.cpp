@@ -159,15 +159,22 @@ int main() {
   # this is required for low latency
   SocketNodelay=Y
     
-  # market data session
+  # sessions
   [SESSION]
-  SessionQualifier=MARKETDATA
+  SessionQualifier=MARKETDATA1
   DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
   SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
                           R"(
   SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
                           R"(
     
+  [SESSION]
+  SessionQualifier=MARKETDATA2
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
+  SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
+                          R"(
+  SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
+                          R"(
   )";
 
   // stream to the string
