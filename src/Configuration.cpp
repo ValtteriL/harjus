@@ -33,12 +33,10 @@ Configuration::Configuration() {
   }
 
   // Check for required environment variables
-  std::vector<std::string> requiredVars = {BINANCE_REST_API_URI,
-                                           BINANCE_FIX_API_HOSTNAME_ORDERENTRY,
-                                           BINANCE_FIX_API_HOSTNAME_MARKETDATA,
-                                           BINANCE_FIX_API_PORT,
-                                           BINANCE_ED25519_SEED,
-                                           BINANCE_ED25519_API_KEY};
+  std::vector<std::string> requiredVars = {
+      BINANCE_REST_API_URI, BINANCE_FIX_API_HOSTNAME_ORDERENTRY,
+      BINANCE_FIX_API_HOSTNAME_MARKETDATA, BINANCE_ED25519_SEED,
+      BINANCE_ED25519_API_KEY};
   std::string missingVars;
 
   for (const auto &var : requiredVars) {
