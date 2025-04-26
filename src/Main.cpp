@@ -110,30 +110,31 @@ int main() {
   prepareFixFileStore(fixFileStorePath);
 
   // get balance, available symbols & relative values
-  // BOOST_LOG_TRIVIAL(debug) << "Getting balance";
-  // Balance balance = getBalance(config);
+  BOOST_LOG_TRIVIAL(debug) << "Getting balance";
+  Balance balance = getBalance(config);
 
-  // BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
-  // std::unordered_map<std::string, Symbol> symbolMap = getSymbols(config);
+  BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
+  std::unordered_map<std::string, Symbol> symbolMap = getSymbols(config);
 
-  // BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
-  // std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-  //     relativeValueMap = getRelativeValues(config, symbolMap);
+  BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
+  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+      relativeValueMap = getRelativeValues(config, symbolMap);
 
   // calculate trading paths
-  // BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
-  // std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
-  // int maxDepth = config.getMaxTradingPathLength();
-  // std::vector<std::vector<Trade>> tradingPaths =
-  //     getTradingPaths(&symbolMap, maxDepth, skipSymbols);
+  BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
+  std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
+  int maxDepth = config.getMaxTradingPathLength();
+  std::vector<std::vector<Trade>> tradingPaths =
+      getTradingPaths(&symbolMap, maxDepth, skipSymbols);
 
   // Create lockfree queue for price updates
   boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(
       1000); // Queue size of 1000 updates
 
   // Extract the list of symbols for subscription
-  // std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
-  std::vector<std::string> symbols = {"ETHBTC", "LTCBTC", "BNBBTC", "TRXBTC"};
+  std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
+  // std::vector<std::string> symbols = {"ETHBTC", "LTCBTC", "BNBBTC",
+  // "TRXBTC"};
 
   // Log the number of symbols we'll subscribe to
   BOOST_LOG_TRIVIAL(info) << "Subscribing to " << symbols.size()
