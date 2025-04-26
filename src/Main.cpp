@@ -150,7 +150,6 @@ int main() {
   FileStorePath=)" + config.getFixFileStorePath() +
                           R"(
   ConnectionType=initiator
-  SenderCompID=HARJUS
   TargetCompID=SPOT
   DefaultApplVerID=FIX.4.4
   BeginString=FIX.4.4
@@ -161,7 +160,8 @@ int main() {
     
   # sessions
   [SESSION]
-  SessionQualifier=MARKETDATA1
+  SenderCompID=HARJUSM1
+  SessionQualifier=MARKETDATA
   DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
   SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
                           R"(
@@ -169,7 +169,8 @@ int main() {
                           R"(
     
   [SESSION]
-  SessionQualifier=MARKETDATA2
+  SenderCompID=HARJUSM2
+  SessionQualifier=MARKETDATA
   DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
   SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
                           R"(
