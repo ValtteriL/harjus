@@ -36,12 +36,12 @@ void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
     // 3. 56 (TargetCompID)
     // 4. 34 (MsgSeqNum)
     // 5. 52 (SendingTime)
-    std::string payload =
-        msgType.getValue() + std::string("\x01") +
-        header.getField(FIX::SenderCompID().getTag()) + std::string("\x01") +
-        header.getField(FIX::TargetCompID().getTag()) + std::string("\x01") +
-        header.getField(FIX::MsgSeqNum().getTag()) + std::string("\x01") +
-        header.getField(FIX::SendingTime().getTag());
+    std::string payload = msgType.getValue() + '\x01' +
+                          header.getField(FIX::SenderCompID().getTag()) +
+                          '\x01' +
+                          header.getField(FIX::TargetCompID().getTag()) +
+                          '\x01' + header.getField(FIX::MsgSeqNum().getTag()) +
+                          '\x01' + header.getField(FIX::SendingTime().getTag());
 
     std::cout << "Payload: " << payload << std::endl;
 
