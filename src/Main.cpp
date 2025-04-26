@@ -165,7 +165,6 @@ int main() {
   # market data session
   [SESSION]
   SessionQualifier=MARKETDATA
-  SocketConnectHost=fix-md.binance.com
   DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
     
   )";

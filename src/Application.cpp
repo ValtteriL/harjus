@@ -43,8 +43,6 @@ void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
                           '\x01' + header.getField(FIX::MsgSeqNum().getTag()) +
                           '\x01' + header.getField(FIX::SendingTime().getTag());
 
-    std::cout << "Payload: " << payload << std::endl;
-
     // set password (Binance expects password in RawData field)
     std::string password = Ed25519::sign(privateKeySeed, payload);
     header.setField(FIX::RawData(password.c_str()));
