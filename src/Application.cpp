@@ -27,7 +27,6 @@ void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
 
     // set username
     header.setField(FIX::Username(username.c_str()));
-    header.setField(FIX::RawDataLength(username.length()));
 
     // The signature payload is a text string constructed by concatenating the
     // values of the following fields in this exact order, separated by the SOH
