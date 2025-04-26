@@ -196,6 +196,9 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
     // We may get updates for multiple symbols in a single message
     std::map<std::string, PriceUpdate *> updates;
 
+    // symbol may be skipped in which case we need to use the last one
+    FIX::Symbol symbol;
+
     for (int i = 1; i <= numEntries; i++) {
       FIX44::MarketDataIncrementalRefresh::NoMDEntries group;
       message.getGroup(i, group);
@@ -203,8 +206,10 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       FIX::MDEntryType entryType;
       group.get(entryType);
 
-      FIX::Symbol symbol;
+      // symbol is the same as previous group if not set
+      if (group.isSetField(FIX::FIELD::Symbol)) {
       group.get(symbol);
+      }
 
       std::string symbolValue = symbol.getValue();
 
