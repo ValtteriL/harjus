@@ -89,7 +89,7 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
     marketDataRequest.set(FIX::SubscriptionRequestType('1'));
 
     // Set market depth
-    marketDataRequest.set(FIX::MarketDepth('1'));
+    marketDataRequest.set(FIX::MarketDepth(1)); // 1 = Top of book
 
     // Create NoMDEntryTypes group for requesting BID and OFFER
     FIX44::MarketDataRequest::NoMDEntryTypes entryTypeGroup;
