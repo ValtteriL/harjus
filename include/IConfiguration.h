@@ -6,8 +6,10 @@
 class IConfiguration {
 public:
   virtual std::string getBinanceRESTApiUri() const = 0;
-  virtual std::string getBinanceFIXApiHostname() const = 0;
-  virtual std::string getBinanceFIXApiPort() const = 0;
+  virtual std::string getBinanceFIXApiHostnameOrderEntry() const = 0;
+  virtual std::string getBinanceFIXApiHostnameMarketData() const = 0;
+  virtual std::string getBinanceFIXApiPortOrderEntry() const = 0;
+  virtual std::string getBinanceFIXApiPortMarketData() const = 0;
   virtual std::string getEd25519Seed() const = 0; // private key seed in base64
   virtual std::string
   getEd25519ApiKey() const = 0; // public key in PEM without header and trailer

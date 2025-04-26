@@ -6,8 +6,14 @@
 class MockConfiguration : public IConfiguration {
 public:
   MOCK_METHOD(std::string, getBinanceRESTApiUri, (), (const, override));
-  MOCK_METHOD(std::string, getBinanceFIXApiHostname, (), (const, override));
-  MOCK_METHOD(std::string, getBinanceFIXApiPort, (), (const, override));
+  MOCK_METHOD(std::string, getBinanceFIXApiHostnameOrderEntry, (),
+              (const, override));
+  MOCK_METHOD(std::string, getBinanceFIXApiHostnameMarketData, (),
+              (const, override));
+  MOCK_METHOD(std::string, getBinanceFIXApiPortOrderEntry, (),
+              (const, override));
+  MOCK_METHOD(std::string, getBinanceFIXApiPortMarketData, (),
+              (const, override));
   MOCK_METHOD(std::string, getEd25519Seed, (), (const, override));
   MOCK_METHOD(std::string, getEd25519ApiKey, (), (const, override));
   MOCK_METHOD(int, getMaxTradingPathLength, (), (const, override));

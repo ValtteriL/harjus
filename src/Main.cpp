@@ -153,10 +153,6 @@ int main() {
   TargetCompID=SPOT
   DefaultApplVerID=FIX.4.4
   BeginString=FIX.4.4
-  SocketConnectPort=)" + config.getBinanceFIXApiPort() +
-                          R"(
-  SocketConnectHost=)" + config.getBinanceFIXApiHostname() +
-                          R"(
     
   # set TCP_NODELAY (disable Nagle's algorithm)
   # this is required for low latency
@@ -166,6 +162,10 @@ int main() {
   [SESSION]
   SessionQualifier=MARKETDATA
   DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
+  SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
+                          R"(
+  SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
+                          R"(
     
   )";
 

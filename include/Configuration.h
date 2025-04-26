@@ -20,16 +20,28 @@ public:
   std::string getBinanceRESTApiUri() const override;
 
   /**
-   * @brief Get the Binance FIX API hostname.
+   * @brief Get the Binance FIX API hostname for Order Entry sessions.
    * @return The Binance FIX API hostname as a string.
    */
-  std::string getBinanceFIXApiHostname() const override;
+  std::string getBinanceFIXApiHostnameOrderEntry() const override;
 
   /**
-   * @brief Get the Binance FIX API port.
+   * @brief Get the Binance FIX API port for Order Entry hostname.
    * @return The Binance FIX API port as a string.
    */
-  std::string getBinanceFIXApiPort() const override;
+  std::string getBinanceFIXApiPortOrderEntry() const override;
+
+  /**
+   * @brief Get the Binance FIX API hostname for Market Data sessions.
+   * @return The Binance FIX API hostname as a string.
+   */
+  std::string getBinanceFIXApiHostnameMarketData() const override;
+
+  /**
+   * @brief Get the Binance FIX API port for Market Data hostname.
+   * @return The Binance FIX API port as a string.
+   */
+  std::string getBinanceFIXApiPortMarketData() const override;
 
   /**
    * @brief Get the Ed25519 seed.

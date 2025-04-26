@@ -6,7 +6,10 @@
 #include <string>
 
 const std::string BINANCE_REST_API_URI = "BINANCE_REST_API_URI";
-const std::string BINANCE_FIX_API_HOSTNAME = "BINANCE_FIX_API_HOSTNAME";
+const std::string BINANCE_FIX_API_HOSTNAME_ORDERENTRY =
+    "BINANCE_FIX_API_HOSTNAME_ORDERENTRY";
+const std::string BINANCE_FIX_API_HOSTNAME_MARKETDATA =
+    "BINANCE_FIX_API_HOSTNAME_MARKETDATA";
 const std::string BINANCE_FIX_API_PORT = "BINANCE_FIX_API_PORT";
 const std::string BINANCE_ED25519_SEED = "BINANCE_ED25519_SEED";
 const std::string BINANCE_ED25519_API_KEY = "BINANCE_ED25519_API_KEY";
@@ -30,9 +33,12 @@ Configuration::Configuration() {
   }
 
   // Check for required environment variables
-  std::vector<std::string> requiredVars = {
-      BINANCE_REST_API_URI, BINANCE_FIX_API_HOSTNAME, BINANCE_FIX_API_PORT,
-      BINANCE_ED25519_SEED, BINANCE_ED25519_API_KEY};
+  std::vector<std::string> requiredVars = {BINANCE_REST_API_URI,
+                                           BINANCE_FIX_API_HOSTNAME_ORDERENTRY,
+                                           BINANCE_FIX_API_HOSTNAME_MARKETDATA,
+                                           BINANCE_FIX_API_PORT,
+                                           BINANCE_ED25519_SEED,
+                                           BINANCE_ED25519_API_KEY};
   std::string missingVars;
 
   for (const auto &var : requiredVars) {
@@ -53,13 +59,22 @@ std::string Configuration::getBinanceRESTApiUri() const {
   return dotenv::getenv(BINANCE_REST_API_URI.c_str());
 }
 
-std::string Configuration::getBinanceFIXApiHostname() const {
-  return dotenv::getenv(BINANCE_FIX_API_HOSTNAME.c_str());
+std::string Configuration::getBinanceFIXApiHostnameOrderEntry() const {
+  return dotenv::getenv(BINANCE_FIX_API_HOSTNAME_ORDERENTRY.c_str());
 }
 
-std::string Configuration::getBinanceFIXApiPort() const {
-  return dotenv::getenv("BINANCE_FIX_API_PORT", "9000");
+std::string Configuration::getBinanceFIXApiPortOrderEntry() const {
+  return dotenv::getenv("BINANCE_FIX_API_PORT_ORDERENTRY", "9000");
 }
+
+std::string Configuration::getBinanceFIXApiHostnameMarketData() const {
+  return dotenv::getenv(BINANCE_FIX_API_HOSTNAME_MARKETDATA.c_str());
+}
+
+std::string Configuration::getBinanceFIXApiPortMarketData() const {
+  return dotenv::getenv("BINANCE_FIX_API_PORT_MARKETDATA", "9000");
+}
+
 std::string Configuration::getEd25519Seed() const {
   return dotenv::getenv(BINANCE_ED25519_SEED.c_str());
 }
