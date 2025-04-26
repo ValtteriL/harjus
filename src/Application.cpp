@@ -1,5 +1,8 @@
 #include "Application.h"
 #include "Ed25519.h"
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
 #include <iostream>
 #include <quickfix/Field.h>
 #include <quickfix/FixFields.h>
@@ -55,7 +58,11 @@ void Application::fromApp(const FIX::Message &message,
     EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue,
            FIX::UnsupportedMessageType) {
   crack(message, sessionID); // crack the message to the appropriate handler
-  std::cout << std::endl << "IN: " << message << std::endl;
+
+  // print message to console with SOH replaced with |s
+  std::string messageStr = message.toString();
+  std::replace(messageStr.begin(), messageStr.end(), '\x01', '|');
+  BOOST_LOG_TRIVIAL(debug) << "IN: " << messageStr << std::endl;
 }
 
 void Application::toApp(FIX::Message &message, const FIX::SessionID &)
@@ -69,7 +76,10 @@ void Application::toApp(FIX::Message &message, const FIX::SessionID &)
   } catch (FIX::FieldNotFound &) {
   }
 
-  std::cout << std::endl << "OUT: " << message << std::endl;
+  // print message to console with SOH replaced with |s
+  std::string messageStr = message.toString();
+  std::replace(messageStr.begin(), messageStr.end(), '\x01', '|');
+  BOOST_LOG_TRIVIAL(debug) << "OUT: " << messageStr << std::endl;
 }
 
 bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
@@ -208,7 +218,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
       // symbol is the same as previous group if not set
       if (group.isSetField(FIX::FIELD::Symbol)) {
-      group.get(symbol);
+        group.get(symbol);
       }
 
       std::string symbolValue = symbol.getValue();
