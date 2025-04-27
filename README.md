@@ -10,10 +10,6 @@ Captures triangular arbitrage opportunities on Spot trading.
 
 ```bash
 nix-shell -A devEnv
-
-# start shell with or without the starting application
-iex -S mix
-iex -S mix run --no-start
 ```
 
 ### Test
@@ -21,34 +17,14 @@ iex -S mix run --no-start
 Run unit tests
 
 ```bash
-mix test
-```
-
-Run all tests
-
-```bash
-mix test --include integration:true
-```
-
-Run static code analysis
-
-```bash
-mix dialyzer
-```
-
-Run full quality checkup (all tests, formatter, credo, dialyzer)
-
-```bash
-# this will format the code
-mix quality
-
-# this will fail on any issues
-mix quality.ci
+cmake build
+ctest --test-dir build/
 ```
 
 ### Automatic tests
 
-The quality.ci is run by CI/CD **Quality Pipeline** on push.
+The unit tests are run by CI/CD **Quality Pipeline (Jenkins)** on push.
+On push to main, they are additionallyt run by the **Quality Pipeline (GHA)** before packaging the application.
 
 ## Build
 
