@@ -17,7 +17,8 @@ public:
    * @details This method should be called after a price update that affects
    * this execution to update the total profit.
    */
-  virtual void update() = 0;
+  virtual void
+  update(boost::multiprecision::cpp_dec_float_50 startingAssetBudget) = 0;
 
   /**
    * @brief Get the total profit
@@ -30,4 +31,12 @@ public:
    * @return Get the asset symbol that is used to start the series of trades.
    */
   virtual std::string getStartingAsset() const = 0;
+
+  /**
+   * @brief Get the capacity of the execution.
+   * @details This method returns the maximum amount of the starting asset
+   * that can be used in the execution.
+   * @return The capacity of the execution in the starting asset.
+   */
+  virtual boost::multiprecision::cpp_dec_float_50 getCapacity() const = 0;
 };

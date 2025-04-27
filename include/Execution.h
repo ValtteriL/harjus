@@ -23,15 +23,18 @@ public:
    * @param commission Commission percentage per trade.
    * @param relativeValue The relative value of the starting asset.
    */
-  Execution(std::vector<ITrade> &trades, std::string startingAsset,
+  Execution(std::vector<ITrade> &trades,
             boost::multiprecision::cpp_dec_float_50 relativeValue,
             boost::multiprecision::cpp_dec_float_50 commission)
-      : _trades(trades), _startingAsset(startingAsset), _commission(commission),
-        _relativeValue(relativeValue) {}
+      : _trades(trades), _startingAsset(trades.front().getUsedCurrency()),
+        _commission(commission), _relativeValue(relativeValue) {}
 
-  void update() override;
+  void
+  update(boost::multiprecision::cpp_dec_float_50 startingAssetBudget) override;
 
   boost::multiprecision::cpp_dec_float_50 getTotalProfit() const override;
 
   std::string getStartingAsset() const override;
+
+  boost::multiprecision::cpp_dec_float_50 getCapacity() const override;
 };
