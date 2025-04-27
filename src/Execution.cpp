@@ -1,5 +1,5 @@
 #include "Execution.h"
-#include "ITrade.h"
+#include "Trade.h"
 
 void Execution::update(
     boost::multiprecision::cpp_dec_float_50 startingAssetBudget) {

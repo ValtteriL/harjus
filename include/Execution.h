@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IExecution.h"
-#include "ITrade.h"
+#include "Trade.h"
 #include <vector>
 
 /**
@@ -10,7 +10,7 @@
 
 class Execution : public IExecution {
 private:
-  std::vector<ITrade> &_trades;
+  std::vector<Trade> &_trades;
   std::string _startingAsset;
   const boost::multiprecision::cpp_dec_float_50 _commission;
   const boost::multiprecision::cpp_dec_float_50 _relativeValue;
@@ -23,7 +23,7 @@ public:
    * @param commission Commission percentage per trade.
    * @param relativeValue The relative value of the starting asset.
    */
-  Execution(std::vector<ITrade> &trades,
+  Execution(std::vector<Trade> &trades,
             boost::multiprecision::cpp_dec_float_50 relativeValue,
             boost::multiprecision::cpp_dec_float_50 commission)
       : _trades(trades), _startingAsset(trades.front().getUsedCurrency()),

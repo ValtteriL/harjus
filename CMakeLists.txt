@@ -130,3 +130,15 @@ target_link_libraries(ArbmapperTest PRIVATE
 )
 
 gtest_discover_tests(ArbmapperTest)
+
+
+add_executable(ExecutionTest tests/ExecutionTest.cpp
+  src/Execution.cpp
+  src/Trade.cpp
+)
+target_link_libraries(ExecutionTest PRIVATE
+  gtest_main
+  GTest::gmock
+)
+
+gtest_discover_tests(ExecutionTest)
