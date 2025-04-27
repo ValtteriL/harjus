@@ -8,19 +8,8 @@ with pkgs;
 
 let
 
-  src = nix-gitignore.gitignoreSource [''
-    harjus-port
-    deploy
-    docs
-    test''] ./.;
   version = "1.0.0";
   pname = "harjus";
-
-  mixFodDeps = beamPackages.fetchMixDeps {
-    pname = "mix-deps-${pname}";
-    inherit src version;
-    hash = "sha256-o1ROk8FwQA5DLggx18y3eDVkw2p0BFDrFYmcq/Na0AI=";
-  };
 
   packages = rec {
 
@@ -60,9 +49,6 @@ let
       name = "devEnv";
 
       # environment variables
-      ELIXIR_ERL_OPTIONS = "+fnu";
-      ERL_AFLAGS = "-kernel shell_history enabled -enable-feature maybe_expr";
-      PROPCHECK_VERBOSE = "1"; # print exceptions in propcheck
       AWS_PROFILE = "137068223640_AdministratorAccess";
 
       # packages to be installed in env
@@ -71,15 +57,13 @@ let
         glibcLocales
         nixpkgs-fmt
         nixfmt-classic
-
-        # elixir
-        elixir
         cowsay
 
         # C++
         cmake
         ninja
         gdb
+        clang-tools
         gtest
         boost
         openssl
@@ -103,18 +87,19 @@ let
     };
 
     # build derivation
-    harjusBuild = beamPackages.mixRelease rec {
-      inherit mixFodDeps src version pname;
-      removeCookie = false;
-    };
+    harjusBuild = stdenv.mkDerivation {
+      inherit version pname;
 
-    harjusPortBuild = stdenv.mkDerivation {
-      inherit version;
-      pname = "${pname}-port";
+      src = nix-gitignore.gitignoreSource [''
+        deploy
+        docs
+        quickfix
+        scripts
+        .vscode
+      ''] ./.;
 
-      src = nix-gitignore.gitignoreSource [ ] ./harjus-port;
-
-      buildInputs = [ boost openssl libcpr pkg-config libsodium myQuickfix ];
+      buildInputs =
+        [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
     };
 
@@ -122,17 +107,10 @@ let
     docker = pkgs.dockerTools.buildLayeredImage {
       name = "harjus";
       created = "now";
-      config = {
-        Cmd = [ "harjus" "start" ];
-        Env = [
-          "ELIXIR_ERL_OPTIONS=+fnu"
-          "LC_ALL=C.UTF-8"
-          "ERL_AFLAGS='-kernel shell_history enabled -enable-feature maybe_expr'"
-        ];
-      };
+      config = { Cmd = [ "harjus" ]; };
 
       # Minimize the size by using only runtime dependencies
-      contents = [ glibcLocales harjusBuild harjusPortBuild ];
+      contents = [ glibcLocales harjusBuild ];
     };
 
   };

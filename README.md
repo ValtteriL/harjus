@@ -59,11 +59,9 @@ nix-build
 
 # container then available at ./result-2
 # harjus executable available at ./result-3/bin/harjus
-# harjus-port executable availalbe at ./result-4/bin/harjus-port
 
 # build individual packages (built result available then at `result`):
 nix-build -A harjusBuild
-nix-build -A harjusPortBuild
 ```
 
 ### Automatic builds

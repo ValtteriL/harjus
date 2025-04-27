@@ -4,30 +4,6 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-            "type": "mix_task",
-            "name": "mix (Default task)",
-            "request": "launch",
-            "projectDir": "${workspaceRoot}"
-        },
-        {
-            "type": "mix_task",
-            "name": "mix test",
-            "request": "launch",
-            "task": "test",
-            "taskArgs": [
-                "--trace",
-                "--no-start",
-                "--color",
-                "--trace"
-            ],
-            "startApps": false,
-            "projectDir": "${workspaceRoot}",
-            "requireFiles": [
-                "test/**/test_helper.exs",
-                "test/**/*_test.exs"
-            ]
-        },
         // use this for debugging C++ tests
         {
             "name": "(ctest) Launch",
@@ -40,7 +16,7 @@
                 "${cmake.testArgs}"
             ],
         },
-        // use this for debugging harjus-port
+        // use this for debugging harjus
         {
             "name": "(gdb) Launch",
             "type": "cppdbg",
