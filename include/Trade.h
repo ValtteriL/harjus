@@ -11,6 +11,7 @@ public:
   Trade(const Symbol &symbol, Position position)
       : symbol_(symbol), position_(position),
         offerQty_(position == Position::LONG ? symbol.askQty : symbol.bidQty),
+        orderQty_(offerQty_),
         orderPrice_(position == Position::LONG ? symbol.askPrice
                                                : symbol.bidPrice),
         recvCurrency_(position == Position::LONG ? symbol.baseAsset
