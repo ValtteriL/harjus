@@ -14,7 +14,7 @@ private:
   std::string _startingAsset;
   const boost::multiprecision::cpp_dec_float_50 _commission;
   const boost::multiprecision::cpp_dec_float_50 _relativeValue;
-  const boost::multiprecision::cpp_dec_float_50 _totalProfit;
+  boost::multiprecision::cpp_dec_float_50 _totalProfit;
 
 public:
   /**
