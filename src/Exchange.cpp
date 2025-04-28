@@ -181,13 +181,14 @@ getRelativeValues(IConfiguration &config,
     if (symbol.quoteAsset == "BTC") {
       // price already in BTC (shorting gets btc)
       relativeValues[symbol.baseAsset] = symbolPrices[symbolName];
-      lowestValue = std::min(lowestValue, symbolPrices[symbolName]);
+      lowestValue =
+          boost::multiprecision::min(lowestValue, symbolPrices[symbolName]);
     } else if (symbol.baseAsset == "BTC") {
       // price in 1 / BTC (longing gets btc)
       boost::multiprecision::cpp_dec_float_50 value =
           1 / symbolPrices[symbolName];
       relativeValues[symbol.quoteAsset] = value;
-      lowestValue = std::min(lowestValue, value);
+      lowestValue = boost::multiprecision::min(lowestValue, value);
     }
   }
 

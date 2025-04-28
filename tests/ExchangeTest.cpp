@@ -116,7 +116,8 @@ TEST_F(ExchangeTest,
       std::numeric_limits<boost::multiprecision::cpp_dec_float_50>::max();
   for (const auto &[symbolName, symbol] : symbols) {
     if (symbol.quoteAsset == "BTC") {
-      lowestValue = std::min(lowestValue, relativeValues[symbol.baseAsset]);
+      lowestValue = boost::multiprecision::min(
+          lowestValue, relativeValues[symbol.baseAsset]);
     }
   }
 
