@@ -33,6 +33,13 @@ private:
   ReservedTrades &_reservedTrades;
   Balance &_balance;
 
+  /**
+   * @brief Check if an execution contains only free symbols
+   * @param execution The execution to check
+   * @return true if all symbols in the execution are free, false otherwise
+   */
+  bool containsOnlyFreeSymbols(Execution &execution);
+
 public:
   /**
    * @brief Constructor for the Engine class.

@@ -30,6 +30,15 @@ Engine::Engine(
   }
 };
 
+bool Engine::containsOnlyFreeSymbols(Execution &execution) {
+  for (auto &trade : execution.getTrades()) {
+    if (_reservedTrades.isReserved(trade.getSymbol().symbol)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void Engine::run() {
 
   while (true) {
@@ -57,8 +66,35 @@ void Engine::run() {
       }
 
       // TODO: take 2 non-overlapping executions with the largest profit
+      Execution *mostProfitableExecution = nullptr;
+      for (auto it = affectedExecutions.first; it != affectedExecutions.second;
+           ++it) {
 
-      // TODO: queue execution to the execution queue
+        auto trade = it->second;
+
+        if ((!mostProfitableExecution ||
+             (trade.getTotalProfit() > 0 &&
+              trade.getTotalProfit() >
+                  mostProfitableExecution->getTotalProfit())) &&
+            containsOnlyFreeSymbols(trade)) {
+          mostProfitableExecution = &trade;
+        }
+      }
+
+      // lock resources for the best execution
+      if (mostProfitableExecution) {
+        for (auto &trade : mostProfitableExecution->getTrades()) {
+          _reservedTrades.reserve(trade.getSymbol().symbol);
+        }
+      }
+
+      // reduce balance
+
+      // update executions that use the same starting asset
+
+      // find the second most profitable now
+
+      // TODO: queue executions to the execution queue
 
       // clean up the update
       delete update;
