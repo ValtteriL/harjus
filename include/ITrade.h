@@ -13,8 +13,8 @@ public:
   virtual void setBudget(boost::multiprecision::cpp_dec_float_50 budget) = 0;
   virtual boost::multiprecision::cpp_dec_float_50 getRecvQty() const = 0;
   virtual boost::multiprecision::cpp_dec_float_50 getUsedQty() const = 0;
-  virtual std::string_view getRecvCurrency() const = 0;
-  virtual std::string_view getUsedCurrency() const = 0;
+  virtual std::string getRecvCurrency() const = 0;
+  virtual std::string getUsedCurrency() const = 0;
 
   /**
    * Compare two trades for equality. This is used to check if a trade is

@@ -37,6 +37,6 @@ boost::multiprecision::cpp_dec_float_50 Trade::getUsedQty() const {
   }
 }
 
-std::string_view Trade::getRecvCurrency() const { return recvCurrency_; }
+std::string Trade::getRecvCurrency() const { return recvCurrency_; }
 
-std::string_view Trade::getUsedCurrency() const { return usedCurrency_; }
+std::string Trade::getUsedCurrency() const { return usedCurrency_; }

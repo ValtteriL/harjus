@@ -66,13 +66,13 @@ public:
    * Get the currency of the asset to be received.
    * @return The currency of the asset to be received.
    */
-  std::string_view getRecvCurrency() const override;
+  std::string getRecvCurrency() const override;
 
   /**
    * Get the currency of the asset to be used.
    * @return The currency of the asset to be used.
    */
-  std::string_view getUsedCurrency() const override;
+  std::string getUsedCurrency() const override;
 
 private:
   const Symbol symbol_;

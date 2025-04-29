@@ -49,6 +49,7 @@ add_executable(harjus
   src/Trade.cpp
   src/Arbmapper.cpp
   src/Execution.cpp
+  src/Engine.cpp
 )
 target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
 

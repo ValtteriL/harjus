@@ -17,6 +17,6 @@ public:
               (const, override));
   MOCK_METHOD(boost::multiprecision::cpp_dec_float_50, getUsedQty, (),
               (const, override));
-  MOCK_METHOD(std::string_view, getRecvCurrency, (), (const, override));
-  MOCK_METHOD(std::string_view, getUsedCurrency, (), (const, override));
+  MOCK_METHOD(std::string, getRecvCurrency, (), (const, override));
+  MOCK_METHOD(std::string, getUsedCurrency, (), (const, override));
 };
