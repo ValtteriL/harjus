@@ -74,6 +74,7 @@ void processPriceQueue(boost::lockfree::queue<PriceUpdate *> &queue) {
     }
 
     // Small sleep to avoid spinning the CPU
+    // TODO: avoid
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }

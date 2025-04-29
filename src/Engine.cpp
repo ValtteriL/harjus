@@ -6,7 +6,7 @@ Engine::Engine(
     std::unordered_map<std::string, Symbol> &symbols,
     std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
     ReservedTrades &reservedTrades,
-    boost::lockfree::queue<PriceUpdate> &priceUpdateQueue,
+    boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
     boost::lockfree::queue<Execution> &executionQueue,
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
         relativeValues,
