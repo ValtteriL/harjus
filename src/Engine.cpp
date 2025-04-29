@@ -30,4 +30,38 @@ Engine::Engine(
   }
 };
 
-void Engine::run() {}
+void Engine::run() {
+
+  while (true) {
+    PriceUpdate *update = nullptr;
+    if (_priceUpdateQueue.pop(update)) {
+
+      // update symbol price
+      _symbols[update->symbol].askPrice = update->askPrice;
+      _symbols[update->symbol].bidPrice = update->bidPrice;
+      _symbols[update->symbol].askQty = update->askQty;
+      _symbols[update->symbol].bidQty = update->bidQty;
+
+      // update all affected executions
+      auto affectedExecutions = _executions.equal_range(
+          update->symbol); // get all affected executions
+
+      for (auto it = affectedExecutions.first; it != affectedExecutions.second;
+           ++it) {
+
+        auto startingAssetBudget =
+            _balance.getBalance(it->second.getStartingAsset());
+
+        // update the execution with the new price
+        it->second.update(startingAssetBudget);
+      }
+
+      // TODO: take 2 non-overlapping executions with the largest profit
+
+      // TODO: queue execution to the execution queue
+
+      // clean up the update
+      delete update;
+    }
+  }
+}

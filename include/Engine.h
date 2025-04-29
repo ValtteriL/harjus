@@ -28,7 +28,7 @@ private:
   std::unordered_multimap<std::string, Execution &> _executions;
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       _relativeValues;
-  boost::lockfree::queue<PriceUpdate> &_priceUpdateQueue;
+  boost::lockfree::queue<PriceUpdate *> &_priceUpdateQueue;
   boost::lockfree::queue<Execution> &_executionQueue;
   ReservedTrades &_reservedTrades;
   Balance &_balance;
