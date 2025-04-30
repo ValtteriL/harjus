@@ -138,3 +138,6 @@ CMakeLists.txt.user*
 
 # Ignore fix-file-dir directory
 fix-file-dir/
+
+
+build/.cmake/
