@@ -1,20 +1,20 @@
 /*
- * ExecutionTest.cpp
- * Testing the Execution class.
+ * OpportunityTest.cpp
+ * Testing the Opportunity class.
  */
 
-#include "Execution.h"
+#include "Opportunity.h"
 #include "Symbol.h"
 #include "Trade.h"
 #include <gtest/gtest.h>
 #include <vector>
 
 /**
- * @brief Test the update method of the Execution class.
+ * @brief Test the update method of the Opportunity class.
  * This test checks if the update method correctly updates the total profit and
  * capacity based on the trades and the starting asset budget.
  */
-TEST(ExecutionTest, update) {
+TEST(OpportunityTest, update) {
 
   // simple triangular arbitrage
   // BTC -> ETH -> USDT -> BTC
@@ -76,22 +76,22 @@ TEST(ExecutionTest, update) {
   boost::multiprecision::cpp_dec_float_50 relativeValue = 1.0;
   boost::multiprecision::cpp_dec_float_50 commission = 0.001;
 
-  Execution execution{trades, relativeValue, commission};
+  Opportunity opportunity{trades, relativeValue, commission};
 
-  // verify the initial state of the execution
-  EXPECT_EQ(execution.getTotalProfit(), 0.0); // Default profit is 0
-  EXPECT_EQ(execution.getStartingAsset(), trades.front().getUsedCurrency());
-  EXPECT_EQ(execution.getCapacity(),
+  // verify the initial state of the opportunity
+  EXPECT_EQ(opportunity.getTotalProfit(), 0.0); // Default profit is 0
+  EXPECT_EQ(opportunity.getStartingAsset(), trades.front().getUsedCurrency());
+  EXPECT_EQ(opportunity.getCapacity(),
             boost::multiprecision::cpp_dec_float_50{100});
 
-  // Update the execution with the starting asset budget
-  execution.update(startingAssetBudget);
+  // Update the opportunity with the starting asset budget
+  opportunity.update(startingAssetBudget);
 
   // Check if the total profit is calculated correctly
-  EXPECT_NEAR(execution.getTotalProfit().convert_to<double>(), 8.997, 1e-5);
+  EXPECT_NEAR(opportunity.getTotalProfit().convert_to<double>(), 8.997, 1e-5);
   // Check if the capacity is calculated correctly
-  EXPECT_EQ(execution.getCapacity(),
+  EXPECT_EQ(opportunity.getCapacity(),
             boost::multiprecision::cpp_dec_float_50{startingAssetBudget});
   // Check if the starting asset is correct
-  EXPECT_EQ(execution.getStartingAsset(), trades.front().getUsedCurrency());
+  EXPECT_EQ(opportunity.getStartingAsset(), trades.front().getUsedCurrency());
 }

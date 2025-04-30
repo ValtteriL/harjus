@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Balance.h"
-#include "Execution.h"
+#include "Opportunity.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "Symbol.h"
@@ -17,7 +17,7 @@
  * @brief The Engine class is responsible for spotting profitable arbitrage
  * opportunities and queuing them for Trader
  * @details Engine subscribes to priceUpdateQueue. As price updates are
- * received, it checks affected executions for arbitrage opportunities. If
+ * received, it checks affected opportunitys for arbitrage opportunities. If
  * opportunities are found, the best 2 non-overlapping are queued to the
  * executionQueue.
  */
@@ -25,20 +25,20 @@ class Engine {
 
 private:
   std::unordered_map<std::string, Symbol> &_symbols;
-  std::unordered_multimap<std::string, Execution &> _executions;
+  std::unordered_multimap<std::string, Opportunity &> _opportunities;
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       _relativeValues;
   boost::lockfree::queue<PriceUpdate *> &_priceUpdateQueue;
-  boost::lockfree::queue<Execution *> &_executionQueue;
+  boost::lockfree::queue<Opportunity *> &_executionQueue;
   ReservedTrades &_reservedTrades;
   Balance &_balance;
 
   /**
-   * @brief Check if an execution contains only free symbols
-   * @param execution The execution to check
-   * @return true if all symbols in the execution are free, false otherwise
+   * @brief Check if an opportunity contains only free symbols
+   * @param opportunity The opportunity to check
+   * @return true if all symbols in the opportunity are free, false otherwise
    */
-  bool containsOnlyFreeSymbols(Execution &execution);
+  bool containsOnlyFreeSymbols(Opportunity &opportunity);
 
 public:
   /**
@@ -56,7 +56,7 @@ public:
       std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
       ReservedTrades &reservedTrades,
       boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-      boost::lockfree::queue<Execution *> &executionQueue,
+      boost::lockfree::queue<Opportunity *> &executionQueue,
       std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
           relativeValues,
       boost::multiprecision::cpp_dec_float_50 commission);

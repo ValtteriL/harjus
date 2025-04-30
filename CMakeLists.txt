@@ -48,7 +48,7 @@ add_executable(harjus
   src/Balance.cpp
   src/Trade.cpp
   src/Arbmapper.cpp
-  src/Execution.cpp
+  src/Opportunity.cpp
   src/Engine.cpp
   src/ReservedTrades.cpp
 )
@@ -135,13 +135,13 @@ target_link_libraries(ArbmapperTest PRIVATE
 gtest_discover_tests(ArbmapperTest)
 
 
-add_executable(ExecutionTest tests/ExecutionTest.cpp
-  src/Execution.cpp
+add_executable(OpportunityTest tests/OpportunityTest.cpp
+  src/Opportunity.cpp
   src/Trade.cpp
 )
-target_link_libraries(ExecutionTest PRIVATE
+target_link_libraries(OpportunityTest PRIVATE
   gtest_main
   GTest::gmock
 )
 
-gtest_discover_tests(ExecutionTest)
+gtest_discover_tests(OpportunityTest)

@@ -1,5 +1,5 @@
-#include "Execution.h"
-#include "IExecution.h"
+#include "Opportunity.h"
+#include "IOpportunity.h"
 #include "Trade.h"
 #include <vector>
 
@@ -8,7 +8,7 @@
  * @param trades A vector of trades.
  * @param startingAssetBudget The initial budget in the starting asset.
  * @return The maximum quantity of the starting asset after all trades in the
- * execution.
+ * opportunity.
  */
 boost::multiprecision::cpp_dec_float_50 calculateMaxQtyAfterTrades(
     std::vector<Trade> &trades,
@@ -48,7 +48,7 @@ boost::multiprecision::cpp_dec_float_50 calculateStartingAssetQty(
   return acc;
 }
 
-void Execution::update(
+void Opportunity::update(
     boost::multiprecision::cpp_dec_float_50 startingAssetBudget) {
 
   // calculate max qty starting asset we can have at the end of the trades
@@ -73,14 +73,14 @@ void Execution::update(
                   totalCommission) *
                  _relativeValue;
 }
-boost::multiprecision::cpp_dec_float_50 Execution::getTotalProfit() const {
+boost::multiprecision::cpp_dec_float_50 Opportunity::getTotalProfit() const {
   return _totalProfit;
 }
 
-std::string Execution::getStartingAsset() const { return _startingAsset; }
+std::string Opportunity::getStartingAsset() const { return _startingAsset; }
 
-boost::multiprecision::cpp_dec_float_50 Execution::getCapacity() const {
+boost::multiprecision::cpp_dec_float_50 Opportunity::getCapacity() const {
   return _trades.front().getUsedQty();
 }
 
-std::vector<Trade> &Execution::getTrades() { return _trades; }
+std::vector<Trade> &Opportunity::getTrades() { return _trades; }

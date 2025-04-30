@@ -1,6 +1,5 @@
 #include "Engine.h"
-#include "Execution.h"
-#include <iterator>
+#include "Opportunity.h"
 #include <string>
 #include <vector>
 
@@ -9,7 +8,7 @@ Engine::Engine(
     std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
     ReservedTrades &reservedTrades,
     boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-    boost::lockfree::queue<Execution *> &executionQueue,
+    boost::lockfree::queue<Opportunity *> &executionQueue,
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
         relativeValues,
     boost::multiprecision::cpp_dec_float_50 commission)
@@ -17,23 +16,23 @@ Engine::Engine(
       _priceUpdateQueue(priceUpdateQueue), _executionQueue(executionQueue),
       _reservedTrades(reservedTrades), _balance(balance) {
 
-  // Initialize _executions with the trading paths
+  // Initialize _opportunities with the trading paths
   for (auto &path : tradingPaths) {
 
-    // create an execution
+    // create an opportunity
     std::string startingAsset = path->at(0).getUsedCurrency();
-    Execution *execution =
-        new Execution(*path, _relativeValues[startingAsset], commission);
+    Opportunity *opportunity =
+        new Opportunity(*path, _relativeValues[startingAsset], commission);
 
-    // add execution to _executions with every trade symbol as the key
+    // add opportunity to _opportunities with every trade symbol as the key
     for (auto &trade : *path) {
-      _executions.insert({trade.getSymbol().symbol, *execution});
+      _opportunities.insert({trade.getSymbol().symbol, *opportunity});
     }
   }
 };
 
-bool Engine::containsOnlyFreeSymbols(Execution &execution) {
-  for (auto &trade : execution.getTrades()) {
+bool Engine::containsOnlyFreeSymbols(Opportunity &opportunity) {
+  for (auto &trade : opportunity.getTrades()) {
     if (_reservedTrades.isReserved(trade)) {
       return false;
     }
@@ -56,73 +55,73 @@ void Engine::run() {
       // clean up the update
       delete update;
 
-      std::vector<Execution *> opportunitiesToQueue;
+      std::vector<Opportunity *> opportunitiesToQueue;
 
-      // update all affected executions
-      auto affectedExecutions = _executions.equal_range(
-          update->symbol); // get all affected executions
+      // update all affected opportunities
+      auto affectedOpportunitys = _opportunities.equal_range(
+          update->symbol); // get all affected oppotunities
 
-      for (auto it = affectedExecutions.first; it != affectedExecutions.second;
-           ++it) {
+      for (auto it = affectedOpportunitys.first;
+           it != affectedOpportunitys.second; ++it) {
 
         auto trade = it->second;
 
         auto startingAssetBudget =
             _balance.getBalance(trade.getStartingAsset());
 
-        // update the execution with the new price
+        // update the opportunity with the new price
         trade.update(startingAssetBudget);
       }
 
-      // find the most profitable execution
-      Execution *mostProfitableExecution = nullptr;
-      for (auto it = affectedExecutions.first; it != affectedExecutions.second;
-           ++it) {
+      // find the most profitable opportunity
+      Opportunity *mostProfitableOpportunity = nullptr;
+      for (auto it = affectedOpportunitys.first;
+           it != affectedOpportunitys.second; ++it) {
 
         auto trade = it->second;
 
-        if ((!mostProfitableExecution ||
+        if ((!mostProfitableOpportunity ||
              (trade.getTotalProfit() > 0 &&
               trade.getTotalProfit() >
-                  mostProfitableExecution->getTotalProfit())) &&
+                  mostProfitableOpportunity->getTotalProfit())) &&
             containsOnlyFreeSymbols(trade)) {
-          mostProfitableExecution = &trade;
+          mostProfitableOpportunity = &trade;
         }
       }
 
-      // if no most profitable execution is found, there isn't second most
-      // profitable execution either
-      if (!mostProfitableExecution) {
+      // if no most profitable opportunity is found, there isn't second most
+      // profitable opportunity either
+      if (!mostProfitableOpportunity) {
         continue;
       }
 
-      opportunitiesToQueue.push_back(mostProfitableExecution);
+      opportunitiesToQueue.push_back(mostProfitableOpportunity);
 
-      // lock symbols, balance for the best execution
-      for (auto &trade : mostProfitableExecution->getTrades()) {
+      // lock symbols, balance for the best opportunity
+      for (auto &trade : mostProfitableOpportunity->getTrades()) {
         _reservedTrades.reserve(trade);
       }
-      _balance.updateBalance(mostProfitableExecution->getStartingAsset(),
-                             mostProfitableExecution->getCapacity() * -1);
+      _balance.updateBalance(mostProfitableOpportunity->getStartingAsset(),
+                             mostProfitableOpportunity->getCapacity() * -1);
 
-      // update executions that use the same starting asset
+      // update opportunity that use the same starting asset
       auto newBalance =
-          _balance.getBalance(mostProfitableExecution->getStartingAsset());
-      for (auto it = affectedExecutions.first; it != affectedExecutions.second;
-           ++it) {
+          _balance.getBalance(mostProfitableOpportunity->getStartingAsset());
+      for (auto it = affectedOpportunitys.first;
+           it != affectedOpportunitys.second; ++it) {
 
         auto trade = it->second;
 
         if (trade.getStartingAsset() ==
-            mostProfitableExecution->getStartingAsset()) {
+            mostProfitableOpportunity->getStartingAsset()) {
           trade.update(newBalance);
         }
       }
 
       // find the second most profitable
-      Execution *secondMostProfitable = nullptr;
-      for (auto it = affectedExecutions.first; it != affectedExecutions.second;
-           ++it) {
+      Opportunity *secondMostProfitable = nullptr;
+      for (auto it = affectedOpportunitys.first;
+           it != affectedOpportunitys.second; ++it) {
 
         auto trade = it->second;
 
@@ -151,7 +150,7 @@ void Engine::run() {
 
         // Execution independentCopy = new Execution{opportunity};
         // _executionQueue.push(independentCopy);
-        std::cout << "Execution queued: " << opportunity->getStartingAsset()
+        std::cout << "Opportunity queued: " << opportunity->getStartingAsset()
                   << std::endl;
       }
     }

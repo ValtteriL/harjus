@@ -1,14 +1,14 @@
 #pragma once
 
-#include "IExecution.h"
+#include "IOpportunity.h"
 #include "Trade.h"
 #include <vector>
 
 /**
- * @brief Configuration class that implements IExecution interface.
+ * @brief Configuration class that implements IOpportunity interface.
  */
 
-class Execution : public IExecution {
+class Opportunity : public IOpportunity {
 private:
   std::vector<Trade> &_trades;
   std::string _startingAsset;
@@ -18,14 +18,14 @@ private:
 
 public:
   /**
-   * @brief Constructor for Execution class.
+   * @brief Constructor for Opportunity class.
    * @param trades A vector of trades associated with the execution.
    * @param commission Commission percentage per trade.
    * @param relativeValue The relative value of the starting asset.
    */
-  Execution(std::vector<Trade> &trades,
-            boost::multiprecision::cpp_dec_float_50 relativeValue,
-            boost::multiprecision::cpp_dec_float_50 commission)
+  Opportunity(std::vector<Trade> &trades,
+              boost::multiprecision::cpp_dec_float_50 relativeValue,
+              boost::multiprecision::cpp_dec_float_50 commission)
       : _trades(trades), _startingAsset(trades.front().getUsedCurrency()),
         _commission(commission), _relativeValue(relativeValue) {}
 
