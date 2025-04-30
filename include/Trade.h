@@ -107,11 +107,11 @@ public:
     return std::hash<std::string>()(getSymbol().symbol) ^
            std::hash<Position>()(getPosition());
   }
-
-}; // namespace std
+};
 
 // Specialization of std::hash for Trade
 namespace std {
 template <> struct hash<Trade> {
   std::size_t operator()(const Trade &trade) const { return trade.hash(); }
 };
+} // namespace std
