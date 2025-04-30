@@ -1,5 +1,9 @@
 #include "Engine.h"
+#include "Execution.h"
 #include "Opportunity.h"
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
 #include <string>
 #include <vector>
 
@@ -8,7 +12,7 @@ Engine::Engine(
     std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
     ReservedTrades &reservedTrades,
     boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-    boost::lockfree::queue<Opportunity *> &executionQueue,
+    boost::lockfree::queue<Execution *> &executionQueue,
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
         relativeValues,
     boost::multiprecision::cpp_dec_float_50 commission)
@@ -136,22 +140,17 @@ void Engine::run() {
         opportunitiesToQueue.push_back(secondMostProfitable);
       }
 
-      // queue chosen opportunities for execution
+      // freeze and queue chosen opportunities for execution
       for (auto opportunity : opportunitiesToQueue) {
 
-        // TODO: need to freeze the trades in the opportunity so that they are
-        // not changed mid-execution
+        BOOST_LOG_TRIVIAL(info)
+            << "Queuing for execution. Starting asset: "
+            << opportunity->getStartingAsset()
+            << " Total profit: " << opportunity->getTotalProfit()
+            << " Capacity: " << opportunity->getCapacity();
 
-        // may be best to manually allocate the memory for the frozen one so it
-        // can be deleted in trader
-
-        // should ditch ITrade altogether and use Trade instead in
-        // ReservedTrades? in reservedtrades for instance
-
-        // Execution independentCopy = new Execution{opportunity};
-        // _executionQueue.push(independentCopy);
-        std::cout << "Opportunity queued: " << opportunity->getStartingAsset()
-                  << std::endl;
+        Execution *independentCopy = new Execution(*opportunity);
+        _executionQueue.push(independentCopy);
       }
     }
   }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Balance.h"
+#include "Execution.h"
 #include "Opportunity.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
@@ -29,7 +30,7 @@ private:
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       _relativeValues;
   boost::lockfree::queue<PriceUpdate *> &_priceUpdateQueue;
-  boost::lockfree::queue<Opportunity *> &_executionQueue;
+  boost::lockfree::queue<Execution *> &_executionQueue;
   ReservedTrades &_reservedTrades;
   Balance &_balance;
 
@@ -56,7 +57,7 @@ public:
       std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
       ReservedTrades &reservedTrades,
       boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-      boost::lockfree::queue<Opportunity *> &executionQueue,
+      boost::lockfree::queue<Execution *> &executionQueue,
       std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
           relativeValues,
       boost::multiprecision::cpp_dec_float_50 commission);

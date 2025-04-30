@@ -10,7 +10,6 @@
 #include <boost/log/trivial.hpp>
 #include <chrono>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <quickfix/FileStore.h>
 #include <quickfix/Log.h>
