@@ -4,7 +4,6 @@
  */
 
 #include "ReservedTrades.h"
-#include "Trade_test.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 using ::testing::Return;
@@ -16,24 +15,27 @@ using ::testing::ReturnRef;
 
 class ReservedTradesTest : public testing::Test {
 protected:
-  ReservedTradesTest() {
-    // trade1 and trade2 are identical trades
-    // trade3 is a different (different position)
+  ReservedTradesTest() {}
 
-    EXPECT_CALL(trade1, getSymbol()).WillRepeatedly(ReturnRef(symbol));
-    EXPECT_CALL(trade1, getPosition()).WillRepeatedly(Return(Position::LONG));
-
-    EXPECT_CALL(trade2, getSymbol()).WillRepeatedly(ReturnRef(symbol));
-    EXPECT_CALL(trade2, getPosition()).WillRepeatedly(Return(Position::LONG));
-
-    EXPECT_CALL(trade3, getSymbol()).WillRepeatedly(ReturnRef(symbol));
-    EXPECT_CALL(trade3, getPosition()).WillRepeatedly(Return(Position::SHORT));
-  }
-
-  Symbol symbol;
-  MockTrade trade1;
-  MockTrade trade2;
-  MockTrade trade3;
+  // trade1 and trade2 are identical trades
+  // trade3 is a different (different position)
+  Symbol symbol{
+      "BTCETH", // symbol;
+      "BTC",    // baseAsset;
+      "ETH",    // quoteAsset;
+      0.0,      // bidPrice;
+      1.0,      // askPrice;
+      0.0,      // bidQty;
+      100.0,    // askQty;
+      0.0001,   // minNotional;
+      0.0001,   // baseAssetIncrement;
+      0.0001,   // quoteAssetIncrement;
+      8,        // baseAssetPrecision;
+      8         // quoteAssetPrecision;
+  };
+  Trade trade1{symbol, Position::LONG};
+  Trade trade2{symbol, Position::LONG};
+  Trade trade3{symbol, Position::SHORT};
   ReservedTrades reservedTrades;
 };
 

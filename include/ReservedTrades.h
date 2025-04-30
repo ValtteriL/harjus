@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ITrade.h"
+#include "Trade.h"
 #include <unordered_set>
 
 /**
@@ -20,28 +20,28 @@ public:
   /**
    *  Reserve a trade.
    */
-  void reserve(ITrade &trade);
+  void reserve(Trade &trade);
 
   /**
    *  Release a trade.
    */
-  void release(ITrade &trade);
+  void release(Trade &trade);
 
   /**
    *  Check if a trade is reserved.
    */
-  bool isReserved(ITrade &trade) const;
+  bool isReserved(Trade &trade) const;
 
 private:
   /**
-   *  Custom hash and equality for ITrade.
+   *  Custom hash and equality for Trade.
    */
-  struct ITradeHash {
-    std::size_t operator()(const ITrade *trade) const { return trade->hash(); }
+  struct TradeHash {
+    std::size_t operator()(const Trade *trade) const { return trade->hash(); }
   };
 
-  struct ITradeEqual {
-    bool operator()(const ITrade *lhs, const ITrade *rhs) const {
+  struct TradeEqual {
+    bool operator()(const Trade *lhs, const Trade *rhs) const {
       return *lhs == *rhs;
     }
   };
@@ -49,6 +49,6 @@ private:
   /**
    *  Reserved symbols list.
    */
-  std::unordered_set<ITrade *, ITradeHash, ITradeEqual> reservedTrades;
+  std::unordered_set<Trade *, TradeHash, TradeEqual> reservedTrades;
 };
 ;
