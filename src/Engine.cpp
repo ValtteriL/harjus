@@ -149,8 +149,10 @@ void Engine::run() {
         // should ditch ITrade altogether and use Trade instead in
         // ReservedTrades? in reservedtrades for instance
 
-        Execution independentCopy = new Execution{opportunity};
-        _executionQueue.push(independentCopy);
+        // Execution independentCopy = new Execution{opportunity};
+        // _executionQueue.push(independentCopy);
+        std::cout << "Execution queued: " << opportunity->getStartingAsset()
+                  << std::endl;
       }
     }
   }
