@@ -37,4 +37,6 @@ public:
   std::string getStartingAsset() const override;
 
   boost::multiprecision::cpp_dec_float_50 getCapacity() const override;
+
+  std::vector<Trade> &getTrades() override;
 };

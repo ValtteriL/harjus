@@ -82,3 +82,5 @@ std::string Execution::getStartingAsset() const { return _startingAsset; }
 boost::multiprecision::cpp_dec_float_50 Execution::getCapacity() const {
   return _trades.front().getUsedQty();
 }
+
+std::vector<Trade> &Execution::getTrades() { return _trades; }

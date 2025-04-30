@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Trade.h"
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <string>
 
@@ -39,4 +40,10 @@ public:
    * @return The capacity of the execution in the starting asset.
    */
   virtual boost::multiprecision::cpp_dec_float_50 getCapacity() const = 0;
+
+  /**
+   * @brief Get the trades associated with the execution.
+   * @return A vector of trades associated with the execution.
+   */
+  virtual std::vector<Trade> &getTrades() = 0;
 };
