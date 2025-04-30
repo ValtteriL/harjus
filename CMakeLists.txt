@@ -72,6 +72,7 @@ target_link_libraries(MainTest PRIVATE
 gtest_discover_tests(MainTest)
 
 add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
+  src/Trade.cpp
   src/ReservedTrades.cpp
 )
 target_link_libraries(ReservedTradesTest PRIVATE

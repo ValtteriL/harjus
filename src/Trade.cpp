@@ -40,3 +40,14 @@ boost::multiprecision::cpp_dec_float_50 Trade::getUsedQty() const {
 std::string Trade::getRecvCurrency() const { return recvCurrency_; }
 
 std::string Trade::getUsedCurrency() const { return usedCurrency_; }
+
+bool Trade::operator==(const Trade &other) const {
+  return getSymbol().symbol == other.getSymbol().symbol &&
+         getPosition() == other.getPosition() &&
+         getOrderQty() == other.getOrderQty();
+}
+
+std::size_t Trade::hash() const {
+  return std::hash<std::string>()(getSymbol().symbol) ^
+         std::hash<Position>()(getPosition());
+}

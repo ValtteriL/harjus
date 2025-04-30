@@ -91,11 +91,7 @@ public:
    * already reserved. This ensures that trades with the same symbol and
    * position are treated as the same.
    */
-  bool operator==(const Trade &other) const {
-    return getSymbol().symbol == other.getSymbol().symbol &&
-           getPosition() == other.getPosition() &&
-           getOrderQty() == other.getOrderQty();
-  }
+  bool operator==(const Trade &other) const;
 
   /**
    * Hash function for Trade.
@@ -103,10 +99,7 @@ public:
    * the trade. This ensures that trades with the same symbol and position are
    * treated as the same.
    */
-  std::size_t hash() const {
-    return std::hash<std::string>()(getSymbol().symbol) ^
-           std::hash<Position>()(getPosition());
-  }
+  std::size_t hash() const;
 };
 
 // Specialization of std::hash for Trade
