@@ -1,13 +1,15 @@
 #include "Engine.h"
 #include "Execution.h"
+#include <iterator>
 #include <string>
+#include <vector>
 
 Engine::Engine(
     std::unordered_map<std::string, Symbol> &symbols,
     std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
     ReservedTrades &reservedTrades,
     boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-    boost::lockfree::queue<Execution> &executionQueue,
+    boost::lockfree::queue<Execution *> &executionQueue,
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
         relativeValues,
     boost::multiprecision::cpp_dec_float_50 commission)
@@ -32,7 +34,7 @@ Engine::Engine(
 
 bool Engine::containsOnlyFreeSymbols(Execution &execution) {
   for (auto &trade : execution.getTrades()) {
-    if (_reservedTrades.isReserved(trade.getSymbol().symbol)) {
+    if (_reservedTrades.isReserved(trade)) {
       return false;
     }
   }
@@ -51,6 +53,11 @@ void Engine::run() {
       _symbols[update->symbol].askQty = update->askQty;
       _symbols[update->symbol].bidQty = update->bidQty;
 
+      // clean up the update
+      delete update;
+
+      std::vector<Execution *> opportunitiesToQueue;
+
       // update all affected executions
       auto affectedExecutions = _executions.equal_range(
           update->symbol); // get all affected executions
@@ -58,14 +65,16 @@ void Engine::run() {
       for (auto it = affectedExecutions.first; it != affectedExecutions.second;
            ++it) {
 
+        auto trade = it->second;
+
         auto startingAssetBudget =
-            _balance.getBalance(it->second.getStartingAsset());
+            _balance.getBalance(trade.getStartingAsset());
 
         // update the execution with the new price
-        it->second.update(startingAssetBudget);
+        trade.update(startingAssetBudget);
       }
 
-      // TODO: take 2 non-overlapping executions with the largest profit
+      // find the most profitable execution
       Execution *mostProfitableExecution = nullptr;
       for (auto it = affectedExecutions.first; it != affectedExecutions.second;
            ++it) {
@@ -81,23 +90,68 @@ void Engine::run() {
         }
       }
 
-      // lock resources for the best execution
-      if (mostProfitableExecution) {
-        for (auto &trade : mostProfitableExecution->getTrades()) {
-          _reservedTrades.reserve(trade.getSymbol().symbol);
+      // if no most profitable execution is found, there isn't second most
+      // profitable execution either
+      if (!mostProfitableExecution) {
+        continue;
+      }
+
+      opportunitiesToQueue.push_back(mostProfitableExecution);
+
+      // lock symbols, balance for the best execution
+      for (auto &trade : mostProfitableExecution->getTrades()) {
+        _reservedTrades.reserve(trade);
+      }
+      _balance.updateBalance(mostProfitableExecution->getStartingAsset(),
+                             mostProfitableExecution->getCapacity() * -1);
+
+      // update executions that use the same starting asset
+      auto newBalance =
+          _balance.getBalance(mostProfitableExecution->getStartingAsset());
+      for (auto it = affectedExecutions.first; it != affectedExecutions.second;
+           ++it) {
+
+        auto trade = it->second;
+
+        if (trade.getStartingAsset() ==
+            mostProfitableExecution->getStartingAsset()) {
+          trade.update(newBalance);
         }
       }
 
-      // reduce balance
+      // find the second most profitable
+      Execution *secondMostProfitable = nullptr;
+      for (auto it = affectedExecutions.first; it != affectedExecutions.second;
+           ++it) {
 
-      // update executions that use the same starting asset
+        auto trade = it->second;
 
-      // find the second most profitable now
+        if (trade.getTotalProfit() > 0 &&
+            trade.getTotalProfit() < secondMostProfitable->getTotalProfit() &&
+            containsOnlyFreeSymbols(trade)) {
+          secondMostProfitable = &trade;
+        }
+      }
 
-      // TODO: queue executions to the execution queue
+      if (secondMostProfitable) {
+        opportunitiesToQueue.push_back(secondMostProfitable);
+      }
 
-      // clean up the update
-      delete update;
+      // queue chosen opportunities for execution
+      for (auto opportunity : opportunitiesToQueue) {
+
+        // TODO: need to freeze the trades in the opportunity so that they are
+        // not changed mid-execution
+
+        // may be best to manually allocate the memory for the frozen one so it
+        // can be deleted in trader
+
+        // should ditch ITrade altogether and use Trade instead in
+        // ReservedTrades? in reservedtrades for instance
+
+        Execution independentCopy = new Execution{opportunity};
+        _executionQueue.push(independentCopy);
+      }
     }
   }
 }

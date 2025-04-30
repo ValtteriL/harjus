@@ -29,7 +29,7 @@ private:
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       _relativeValues;
   boost::lockfree::queue<PriceUpdate *> &_priceUpdateQueue;
-  boost::lockfree::queue<Execution> &_executionQueue;
+  boost::lockfree::queue<Execution *> &_executionQueue;
   ReservedTrades &_reservedTrades;
   Balance &_balance;
 
@@ -56,7 +56,7 @@ public:
       std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
       ReservedTrades &reservedTrades,
       boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-      boost::lockfree::queue<Execution> &executionQueue,
+      boost::lockfree::queue<Execution *> &executionQueue,
       std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
           relativeValues,
       boost::multiprecision::cpp_dec_float_50 commission);
