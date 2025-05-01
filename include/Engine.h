@@ -41,6 +41,17 @@ private:
    */
   bool containsOnlyFreeSymbols(Opportunity &opportunity);
 
+protected:
+  /**
+   * Process a price update
+   * @param update The price update to process
+   * @details This function updates the symbol prices and checks opportunities
+   * for profitability. It finds 2 most profitable non-overlapping
+   * opportunities, reserves symbols and budget for them, and queues them for
+   * execution.
+   */
+  void processPriceUpdate(PriceUpdate *update);
+
 public:
   /**
    * @brief Constructor for the Engine class.

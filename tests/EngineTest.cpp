@@ -6,13 +6,34 @@
 #include "Engine.h"
 #include "Balance.h"
 #include "Execution.h"
-#include "Opportunity.h"
+#include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include <boost/lockfree/queue.hpp>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
+class TestableEngine : public Engine {
+public:
+  TestableEngine(
+      std::unordered_map<std::string, Symbol> &symbols,
+      std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
+      ReservedTrades &reservedTrades,
+      boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
+      boost::lockfree::queue<Execution *> &executionQueue,
+      std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+          relativeValues,
+      boost::multiprecision::cpp_dec_float_50 commission)
+      : Engine(symbols, tradingPaths, balance, reservedTrades, priceUpdateQueue,
+               executionQueue, relativeValues, commission) {}
+
+  void callProcessPriceUpdate(PriceUpdate *update) {
+    // Call the original processPriceUpdate method
+    processPriceUpdate(update);
+  }
+};
 
 /**
  * Test fixture for Engine.
@@ -20,51 +41,100 @@
 
 class EngineTest : public testing::Test {
 protected:
-  EngineTest() {
+  EngineTest()
+      : tradingPaths({&trades}),
+        engine(symbols, tradingPaths, balance, reservedTrades, priceUpdateQueue,
+               executionQueue, relativeValues, commission) {
 
-    std::unordered_map<std::string, Symbol> symbols;
-    std::vector<std::vector<Trade> *> tradingPaths;
-    Balance balance;
-    ReservedTrades reservedTrades;
-    boost::lockfree::queue<PriceUpdate *> priceUpdateQueue;
-    boost::lockfree::queue<Execution *> executionQueue;
-
-    std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-        relativeValues;
-    boost::multiprecision::cpp_dec_float_50 commission;
-
-    Engine engine{symbols,        tradingPaths,     balance,
-                  reservedTrades, priceUpdateQueue, executionQueue,
-                  relativeValues, commission};
+    balance.updateBalance("BTC", startingAssetBudget);
   }
 
-  // trade1 and trade2 are identical trades
-  // trade3 is a different (different position)
-  Symbol symbol{
-      "BTCETH", // symbol;
-      "BTC",    // baseAsset;
-      "ETH",    // quoteAsset;
-      0.0,      // bidPrice;
-      1.0,      // askPrice;
-      0.0,      // bidQty;
-      100.0,    // askQty;
-      0.0001,   // minNotional;
-      0.0001,   // baseAssetIncrement;
-      0.0001,   // quoteAssetIncrement;
-      8,        // baseAssetPrecision;
-      8         // quoteAssetPrecision;
-  };
-  Trade trade1{symbol, Position::LONG};
-  Trade trade2{symbol, Position::LONG};
-  Trade trade3{symbol, Position::SHORT};
-  // Engine engine;
+  boost::multiprecision::cpp_dec_float_50 startingAssetBudget = 1.0;
+
+  std::unordered_map<std::string, Symbol> symbols;
+  std::vector<std::vector<Trade> *> tradingPaths;
+  Balance balance;
+  ReservedTrades reservedTrades;
+  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+      relativeValues{{"BTC", 1.0}, {"ETH", 1.0}, {"USDT", 1.0}};
+  boost::multiprecision::cpp_dec_float_50 commission{0.001};
+
+  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue{1000};
+  boost::lockfree::queue<Execution *> executionQueue{1000};
+
+  // simple triangular arbitrage
+  // BTC -> ETH -> USDT -> BTC
+  std::vector<Trade> trades{Trade{Symbol{
+                                      "ETHBTC", // symbol;
+                                      "ETH",    // baseAsset;
+                                      "BTC",    // quoteAsset;
+                                      0,        // bidPrice;
+                                      0,        // askPrice;
+                                      0,        // bidQty;
+                                      0,        // askQty;
+                                      0.0001,   // minNotional;
+                                      0.0001,   // baseAssetIncrement;
+                                      0.0001,   // quoteAssetIncrement;
+                                      8,        // baseAssetPrecision;
+                                      8         // quoteAssetPrecision;
+                                  },
+                                  Position::LONG},
+                            Trade{Symbol{
+                                      "ETHUSDT", // symbol;
+                                      "ETH",     // baseAsset;
+                                      "USDT",    // quoteAsset;
+                                      0,         // bidPrice;
+                                      0,         // askPrice;
+                                      0,         // bidQty;
+                                      0,         // askQty;
+                                      0.0001,    // minNotional;
+                                      0.0001,    // baseAssetIncrement;
+                                      0.0001,    // quoteAssetIncrement;
+                                      8,         // baseAssetPrecision;
+                                      8          // quoteAssetPrecision;
+                                  },
+                                  Position::SHORT},
+                            Trade{Symbol{
+                                      "USDTBTC", // symbol;
+                                      "USDT",    // baseAsset;
+                                      "BTC",     // quoteAsset;
+                                      0,         // bidPrice;
+                                      0,         // askPrice;
+                                      0,         // bidQty;
+                                      0,         // askQty;
+                                      0.0001,    // minNotional;
+                                      0.0001,    // baseAssetIncrement;
+                                      0.0001,    // quoteAssetIncrement;
+                                      8,         // baseAssetPrecision;
+                                      8          // quoteAssetPrecision;
+                                  },
+                                  Position::SHORT}};
+
+  TestableEngine engine;
 };
 
-TEST_F(EngineTest, checkReserveCheckReleaseCheck) {
+TEST_F(EngineTest, detectsArbitrageOpportunity) {
 
-  // TODO: updates are removed from the queue
-  EXPECT_FALSE(true);
+  std::vector<PriceUpdate *> updates;
+  updates.push_back(new PriceUpdate{"ETHBTC", 0, 1, 0, 100}); // BTC -> ETH 1:1
+  updates.push_back(new PriceUpdate{"ETHUSDT", 1, 0, 1, 0});  // ETH -> USDT 1:1
+  updates.push_back(
+      new PriceUpdate{"USDTBTC", 10.0, 0, 1.0, 0}); // USDT -> BTC 1:10
 
-  // TODO: execution is queued
-  EXPECT_FALSE(true);
+  for (auto update : updates) {
+    engine.callProcessPriceUpdate(update);
+  }
+
+  // Verify execution is queued
+  Execution *execution = nullptr;
+  EXPECT_TRUE(executionQueue.pop(execution));
+  EXPECT_EQ(execution->getTrades().size(), 3);
+
+  // Check if the total profit is calculated correctly
+  EXPECT_NEAR(execution->getTotalProfit().convert_to<double>(), 8.997, 1e-5);
+  // Check if the capacity is calculated correctly
+  EXPECT_EQ(execution->getCapacity(),
+            boost::multiprecision::cpp_dec_float_50{startingAssetBudget});
+  // Check if the starting asset is correct
+  EXPECT_EQ(execution->getStartingAsset(), "BTC");
 }
