@@ -55,9 +55,6 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
   _symbols[update->symbol].askQty = update->askQty;
   _symbols[update->symbol].bidQty = update->bidQty;
 
-  // clean up the update
-  delete update;
-
   std::vector<Opportunity *> opportunitiesToQueue;
 
   // update all affected opportunities
@@ -98,6 +95,9 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
       mostProfitableOpportunity = &opportunity;
     }
   }
+
+  // clean up the update
+  delete update;
 
   // if no most profitable opportunity is found, there isn't second most
   // profitable opportunity either
