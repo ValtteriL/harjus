@@ -18,7 +18,7 @@
 class TestableEngine : public Engine {
 public:
   TestableEngine(
-      std::unordered_map<std::string, Symbol> &symbols,
+      std::unordered_map<std::string, Symbol *> &symbols,
       std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
       ReservedTrades &reservedTrades,
       boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
@@ -51,17 +51,6 @@ protected:
 
   boost::multiprecision::cpp_dec_float_50 startingAssetBudget = 1.0;
 
-  std::unordered_map<std::string, Symbol> symbols;
-  std::vector<std::vector<Trade> *> tradingPaths;
-  Balance balance;
-  ReservedTrades reservedTrades;
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      relativeValues{{"BTC", 1.0}, {"ETH", 1.0}, {"USDT", 1.0}};
-  boost::multiprecision::cpp_dec_float_50 commission{0.001};
-
-  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue{1000};
-  boost::lockfree::queue<Execution *> executionQueue{1000};
-
   // Allocate symbols manually
   Symbol *ethBtcSymbol = new Symbol{"ETHBTC", "ETH",  "BTC",  0.0,    0.0, 0.0,
                                     0.0,      0.0001, 0.0001, 0.0001, 8,   8};
@@ -72,11 +61,24 @@ protected:
       new Symbol{"USDTBTC", "USDT", "BTC",  0.0,    0.0, 0.0,
                  0.0,       0.0001, 0.0001, 0.0001, 8,   8};
 
+  std::unordered_map<std::string, Symbol *> symbols{{"ETHBTC", ethBtcSymbol},
+                                                    {"ETHUSDT", ethUsdtSymbol},
+                                                    {"USDTBTC", usdtBtcSymbol}};
+  std::vector<std::vector<Trade> *> tradingPaths;
+  Balance balance;
+  ReservedTrades reservedTrades;
+  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+      relativeValues{{"BTC", 1.0}, {"ETH", 1.0}, {"USDT", 1.0}};
+  boost::multiprecision::cpp_dec_float_50 commission{0.001};
+
+  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue{1000};
+  boost::lockfree::queue<Execution *> executionQueue{1000};
+
   // simple triangular arbitrage
   // BTC -> ETH -> USDT -> BTC
-  std::vector<Trade> trades{Trade{*ethBtcSymbol, Position::LONG},
-                            Trade{*ethUsdtSymbol, Position::SHORT},
-                            Trade{*usdtBtcSymbol, Position::SHORT}};
+  std::vector<Trade> trades{Trade{*symbols["ETHBTC"], Position::LONG},
+                            Trade{*symbols["ETHUSDT"], Position::SHORT},
+                            Trade{*symbols["USDTBTC"], Position::SHORT}};
 
   TestableEngine engine;
 };
@@ -95,7 +97,8 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
 
   // Verify execution is queued
   Execution *execution = nullptr;
-  EXPECT_TRUE(executionQueue.pop(execution));
+  ASSERT_TRUE(executionQueue.pop(execution));
+
   EXPECT_EQ(execution->getTrades().size(), 3);
 
   // Check if the total profit is calculated correctly

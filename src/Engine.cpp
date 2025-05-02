@@ -9,7 +9,7 @@
 #include <vector>
 
 Engine::Engine(
-    std::unordered_map<std::string, Symbol> &symbols,
+    std::unordered_map<std::string, Symbol *> &symbols,
     std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
     ReservedTrades &reservedTrades,
     boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
@@ -47,13 +47,11 @@ bool Engine::containsOnlyFreeSymbols(Opportunity &opportunity) {
 
 void Engine::processPriceUpdate(PriceUpdate *update) {
 
-  std::cout << "processing update " << std::endl;
-
   // update symbol price
-  _symbols[update->symbol].askPrice = update->askPrice;
-  _symbols[update->symbol].bidPrice = update->bidPrice;
-  _symbols[update->symbol].askQty = update->askQty;
-  _symbols[update->symbol].bidQty = update->bidQty;
+  _symbols.at(update->symbol)->askPrice = update->askPrice;
+  _symbols.at(update->symbol)->bidPrice = update->bidPrice;
+  _symbols.at(update->symbol)->askQty = update->askQty;
+  _symbols.at(update->symbol)->bidQty = update->bidQty;
 
   std::vector<Opportunity *> opportunitiesToQueue;
 
@@ -63,8 +61,6 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
   for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
        ++it) {
-
-    // TODO: this is currently not run at all in enginetest
 
     auto opportunity = it->second;
 

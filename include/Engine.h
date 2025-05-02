@@ -25,7 +25,7 @@
 class Engine {
 
 private:
-  std::unordered_map<std::string, Symbol> &_symbols;
+  std::unordered_map<std::string, Symbol *> &_symbols;
   std::unordered_multimap<std::string, Opportunity &> _opportunities;
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       _relativeValues;
@@ -64,7 +64,7 @@ public:
    * @param relativeValues A map of relative values for symbols.
    */
   Engine(
-      std::unordered_map<std::string, Symbol> &symbols,
+      std::unordered_map<std::string, Symbol *> &symbols,
       std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
       ReservedTrades &reservedTrades,
       boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
