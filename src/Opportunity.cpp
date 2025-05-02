@@ -22,6 +22,11 @@ boost::multiprecision::cpp_dec_float_50 calculateMaxQtyAfterTrades(
     trade.resetOrderQty();
 
     if (trade.getPosition() == Position::LONG) {
+      if (trade.getOrderPrice() == 0) {
+        // avoid division by zero
+        // this may happen if not all trades have been updated in the path
+        return 0;
+      }
       acc = boost::multiprecision::min(acc, trade.getUsedQty() *
                                                 trade.getOrderPrice()) /
             trade.getOrderPrice();
