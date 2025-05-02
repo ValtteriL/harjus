@@ -1,5 +1,16 @@
 #include "Trade.h"
 
+Trade::Trade(const Symbol &symbol, Position position)
+    : symbol_(symbol), position_(position),
+      offerQty_(position == Position::LONG ? symbol.askQty : symbol.bidQty),
+      orderQty_(offerQty_),
+      orderPrice_(position == Position::LONG ? symbol.askPrice
+                                             : symbol.bidPrice),
+      recvCurrency_(position == Position::LONG ? symbol.baseAsset
+                                               : symbol.quoteAsset),
+      usedCurrency_(position == Position::LONG ? symbol.quoteAsset
+                                               : symbol.baseAsset) {}
+
 enum Position Trade::getPosition() const { return position_; }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getOrderQty() const {

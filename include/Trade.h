@@ -20,16 +20,12 @@ private:
   const std::string usedCurrency_;
 
 public:
-  Trade(const Symbol &symbol, Position position)
-      : symbol_(symbol), position_(position),
-        offerQty_(position == Position::LONG ? symbol.askQty : symbol.bidQty),
-        orderQty_(offerQty_),
-        orderPrice_(position == Position::LONG ? symbol.askPrice
-                                               : symbol.bidPrice),
-        recvCurrency_(position == Position::LONG ? symbol.baseAsset
-                                                 : symbol.quoteAsset),
-        usedCurrency_(position == Position::LONG ? symbol.quoteAsset
-                                                 : symbol.baseAsset) {}
+  /**
+   * Constructor for the Trade class.
+   * @param symbol The symbol of the trade.
+   * @param position The position of the trade (LONG or SHORT).
+   */
+  Trade(const Symbol &symbol, Position position);
 
   /**
    * Get the position of the trade.
