@@ -62,13 +62,20 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
   for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
        ++it) {
 
-    auto opportunity = it->second;
+    Opportunity &opportunity = it->second;
 
     auto startingAssetBudget =
         _balance.getBalance(opportunity.getStartingAsset());
 
     // update the opportunity with the new price
     opportunity.update(startingAssetBudget);
+
+    std::cout << "Address of opportunity: " << &opportunity << std::endl;
+
+    std::cout << "1st round | Trade: " << opportunity.getStartingAsset()
+              << " total profit: " << opportunity.getTotalProfit()
+              << " containsonlyfreesymbols: "
+              << containsOnlyFreeSymbols(opportunity) << std::endl;
   }
 
   // find the most profitable opportunity
@@ -76,16 +83,19 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
   for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
        ++it) {
 
-    auto opportunity = it->second;
+    Opportunity &opportunity = it->second;
 
-    std::cout << "Trade: " << opportunity.getStartingAsset()
+    // print the address of the opportunity
+    std::cout << "Address of opportunity: " << &opportunity << std::endl;
+
+    std::cout << "2nd round | Trade: " << opportunity.getStartingAsset()
               << " total profit: " << opportunity.getTotalProfit()
               << " containsonlyfreesymbols: "
               << containsOnlyFreeSymbols(opportunity) << std::endl;
 
     if (opportunity.getTotalProfit() > 0 &&
         (!mostProfitableOpportunity ||
-          opportunity.getTotalProfit() >
+         opportunity.getTotalProfit() >
              mostProfitableOpportunity->getTotalProfit()) &&
         containsOnlyFreeSymbols(opportunity)) {
       mostProfitableOpportunity = &opportunity;
