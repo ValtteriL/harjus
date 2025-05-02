@@ -13,6 +13,10 @@ boost::multiprecision::cpp_dec_float_50 Trade::getOrderQty() const {
   return orderQty_;
 }
 
+void Trade::resetOrderQty() {
+  orderQty_ = getOfferQty();
+}
+
 boost::multiprecision::cpp_dec_float_50 Trade::getOrderPrice() const {
   return position_ == Position::LONG ? symbol_.askPrice : symbol_.bidPrice;
 }

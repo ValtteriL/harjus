@@ -15,7 +15,11 @@ boost::multiprecision::cpp_dec_float_50 calculateMaxQtyAfterTrades(
     boost::multiprecision::cpp_dec_float_50 startingAssetBudget) {
   auto acc = startingAssetBudget;
 
-  for (const auto &trade : trades) {
+  for (auto &trade : trades) {
+
+    // reset order qty to the offer qty
+    // this is needed to avoid capping to outdated order qty
+    trade.resetOrderQty();
 
     if (trade.getPosition() == Position::LONG) {
       acc = boost::multiprecision::min(acc, trade.getUsedQty() *

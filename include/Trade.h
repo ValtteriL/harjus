@@ -11,7 +11,7 @@
 class Trade {
 
 private:
-  const Symbol& symbol_;
+  const Symbol &symbol_;
   const Position position_;
   boost::multiprecision::cpp_dec_float_50 orderQty_;
   const std::string recvCurrency_;
@@ -36,6 +36,13 @@ public:
    * @return The quantity of the base asset to be traded.
    */
   boost::multiprecision::cpp_dec_float_50 getOrderQty() const;
+
+  /**
+   * Reset the order quantity of the trade.
+   * @details This function is used to reset the order quantity to the
+   * available offer quantity. It is used when the trade is not reserved.
+   */
+  void resetOrderQty();
 
   /**
    * Get the offer quantity of the trade.
