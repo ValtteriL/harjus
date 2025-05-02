@@ -25,6 +25,8 @@ public:
    */
   Execution(Opportunity &opportunity);
 
+  virtual ~Execution() = default; // Add a virtual destructor
+
   /**
    * @brief Recalculate the opportunity associated with the
    * opportunity.
