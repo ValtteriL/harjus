@@ -41,8 +41,6 @@ boost::multiprecision::cpp_dec_float_50 calculateStartingAssetQty(
     std::vector<Trade> &trades,
     boost::multiprecision::cpp_dec_float_50 startingAssetQtyAfterTrades) {
 
-  // TODO: this may return nan or 0
-
   boost::multiprecision::cpp_dec_float_50 acc{startingAssetQtyAfterTrades};
 
   // backtrack the trades to calculate the starting asset qty
@@ -52,6 +50,13 @@ boost::multiprecision::cpp_dec_float_50 calculateStartingAssetQty(
     if (trade.getPosition() == Position::LONG) {
       acc *= trade.getOrderPrice();
     } else {
+
+      if (trade.getOrderPrice() == 0) {
+        // avoid division by zero
+        // this may happen if not all trades have been updated in the path
+        return 0;
+      }
+
       acc /= trade.getOrderPrice();
     }
   }
