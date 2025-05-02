@@ -11,11 +11,11 @@
 class Trade {
 
 private:
-  const Symbol &symbol_;
-  const Position position_;
-  boost::multiprecision::cpp_dec_float_50 orderQty_;
-  const std::string recvCurrency_;
-  const std::string usedCurrency_;
+  const Symbol &_symbol;
+  const Position _position;
+  boost::multiprecision::cpp_dec_float_50 _orderQty;
+  const std::string _recvCurrency;
+  const std::string _usedCurrency;
 
 public:
   /**
