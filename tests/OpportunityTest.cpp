@@ -24,10 +24,10 @@ TEST(OpportunityTest, update) {
       "BTCETH", // symbol;
       "BTC",    // baseAsset;
       "ETH",    // quoteAsset;
-      0.0,      // bidPrice;
-      1.0,      // askPrice;
-      0.0,      // bidQty;
-      100.0,    // askQty;
+      1.0,      // bidPrice;
+      0.0,      // askPrice;
+      100.0,    // bidQty;
+      0.0,      // askQty;
       0.0001,   // minNotional;
       0.0001,   // baseAssetIncrement;
       0.0001,   // quoteAssetIncrement;
@@ -40,23 +40,7 @@ TEST(OpportunityTest, update) {
       "ETHUSDT", // symbol;
       "ETH",     // baseAsset;
       "USDT",    // quoteAsset;
-      0.0,       // bidPrice;
-      1.0,       // askPrice;
-      0.0,       // bidQty;
-      1.0,       // askQty;
-      0.0001,    // minNotional;
-      0.0001,    // baseAssetIncrement;
-      0.0001,    // quoteAssetIncrement;
-      8,         // baseAssetPrecision;
-      8          // quoteAssetPrecision;
-  };
-
-  // USDT -> BTC 1:10
-  Symbol symbol3{
-      "USDTBTC", // symbol;
-      "USDT",    // baseAsset;
-      "BTC",     // quoteAsset;
-      10.0,      // bidPrice;
+      1.0,       // bidPrice;
       0.0,       // askPrice;
       1.0,       // bidQty;
       0.0,       // askQty;
@@ -67,9 +51,25 @@ TEST(OpportunityTest, update) {
       8          // quoteAssetPrecision;
   };
 
-  Trade trade1(symbol1, Position::LONG);
-  Trade trade2(symbol2, Position::LONG);
-  Trade trade3(symbol3, Position::SHORT);
+  // USDT -> BTC 1:10
+  Symbol symbol3{
+      "BTCUSDT", // symbol;
+      "BTC",     // baseAsset;
+      "USDT",    // quoteAsset;
+      0.0,       // bidPrice;
+      0.1,       // askPrice;
+      0.0,       // bidQty;
+      100.0,     // askQty;
+      0.0001,    // minNotional;
+      0.0001,    // baseAssetIncrement;
+      0.0001,    // quoteAssetIncrement;
+      8,         // baseAssetPrecision;
+      8          // quoteAssetPrecision;
+  };
+
+  Trade trade1(symbol1, Position::SHORT);
+  Trade trade2(symbol2, Position::SHORT);
+  Trade trade3(symbol3, Position::LONG);
 
   std::vector<Trade> trades{trade1, trade2, trade3};
   boost::multiprecision::cpp_dec_float_50 startingAssetBudget = 1.0;
@@ -90,8 +90,8 @@ TEST(OpportunityTest, update) {
   // Check if the total profit is calculated correctly
   EXPECT_NEAR(opportunity.getTotalProfit().convert_to<double>(), 8.997, 1e-5);
   // Check if the capacity is calculated correctly
-  EXPECT_EQ(opportunity.getCapacity(),
-            boost::multiprecision::cpp_dec_float_50{startingAssetBudget});
+  EXPECT_NEAR(opportunity.getCapacity().convert_to<double>(),
+              startingAssetBudget.convert_to<double>(), 1e-5);
   // Check if the starting asset is correct
   EXPECT_EQ(opportunity.getStartingAsset(), trades.front().getUsedCurrency());
 }
