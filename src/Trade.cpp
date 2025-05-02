@@ -1,11 +1,7 @@
 #include "Trade.h"
 
 Trade::Trade(const Symbol &symbol, Position position)
-    : symbol_(symbol), position_(position),
-      offerQty_(position == Position::LONG ? symbol.askQty : symbol.bidQty),
-      orderQty_(offerQty_),
-      orderPrice_(position == Position::LONG ? symbol.askPrice
-                                             : symbol.bidPrice),
+    : symbol_(symbol), position_(position), orderQty_(getOfferQty()),
       recvCurrency_(position == Position::LONG ? symbol.baseAsset
                                                : symbol.quoteAsset),
       usedCurrency_(position == Position::LONG ? symbol.quoteAsset
@@ -18,17 +14,21 @@ boost::multiprecision::cpp_dec_float_50 Trade::getOrderQty() const {
 }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getOrderPrice() const {
-  return orderPrice_;
+  return position_ == Position::LONG ? symbol_.askPrice : symbol_.bidPrice;
+}
+
+boost::multiprecision::cpp_dec_float_50 Trade::getOfferQty() const {
+  return position_ == Position::LONG ? symbol_.askQty : symbol_.bidQty;
 }
 
 const Symbol &Trade::getSymbol() const { return symbol_; }
 
 void Trade::setBudget(boost::multiprecision::cpp_dec_float_50 budget) {
   if (position_ == Position::LONG) {
-    auto budgetOrderPrice = budget / orderPrice_;
-    orderQty_ = boost::multiprecision::min(budgetOrderPrice, offerQty_);
+    auto budgetOrderPrice = budget / getOrderPrice();
+    orderQty_ = boost::multiprecision::min(budgetOrderPrice, getOfferQty());
   } else {
-    orderQty_ = boost::multiprecision::min(offerQty_, budget);
+    orderQty_ = boost::multiprecision::min(getOfferQty(), budget);
   }
 }
 
@@ -36,13 +36,13 @@ boost::multiprecision::cpp_dec_float_50 Trade::getRecvQty() const {
   if (position_ == Position::LONG) {
     return orderQty_;
   } else {
-    return orderQty_ * orderPrice_;
+    return orderQty_ * getOrderPrice();
   }
 }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getUsedQty() const {
   if (position_ == Position::LONG) {
-    return orderQty_ * orderPrice_;
+    return orderQty_ * getOrderPrice();
   } else {
     return orderQty_;
   }

@@ -11,11 +11,9 @@
 class Trade {
 
 private:
-  const Symbol symbol_;
+  const Symbol& symbol_;
   const Position position_;
-  const boost::multiprecision::cpp_dec_float_50 &offerQty_;
   boost::multiprecision::cpp_dec_float_50 orderQty_;
-  const boost::multiprecision::cpp_dec_float_50 &orderPrice_;
   const std::string recvCurrency_;
   const std::string usedCurrency_;
 
@@ -38,6 +36,12 @@ public:
    * @return The quantity of the base asset to be traded.
    */
   boost::multiprecision::cpp_dec_float_50 getOrderQty() const;
+
+  /**
+   * Get the offer quantity of the trade.
+   * @return The quantity of the base asset available for trading.
+   */
+  boost::multiprecision::cpp_dec_float_50 getOfferQty() const;
 
   /**
    * Get the order price of the trade.
