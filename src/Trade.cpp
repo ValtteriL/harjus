@@ -1,4 +1,6 @@
 #include "Trade.h"
+#include <cmath>
+#include <iostream>
 
 Trade::Trade(const Symbol &symbol, Position position)
     : symbol_(symbol), position_(position), orderQty_(getOfferQty()),
@@ -13,9 +15,7 @@ boost::multiprecision::cpp_dec_float_50 Trade::getOrderQty() const {
   return orderQty_;
 }
 
-void Trade::resetOrderQty() {
-  orderQty_ = getOfferQty();
-}
+void Trade::resetOrderQty() { orderQty_ = getOfferQty(); }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getOrderPrice() const {
   return position_ == Position::LONG ? symbol_.askPrice : symbol_.bidPrice;
@@ -28,6 +28,7 @@ boost::multiprecision::cpp_dec_float_50 Trade::getOfferQty() const {
 const Symbol &Trade::getSymbol() const { return symbol_; }
 
 void Trade::setBudget(boost::multiprecision::cpp_dec_float_50 budget) {
+
   if (position_ == Position::LONG) {
     auto budgetOrderPrice = budget / getOrderPrice();
     orderQty_ = boost::multiprecision::min(budgetOrderPrice, getOfferQty());

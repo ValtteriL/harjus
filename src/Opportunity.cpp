@@ -1,5 +1,4 @@
 #include "Opportunity.h"
-#include "IOpportunity.h"
 #include "Trade.h"
 #include <vector>
 
@@ -41,6 +40,8 @@ boost::multiprecision::cpp_dec_float_50 calculateMaxQtyAfterTrades(
 boost::multiprecision::cpp_dec_float_50 calculateStartingAssetQty(
     std::vector<Trade> &trades,
     boost::multiprecision::cpp_dec_float_50 startingAssetQtyAfterTrades) {
+
+  // TODO: this may return nan or 0
 
   boost::multiprecision::cpp_dec_float_50 acc{startingAssetQtyAfterTrades};
 

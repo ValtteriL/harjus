@@ -69,13 +69,6 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
     // update the opportunity with the new price
     opportunity.update(startingAssetBudget);
-
-    std::cout << "Address of opportunity: " << &opportunity << std::endl;
-
-    std::cout << "1st round | Trade: " << opportunity.getStartingAsset()
-              << " total profit: " << opportunity.getTotalProfit()
-              << " containsonlyfreesymbols: "
-              << containsOnlyFreeSymbols(opportunity) << std::endl;
   }
 
   // find the most profitable opportunity
@@ -84,14 +77,6 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
        ++it) {
 
     Opportunity &opportunity = it->second;
-
-    // print the address of the opportunity
-    std::cout << "Address of opportunity: " << &opportunity << std::endl;
-
-    std::cout << "2nd round | Trade: " << opportunity.getStartingAsset()
-              << " total profit: " << opportunity.getTotalProfit()
-              << " containsonlyfreesymbols: "
-              << containsOnlyFreeSymbols(opportunity) << std::endl;
 
     if (opportunity.getTotalProfit() > 0 &&
         (!mostProfitableOpportunity ||
@@ -126,11 +111,13 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
   for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
        ++it) {
 
-    auto trade = it->second;
+    auto &opportunity = it->second;
 
-    if (trade.getStartingAsset() ==
-        mostProfitableOpportunity->getStartingAsset()) {
-      trade.update(newBalance);
+    // skip the most profitable opportunity
+    if (opportunity.getStartingAsset() ==
+            mostProfitableOpportunity->getStartingAsset() &&
+        &opportunity != mostProfitableOpportunity) {
+      opportunity.update(newBalance);
     }
   }
 
@@ -139,7 +126,7 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
   for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
        ++it) {
 
-    auto opportunity = it->second;
+    auto &opportunity = it->second;
 
     if (opportunity.getTotalProfit() > 0 &&
         (!secondMostProfitable || opportunity.getTotalProfit() >
