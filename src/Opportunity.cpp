@@ -2,6 +2,12 @@
 #include "Trade.h"
 #include <vector>
 
+Opportunity::Opportunity(std::vector<Trade> &trades,
+                         boost::multiprecision::cpp_dec_float_50 relativeValue,
+                         boost::multiprecision::cpp_dec_float_50 commission)
+    : _trades(trades), _startingAsset(trades.front().getUsedCurrency()),
+      _commission(commission), _relativeValue(relativeValue) {}
+
 /**
  * @brief Calculate the maximum quantity of the starting asset after all trades.
  * @param trades A vector of trades.

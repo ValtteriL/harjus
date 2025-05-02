@@ -25,9 +25,7 @@ public:
    */
   Opportunity(std::vector<Trade> &trades,
               boost::multiprecision::cpp_dec_float_50 relativeValue,
-              boost::multiprecision::cpp_dec_float_50 commission)
-      : _trades(trades), _startingAsset(trades.front().getUsedCurrency()),
-        _commission(commission), _relativeValue(relativeValue) {}
+              boost::multiprecision::cpp_dec_float_50 commission);
 
   void
   update(boost::multiprecision::cpp_dec_float_50 startingAssetBudget) override;
