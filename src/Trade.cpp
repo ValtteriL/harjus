@@ -1,42 +1,69 @@
 #include "Trade.h"
+#include <cmath>
+#include <iostream>
 
-enum Position Trade::getPosition() const { return position_; }
+Trade::Trade(const Symbol &symbol, Position position)
+    : _symbol(symbol), _position(position), _orderQty(getOfferQty()),
+      _recvCurrency(position == Position::LONG ? symbol.baseAsset
+                                               : symbol.quoteAsset),
+      _usedCurrency(position == Position::LONG ? symbol.quoteAsset
+                                               : symbol.baseAsset) {}
+
+enum Position Trade::getPosition() const { return _position; }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getOrderQty() const {
-  return orderQty_;
+  return _orderQty;
 }
+
+void Trade::resetOrderQty() { _orderQty = getOfferQty(); }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getOrderPrice() const {
-  return orderPrice_;
+  return _position == Position::LONG ? _symbol.askPrice : _symbol.bidPrice;
 }
 
-const Symbol &Trade::getSymbol() const { return symbol_; }
+boost::multiprecision::cpp_dec_float_50 Trade::getOfferQty() const {
+  return _position == Position::LONG ? _symbol.askQty : _symbol.bidQty;
+}
+
+const Symbol &Trade::getSymbol() const { return _symbol; }
 
 void Trade::setBudget(boost::multiprecision::cpp_dec_float_50 budget) {
-  if (position_ == Position::LONG) {
-    auto budgetOrderPrice = budget / orderPrice_;
-    orderQty_ = boost::multiprecision::min(budgetOrderPrice, offerQty_);
+
+  if (_position == Position::LONG) {
+    auto budgetOrderPrice = budget / getOrderPrice();
+    _orderQty = boost::multiprecision::min(budgetOrderPrice, getOfferQty());
   } else {
-    orderQty_ = boost::multiprecision::min(offerQty_, budget);
+    _orderQty = boost::multiprecision::min(getOfferQty(), budget);
   }
 }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getRecvQty() const {
-  if (position_ == Position::LONG) {
-    return orderQty_;
+  if (_position == Position::LONG) {
+    return _orderQty;
   } else {
-    return orderQty_ * orderPrice_;
+    return _orderQty * getOrderPrice();
   }
 }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getUsedQty() const {
-  if (position_ == Position::LONG) {
-    return orderQty_ * orderPrice_;
+  if (_position == Position::LONG) {
+    return _orderQty * getOrderPrice();
   } else {
-    return orderQty_;
+    return _orderQty;
   }
 }
 
-std::string_view Trade::getRecvCurrency() const { return recvCurrency_; }
+std::string Trade::getRecvCurrency() const { return _recvCurrency; }
 
-std::string_view Trade::getUsedCurrency() const { return usedCurrency_; }
+std::string Trade::getUsedCurrency() const { return _usedCurrency; }
+
+bool Trade::operator==(const Trade &other) const {
+  return getSymbol().symbol == other.getSymbol().symbol &&
+         getPosition() == other.getPosition() &&
+         getOrderQty() == other.getOrderQty();
+}
+
+std::size_t Trade::hash() const {
+  return std::hash<std::string>()(getSymbol().symbol) ^
+         std::hash<Position>()(getPosition());
+}

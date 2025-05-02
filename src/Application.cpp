@@ -8,6 +8,18 @@
 #include <quickfix/FixFields.h>
 #include <quickfix/Session.h>
 
+Application::Application(IConfiguration &conf,
+                         boost::lockfree::queue<PriceUpdate *> &queue)
+    : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
+      priceUpdateQueue(queue) {}
+
+void Application::onCreate(const FIX::SessionID &sessionID) {
+  // store markert data session IDs if Qualifier starts with MARKETDATA
+  if (sessionID.getSessionQualifier().starts_with("MARKETDATA")) {
+    marketDataSessionIDs.push_back(sessionID);
+  }
+}
+
 void Application::onLogon(const FIX::SessionID &sessionID) {
   std::cout << std::endl << "Logon - " << sessionID << std::endl;
 }
@@ -15,6 +27,10 @@ void Application::onLogon(const FIX::SessionID &sessionID) {
 void Application::onLogout(const FIX::SessionID &sessionID) {
   std::cout << std::endl << "Logout - " << sessionID << std::endl;
 }
+
+void Application::fromAdmin(const FIX::Message &, const FIX::SessionID &)
+    EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue,
+           FIX::RejectLogon) {}
 
 void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
   FIX::MsgType msgType;

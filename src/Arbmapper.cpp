@@ -21,7 +21,7 @@ void renumber_vertex_indices(Graph const &) {}
 
 // Function to build the graph
 void buildGraph(Graph &graph,
-                const std::unordered_map<std::string, Symbol> *symbolMap) {
+                const std::unordered_map<std::string, Symbol *> *symbolMap) {
 
   // Create a map to store vertexes by asset
   std::unordered_map<std::string, std::size_t> vertexMap;
@@ -30,8 +30,8 @@ void buildGraph(Graph &graph,
   std::unordered_set<std::string> uniqueAssets;
   for (const auto &pair : *symbolMap) {
     const auto &symbol = pair.second;
-    uniqueAssets.insert(symbol.baseAsset);
-    uniqueAssets.insert(symbol.quoteAsset);
+    uniqueAssets.insert(symbol->baseAsset);
+    uniqueAssets.insert(symbol->quoteAsset);
   }
 
   // Add vertices to the graph
@@ -46,19 +46,19 @@ void buildGraph(Graph &graph,
   for (const auto &pair : *symbolMap) {
     const auto &symbol = pair.second;
 
-    auto vertex1 = vertexMap[symbol.baseAsset];
-    auto vertex2 = vertexMap[symbol.quoteAsset];
+    auto vertex1 = vertexMap[symbol->baseAsset];
+    auto vertex2 = vertexMap[symbol->quoteAsset];
 
     // long
     boost::add_edge(vertex1, vertex2,
                     EdgeProperties{std::shared_ptr<Trade>{
-                        new Trade{symbol, Position::LONG}}},
+                        new Trade{*symbol, Position::LONG}}},
                     graph);
 
     // short
     boost::add_edge(vertex2, vertex1,
                     EdgeProperties{std::shared_ptr<Trade>{
-                        new Trade{symbol, Position::SHORT}}},
+                        new Trade{*symbol, Position::SHORT}}},
                     graph);
   }
 }
@@ -86,9 +86,9 @@ rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
 struct CycleVisitor {
   // This struct is used to visit each cycle found by tiernan_all_cycles
 
-  std::vector<std::vector<Trade>> &cycles;
+  std::vector<std::vector<Trade> *> &cycles;
 
-  CycleVisitor(std::vector<std::vector<Trade>> &cycles) : cycles(cycles) {}
+  CycleVisitor(std::vector<std::vector<Trade> *> &cycles) : cycles(cycles) {}
 
   // This function is called for each cycle found
   void cycle(auto const &path, Graph const &g) {
@@ -110,7 +110,7 @@ struct CycleVisitor {
     for (size_t i = 0; i < tradePath.size(); ++i) {
       auto copy = rotate_copy_with_copy_constructor(
           tradePath.begin(), tradePath.begin() + i, tradePath.end());
-      cycles.push_back(copy);
+      cycles.push_back(new std::vector<Trade>(copy));
     }
   }
 };
@@ -122,12 +122,12 @@ struct CycleVisitor {
  * Each Trade is a copy of the original Trade object in the graph, so the
  * original graph is not modified.
  */
-std::vector<std::vector<Trade>> findCycles(const Graph &graph,
-                                           const int maxDepth) {
+std::vector<std::vector<Trade> *> findCycles(const Graph &graph,
+                                             const int maxDepth) {
   // Create a visitor to process the cycles
   // the cycles need to be stored here, as the visitor is destroyed after the
   // function returns and visitor must be passed by value
-  std::vector<std::vector<Trade>> cycles;
+  std::vector<std::vector<Trade> *> cycles;
   CycleVisitor visitor{cycles};
 
   boost::tiernan_all_cycles(graph, visitor, 3, maxDepth);
@@ -135,8 +135,8 @@ std::vector<std::vector<Trade>> findCycles(const Graph &graph,
   return visitor.cycles;
 }
 
-std::vector<std::vector<Trade>>
-getTradingPaths(std::unordered_map<std::string, Symbol> *symbolMap,
+std::vector<std::vector<Trade> *>
+getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
                 int maxDepth, std::vector<std::string> &skipSymbols) {
   // Create a graph
   Graph graph;
@@ -149,7 +149,7 @@ getTradingPaths(std::unordered_map<std::string, Symbol> *symbolMap,
 
   // reject cycles where the first usedCurrency is in skipSymbols
   std::erase_if(cycles, [&skipSymbols](const auto &cycle) {
-    auto firstTrade = cycle.front();
+    auto firstTrade = cycle->front();
     return std::find(skipSymbols.begin(), skipSymbols.end(),
                      firstTrade.getUsedCurrency()) != skipSymbols.end();
   });

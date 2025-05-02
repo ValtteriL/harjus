@@ -1,0 +1,165 @@
+#include "Engine.h"
+#include "Execution.h"
+#include "Opportunity.h"
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
+#include <iostream>
+#include <string>
+#include <vector>
+
+Engine::Engine(
+    std::unordered_map<std::string, Symbol *> &symbols,
+    std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
+    ReservedTrades &reservedTrades,
+    boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
+    boost::lockfree::queue<Execution *> &executionQueue,
+    std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+        relativeValues,
+    boost::multiprecision::cpp_dec_float_50 commission)
+    : _symbols(symbols), _relativeValues(relativeValues),
+      _priceUpdateQueue(priceUpdateQueue), _executionQueue(executionQueue),
+      _reservedTrades(reservedTrades), _balance(balance) {
+
+  // Initialize _opportunities with the trading paths
+  for (auto &path : tradingPaths) {
+
+    // create an opportunity
+    std::string startingAsset = path->at(0).getUsedCurrency();
+    Opportunity *opportunity =
+        new Opportunity(*path, _relativeValues[startingAsset], commission);
+
+    // add opportunity to _opportunities with every trade symbol as the key
+    for (auto &trade : *path) {
+      _opportunities.insert({trade.getSymbol().symbol, *opportunity});
+    }
+  }
+};
+
+bool Engine::containsOnlyFreeSymbols(Opportunity &opportunity) {
+  for (auto &trade : opportunity.getTrades()) {
+    if (_reservedTrades.isReserved(trade)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void Engine::processPriceUpdate(PriceUpdate *update) {
+
+  // update symbol price
+  _symbols.at(update->symbol)->askPrice = update->askPrice;
+  _symbols.at(update->symbol)->bidPrice = update->bidPrice;
+  _symbols.at(update->symbol)->askQty = update->askQty;
+  _symbols.at(update->symbol)->bidQty = update->bidQty;
+
+  std::vector<Opportunity *> opportunitiesToQueue;
+
+  // update all affected opportunities
+  auto affectedOpportunitys = _opportunities.equal_range(
+      update->symbol); // get all affected oppotunities
+
+  for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
+       ++it) {
+
+    Opportunity &opportunity = it->second;
+
+    auto startingAssetBudget =
+        _balance.getBalance(opportunity.getStartingAsset());
+
+    // update the opportunity with the new price
+    opportunity.update(startingAssetBudget);
+  }
+
+  // find the most profitable opportunity
+  Opportunity *mostProfitableOpportunity = nullptr;
+  for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
+       ++it) {
+
+    Opportunity &opportunity = it->second;
+
+    if (opportunity.getTotalProfit() > 0 &&
+        (!mostProfitableOpportunity ||
+         opportunity.getTotalProfit() >
+             mostProfitableOpportunity->getTotalProfit()) &&
+        containsOnlyFreeSymbols(opportunity)) {
+      mostProfitableOpportunity = &opportunity;
+    }
+  }
+
+  // clean up the update
+  delete update;
+
+  // if no most profitable opportunity is found, there isn't second most
+  // profitable opportunity either
+  if (!mostProfitableOpportunity) {
+    return;
+  }
+
+  opportunitiesToQueue.push_back(mostProfitableOpportunity);
+
+  // lock symbols, balance for the best opportunity
+  for (auto &trade : mostProfitableOpportunity->getTrades()) {
+    _reservedTrades.reserve(trade);
+  }
+  _balance.updateBalance(mostProfitableOpportunity->getStartingAsset(),
+                         mostProfitableOpportunity->getCapacity() * -1);
+
+  // update opportunity that use the same starting asset
+  auto newBalance =
+      _balance.getBalance(mostProfitableOpportunity->getStartingAsset());
+  for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
+       ++it) {
+
+    auto &opportunity = it->second;
+
+    // skip the most profitable opportunity
+    if (opportunity.getStartingAsset() ==
+            mostProfitableOpportunity->getStartingAsset() &&
+        &opportunity != mostProfitableOpportunity) {
+      opportunity.update(newBalance);
+    }
+  }
+
+  // find the second most profitable
+  Opportunity *secondMostProfitable = nullptr;
+  for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
+       ++it) {
+
+    auto &opportunity = it->second;
+
+    if (opportunity.getTotalProfit() > 0 &&
+        (!secondMostProfitable || opportunity.getTotalProfit() >
+                                      secondMostProfitable->getTotalProfit()) &&
+        containsOnlyFreeSymbols(opportunity)) {
+      secondMostProfitable = &opportunity;
+    }
+  }
+
+  if (secondMostProfitable) {
+    opportunitiesToQueue.push_back(secondMostProfitable);
+  }
+
+  // freeze and queue chosen opportunities for execution
+  for (auto opportunity : opportunitiesToQueue) {
+
+    BOOST_LOG_TRIVIAL(info)
+        << "Queuing for execution. Starting asset: "
+        << opportunity->getStartingAsset()
+        << " Total profit: " << opportunity->getTotalProfit()
+        << " Capacity: " << opportunity->getCapacity();
+
+    Execution *independentCopy = new Execution(*opportunity);
+    _executionQueue.push(independentCopy);
+  }
+}
+
+void Engine::run() {
+
+  while (true) {
+    PriceUpdate *update = nullptr;
+    if (_priceUpdateQueue.pop(update)) {
+      processPriceUpdate(update);
+    }
+  }
+}

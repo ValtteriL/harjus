@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Position.h"
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <string>
 
@@ -9,10 +8,10 @@ public:
   std::string symbol;
   std::string baseAsset;
   std::string quoteAsset;
-  boost::multiprecision::cpp_dec_float_50 bidPrice;
-  boost::multiprecision::cpp_dec_float_50 askPrice;
-  boost::multiprecision::cpp_dec_float_50 bidQty;
-  boost::multiprecision::cpp_dec_float_50 askQty;
+  mutable boost::multiprecision::cpp_dec_float_50 bidPrice;
+  mutable boost::multiprecision::cpp_dec_float_50 askPrice;
+  mutable boost::multiprecision::cpp_dec_float_50 bidQty;
+  mutable boost::multiprecision::cpp_dec_float_50 askQty;
   boost::multiprecision::cpp_dec_float_50 minNotional;
   boost::multiprecision::cpp_dec_float_50 baseAssetIncrement;
   boost::multiprecision::cpp_dec_float_50 quoteAssetIncrement;

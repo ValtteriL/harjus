@@ -43,12 +43,7 @@ private:
    * If no one is logged on, the messages will be sent at the time a connection
    * is established with the counterparty.
    */
-  void onCreate(const FIX::SessionID &sessionID) {
-    // store markert data session IDs if Qualifier starts with MARKETDATA
-    if (sessionID.getSessionQualifier().starts_with("MARKETDATA")) {
-      marketDataSessionIDs.push_back(sessionID);
-    }
-  }
+  void onCreate(const FIX::SessionID &sessionID);
 
   /**
    * This notifies you when a valid logon has been established with a counter
@@ -96,7 +91,7 @@ private:
    */
   void fromAdmin(const FIX::Message &, const FIX::SessionID &)
       EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat,
-             FIX::IncorrectTagValue, FIX::RejectLogon) {}
+             FIX::IncorrectTagValue, FIX::RejectLogon);
 
   /**
    * This receives application level request.
@@ -127,9 +122,7 @@ private:
 
 public:
   Application(IConfiguration &conf,
-              boost::lockfree::queue<PriceUpdate *> &queue)
-      : username(conf.getEd25519ApiKey()),
-        privateKeySeed(conf.getEd25519Seed()), priceUpdateQueue(queue) {}
+              boost::lockfree::queue<PriceUpdate *> &queue);
 
   /**
    * @brief Subscribe to market data for a list of symbols

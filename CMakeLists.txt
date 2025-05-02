@@ -48,6 +48,10 @@ add_executable(harjus
   src/Balance.cpp
   src/Trade.cpp
   src/Arbmapper.cpp
+  src/Opportunity.cpp
+  src/Engine.cpp
+  src/Execution.cpp
+  src/ReservedTrades.cpp
 )
 target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
 
@@ -70,6 +74,7 @@ target_link_libraries(MainTest PRIVATE
 gtest_discover_tests(MainTest)
 
 add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
+  src/Trade.cpp
   src/ReservedTrades.cpp
 )
 target_link_libraries(ReservedTradesTest PRIVATE
@@ -129,3 +134,32 @@ target_link_libraries(ArbmapperTest PRIVATE
 )
 
 gtest_discover_tests(ArbmapperTest)
+
+
+add_executable(OpportunityTest tests/OpportunityTest.cpp
+  src/Opportunity.cpp
+  src/Trade.cpp
+)
+target_link_libraries(OpportunityTest PRIVATE
+  gtest_main
+  GTest::gmock
+)
+
+gtest_discover_tests(OpportunityTest)
+
+
+add_executable(EngineTest tests/EngineTest.cpp
+  src/Opportunity.cpp
+  src/Trade.cpp
+  src/Engine.cpp
+  src/ReservedTrades.cpp
+  src/Balance.cpp
+  src/Execution.cpp
+)
+target_link_libraries(EngineTest PRIVATE
+  gtest_main
+  GTest::gmock
+  Boost::log
+)
+
+gtest_discover_tests(EngineTest)
