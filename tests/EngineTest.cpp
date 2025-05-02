@@ -62,53 +62,21 @@ protected:
   boost::lockfree::queue<PriceUpdate *> priceUpdateQueue{1000};
   boost::lockfree::queue<Execution *> executionQueue{1000};
 
+  // Allocate symbols manually
+  Symbol *ethBtcSymbol = new Symbol{"ETHBTC", "ETH",  "BTC",  0.0,    0.0, 0.0,
+                                    0.0,      0.0001, 0.0001, 0.0001, 8,   8};
+  Symbol *ethUsdtSymbol =
+      new Symbol{"ETHUSDT", "ETH",  "USDT", 0.0,    0.0, 0.0,
+                 0.0,       0.0001, 0.0001, 0.0001, 8,   8};
+  Symbol *usdtBtcSymbol =
+      new Symbol{"USDTBTC", "USDT", "BTC",  0.0,    0.0, 0.0,
+                 0.0,       0.0001, 0.0001, 0.0001, 8,   8};
+
   // simple triangular arbitrage
   // BTC -> ETH -> USDT -> BTC
-  std::vector<Trade> trades{Trade{Symbol{
-                                      "ETHBTC", // symbol;
-                                      "ETH",    // baseAsset;
-                                      "BTC",    // quoteAsset;
-                                      0,        // bidPrice;
-                                      0,        // askPrice;
-                                      0,        // bidQty;
-                                      0,        // askQty;
-                                      0.0001,   // minNotional;
-                                      0.0001,   // baseAssetIncrement;
-                                      0.0001,   // quoteAssetIncrement;
-                                      8,        // baseAssetPrecision;
-                                      8         // quoteAssetPrecision;
-                                  },
-                                  Position::LONG},
-                            Trade{Symbol{
-                                      "ETHUSDT", // symbol;
-                                      "ETH",     // baseAsset;
-                                      "USDT",    // quoteAsset;
-                                      0,         // bidPrice;
-                                      0,         // askPrice;
-                                      0,         // bidQty;
-                                      0,         // askQty;
-                                      0.0001,    // minNotional;
-                                      0.0001,    // baseAssetIncrement;
-                                      0.0001,    // quoteAssetIncrement;
-                                      8,         // baseAssetPrecision;
-                                      8          // quoteAssetPrecision;
-                                  },
-                                  Position::SHORT},
-                            Trade{Symbol{
-                                      "USDTBTC", // symbol;
-                                      "USDT",    // baseAsset;
-                                      "BTC",     // quoteAsset;
-                                      0,         // bidPrice;
-                                      0,         // askPrice;
-                                      0,         // bidQty;
-                                      0,         // askQty;
-                                      0.0001,    // minNotional;
-                                      0.0001,    // baseAssetIncrement;
-                                      0.0001,    // quoteAssetIncrement;
-                                      8,         // baseAssetPrecision;
-                                      8          // quoteAssetPrecision;
-                                  },
-                                  Position::SHORT}};
+  std::vector<Trade> trades{Trade{*ethBtcSymbol, Position::LONG},
+                            Trade{*ethUsdtSymbol, Position::SHORT},
+                            Trade{*usdtBtcSymbol, Position::SHORT}};
 
   TestableEngine engine;
 };
