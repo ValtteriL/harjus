@@ -23,11 +23,17 @@ Balance getBalance(IConfiguration &config);
 
 /**
  * @brief Fetches symbol information from the exchange API.
+ * @details This function fetches symbol information from the exchange API and
+ * constructs a map from the symbols to their corresponding Symbol objects.
+ * The map is used to store information about each symbol, including its
+ * trading pair, base asset, quote asset, and other relevant details. The
+ * symbols are manually allocated and should be deleted by the caller to avoid
+ * memory leaks.
  * @param config Configuration object containing API keys and other settings.
  * @return A map of symbol names to Symbol objects containing symbol
  * information.
  */
-std::unordered_map<std::string, Symbol> getSymbols(IConfiguration &config);
+std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config);
 
 /**
  * @brief Fetches relative values of symbols in Bitcoin from the exchange API.
@@ -38,4 +44,4 @@ std::unordered_map<std::string, Symbol> getSymbols(IConfiguration &config);
  */
 std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
 getRelativeValues(IConfiguration &config,
-                  const std::unordered_map<std::string, Symbol> &symbols);
+                  const std::unordered_map<std::string, Symbol *> &symbols);

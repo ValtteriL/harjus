@@ -1,8 +1,11 @@
 #include "Application.h"
 #include "Arbmapper.h"
 #include "Configuration.h"
+#include "Engine.h"
 #include "Exchange.h"
+#include "Execution.h"
 #include "PriceUpdate.h"
+#include "ReservedTrades.h"
 #include "Trade.h"
 #include <boost/lockfree/queue.hpp>
 #include <boost/log/core.hpp>
@@ -46,7 +49,7 @@ void banner() {
 
 // Extract symbols from symbol map
 std::vector<std::string>
-getSymbolsFromMap(const std::unordered_map<std::string, Symbol> &symbolMap) {
+getSymbolsFromMap(const std::unordered_map<std::string, Symbol *> &symbolMap) {
   std::vector<std::string> symbols;
   symbols.reserve(symbolMap.size());
 
@@ -58,23 +61,23 @@ getSymbolsFromMap(const std::unordered_map<std::string, Symbol> &symbolMap) {
 }
 
 // Process the price update queue
-void processPriceQueue(boost::lockfree::queue<PriceUpdate *> &queue) {
-  size_t updateCount = 0;
+void processExecutionQueue(boost::lockfree::queue<Execution *> &queue) {
+  size_t execCount = 0;
 
   while (true) {
-    PriceUpdate *update = nullptr;
-    if (queue.pop(update)) {
-      if (update) {
-        updateCount++;
-        std::cout << "Update #" << updateCount << " - symbol:" << update->symbol
-                  << std::endl;
-        delete update; // Clean up the heap allocated update
+    Execution *ex = nullptr;
+    if (queue.pop(ex)) {
+      if (ex) {
+        execCount++;
+        std::cout << "Execution #" << execCount
+                  << " - total profit:" << ex->getTotalProfit() << std::endl;
+        delete ex; // Clean up the heap allocated update
       }
     }
 
     // Small sleep to avoid spinning the CPU
     // TODO: avoid
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
   }
 }
 
@@ -114,7 +117,7 @@ int main() {
   Balance balance = getBalance(config);
 
   BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
-  std::unordered_map<std::string, Symbol> symbolMap = getSymbols(config);
+  std::unordered_map<std::string, Symbol *> symbolMap = getSymbols(config);
 
   BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
@@ -124,12 +127,14 @@ int main() {
   BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
   std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
   int maxDepth = config.getMaxTradingPathLength();
-  std::vector<std::vector<Trade>> tradingPaths =
+  std::vector<std::vector<Trade> *> tradingPaths =
       getTradingPaths(&symbolMap, maxDepth, skipSymbols);
 
-  // Create lockfree queue for price updates
-  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(
-      1000); // Queue size of 1000 updates
+  // Create lockfree queues for price updates & executions
+  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(1000);
+  boost::lockfree::queue<Execution *> executionQueue(1000);
+
+  ReservedTrades reservedTrades;
 
   // Extract the list of symbols for subscription
   std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
@@ -181,47 +186,47 @@ int main() {
   // stream to the string
   std::istringstream fixConfigStream{fixConfig};
 
-  try {
-    FIX::SessionSettings settings{fixConfigStream};
+  FIX::SessionSettings settings{fixConfigStream};
 
-    Application application{config, priceUpdateQueue};
-    FIX::FileStoreFactory storeFactory{settings};
-    FIX::ScreenLogFactory logFactory{settings};
+  Application application{config, priceUpdateQueue};
+  FIX::FileStoreFactory storeFactory{settings};
+  FIX::ScreenLogFactory logFactory{settings};
 
-    auto initiator =
-        std::unique_ptr<FIX::Initiator>(new FIX::SSLSocketInitiator{
-            application, storeFactory, settings, logFactory});
+  auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::SSLSocketInitiator{
+      application, storeFactory, settings, logFactory});
 
-    initiator->start();
-    BOOST_LOG_TRIVIAL(debug) << "FIX initiator started successfully.";
+  initiator->start();
+  BOOST_LOG_TRIVIAL(debug) << "FIX initiator started successfully.";
 
-    // Wait for the session to be established
-    while (!initiator->isLoggedOn()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
-
-    // Subscribe to market data for all symbols
-    if (application.subscribeToSymbols(symbols)) {
-      BOOST_LOG_TRIVIAL(debug) << "Subscribed to symbols: " << symbols.size();
-    } else {
-      std::cerr << "Failed to subscribe to market data." << std::endl;
-      BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
-    }
-
-    // Start processing price updates in the main thread
-    BOOST_LOG_TRIVIAL(info)
-        << "Starting to process price updates. Press Ctrl+C to exit.";
-    processPriceQueue(priceUpdateQueue);
-
-    // This is unreachable with the current implementation since
-    // processPriceQueue runs indefinitely
-    initiator->stop();
-
-    return 0;
-  } catch (std::exception &e) {
-    std::cout << "Error: " << e.what() << std::endl;
-    return 1;
+  // Wait for the session to be established
+  while (!initiator->isLoggedOn()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
+
+  // Subscribe to market data for all symbols
+  if (application.subscribeToSymbols(symbols)) {
+    BOOST_LOG_TRIVIAL(debug) << "Subscribed to symbols: " << symbols.size();
+  } else {
+    std::cerr << "Failed to subscribe to market data." << std::endl;
+    BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
+  }
+
+  // Create the engine
+  Engine engine{symbolMap,        tradingPaths,          balance,
+                reservedTrades,   priceUpdateQueue,      executionQueue,
+                relativeValueMap, config.getCommission()};
+
+  // create a jthread to run engine
+  std::jthread j_thread([&engine]() { engine.run(); });
+
+  // Start processing execiutions
+  BOOST_LOG_TRIVIAL(info)
+      << "Starting to process executions. Press Ctrl+C to exit.";
+  processExecutionQueue(executionQueue);
+
+  // This is unreachable with the current implementation since
+  // processExecutionQueue runs indefinitely
+  initiator->stop();
 
   return 0;
 }

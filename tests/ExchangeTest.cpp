@@ -53,15 +53,15 @@ TEST_F(ExchangeTest,
 
   // Verify individual symbol details
   const auto &btcEthSymbol = symbols["ETHBTC"];
-  EXPECT_EQ(btcEthSymbol.baseAsset, "ETH");
-  EXPECT_EQ(btcEthSymbol.quoteAsset, "BTC");
-  EXPECT_EQ(btcEthSymbol.baseAssetPrecision, 8);
-  EXPECT_EQ(btcEthSymbol.quoteAssetPrecision, 8);
-  EXPECT_EQ(btcEthSymbol.minNotional,
+  EXPECT_EQ(btcEthSymbol->baseAsset, "ETH");
+  EXPECT_EQ(btcEthSymbol->quoteAsset, "BTC");
+  EXPECT_EQ(btcEthSymbol->baseAssetPrecision, 8);
+  EXPECT_EQ(btcEthSymbol->quoteAssetPrecision, 8);
+  EXPECT_EQ(btcEthSymbol->minNotional,
             boost::multiprecision::cpp_dec_float_50{"0.0001"});
-  EXPECT_EQ(btcEthSymbol.baseAssetIncrement,
+  EXPECT_EQ(btcEthSymbol->baseAssetIncrement,
             boost::multiprecision::cpp_dec_float_50{"0.0001"});
-  EXPECT_EQ(btcEthSymbol.quoteAssetIncrement,
+  EXPECT_EQ(btcEthSymbol->quoteAssetIncrement,
             boost::multiprecision::cpp_dec_float_50{"0.00001"});
 }
 
@@ -70,25 +70,25 @@ TEST_F(ExchangeTest,
                                                   // gtest skip this by default
 {
   // Create a mock input map of symbols
-  std::unordered_map<std::string, Symbol> symbols;
+  std::unordered_map<std::string, Symbol *> symbols;
 
-  Symbol btcSymbol;
-  btcSymbol.symbol = "BTCUSDT";
-  btcSymbol.baseAsset = "BTC";
-  btcSymbol.quoteAsset = "USDT";
-  symbols[btcSymbol.symbol] = btcSymbol;
+  Symbol *btcSymbol = new Symbol();
+  btcSymbol->symbol = "BTCUSDT";
+  btcSymbol->baseAsset = "BTC";
+  btcSymbol->quoteAsset = "USDT";
+  symbols[btcSymbol->symbol] = btcSymbol;
 
-  Symbol ethSymbol;
-  ethSymbol.symbol = "ETHBTC";
-  ethSymbol.baseAsset = "ETH";
-  ethSymbol.quoteAsset = "BTC";
-  symbols[ethSymbol.symbol] = ethSymbol;
+  Symbol *ethSymbol = new Symbol();
+  ethSymbol->symbol = "ETHBTC";
+  ethSymbol->baseAsset = "ETH";
+  ethSymbol->quoteAsset = "BTC";
+  symbols[ethSymbol->symbol] = ethSymbol;
 
-  Symbol xrpSymbol;
-  xrpSymbol.symbol = "XRPBTC";
-  xrpSymbol.baseAsset = "XRP";
-  xrpSymbol.quoteAsset = "BTC";
-  symbols[xrpSymbol.symbol] = xrpSymbol;
+  Symbol *xrpSymbol = new Symbol();
+  xrpSymbol->symbol = "XRPBTC";
+  xrpSymbol->baseAsset = "XRP";
+  xrpSymbol->quoteAsset = "BTC";
+  symbols[xrpSymbol->symbol] = xrpSymbol;
 
   // Call the function under test
   auto relativeValues = getRelativeValues(config, symbols);
@@ -105,8 +105,8 @@ TEST_F(ExchangeTest,
   // the symbols map
   std::unordered_set<std::string> uniqueAssets;
   for (const auto &[symbolName, symbol] : symbols) {
-    uniqueAssets.insert(symbol.baseAsset);
-    uniqueAssets.insert(symbol.quoteAsset);
+    uniqueAssets.insert(symbol->baseAsset);
+    uniqueAssets.insert(symbol->quoteAsset);
   }
   EXPECT_EQ(relativeValues.size(), uniqueAssets.size());
 
@@ -115,9 +115,9 @@ TEST_F(ExchangeTest,
   boost::multiprecision::cpp_dec_float_50 lowestValue =
       std::numeric_limits<boost::multiprecision::cpp_dec_float_50>::max();
   for (const auto &[symbolName, symbol] : symbols) {
-    if (symbol.quoteAsset == "BTC") {
+    if (symbol->quoteAsset == "BTC") {
       lowestValue = boost::multiprecision::min(
-          lowestValue, relativeValues[symbol.baseAsset]);
+          lowestValue, relativeValues[symbol->baseAsset]);
     }
   }
 
@@ -125,8 +125,8 @@ TEST_F(ExchangeTest,
     bool isRelatedToBTC = false;
     for (const auto &[symbolName, symbol] : symbols) {
       if (asset == "BTC" ||
-          (symbol.baseAsset == asset && symbol.quoteAsset == "BTC") ||
-          (symbol.quoteAsset == asset && symbol.baseAsset == "BTC")) {
+          (symbol->baseAsset == asset && symbol->quoteAsset == "BTC") ||
+          (symbol->quoteAsset == asset && symbol->baseAsset == "BTC")) {
         isRelatedToBTC = true;
         break;
       }

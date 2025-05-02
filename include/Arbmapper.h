@@ -10,6 +10,6 @@
  * The function will skip any paths starting with symbols that are in the
  * skipSymbols vector.
  */
-std::vector<std::vector<Trade>>
-getTradingPaths(std::unordered_map<std::string, Symbol> *symbolMap,
+std::vector<std::vector<Trade> *>
+getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
                 int maxDepth, std::vector<std::string> &skipSymbols);

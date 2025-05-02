@@ -83,8 +83,8 @@ Balance getBalance(IConfiguration &config) {
   return balance;
 }
 
-std::unordered_map<std::string, Symbol> getSymbols(IConfiguration &config) {
-  std::unordered_map<std::string, Symbol> symbols;
+std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config) {
+  std::unordered_map<std::string, Symbol *> symbols;
 
   // Fetch exchange info from Binance API
   std::string uri = config.getBinanceRESTApiUri() + "/api/v3/exchangeInfo";
@@ -108,30 +108,30 @@ std::unordered_map<std::string, Symbol> getSymbols(IConfiguration &config) {
         continue;
       }
 
-      Symbol symbol;
-      symbol.symbol = symbolObj["symbol"].as_string().c_str();
-      symbol.baseAsset = symbolObj["baseAsset"].as_string().c_str();
-      symbol.quoteAsset = symbolObj["quoteAsset"].as_string().c_str();
-      symbol.baseAssetPrecision = symbolObj["baseAssetPrecision"].as_int64();
-      symbol.quoteAssetPrecision = symbolObj["quoteAssetPrecision"].as_int64();
+      Symbol *symbol = new Symbol();
+      symbol->symbol = symbolObj["symbol"].as_string().c_str();
+      symbol->baseAsset = symbolObj["baseAsset"].as_string().c_str();
+      symbol->quoteAsset = symbolObj["quoteAsset"].as_string().c_str();
+      symbol->baseAssetPrecision = symbolObj["baseAssetPrecision"].as_int64();
+      symbol->quoteAssetPrecision = symbolObj["quoteAssetPrecision"].as_int64();
 
       for (const auto &filter : symbolObj["filters"].as_array()) {
         boost::json::object filterObj = filter.as_object();
         std::string filterType = filterObj["filterType"].as_string().c_str();
 
         if (filterType == "NOTIONAL") {
-          symbol.minNotional = boost::multiprecision::cpp_dec_float_50(
+          symbol->minNotional = boost::multiprecision::cpp_dec_float_50(
               filterObj["minNotional"].as_string().c_str());
         } else if (filterType == "LOT_SIZE") {
-          symbol.baseAssetIncrement = boost::multiprecision::cpp_dec_float_50(
+          symbol->baseAssetIncrement = boost::multiprecision::cpp_dec_float_50(
               filterObj["stepSize"].as_string().c_str());
         } else if (filterType == "PRICE_FILTER") {
-          symbol.quoteAssetIncrement = boost::multiprecision::cpp_dec_float_50(
+          symbol->quoteAssetIncrement = boost::multiprecision::cpp_dec_float_50(
               filterObj["tickSize"].as_string().c_str());
         }
       }
 
-      symbols[symbol.symbol] = symbol;
+      symbols[symbol->symbol] = symbol;
     }
   } catch (const boost::json::system_error &e) {
     throw std::runtime_error("Failed to parse JSON response: " +
@@ -143,7 +143,7 @@ std::unordered_map<std::string, Symbol> getSymbols(IConfiguration &config) {
 
 std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
 getRelativeValues(IConfiguration &config,
-                  const std::unordered_map<std::string, Symbol> &symbols) {
+                  const std::unordered_map<std::string, Symbol *> &symbols) {
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       relativeValues;
 
@@ -178,27 +178,27 @@ getRelativeValues(IConfiguration &config,
   boost::multiprecision::cpp_dec_float_50 lowestValue =
       std::numeric_limits<boost::multiprecision::cpp_dec_float_50>::max();
   for (const auto &[symbolName, symbol] : symbols) {
-    if (symbol.quoteAsset == "BTC") {
+    if (symbol->quoteAsset == "BTC") {
       // price already in BTC (shorting gets btc)
-      relativeValues[symbol.baseAsset] = symbolPrices[symbolName];
+      relativeValues[symbol->baseAsset] = symbolPrices[symbolName];
       lowestValue =
           boost::multiprecision::min(lowestValue, symbolPrices[symbolName]);
-    } else if (symbol.baseAsset == "BTC") {
+    } else if (symbol->baseAsset == "BTC") {
       // price in 1 / BTC (longing gets btc)
       boost::multiprecision::cpp_dec_float_50 value =
           1 / symbolPrices[symbolName];
-      relativeValues[symbol.quoteAsset] = value;
+      relativeValues[symbol->quoteAsset] = value;
       lowestValue = boost::multiprecision::min(lowestValue, value);
     }
   }
 
   // Assign lowest value to currencies not tradable to Bitcoin
   for (const auto &[symbolName, symbol] : symbols) {
-    if (relativeValues.find(symbol.baseAsset) == relativeValues.end()) {
-      relativeValues[symbol.baseAsset] = lowestValue;
+    if (relativeValues.find(symbol->baseAsset) == relativeValues.end()) {
+      relativeValues[symbol->baseAsset] = lowestValue;
     }
-    if (relativeValues.find(symbol.quoteAsset) == relativeValues.end()) {
-      relativeValues[symbol.quoteAsset] = lowestValue;
+    if (relativeValues.find(symbol->quoteAsset) == relativeValues.end()) {
+      relativeValues[symbol->quoteAsset] = lowestValue;
     }
   }
 
