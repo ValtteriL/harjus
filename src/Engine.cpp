@@ -87,10 +87,10 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
               << " containsonlyfreesymbols: "
               << containsOnlyFreeSymbols(opportunity) << std::endl;
 
-    if ((!mostProfitableOpportunity ||
-         (opportunity.getTotalProfit() > 0 &&
+    if (opportunity.getTotalProfit() > 0 &&
+        (!mostProfitableOpportunity ||
           opportunity.getTotalProfit() >
-              mostProfitableOpportunity->getTotalProfit())) &&
+             mostProfitableOpportunity->getTotalProfit()) &&
         containsOnlyFreeSymbols(opportunity)) {
       mostProfitableOpportunity = &opportunity;
     }
@@ -136,7 +136,8 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
     auto opportunity = it->second;
 
     if (opportunity.getTotalProfit() > 0 &&
-        opportunity.getTotalProfit() < secondMostProfitable->getTotalProfit() &&
+        (!secondMostProfitable || opportunity.getTotalProfit() >
+                                      secondMostProfitable->getTotalProfit()) &&
         containsOnlyFreeSymbols(opportunity)) {
       secondMostProfitable = &opportunity;
     }
