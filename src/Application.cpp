@@ -317,3 +317,20 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
               << std::endl;
   }
 }
+
+void Application::submitOrder(std::string id, std::string symbol,
+                              boost::multiprecision::cpp_dec_float_50 qty,
+                              boost::multiprecision::cpp_dec_float_50 price,
+                              Position position) {
+  FIX44::NewOrderSingle newOrder;
+  newOrder.set(FIX::ClOrdID(id));
+  newOrder.set(FIX::Symbol(symbol));
+  newOrder.set(FIX::Side(position == Position::LONG ? '1' : '2'));
+  newOrder.set(FIX::OrdType('2'));     // Limit order
+  newOrder.set(FIX::TimeInForce('4')); // Fill or Kill (FOK)
+  newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
+  newOrder.set(FIX::Price(static_cast<double>(price)));
+
+  // Send the order to the order entry session
+  FIX::Session::sendToTarget(newOrder, orderEntrySessionID);
+}
