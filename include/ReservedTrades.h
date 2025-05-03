@@ -28,6 +28,12 @@ public:
   void release(Trade &trade);
 
   /**
+   * @brief Release all trades in vector.
+   * @param trades Vector of trades to release.
+   */
+  void releaseAll(std::vector<Trade *> &trades);
+
+  /**
    *  Check if a trade is reserved.
    */
   bool isReserved(Trade &trade) const;
