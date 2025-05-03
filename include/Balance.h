@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <mutex> // Add mutex include
 #include <unordered_map>
 
 /**
@@ -15,6 +16,11 @@ private:
    */
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       balanceMap;
+
+  /**
+   * Mutex for thread safety.
+   */
+  std::mutex mtx; // Add mutex member
 
 public:
   /**
@@ -50,5 +56,5 @@ public:
    *  @param currency The currency to get the balance for.
    */
   boost::multiprecision::cpp_dec_float_50
-  getBalance(const std::string &currency) const;
+  getBalance(const std::string &currency);
 };

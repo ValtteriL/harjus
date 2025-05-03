@@ -114,7 +114,7 @@ int main() {
 
   // get balance, available symbols & relative values
   BOOST_LOG_TRIVIAL(debug) << "Getting balance";
-  Balance balance = getBalance(config);
+  Balance *balance = getBalance(config);
 
   BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
   std::unordered_map<std::string, Symbol *> symbolMap = getSymbols(config);
@@ -221,7 +221,7 @@ int main() {
   }
 
   // Create the engine
-  Engine engine{symbolMap,        tradingPaths,          balance,
+  Engine engine{symbolMap,        tradingPaths,          *balance,
                 reservedTrades,   priceUpdateQueue,      executionQueue,
                 relativeValueMap, config.getCommission()};
 

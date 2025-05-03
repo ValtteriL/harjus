@@ -47,8 +47,8 @@ std::string getBalancesJson(std::string uri, std::string apiKey,
   return r.text;
 }
 
-Balance getBalance(IConfiguration &config) {
-  Balance balance;
+Balance *getBalance(IConfiguration &config) {
+  Balance *balance = new Balance();
 
   // Fetch balance from exchange API
   std::string jsonResponse =
@@ -73,7 +73,7 @@ Balance getBalance(IConfiguration &config) {
       double free = std::stod(itemObj.at("free").as_string().c_str());
 
       // Update the balance object (assuming Balance has a method to add assets)
-      balance.updateBalance(asset, free);
+      balance->updateBalance(asset, free);
     }
   } catch (const boost::json::system_error &e) {
     throw std::runtime_error("Failed to parse JSON response: " +

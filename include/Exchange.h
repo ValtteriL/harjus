@@ -18,8 +18,11 @@
  * @brief Fetches current balance from the exchange API.
  * @param config Configuration object containing API keys and other settings.
  * @return Balance object containing the current balance.
+ * @details This function fetches the current balance from the exchange API and
+ * constructs a Balance object out of it. The returned balance object is
+ * heap-allocated and need to be freed by the caller to avoid memory leaks.
  */
-Balance getBalance(IConfiguration &config);
+Balance *getBalance(IConfiguration &config);
 
 /**
  * @brief Fetches symbol information from the exchange API.
