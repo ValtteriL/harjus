@@ -14,6 +14,7 @@
 #include <quickfix/Application.h>
 #include <quickfix/MessageCracker.h>
 #include <quickfix/Mutex.h>
+#include <quickfix/SessionID.h>
 #include <quickfix/Values.h>
 
 #include <quickfix/fix44/ExecutionReport.h>
@@ -37,6 +38,7 @@ private:
   std::string privateKeySeed;
   boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue;
   std::vector<FIX::SessionID> marketDataSessionIDs;
+  FIX::SessionID orderEntrySessionID;
 
   /**
    * Called when quickfix creates a new session.

@@ -181,6 +181,15 @@ int main() {
                           R"(
   SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
                           R"(
+
+  [SESSION]
+  SenderCompID=HARJUSOE
+  SessionQualifier=ORDERENTRY
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
+  SocketConnectHost=)" + config.getBinanceFIXApiHostnameOrderEntry() +
+                          R"(
+  SocketConnectPort=)" + config.getBinanceFIXApiPortOrderEntry() +
+                          R"(
   )";
 
   // stream to the string

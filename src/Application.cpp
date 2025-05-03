@@ -18,6 +18,10 @@ void Application::onCreate(const FIX::SessionID &sessionID) {
   if (sessionID.getSessionQualifier().starts_with("MARKETDATA")) {
     marketDataSessionIDs.push_back(sessionID);
   }
+  // store order entry session ID if Qualifier is ORDERENTRY
+  else if (sessionID.getSessionQualifier() == "ORDERENTRY") {
+    orderEntrySessionID = sessionID;
+  }
 }
 
 void Application::onLogon(const FIX::SessionID &sessionID) {
