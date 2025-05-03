@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Trade.h"
+#include <mutex> // Add mutex include
 #include <unordered_set>
 
 /**
@@ -36,7 +37,7 @@ public:
   /**
    *  Check if a trade is reserved.
    */
-  bool isReserved(Trade &trade) const;
+  bool isReserved(Trade &trade);
 
 private:
   /**
@@ -56,5 +57,10 @@ private:
    *  Reserved symbols list.
    */
   std::unordered_set<Trade *, TradeHash, TradeEqual> reservedTrades;
+
+  /**
+   * Mutex for thread safety.
+   */
+  std::mutex mtx; // Add mutex member
 };
 ;
