@@ -25,3 +25,24 @@ TEST(BalanceTest, insertUpdateBalance) {
   std::string currency2 = "ETH";
   EXPECT_EQ(balance.getBalance(currency2), 0);
 }
+
+TEST(BalanceTest, updateBalanceMap) {
+  Balance balance;
+  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+      assetDelta = {{"BTC", 1}, {"ETH", 2}};
+
+  // Update balance with assetDelta
+  balance.updateBalance(assetDelta);
+
+  // Check the balances
+  EXPECT_EQ(balance.getBalance("BTC"), 1);
+  EXPECT_EQ(balance.getBalance("ETH"), 2);
+
+  // Update balance with negative assetDelta
+  assetDelta = {{"BTC", -0.5}, {"ETH", -1}};
+
+  balance.updateBalance(assetDelta);
+
+  EXPECT_EQ(balance.getBalance("BTC"), 0.5);
+  EXPECT_EQ(balance.getBalance("ETH"), 1);
+}
