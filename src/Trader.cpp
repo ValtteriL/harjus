@@ -26,22 +26,24 @@ void Trader::processExecution(Execution *execution) {
       std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>{
           {execution->getStartingAsset(), execution->getCapacity()}};
 
-  // TODO - may need to use stack or queue for the trades in execution to make
-  // popping from the front possible
+  auto pair = std::make_pair(execution, delta);
 
-  // _executionsMap.emplace(id, {execution, delta});
+  // Store the execution and delta in the map
+  _executionsMap.emplace(id, pair);
 
-  // // pop the first trade from the execution
-  // // and submit the order
-  // if (execution->getTrades().empty()) {
-  //   // No trades available, handle this case
-  //   return;
-  // }
+  // pop the first trade from the execution
+  // and submit the order
+  if (execution->getTrades().empty()) {
+    // No trades available, handle this case
+    throw std::runtime_error("No trades available in the execution object");
+  }
 
-  // auto trade = execution->getTrades().front();
+  // pop the first trade
+  auto trade = execution->getTrades().front();
+  execution->getTrades().pop();
 
-  // _application.submitOrder(id, trade.getSymbol().symbol, trade.getOrderQty(),
-  //                          trade.getOrderPrice(), trade.getPosition());
+  _application.submitOrder(id, trade.getSymbol().symbol, trade.getOrderQty(),
+                           trade.getOrderPrice(), trade.getPosition());
 }
 
 void Trader::processReport(ExecutionReport *execReport) {}

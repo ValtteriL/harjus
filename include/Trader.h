@@ -13,6 +13,11 @@
 #include "ReservedTrades.h"
 #include <boost/lockfree/queue.hpp>
 #include <string>
+
+using entry = std::pair<
+    Execution *,
+    std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>>;
+
 class Trader {
 
 private:
@@ -21,11 +26,8 @@ private:
   IApplication &_application;
   Balance &_balance;
   ReservedTrades &_reservedTrades;
-  std::unordered_map<
-      std::string,
-      std::tuple<Execution *,
-                 std::unordered_map<std::string,
-                                    boost::multiprecision::cpp_dec_float_50>>>
+  std::unordered_map<std::string,
+                     entry>
       _executionsMap; // Map of execution ID to execution and delta
 
 protected:
