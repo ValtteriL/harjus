@@ -37,12 +37,7 @@ Engine::Engine(
 };
 
 bool Engine::containsOnlyFreeSymbols(Opportunity &opportunity) {
-  for (auto &trade : opportunity.getTrades()) {
-    if (_reservedTrades.isReserved(trade)) {
-      return false;
-    }
-  }
-  return true;
+  return !_reservedTrades.isReserved(opportunity.getTrades());
 }
 
 void Engine::processPriceUpdate(PriceUpdate *update) {

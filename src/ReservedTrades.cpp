@@ -23,3 +23,13 @@ bool ReservedTrades::isReserved(Trade &trade) {
   std::shared_lock<std::shared_mutex> lock(mtx);
   return reservedTrades.contains(&trade);
 }
+
+bool ReservedTrades::isReserved(std::vector<Trade> &trades) {
+  std::shared_lock<std::shared_mutex> lock(mtx);
+  for (auto &trade : trades) {
+    if (reservedTrades.contains(&trade)) {
+      return true;
+    }
+  }
+  return false;
+}

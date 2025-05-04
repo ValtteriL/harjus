@@ -3,6 +3,7 @@
 #include "Trade.h"
 #include <shared_mutex>
 #include <unordered_set>
+#include <vector>
 
 /**
  * ReservedTrades class. Contains logic for bookkeeping reserved trades.
@@ -38,6 +39,11 @@ public:
    *  Check if a trade is reserved.
    */
   bool isReserved(Trade &trade);
+
+  /**
+   *  Check if a trade is reserved.
+   */
+  bool isReserved(std::vector<Trade> &trades);
 
 private:
   /**
