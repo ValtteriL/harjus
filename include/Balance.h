@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/multiprecision/cpp_dec_float.hpp>
-#include <mutex> // Add mutex include
+#include <shared_mutex>
 #include <unordered_map>
 
 /**
@@ -20,7 +20,7 @@ private:
   /**
    * Mutex for thread safety.
    */
-  std::mutex mtx; // Add mutex member
+  std::shared_mutex mtx;
 
 public:
   /**

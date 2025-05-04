@@ -1,23 +1,25 @@
 #include "ReservedTrades.h"
+#include <mutex>
+#include <shared_mutex>
 
 void ReservedTrades::reserve(Trade &trade) {
-  std::lock_guard<std::mutex> lock(mtx);
+  std::unique_lock<std::shared_mutex> lock(mtx);
   reservedTrades.insert(&trade);
 }
 
 void ReservedTrades::release(Trade &trade) {
-  std::lock_guard<std::mutex> lock(mtx);
+  std::unique_lock<std::shared_mutex> lock(mtx);
   reservedTrades.erase(&trade);
 }
 
 void ReservedTrades::releaseAll(std::vector<Trade *> &trades) {
-  std::lock_guard<std::mutex> lock(mtx);
+  std::unique_lock<std::shared_mutex> lock(mtx);
   for (auto trade : trades) {
     reservedTrades.erase(trade);
   }
 }
 
 bool ReservedTrades::isReserved(Trade &trade) {
-  std::lock_guard<std::mutex> lock(mtx);
+  std::shared_lock<std::shared_mutex> lock(mtx);
   return reservedTrades.contains(&trade);
 }

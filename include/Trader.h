@@ -6,20 +6,27 @@
  * and releasing resources reserved for executions
  */
 
-#include "Application.h"
 #include "Balance.h"
 #include "Execution.h"
 #include "ExecutionReport.h"
+#include "IApplication.h"
 #include "ReservedTrades.h"
 #include <boost/lockfree/queue.hpp>
+#include <string>
 class Trader {
 
 private:
   boost::lockfree::queue<Execution *> &_executionQueue;
   boost::lockfree::queue<ExecutionReport *> &_executionReportQueue;
-  Application &_application;
+  IApplication &_application;
   Balance &_balance;
   ReservedTrades &_reservedTrades;
+  std::unordered_map<
+      std::string,
+      std::tuple<Execution *,
+                 std::unordered_map<std::string,
+                                    boost::multiprecision::cpp_dec_float_50>>>
+      _executionsMap; // Map of execution ID to execution and delta
 
 protected:
   void processExecution(Execution *execution);
@@ -28,7 +35,7 @@ protected:
 public:
   Trader(boost::lockfree::queue<Execution *> &executionQueue,
          boost::lockfree::queue<ExecutionReport *> &executionReportQueue,
-         Application &application, Balance &balance,
+         IApplication &application, Balance &balance,
          ReservedTrades &reservedTrades);
 
   void run();

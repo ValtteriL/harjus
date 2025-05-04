@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Trade.h"
-#include <mutex> // Add mutex include
+#include <shared_mutex>
 #include <unordered_set>
 
 /**
@@ -61,6 +61,6 @@ private:
   /**
    * Mutex for thread safety.
    */
-  std::mutex mtx; // Add mutex member
+  std::shared_mutex mtx;
 };
 ;
