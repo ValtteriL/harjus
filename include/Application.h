@@ -122,6 +122,7 @@ private:
    * MessageCracker overloads
    */
   void onMessage(const FIX44::ExecutionReport &, const FIX::SessionID &);
+  void onMessage(const FIX44::Reject &message, const FIX::SessionID &sessionID);
   void onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
                  const FIX::SessionID &sessionID);
   void onMessage(const FIX44::MarketDataIncrementalRefresh &message,

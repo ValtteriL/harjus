@@ -181,6 +181,8 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
 void Application::onMessage(const FIX44::ExecutionReport &,
                             const FIX::SessionID &) {}
 
+void Application::onMessage(const FIX44::Reject &, const FIX::SessionID &) {}
+
 void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
                             const FIX::SessionID &) {
   try {
