@@ -5,9 +5,11 @@
 #include "Exchange.h"
 #include "Execution.h"
 #include "ExecutionReport.h"
+#include "IConfiguration.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "Trade.h"
+#include "Trader.h"
 #include <boost/lockfree/queue.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -24,6 +26,8 @@
 #include <string>
 #include <thread>
 #include <vector>
+
+std::atomic<bool> running{true};
 
 void banner() {
   std::cout << R"(
@@ -61,27 +65,6 @@ getSymbolsFromMap(const std::unordered_map<std::string, Symbol *> &symbolMap) {
   return symbols;
 }
 
-// Process the price update queue
-void processExecutionQueue(boost::lockfree::queue<Execution *> &queue) {
-  size_t execCount = 0;
-
-  while (true) {
-    Execution *ex = nullptr;
-    if (queue.pop(ex)) {
-      if (ex) {
-        execCount++;
-        std::cout << "Execution #" << execCount
-                  << " - total profit:" << ex->getTotalProfit() << std::endl;
-        delete ex; // Clean up the heap allocated update
-      }
-    }
-
-    // Small sleep to avoid spinning the CPU
-    // TODO: avoid
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
-  }
-}
-
 void initLogging(int logLevel) {
   boost::log::core::get()->set_filter(boost::log::trivial::severity >=
                                       logLevel);
@@ -98,6 +81,58 @@ void prepareFixFileStore(const std::string &dir) {
       std::filesystem::remove(entry.path());
     }
   }
+}
+
+FIX::SessionSettings getFixSessionSettings(const Configuration config) {
+  std::string fixConfig = R"(
+  # default settings for sessions
+  [DEFAULT]
+  StartTime=00:00:00
+  EndTime=00:00:00
+  HeartBtInt=30
+  FileStorePath=)" + config.getFixFileStorePath() +
+                          R"(
+  ConnectionType=initiator
+  TargetCompID=SPOT
+  DefaultApplVerID=FIX.4.4
+  BeginString=FIX.4.4
+    
+  # set TCP_NODELAY (disable Nagle's algorithm)
+  # this is required for low latency
+  SocketNodelay=Y
+    
+  # sessions
+  [SESSION]
+  SenderCompID=HARJUSM1
+  SessionQualifier=MARKETDATA
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
+  SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
+                          R"(
+  SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
+                          R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM2
+  SessionQualifier=MARKETDATA
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
+  SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
+                          R"(
+  SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
+                          R"(
+
+  [SESSION]
+  SenderCompID=HARJUSOE
+  SessionQualifier=ORDERENTRY
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
+  SocketConnectHost=)" + config.getBinanceFIXApiHostnameOrderEntry() +
+                          R"(
+  SocketConnectPort=)" + config.getBinanceFIXApiPortOrderEntry() +
+                          R"(
+  )";
+
+  std::istringstream fixConfigStream{fixConfig};
+
+  return FIX::SessionSettings{fixConfigStream};
 }
 
 int main() {
@@ -147,57 +182,8 @@ int main() {
   BOOST_LOG_TRIVIAL(info) << "Subscribing to " << symbols.size()
                           << " trading symbols";
 
-  // FIX Engine config
-  std::string fixConfig = R"(
-  # default settings for sessions
-  [DEFAULT]
-  StartTime=00:00:00
-  EndTime=00:00:00
-  HeartBtInt=30
-  FileStorePath=)" + config.getFixFileStorePath() +
-                          R"(
-  ConnectionType=initiator
-  TargetCompID=SPOT
-  DefaultApplVerID=FIX.4.4
-  BeginString=FIX.4.4
-    
-  # set TCP_NODELAY (disable Nagle's algorithm)
-  # this is required for low latency
-  SocketNodelay=Y
-    
-  # sessions
-  [SESSION]
-  SenderCompID=HARJUSM1
-  SessionQualifier=MARKETDATA
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
-  SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
-                          R"(
-  SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
-                          R"(
-    
-  [SESSION]
-  SenderCompID=HARJUSM2
-  SessionQualifier=MARKETDATA
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
-  SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
-                          R"(
-  SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
-                          R"(
-
-  [SESSION]
-  SenderCompID=HARJUSOE
-  SessionQualifier=ORDERENTRY
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
-  SocketConnectHost=)" + config.getBinanceFIXApiHostnameOrderEntry() +
-                          R"(
-  SocketConnectPort=)" + config.getBinanceFIXApiPortOrderEntry() +
-                          R"(
-  )";
-
-  // stream to the string
-  std::istringstream fixConfigStream{fixConfig};
-
-  FIX::SessionSettings settings{fixConfigStream};
+  // fix settings
+  auto settings = getFixSessionSettings(config);
 
   Application application{config, priceUpdateQueue, reportQueue};
   FIX::FileStoreFactory storeFactory{settings};
@@ -206,21 +192,23 @@ int main() {
   auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::SSLSocketInitiator{
       application, storeFactory, settings, logFactory});
 
-  initiator->start();
-  BOOST_LOG_TRIVIAL(debug) << "FIX initiator started successfully.";
+  // create a jthread to run the application
+  std::jthread j_thread_application([&initiator, &application, symbols]() {
+    initiator->start();
 
-  // Wait for the session to be established
-  while (!initiator->isLoggedOn()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
+    // Wait for the session to be established
+    while (!initiator->isLoggedOn()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
-  // Subscribe to market data for all symbols
-  if (application.subscribeToSymbols(symbols)) {
-    BOOST_LOG_TRIVIAL(debug) << "Subscribed to symbols: " << symbols.size();
-  } else {
-    std::cerr << "Failed to subscribe to market data." << std::endl;
-    BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
-  }
+    // Subscribe to market data for all symbols
+    if (application.subscribeToSymbols(symbols)) {
+      BOOST_LOG_TRIVIAL(debug) << "Subscribed to symbols: " << symbols.size();
+    } else {
+      std::cerr << "Failed to subscribe to market data." << std::endl;
+      BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
+    }
+  });
 
   // Create the engine
   Engine engine{symbolMap,        tradingPaths,          *balance,
@@ -228,15 +216,30 @@ int main() {
                 relativeValueMap, config.getCommission()};
 
   // create a jthread to run engine
-  std::jthread j_thread([&engine]() { engine.run(); });
+  std::jthread j_thread_engine([&engine]() { engine.run(); });
+
+  // create a trader
+  Trader trader{executionQueue, reportQueue, application, *balance,
+                reservedTrades};
+
+  // create a jthread to run trader
+  std::jthread j_thread_trader([&trader]() { trader.run(); });
 
   // Start processing execiutions
-  BOOST_LOG_TRIVIAL(info)
-      << "Starting to process executions. Press Ctrl+C to exit.";
-  processExecutionQueue(executionQueue);
+  BOOST_LOG_TRIVIAL(info) << "Worker threads started. Press Ctrl+C to exit.";
 
-  // This is unreachable with the current implementation since
-  // processExecutionQueue runs indefinitely
+  // wait for ctrl+c
+
+  // Signal handler to set running to false on SIGINT or SIGTERM
+  signal(SIGINT, [](int) { running = false; });
+  signal(SIGTERM, [](int) { running = false; });
+
+  while (running) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  // TODO: stop threads gracefully
+
   initiator->stop();
 
   return 0;
