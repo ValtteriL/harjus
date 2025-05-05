@@ -42,9 +42,8 @@ void Trader::processExecution(Execution *execution) {
     throw std::runtime_error("No trades available in the execution object");
   }
 
-  // pop the first trade
+  // submit the first trade
   auto trade = execution->getTrades().front();
-  execution->getTrades().pop();
 
   _application.submitOrder(id, trade.getSymbol().symbol, trade.getOrderQty(),
                            trade.getOrderPrice(), trade.getPosition());
@@ -81,11 +80,21 @@ void Trader::processReport(ExecutionReport *execReport) {
   BOOST_LOG_TRIVIAL(info) << "Trade completed. ID: " << id;
 
   // update delta
+  // get fees from the execution report
+  // get base, quote delta from the first trade
   auto tradeDelta = execReport->getAssetDelta();
   for (const auto &[currency, amount] : tradeDelta) {
     delta[currency] += amount;
   }
+
+  auto oldTrade = execution->getTrades().front();
+  delta[oldTrade.getUsedCurrency()] -= oldTrade.getUsedQty();
+  delta[oldTrade.getRecvCurrency()] += oldTrade.getRecvQty();
+
   _executionsMap[id].second = delta;
+
+  // remove the last order from the execution
+  execution->getTrades().pop();
 
   if (execution->getTrades().empty()) {
 
@@ -105,7 +114,6 @@ void Trader::processReport(ExecutionReport *execReport) {
 
   // submit the next order
   auto trade = execution->getTrades().front();
-  execution->getTrades().pop();
 
   _application.submitOrder(id, trade.getSymbol().symbol, trade.getOrderQty(),
                            trade.getOrderPrice(), trade.getPosition());

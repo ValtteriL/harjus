@@ -6,6 +6,7 @@
 #include <iostream>
 #include <quickfix/Field.h>
 #include <quickfix/FixFields.h>
+#include <quickfix/FixValues.h>
 #include <quickfix/Session.h>
 
 Application::Application(IConfiguration &conf,
@@ -215,49 +216,31 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
         assetDelta;
 
-    // Get symbol
-    FIX::Symbol symbol;
-    message.get(symbol);
-    std::string symbolStr = symbol.getValue();
+    // Extract the fees from the message into the asset delta map
+    FIX::NoMiscFees noMiscFees;
+    message.get(noMiscFees);
+    int numMiscFees = noMiscFees.getValue();
 
-    // Get side (buy/sell)
-    FIX::Side side;
-    message.get(side);
-    char sideValue = side.getValue();
+    for (int i = 1; i <= numMiscFees; i++) {
+      FIX44::ExecutionReport::NoMiscFees group;
+      message.getGroup(i, group);
 
-    // Get executed quantity
-    FIX::LastQty lastQty;
-    message.get(lastQty);
-    boost::multiprecision::cpp_dec_float_50 executedQty =
-        boost::multiprecision::cpp_dec_float_50(lastQty.getValue());
+      FIX::MiscFeeType feeType;
+      group.get(feeType);
 
-    // Get executed price
-    FIX::LastPx lastPx;
-    message.get(lastPx);
-    boost::multiprecision::cpp_dec_float_50 executedPrice =
-        boost::multiprecision::cpp_dec_float_50(lastPx.getValue());
+      // Only process fees of type "Exchange Fees" (4)
+      if (feeType == FIX::MiscFeeType_EXCHANGE_FEES) {
+        FIX::MiscFeeCurr feeCurrency;
+        group.get(feeCurrency);
+        std::string currency = feeCurrency.getValue();
 
-    // Parse the symbol to determine base and quote assets
-    size_t baseAssetLength = 0;
-    for (const auto &c : symbolStr) {
-      if (std::isalpha(c)) {
-        baseAssetLength++;
-      } else {
-        break;
+        FIX::MiscFeeAmt feeAmount;
+        group.get(feeAmount);
+
+        // Add the fee amount to the asset delta map
+        assetDelta[currency] -=
+            boost::multiprecision::cpp_dec_float_50(feeAmount.getValue());
       }
-    }
-    std::string baseAsset = symbolStr.substr(0, baseAssetLength);
-    std::string quoteAsset = symbolStr.substr(baseAssetLength);
-
-    // Calculate asset delta based on side
-    if (sideValue == FIX::Side_BUY) {
-      // When buying, we receive base asset and spend quote asset
-      assetDelta[baseAsset] = executedQty;
-      assetDelta[quoteAsset] = -executedQty * executedPrice;
-    } else {
-      // When selling, we spend base asset and receive quote asset
-      assetDelta[baseAsset] = -executedQty;
-      assetDelta[quoteAsset] = executedQty * executedPrice;
     }
 
     // Create execution report
@@ -271,8 +254,9 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       delete report;
     }
   } catch (const std::exception &e) {
-    BOOST_LOG_TRIVIAL(error)
-        << "Error processing execution report: " << e.what();
+
+    throw std::runtime_error("Error processing execution report: " +
+                             std::string(e.what()));
   }
 }
 
