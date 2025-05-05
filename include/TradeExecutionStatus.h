@@ -1,3 +1,3 @@
 #pragma once
 
-enum class TradeExecutionStatus { COMPLETED, REJECTED, EXPIRED };
+enum class TradeExecutionStatus { FILLED, REJECTED, EXPIRED };

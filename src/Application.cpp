@@ -178,8 +178,103 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
   }
 }
 
-void Application::onMessage(const FIX44::ExecutionReport &,
-                            const FIX::SessionID &) {}
+void Application::onMessage(const FIX44::ExecutionReport &message,
+                            const FIX::SessionID &) {
+  try {
+    // Extract the ClOrdID
+    FIX::ClOrdID clOrdID;
+    message.get(clOrdID);
+    std::string id = clOrdID.getValue();
+
+    // Get execution type
+    FIX::ExecType execType;
+    message.get(execType);
+    char execTypeValue = execType.getValue();
+
+    // Determine the execution status based on ExecType
+    TradeExecutionStatus status;
+    switch (execTypeValue) {
+    case FIX::ExecType_FILL:
+      status = TradeExecutionStatus::FILLED;
+      break;
+    case FIX::ExecType_EXPIRED:
+      status = TradeExecutionStatus::EXPIRED;
+      break;
+    case FIX::ExecType_REJECTED:
+      status = TradeExecutionStatus::REJECTED;
+      break;
+    default:
+      // For other cases, just log and return without creating execution report
+      BOOST_LOG_TRIVIAL(debug)
+          << "Received ExecutionReport with unhandled ExecType: "
+          << execTypeValue;
+      return;
+    }
+
+    // Create asset delta map
+    std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+        assetDelta;
+
+    // Get symbol
+    FIX::Symbol symbol;
+    message.get(symbol);
+    std::string symbolStr = symbol.getValue();
+
+    // Get side (buy/sell)
+    FIX::Side side;
+    message.get(side);
+    char sideValue = side.getValue();
+
+    // Get executed quantity
+    FIX::LastQty lastQty;
+    message.get(lastQty);
+    boost::multiprecision::cpp_dec_float_50 executedQty =
+        boost::multiprecision::cpp_dec_float_50(lastQty.getValue());
+
+    // Get executed price
+    FIX::LastPx lastPx;
+    message.get(lastPx);
+    boost::multiprecision::cpp_dec_float_50 executedPrice =
+        boost::multiprecision::cpp_dec_float_50(lastPx.getValue());
+
+    // Parse the symbol to determine base and quote assets
+    size_t baseAssetLength = 0;
+    for (const auto &c : symbolStr) {
+      if (std::isalpha(c)) {
+        baseAssetLength++;
+      } else {
+        break;
+      }
+    }
+    std::string baseAsset = symbolStr.substr(0, baseAssetLength);
+    std::string quoteAsset = symbolStr.substr(baseAssetLength);
+
+    // Calculate asset delta based on side
+    if (sideValue == FIX::Side_BUY) {
+      // When buying, we receive base asset and spend quote asset
+      assetDelta[baseAsset] = executedQty;
+      assetDelta[quoteAsset] = -executedQty * executedPrice;
+    } else {
+      // When selling, we spend base asset and receive quote asset
+      assetDelta[baseAsset] = -executedQty;
+      assetDelta[quoteAsset] = executedQty * executedPrice;
+    }
+
+    // Create execution report
+    ExecutionReport *report = new ExecutionReport(id, status, assetDelta);
+
+    // Push to the queue
+    if (!executionReportQueue.push(report)) {
+      // If push fails (queue full), delete the report to avoid memory leak
+      BOOST_LOG_TRIVIAL(error)
+          << "Failed to push execution report to queue, queue full";
+      delete report;
+    }
+  } catch (const std::exception &e) {
+    BOOST_LOG_TRIVIAL(error)
+        << "Error processing execution report: " << e.what();
+  }
+}
 
 void Application::onMessage(const FIX44::Reject &, const FIX::SessionID &) {}
 
