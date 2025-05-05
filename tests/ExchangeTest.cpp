@@ -37,7 +37,7 @@ TEST_F(ExchangeTest,
           "713iwB11x0PYIMHCfk8gjB2Nb4xJAaHN+T1jpfHIF+o=")); // testnet cred
 
   auto balance = getBalance(config);
-  EXPECT_TRUE(balance.getBalance("BTC") >
+  EXPECT_TRUE(balance->getBalance("BTC") >
               0); // assuming the testnet has some BTC
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <shared_mutex>
 #include <unordered_map>
 
 /**
@@ -15,6 +16,11 @@ private:
    */
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       balanceMap;
+
+  /**
+   * Mutex for thread safety.
+   */
+  std::shared_mutex mtx;
 
 public:
   /**
@@ -31,11 +37,24 @@ public:
                      boost::multiprecision::cpp_dec_float_50 amount);
 
   /**
+   *  Add a currency to the balance.
+   *  This is used to increment and decrement the balance for a currency.
+   *  If the currency is not present in the map, it will be added.
+   *  If the currency is present, the amount will be added to the existing
+   * balance. If the amount is negative, it will be subtracted from the existing
+   * balance.
+   *  @param assetDelta The map of currencies and amounts to add.
+   */
+  void updateBalance(
+      const std::unordered_map<
+          std::string, boost::multiprecision::cpp_dec_float_50> &assetDelta);
+
+  /**
    *  Get the balance for a currency.
    *  This is used to get the balance for a currency.
    *  If the currency is not present in the map, it will return 0.
    *  @param currency The currency to get the balance for.
    */
   boost::multiprecision::cpp_dec_float_50
-  getBalance(const std::string &currency) const;
+  getBalance(const std::string &currency);
 };

@@ -3,6 +3,8 @@
 #include "Opportunity.h"
 #include "Trade.h"
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <queue>
+#include <vector>
 
 /**
  * @file Execution.h
@@ -12,9 +14,10 @@
  * to execute the trades.
  */
 
-class Execution : public IOpportunity {
+class Execution {
 private:
-  std::vector<Trade> _trades;
+  std::queue<Trade> _trades;
+  std::vector<Trade> _tradesVector;
   std::string _startingAsset;
   boost::multiprecision::cpp_dec_float_50 _totalProfit;
 
@@ -33,14 +36,13 @@ public:
    * @details This method should be called after a price update that affects
    * this opportunity to update the total profit.
    */
-  void
-  update(boost::multiprecision::cpp_dec_float_50 startingAssetBudget) override;
+  void update(boost::multiprecision::cpp_dec_float_50 startingAssetBudget);
 
   /**
    * @brief Get the total profit
    * @return The total profit of the opportunity in relative value.
    */
-  boost::multiprecision::cpp_dec_float_50 getTotalProfit() const override;
+  boost::multiprecision::cpp_dec_float_50 getTotalProfit() const;
 
   /**
    * @brief Get the capacity of the opportunity.
@@ -49,17 +51,24 @@ public:
    * @return The capacity of the opportunity in the starting asset.
    */
 
-  boost::multiprecision::cpp_dec_float_50 getCapacity() const override;
+  boost::multiprecision::cpp_dec_float_50 getCapacity() const;
 
   /**
    * @brief Get the starting asset.
    * @return Get the asset symbol that is used to start the series of trades.
    */
-  std::string getStartingAsset() const override;
+  std::string getStartingAsset() const;
 
   /**
    * @brief Get the trades associated with the execution.
-   * @return A vector of trades associated with the execution.
+   * @return A queue of trades associated with the execution.
    */
-  std::vector<Trade> &getTrades() override;
+  std::queue<Trade> &getTrades();
+
+  /**
+   * @brief Get the original trades associated with the execution.
+   * @return A vector of trades associated with the execution since
+   * construction.
+   */
+  std::vector<Trade> &getOriginalTrades() { return _tradesVector; }
 };

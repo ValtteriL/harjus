@@ -4,6 +4,7 @@
 #include "IConfiguration.h"
 #include "Symbol.h"
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <memory>
 #include <unordered_map>
 
 /**
@@ -19,7 +20,7 @@
  * @param config Configuration object containing API keys and other settings.
  * @return Balance object containing the current balance.
  */
-Balance getBalance(IConfiguration &config);
+std::unique_ptr<Balance> getBalance(IConfiguration &config);
 
 /**
  * @brief Fetches symbol information from the exchange API.

@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Trade.h"
+#include <shared_mutex>
 #include <unordered_set>
+#include <vector>
 
 /**
  * ReservedTrades class. Contains logic for bookkeeping reserved trades.
@@ -28,9 +30,20 @@ public:
   void release(Trade &trade);
 
   /**
+   * @brief Release all trades in vector.
+   * @param trades Vector of trades to release.
+   */
+  void releaseAll(std::vector<Trade> &trades);
+
+  /**
    *  Check if a trade is reserved.
    */
-  bool isReserved(Trade &trade) const;
+  bool isReserved(Trade &trade);
+
+  /**
+   *  Check if a trade is reserved.
+   */
+  bool isReserved(std::vector<Trade> &trades);
 
 private:
   /**
@@ -50,5 +63,10 @@ private:
    *  Reserved symbols list.
    */
   std::unordered_set<Trade *, TradeHash, TradeEqual> reservedTrades;
+
+  /**
+   * Mutex for thread safety.
+   */
+  std::shared_mutex mtx;
 };
 ;

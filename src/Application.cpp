@@ -6,17 +6,23 @@
 #include <iostream>
 #include <quickfix/Field.h>
 #include <quickfix/FixFields.h>
+#include <quickfix/FixValues.h>
 #include <quickfix/Session.h>
 
 Application::Application(IConfiguration &conf,
-                         boost::lockfree::queue<PriceUpdate *> &queue)
+                         boost::lockfree::queue<PriceUpdate *> &queue,
+                         boost::lockfree::queue<ExecutionReport *> &reportQueue)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
-      priceUpdateQueue(queue) {}
+      priceUpdateQueue(queue), executionReportQueue(reportQueue) {}
 
 void Application::onCreate(const FIX::SessionID &sessionID) {
   // store markert data session IDs if Qualifier starts with MARKETDATA
   if (sessionID.getSessionQualifier().starts_with("MARKETDATA")) {
     marketDataSessionIDs.push_back(sessionID);
+  }
+  // store order entry session ID if Qualifier is ORDERENTRY
+  else if (sessionID.getSessionQualifier() == "ORDERENTRY") {
+    orderEntrySessionID = sessionID;
   }
 }
 
@@ -173,8 +179,89 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
   }
 }
 
-void Application::onMessage(const FIX44::ExecutionReport &,
-                            const FIX::SessionID &) {}
+void Application::onMessage(const FIX44::ExecutionReport &message,
+                            const FIX::SessionID &) {
+  try {
+    // Extract the ClOrdID
+    FIX::ClOrdID clOrdID;
+    message.get(clOrdID);
+    std::string id = clOrdID.getValue();
+
+    // Get execution type
+    FIX::ExecType execType;
+    message.get(execType);
+    char execTypeValue = execType.getValue();
+
+    // Determine the execution status based on ExecType
+    TradeExecutionStatus status;
+    switch (execTypeValue) {
+    case FIX::ExecType_FILL:
+      status = TradeExecutionStatus::FILLED;
+      break;
+    case FIX::ExecType_EXPIRED:
+      status = TradeExecutionStatus::EXPIRED;
+      break;
+    default:
+      // For other cases, just log and return without creating execution report
+      BOOST_LOG_TRIVIAL(debug)
+          << "Received ExecutionReport with unhandled ExecType: "
+          << execTypeValue;
+      return;
+    }
+
+    // Create asset delta map
+    std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+        feeDelta;
+
+    // Extract the fees from the message into the asset delta map
+    FIX::NoMiscFees noMiscFees;
+    message.get(noMiscFees);
+    int numMiscFees = noMiscFees.getValue();
+
+    for (int i = 1; i <= numMiscFees; i++) {
+      FIX44::ExecutionReport::NoMiscFees group;
+      message.getGroup(i, group);
+
+      FIX::MiscFeeType feeType;
+      group.get(feeType);
+
+      // Only process fees of type "Exchange Fees" (4)
+      if (feeType == FIX::MiscFeeType_EXCHANGE_FEES) {
+        FIX::MiscFeeCurr feeCurrency;
+        group.get(feeCurrency);
+        std::string currency = feeCurrency.getValue();
+
+        FIX::MiscFeeAmt feeAmount;
+        group.get(feeAmount);
+
+        // Add the fee amount to the asset delta map
+        feeDelta[currency] -=
+            boost::multiprecision::cpp_dec_float_50(feeAmount.getValue());
+      }
+    }
+
+    // Create execution report
+    ExecutionReport *report = new ExecutionReport(id, status, feeDelta);
+
+    // Push to the queue
+    if (!executionReportQueue.push(report)) {
+      // If push fails (queue full), delete the report to avoid memory leak
+      BOOST_LOG_TRIVIAL(error)
+          << "Failed to push execution report to queue, queue full";
+      delete report;
+    }
+  } catch (const std::exception &e) {
+
+    throw std::runtime_error("Error processing execution report: " +
+                             std::string(e.what()));
+  }
+}
+
+void Application::onMessage(const FIX44::Reject &,
+                            const FIX::SessionID &sessionID) {
+  throw std::runtime_error("Received rejection message on session: " +
+                           sessionID.toString());
+}
 
 void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
                             const FIX::SessionID &) {
@@ -312,4 +399,21 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
     std::cerr << "Error processing incremental refresh: " << e.what()
               << std::endl;
   }
+}
+
+void Application::submitOrder(std::string id, std::string symbol,
+                              boost::multiprecision::cpp_dec_float_50 qty,
+                              boost::multiprecision::cpp_dec_float_50 price,
+                              Position position) {
+  FIX44::NewOrderSingle newOrder;
+  newOrder.set(FIX::ClOrdID(id));
+  newOrder.set(FIX::Symbol(symbol));
+  newOrder.set(FIX::Side(position == Position::LONG ? '1' : '2'));
+  newOrder.set(FIX::OrdType('2'));     // Limit order
+  newOrder.set(FIX::TimeInForce('4')); // Fill or Kill (FOK)
+  newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
+  newOrder.set(FIX::Price(static_cast<double>(price)));
+
+  // Send the order to the order entry session
+  FIX::Session::sendToTarget(newOrder, orderEntrySessionID);
 }

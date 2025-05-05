@@ -58,3 +58,30 @@ TEST_F(ReservedTradesTest, reserveCheckDifferentTrade) {
   reservedTrades.reserve(trade1);
   EXPECT_FALSE(reservedTrades.isReserved(trade3));
 }
+
+TEST_F(ReservedTradesTest, releaseAll) {
+  reservedTrades.reserve(trade1);
+  reservedTrades.reserve(trade2);
+
+  EXPECT_TRUE(reservedTrades.isReserved(trade1));
+  EXPECT_TRUE(reservedTrades.isReserved(trade2));
+
+  std::vector<Trade> trades{trade1, trade2};
+
+  reservedTrades.releaseAll(trades);
+
+  EXPECT_FALSE(reservedTrades.isReserved(trade1));
+  EXPECT_FALSE(reservedTrades.isReserved(trade2));
+}
+
+// test isReserved with vector of trades
+TEST_F(ReservedTradesTest, isReservedWithVector) {
+
+  std::vector<Trade> trades{trade1, trade2, trade3};
+
+  EXPECT_FALSE(reservedTrades.isReserved(trades));
+
+  reservedTrades.reserve(trade1);
+
+  EXPECT_TRUE(reservedTrades.isReserved(trades));
+}

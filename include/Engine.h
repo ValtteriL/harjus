@@ -7,6 +7,7 @@
 #include "ReservedTrades.h"
 #include "Symbol.h"
 #include "Trade.h"
+#include <stop_token>
 #include <string>
 #include <unordered_map>
 
@@ -77,5 +78,5 @@ public:
    * @brief Run the engine
    * @details This function is the main loop of the engine.
    */
-  void run();
+  void run(std::stop_token stoken);
 };

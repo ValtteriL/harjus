@@ -7,12 +7,15 @@
  * implements the FIX::Application interface and handles FIX messages.
  */
 
+#include "ExecutionReport.h"
+#include "IApplication.h"
 #include "IConfiguration.h"
 #include "PriceUpdate.h"
 
 #include <quickfix/Application.h>
 #include <quickfix/MessageCracker.h>
 #include <quickfix/Mutex.h>
+#include <quickfix/SessionID.h>
 #include <quickfix/Values.h>
 
 #include <quickfix/fix44/ExecutionReport.h>
@@ -27,13 +30,17 @@
 #include <boost/lockfree/queue.hpp>
 #include <vector>
 
-class Application : public FIX::Application, public FIX::MessageCracker {
+class Application : public FIX::Application,
+                    public FIX::MessageCracker,
+                    public IApplication {
 
 private:
   std::string username;
   std::string privateKeySeed;
   boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue;
+  boost::lockfree::queue<ExecutionReport *> &executionReportQueue;
   std::vector<FIX::SessionID> marketDataSessionIDs;
+  FIX::SessionID orderEntrySessionID;
 
   /**
    * Called when quickfix creates a new session.
@@ -115,6 +122,7 @@ private:
    * MessageCracker overloads
    */
   void onMessage(const FIX44::ExecutionReport &, const FIX::SessionID &);
+  void onMessage(const FIX44::Reject &message, const FIX::SessionID &sessionID);
   void onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
                  const FIX::SessionID &sessionID);
   void onMessage(const FIX44::MarketDataIncrementalRefresh &message,
@@ -122,13 +130,12 @@ private:
 
 public:
   Application(IConfiguration &conf,
-              boost::lockfree::queue<PriceUpdate *> &queue);
+              boost::lockfree::queue<PriceUpdate *> &queue,
+              boost::lockfree::queue<ExecutionReport *> &reportQueue);
 
-  /**
-   * @brief Subscribe to market data for a list of symbols
-   * @param symbols Vector of trading symbols to subscribe to
-   * @param depth Market depth (defaults to 1 for top of book)
-   * @return true if subscription request was sent successfully
-   */
-  bool subscribeToSymbols(const std::vector<std::string> &symbols);
+  void submitOrder(std::string id, std::string symbol,
+                   boost::multiprecision::cpp_dec_float_50 qty,
+                   boost::multiprecision::cpp_dec_float_50 price,
+                   Position position) override;
+  bool subscribeToSymbols(const std::vector<std::string> &symbols) override;
 };

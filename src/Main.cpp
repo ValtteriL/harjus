@@ -4,9 +4,11 @@
 #include "Engine.h"
 #include "Exchange.h"
 #include "Execution.h"
+#include "ExecutionReport.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "Trade.h"
+#include "Trader.h"
 #include <boost/lockfree/queue.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -23,6 +25,8 @@
 #include <string>
 #include <thread>
 #include <vector>
+
+std::atomic<bool> running{true};
 
 void banner() {
   std::cout << R"(
@@ -60,27 +64,6 @@ getSymbolsFromMap(const std::unordered_map<std::string, Symbol *> &symbolMap) {
   return symbols;
 }
 
-// Process the price update queue
-void processExecutionQueue(boost::lockfree::queue<Execution *> &queue) {
-  size_t execCount = 0;
-
-  while (true) {
-    Execution *ex = nullptr;
-    if (queue.pop(ex)) {
-      if (ex) {
-        execCount++;
-        std::cout << "Execution #" << execCount
-                  << " - total profit:" << ex->getTotalProfit() << std::endl;
-        delete ex; // Clean up the heap allocated update
-      }
-    }
-
-    // Small sleep to avoid spinning the CPU
-    // TODO: avoid
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
-  }
-}
-
 void initLogging(int logLevel) {
   boost::log::core::get()->set_filter(boost::log::trivial::severity >=
                                       logLevel);
@@ -99,53 +82,7 @@ void prepareFixFileStore(const std::string &dir) {
   }
 }
 
-int main() {
-  banner();
-  Configuration config;
-
-  // config logging
-  initLogging(config.getLogLevel());
-
-  BOOST_LOG_TRIVIAL(info) << "Starting Harjus";
-
-  // Create directory if it doesn't exist and delete .session files
-  std::string fixFileStorePath = config.getFixFileStorePath();
-  prepareFixFileStore(fixFileStorePath);
-
-  // get balance, available symbols & relative values
-  BOOST_LOG_TRIVIAL(debug) << "Getting balance";
-  Balance balance = getBalance(config);
-
-  BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
-  std::unordered_map<std::string, Symbol *> symbolMap = getSymbols(config);
-
-  BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      relativeValueMap = getRelativeValues(config, symbolMap);
-
-  // calculate trading paths
-  BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
-  std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
-  int maxDepth = config.getMaxTradingPathLength();
-  std::vector<std::vector<Trade> *> tradingPaths =
-      getTradingPaths(&symbolMap, maxDepth, skipSymbols);
-
-  // Create lockfree queues for price updates & executions
-  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(1000);
-  boost::lockfree::queue<Execution *> executionQueue(1000);
-
-  ReservedTrades reservedTrades;
-
-  // Extract the list of symbols for subscription
-  std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
-  // std::vector<std::string> symbols = {"ETHBTC", "LTCBTC", "BNBBTC",
-  // "TRXBTC"};
-
-  // Log the number of symbols we'll subscribe to
-  BOOST_LOG_TRIVIAL(info) << "Subscribing to " << symbols.size()
-                          << " trading symbols";
-
-  // FIX Engine config
+FIX::SessionSettings getFixSessionSettings(const Configuration config) {
   std::string fixConfig = R"(
   # default settings for sessions
   [DEFAULT]
@@ -181,52 +118,140 @@ int main() {
                           R"(
   SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
                           R"(
+
+  [SESSION]
+  SenderCompID=HARJUSOE
+  SessionQualifier=ORDERENTRY
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
+  SocketConnectHost=)" + config.getBinanceFIXApiHostnameOrderEntry() +
+                          R"(
+  SocketConnectPort=)" + config.getBinanceFIXApiPortOrderEntry() +
+                          R"(
   )";
 
-  // stream to the string
   std::istringstream fixConfigStream{fixConfig};
 
-  FIX::SessionSettings settings{fixConfigStream};
+  return FIX::SessionSettings{fixConfigStream};
+}
 
-  Application application{config, priceUpdateQueue};
+int main() {
+  banner();
+  Configuration config;
+
+  // config logging
+  initLogging(config.getLogLevel());
+
+  BOOST_LOG_TRIVIAL(info) << "Starting Harjus";
+
+  // Create directory if it doesn't exist and delete .session files
+  std::string fixFileStorePath = config.getFixFileStorePath();
+  prepareFixFileStore(fixFileStorePath);
+
+  // get balance, available symbols & relative values
+  BOOST_LOG_TRIVIAL(debug) << "Getting balance";
+  auto balance = getBalance(config);
+
+  BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
+  std::unordered_map<std::string, Symbol *> symbolMap = getSymbols(config);
+
+  BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
+  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+      relativeValueMap = getRelativeValues(config, symbolMap);
+
+  // calculate trading paths
+  BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
+  std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
+  int maxDepth = config.getMaxTradingPathLength();
+  std::vector<std::vector<Trade> *> tradingPaths =
+      getTradingPaths(&symbolMap, maxDepth, skipSymbols);
+
+  // Create lockfree queues for price updates & executions
+  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(1000);
+  boost::lockfree::queue<Execution *> executionQueue(1000);
+  boost::lockfree::queue<ExecutionReport *> reportQueue(1000);
+
+  ReservedTrades reservedTrades;
+
+  // Extract the list of symbols for subscription
+  std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
+  // std::vector<std::string> symbols = {"ETHBTC", "LTCBTC", "BNBBTC",
+  // "TRXBTC"};
+
+  // Log the number of symbols we'll subscribe to
+  BOOST_LOG_TRIVIAL(info) << "Subscribing to " << symbols.size()
+                          << " trading symbols";
+
+  // fix settings
+  auto settings = getFixSessionSettings(config);
+
+  Application application{config, priceUpdateQueue, reportQueue};
   FIX::FileStoreFactory storeFactory{settings};
   FIX::ScreenLogFactory logFactory{settings};
 
   auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::SSLSocketInitiator{
       application, storeFactory, settings, logFactory});
 
-  initiator->start();
-  BOOST_LOG_TRIVIAL(debug) << "FIX initiator started successfully.";
+  // create a jthread to run the application
+  std::jthread j_thread_application([&initiator, &application, symbols]() {
+    initiator->start();
 
-  // Wait for the session to be established
-  while (!initiator->isLoggedOn()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
+    // Wait for the session to be established
+    while (!initiator->isLoggedOn()) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
-  // Subscribe to market data for all symbols
-  if (application.subscribeToSymbols(symbols)) {
-    BOOST_LOG_TRIVIAL(debug) << "Subscribed to symbols: " << symbols.size();
-  } else {
-    std::cerr << "Failed to subscribe to market data." << std::endl;
-    BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
-  }
+    // Subscribe to market data for all symbols
+    if (application.subscribeToSymbols(symbols)) {
+      BOOST_LOG_TRIVIAL(debug) << "Subscribed to symbols: " << symbols.size();
+    } else {
+      std::cerr << "Failed to subscribe to market data." << std::endl;
+      BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
+    }
+  });
 
   // Create the engine
-  Engine engine{symbolMap,        tradingPaths,          balance,
+  Engine engine{symbolMap,        tradingPaths,          *balance,
                 reservedTrades,   priceUpdateQueue,      executionQueue,
                 relativeValueMap, config.getCommission()};
 
   // create a jthread to run engine
-  std::jthread j_thread([&engine]() { engine.run(); });
+  std::jthread j_thread_engine(
+      [&engine](std::stop_token stoken) { engine.run(stoken); });
+
+  // create a trader
+  Trader trader{executionQueue, reportQueue, application, *balance,
+                reservedTrades};
+
+  // create a jthread to run trader
+  std::jthread j_thread_trader(
+      [&trader](std::stop_token stoken) { trader.run(stoken); });
 
   // Start processing execiutions
-  BOOST_LOG_TRIVIAL(info)
-      << "Starting to process executions. Press Ctrl+C to exit.";
-  processExecutionQueue(executionQueue);
+  BOOST_LOG_TRIVIAL(info) << "Worker threads started. Press Ctrl+C to exit.";
 
-  // This is unreachable with the current implementation since
-  // processExecutionQueue runs indefinitely
+  // wait for ctrl+c
+
+  // Signal handler to set running to false on SIGINT or SIGTERM
+  signal(SIGINT, [](int) { running = false; });
+  signal(SIGTERM, [](int) { running = false; });
+
+  while (running) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  BOOST_LOG_TRIVIAL(info) << "Stopping threads...";
+  // Stop the engine
+  j_thread_engine.request_stop();
+  j_thread_engine.join();
+
+  // Stop the trader
+  j_thread_trader.request_stop();
+  j_thread_trader.join();
+
+  // Stop the application
   initiator->stop();
+
+  BOOST_LOG_TRIVIAL(info) << "Done. Exiting.";
 
   return 0;
 }
