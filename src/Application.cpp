@@ -214,7 +214,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
 
     // Create asset delta map
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-        assetDelta;
+        feeDelta;
 
     // Extract the fees from the message into the asset delta map
     FIX::NoMiscFees noMiscFees;
@@ -238,13 +238,13 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
         group.get(feeAmount);
 
         // Add the fee amount to the asset delta map
-        assetDelta[currency] -=
+        feeDelta[currency] -=
             boost::multiprecision::cpp_dec_float_50(feeAmount.getValue());
       }
     }
 
     // Create execution report
-    ExecutionReport *report = new ExecutionReport(id, status, assetDelta);
+    ExecutionReport *report = new ExecutionReport(id, status, feeDelta);
 
     // Push to the queue
     if (!executionReportQueue.push(report)) {

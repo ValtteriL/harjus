@@ -82,7 +82,7 @@ void Trader::processReport(ExecutionReport *execReport) {
   // update delta
   // get fees from the execution report
   // get base, quote delta from the first trade
-  auto tradeDelta = execReport->getAssetDelta();
+  auto tradeDelta = execReport->getFeeDelta();
   for (const auto &[currency, amount] : tradeDelta) {
     delta[currency] += amount;
   }

@@ -13,19 +13,19 @@ private:
   std::string _id;
   TradeExecutionStatus _status;
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      _assetDelta;
+      _feeDelta;
 
 public:
   /**
    * @brief Constructor for ExecutionReport class
    * @param id The ID of the execution report
    * @param status The status of the execution report
-   * @param assetDelta The asset delta of the execution report
+   * @param feeDelta The fee delta of the execution report
    */
   ExecutionReport(
       const std::string &id, TradeExecutionStatus status,
       const std::unordered_map<
-          std::string, boost::multiprecision::cpp_dec_float_50> &assetDelta);
+          std::string, boost::multiprecision::cpp_dec_float_50> &feeDelta);
 
   /**
    * @brief Destructor for ExecutionReport class
@@ -45,9 +45,11 @@ public:
   TradeExecutionStatus getStatus() const;
 
   /**
-   * @brief Get the asset delta of the execution report
-   * @return The asset delta of the execution report
+   * @brief Get the fee delta of the execution report
+   * @return The fee delta of the execution report caused by exchange fees.
+   * This does not include the changes to base and quote assets. Those need to
+   * be fetched from the Execution object.
    */
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-  getAssetDelta() const;
+  getFeeDelta() const;
 };
