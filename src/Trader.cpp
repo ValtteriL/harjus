@@ -78,8 +78,14 @@ void Trader::processReport(ExecutionReport *execReport) {
     return;
   }
 
+  BOOST_LOG_TRIVIAL(info) << "Trade completed. ID: " << id;
+
   // update delta
-  // TODO
+  auto tradeDelta = execReport->getAssetDelta();
+  for (const auto &[currency, amount] : tradeDelta) {
+    delta[currency] += amount;
+  }
+  _executionsMap[id].second = delta;
 
   if (execution->getTrades().empty()) {
 
