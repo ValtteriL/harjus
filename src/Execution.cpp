@@ -1,7 +1,8 @@
 #include "Execution.h"
 
 Execution::Execution(Opportunity &opportunity)
-    : _startingAsset(opportunity.getStartingAsset()),
+    : _tradesVector(opportunity.getTrades()),
+      _startingAsset(opportunity.getStartingAsset()),
       _totalProfit(opportunity.getTotalProfit()) {
 
   for (const auto &trade : opportunity.getTrades()) {

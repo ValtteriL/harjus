@@ -5,6 +5,10 @@
 #include "ExecutionReport.h"
 #include "IApplication.h"
 #include "ReservedTrades.h"
+#include "TradeExecutionStatus.h"
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
 
 Trader::Trader(boost::lockfree::queue<Execution *> &executionQueue,
                boost::lockfree::queue<ExecutionReport *> &executionReportQueue,
@@ -46,7 +50,60 @@ void Trader::processExecution(Execution *execution) {
                            trade.getOrderPrice(), trade.getPosition());
 }
 
-void Trader::processReport(ExecutionReport *execReport) {}
+void Trader::processReport(ExecutionReport *execReport) {
+  auto id = execReport->getId();
+
+  auto pair = _executionsMap.at(id);
+  auto execution = pair.first;
+  auto delta = pair.second;
+
+  auto status = execReport->getStatus();
+
+  if (status == TradeExecutionStatus::REJECTED) {
+    throw std::runtime_error("Trade rejected");
+  }
+  if (status == TradeExecutionStatus::EXPIRED) {
+
+    BOOST_LOG_TRIVIAL(info) << "Trade expired. ID: " << id;
+
+    // update balance
+    _balance.updateBalance(delta);
+
+    // free symbols
+    _reservedTrades.releaseAll(execution->getOriginalTrades());
+
+    // remove the execution from the map
+    _executionsMap.erase(id);
+
+    return;
+  }
+
+  // update delta
+  // TODO
+
+  if (execution->getTrades().empty()) {
+
+    BOOST_LOG_TRIVIAL(info) << "Execution completed. ID: " << id;
+
+    // remove the execution from the map
+    _executionsMap.erase(id);
+
+    // update balance
+    _balance.updateBalance(delta);
+
+    // free symbols
+    _reservedTrades.releaseAll(execution->getOriginalTrades());
+
+    return;
+  }
+
+  // submit the next order
+  auto trade = execution->getTrades().front();
+  execution->getTrades().pop();
+
+  _application.submitOrder(id, trade.getSymbol().symbol, trade.getOrderQty(),
+                           trade.getOrderPrice(), trade.getPosition());
+}
 
 void Trader::run() {
 

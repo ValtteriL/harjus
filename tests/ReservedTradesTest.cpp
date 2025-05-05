@@ -66,7 +66,7 @@ TEST_F(ReservedTradesTest, releaseAll) {
   EXPECT_TRUE(reservedTrades.isReserved(trade1));
   EXPECT_TRUE(reservedTrades.isReserved(trade2));
 
-  std::vector<Trade *> trades{&trade1, &trade2};
+  std::vector<Trade> trades{trade1, trade2};
 
   reservedTrades.releaseAll(trades);
 

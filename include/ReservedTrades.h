@@ -33,7 +33,7 @@ public:
    * @brief Release all trades in vector.
    * @param trades Vector of trades to release.
    */
-  void releaseAll(std::vector<Trade *> &trades);
+  void releaseAll(std::vector<Trade> &trades);
 
   /**
    *  Check if a trade is reserved.

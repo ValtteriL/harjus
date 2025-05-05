@@ -12,10 +12,10 @@ void ReservedTrades::release(Trade &trade) {
   reservedTrades.erase(&trade);
 }
 
-void ReservedTrades::releaseAll(std::vector<Trade *> &trades) {
+void ReservedTrades::releaseAll(std::vector<Trade> &trades) {
   std::unique_lock<std::shared_mutex> lock(mtx);
-  for (auto trade : trades) {
-    reservedTrades.erase(trade);
+  for (auto &trade : trades) {
+    reservedTrades.erase(&trade);
   }
 }
 

@@ -4,6 +4,7 @@
 #include "Trade.h"
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <queue>
+#include <vector>
 
 /**
  * @file Execution.h
@@ -16,6 +17,7 @@
 class Execution {
 private:
   std::queue<Trade> _trades;
+  std::vector<Trade> _tradesVector;
   std::string _startingAsset;
   boost::multiprecision::cpp_dec_float_50 _totalProfit;
 
@@ -62,4 +64,11 @@ public:
    * @return A queue of trades associated with the execution.
    */
   std::queue<Trade> &getTrades();
+
+  /**
+   * @brief Get the original trades associated with the execution.
+   * @return A vector of trades associated with the execution since
+   * construction.
+   */
+  std::vector<Trade> &getOriginalTrades() { return _tradesVector; }
 };
