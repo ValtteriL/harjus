@@ -74,6 +74,9 @@ void Trader::processReport(ExecutionReport *execReport) {
     // remove the execution from the map
     _executionsMap.erase(id);
 
+    // free the execution
+    delete execution;
+
     return;
   }
 
@@ -108,6 +111,9 @@ void Trader::processReport(ExecutionReport *execReport) {
 
     // free symbols
     _reservedTrades.releaseAll(execution->getOriginalTrades());
+
+    // free the execution
+    delete execution;
 
     return;
   }
