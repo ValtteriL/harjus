@@ -58,9 +58,6 @@ void Trader::processReport(ExecutionReport *execReport) {
 
   auto status = execReport->getStatus();
 
-  if (status == TradeExecutionStatus::REJECTED) {
-    throw std::runtime_error("Trade rejected");
-  }
   if (status == TradeExecutionStatus::EXPIRED) {
 
     BOOST_LOG_TRIVIAL(info) << "Trade expired. ID: " << id;

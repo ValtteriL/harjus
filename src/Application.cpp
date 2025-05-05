@@ -201,9 +201,6 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     case FIX::ExecType_EXPIRED:
       status = TradeExecutionStatus::EXPIRED;
       break;
-    case FIX::ExecType_REJECTED:
-      status = TradeExecutionStatus::REJECTED;
-      break;
     default:
       // For other cases, just log and return without creating execution report
       BOOST_LOG_TRIVIAL(debug)
@@ -260,7 +257,11 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
   }
 }
 
-void Application::onMessage(const FIX44::Reject &, const FIX::SessionID &) {}
+void Application::onMessage(const FIX44::Reject &,
+                            const FIX::SessionID &sessionID) {
+  throw std::runtime_error("Received rejection message on session: " +
+                           sessionID.toString());
+}
 
 void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
                             const FIX::SessionID &) {
