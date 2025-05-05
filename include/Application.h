@@ -7,6 +7,7 @@
  * implements the FIX::Application interface and handles FIX messages.
  */
 
+#include "ExecutionReport.h"
 #include "IApplication.h"
 #include "IConfiguration.h"
 #include "PriceUpdate.h"
@@ -37,6 +38,7 @@ private:
   std::string username;
   std::string privateKeySeed;
   boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue;
+  boost::lockfree::queue<ExecutionReport *> &executionReportQueue;
   std::vector<FIX::SessionID> marketDataSessionIDs;
   FIX::SessionID orderEntrySessionID;
 
@@ -127,7 +129,8 @@ private:
 
 public:
   Application(IConfiguration &conf,
-              boost::lockfree::queue<PriceUpdate *> &queue);
+              boost::lockfree::queue<PriceUpdate *> &queue,
+              boost::lockfree::queue<ExecutionReport *> &reportQueue);
 
   void submitOrder(std::string id, std::string symbol,
                    boost::multiprecision::cpp_dec_float_50 qty,

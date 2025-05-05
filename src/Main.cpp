@@ -4,6 +4,7 @@
 #include "Engine.h"
 #include "Exchange.h"
 #include "Execution.h"
+#include "ExecutionReport.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "Trade.h"
@@ -133,6 +134,7 @@ int main() {
   // Create lockfree queues for price updates & executions
   boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(1000);
   boost::lockfree::queue<Execution *> executionQueue(1000);
+  boost::lockfree::queue<ExecutionReport *> reportQueue(1000);
 
   ReservedTrades reservedTrades;
 
@@ -197,7 +199,7 @@ int main() {
 
   FIX::SessionSettings settings{fixConfigStream};
 
-  Application application{config, priceUpdateQueue};
+  Application application{config, priceUpdateQueue, reportQueue};
   FIX::FileStoreFactory storeFactory{settings};
   FIX::ScreenLogFactory logFactory{settings};
 

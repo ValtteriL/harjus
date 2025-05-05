@@ -9,9 +9,10 @@
 #include <quickfix/Session.h>
 
 Application::Application(IConfiguration &conf,
-                         boost::lockfree::queue<PriceUpdate *> &queue)
+                         boost::lockfree::queue<PriceUpdate *> &queue,
+                         boost::lockfree::queue<ExecutionReport *> &reportQueue)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
-      priceUpdateQueue(queue) {}
+      priceUpdateQueue(queue), executionReportQueue(reportQueue) {}
 
 void Application::onCreate(const FIX::SessionID &sessionID) {
   // store markert data session IDs if Qualifier starts with MARKETDATA
