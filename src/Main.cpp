@@ -5,7 +5,6 @@
 #include "Exchange.h"
 #include "Execution.h"
 #include "ExecutionReport.h"
-#include "IConfiguration.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "Trade.h"
@@ -216,14 +215,16 @@ int main() {
                 relativeValueMap, config.getCommission()};
 
   // create a jthread to run engine
-  std::jthread j_thread_engine([&engine]() { engine.run(); });
+  std::jthread j_thread_engine(
+      [&engine](std::stop_token stoken) { engine.run(stoken); });
 
   // create a trader
   Trader trader{executionQueue, reportQueue, application, *balance,
                 reservedTrades};
 
   // create a jthread to run trader
-  std::jthread j_thread_trader([&trader]() { trader.run(); });
+  std::jthread j_thread_trader(
+      [&trader](std::stop_token stoken) { trader.run(stoken); });
 
   // Start processing execiutions
   BOOST_LOG_TRIVIAL(info) << "Worker threads started. Press Ctrl+C to exit.";
@@ -238,9 +239,19 @@ int main() {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
-  // TODO: stop threads gracefully
+  BOOST_LOG_TRIVIAL(info) << "Stopping threads...";
+  // Stop the engine
+  j_thread_engine.request_stop();
+  j_thread_engine.join();
 
+  // Stop the trader
+  j_thread_trader.request_stop();
+  j_thread_trader.join();
+
+  // Stop the application
   initiator->stop();
+
+  BOOST_LOG_TRIVIAL(info) << "Done. Exiting.";
 
   return 0;
 }

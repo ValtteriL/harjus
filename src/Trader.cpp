@@ -122,18 +122,27 @@ void Trader::processReport(ExecutionReport *execReport) {
                            trade.getOrderPrice(), trade.getPosition());
 }
 
-void Trader::run() {
+void Trader::run(std::stop_token stoken) {
 
   Execution *execution = nullptr;
   ExecutionReport *execReport = nullptr;
 
-  while (true) {
+  while (!stoken.stop_requested()) {
     // Process execution
     if (_executionQueue.pop(execution)) {
       processExecution(execution);
     }
 
     // Process execution report
+    if (_executionReportQueue.pop(execReport)) {
+      processReport(execReport);
+      delete execReport; // Free the memory after processing
+    }
+  }
+
+  // Finish executions that are still in the map
+  while (!_executionsMap.empty()) {
+
     if (_executionReportQueue.pop(execReport)) {
       processReport(execReport);
       delete execReport; // Free the memory after processing

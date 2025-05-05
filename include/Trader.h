@@ -12,6 +12,7 @@
 #include "IApplication.h"
 #include "ReservedTrades.h"
 #include <boost/lockfree/queue.hpp>
+#include <stop_token>
 #include <string>
 
 using entry = std::pair<
@@ -40,5 +41,11 @@ public:
          IApplication &application, Balance &balance,
          ReservedTrades &reservedTrades);
 
-  void run();
+  /**
+   * @brief Run the trader
+   * @param stoken The stop token to stop the thread
+   * @details This function runs the trader in a loop, processing executions and
+   * execution reports.
+   */
+  void run(std::stop_token stoken);
 };

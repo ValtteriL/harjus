@@ -1,6 +1,5 @@
 #include "Trade.h"
 #include <cmath>
-#include <iostream>
 
 Trade::Trade(const Symbol &symbol, Position position)
     : _symbol(symbol), _position(position), _orderQty(getOfferQty()),

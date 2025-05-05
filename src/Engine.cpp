@@ -4,7 +4,7 @@
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include <iostream>
+#include <stop_token>
 #include <string>
 #include <vector>
 
@@ -149,10 +149,11 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
   }
 }
 
-void Engine::run() {
+void Engine::run(std::stop_token stoken) {
 
-  while (true) {
-    PriceUpdate *update = nullptr;
+  PriceUpdate *update = nullptr;
+
+  while (!stoken.stop_requested()) {
     if (_priceUpdateQueue.pop(update)) {
       processPriceUpdate(update);
     }
