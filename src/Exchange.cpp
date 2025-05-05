@@ -47,8 +47,8 @@ std::string getBalancesJson(std::string uri, std::string apiKey,
   return r.text;
 }
 
-Balance *getBalance(IConfiguration &config) {
-  Balance *balance = new Balance();
+std::unique_ptr<Balance> getBalance(IConfiguration &config) {
+  auto balance = std::make_unique<Balance>();
 
   // Fetch balance from exchange API
   std::string jsonResponse =
