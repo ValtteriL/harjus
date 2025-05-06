@@ -137,25 +137,27 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
   // freeze and queue chosen opportunities for execution
   for (auto opportunity : opportunitiesToQueue) {
-
-    BOOST_LOG_TRIVIAL(info)
-        << "Queuing for execution. Starting asset: "
-        << opportunity->getStartingAsset()
-        << " Total profit: " << opportunity->getTotalProfit()
-        << " Capacity: " << opportunity->getCapacity();
-
     Execution *independentCopy = new Execution(*opportunity);
+
+    BOOST_LOG_TRIVIAL(debug)
+        << "Queuing execution for trader: " << *independentCopy;
+
     _executionQueue.push(independentCopy);
   }
 }
 
 void Engine::run(std::stop_token stoken) {
 
+  BOOST_LOG_TRIVIAL(debug) << "Starting Engine";
+
   PriceUpdate *update = nullptr;
 
   while (!stoken.stop_requested()) {
     if (_priceUpdateQueue.pop(update)) {
+      BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << *update;
       processPriceUpdate(update);
     }
   }
+
+  BOOST_LOG_TRIVIAL(debug) << "Stopping Engine";
 }
