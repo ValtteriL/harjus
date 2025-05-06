@@ -18,7 +18,7 @@ std::string Execution::getStartingAsset() const { return _startingAsset; }
 std::queue<Trade> &Execution::getTrades() { return _trades; }
 
 boost::multiprecision::cpp_dec_float_50 Execution::getCapacity() const {
-  return _trades.front().getUsedQty();
+  return _tradesVector.front().getUsedQty();
 }
 
 void Execution::update(boost::multiprecision::cpp_dec_float_50) {}
@@ -33,7 +33,7 @@ std::ostream &operator<<(std::ostream &os, const Execution &execution) {
   os << "Execution{"
      << "startingAsset='" << execution._startingAsset << "', "
      << "totalProfit=" << execution._totalProfit << ", "
-     << "capacity=" << execution._trades.front().getUsedQty() << ", "
+     << "capacity=" << execution.getCapacity() << ", "
      << "symbols=[";
 
   // Add the symbols of all trades
