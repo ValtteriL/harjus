@@ -69,10 +69,11 @@ protected:
     symbolsMap["ETHUSDT"] = ethUsdtSymbol;
 
     // Setup trades using the stored symbols
-    std::vector<Trade> trades{Trade{*symbolsMap["ETHBTC"], Position::LONG},
-                              Trade{*symbolsMap["ETHUSDT"], Position::SHORT}};
+    std::vector<Trade> *trades =
+        new std::vector<Trade>{Trade{*symbolsMap["ETHBTC"], Position::LONG},
+                               Trade{*symbolsMap["ETHUSDT"], Position::SHORT}};
 
-    return Opportunity(trades, 1, 0.001);
+    return Opportunity(*trades, 1, 0.001);
   }
 
   boost::lockfree::queue<Execution *> executionQueue{1000};
@@ -155,10 +156,6 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 0.948, 1e-5);
   EXPECT_NEAR(balance.getBalance("USDT").convert_to<double>(), 1000.0, 1e-5);
   EXPECT_NEAR(balance.getBalance("ETH").convert_to<double>(), 0.0, 1e-5);
-
-  // Clean up
-  delete executionReport;
-  delete finalReport;
 }
 
 TEST_F(TraderTest, processesExpiredExecutionReport) {
@@ -193,7 +190,4 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   for (auto &trade : execution->getOriginalTrades()) {
     EXPECT_FALSE(reservedTrades.isReserved(trade));
   }
-
-  // Clean up
-  delete executionReport;
 }
