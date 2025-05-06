@@ -158,6 +158,7 @@ add_executable(EngineTest tests/EngineTest.cpp
   src/ReservedTrades.cpp
   src/Balance.cpp
   src/Execution.cpp
+  src/PriceUpdate.cpp
 )
 target_link_libraries(EngineTest PRIVATE
   gtest_main
