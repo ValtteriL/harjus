@@ -196,8 +196,8 @@ int main() {
   // "TRXBTC"};
 
   // Log the number of symbols we'll subscribe to
-  BOOST_LOG_TRIVIAL(info) << "Subscribing to " << symbols.size()
-                          << " trading symbols";
+  BOOST_LOG_TRIVIAL(info) << "There are " << symbols.size()
+                          << " available trading symbols";
 
   // fix settings
   auto settings = getFixSessionSettings(config);
@@ -211,6 +211,8 @@ int main() {
 
   // create a jthread to run the application
   std::jthread j_thread_application([&initiator, &application, symbols]() {
+    BOOST_LOG_TRIVIAL(debug) << "Starting QuickFIX initiator";
+
     initiator->start();
 
     // Wait for the session to be established
