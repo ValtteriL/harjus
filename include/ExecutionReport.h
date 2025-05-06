@@ -52,4 +52,13 @@ public:
    */
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
   getFeeDelta() const;
+
+  /**
+   * @brief Stream operator overload for ExecutionReport
+   * @param os Output stream
+   * @param report ExecutionReport object to print
+   * @return Reference to the output stream
+   */
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const ExecutionReport &report);
 };
