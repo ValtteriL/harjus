@@ -201,10 +201,13 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       break;
     default:
       // For other cases, just log and return without creating execution report
-      BOOST_LOG_TRIVIAL(debug)
+      BOOST_LOG_TRIVIAL(error)
           << "Received ExecutionReport with unhandled ExecType: "
           << execTypeValue;
-      return;
+
+      throw std::runtime_error(
+          "Received ExecutionReport with unhandled ExecType: " +
+          std::to_string(execTypeValue));
     }
 
     // Create asset delta map
