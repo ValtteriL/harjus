@@ -117,31 +117,35 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   auto execution = new Execution(opportunity);
 
   // Process the execution first
-  EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(1);
+  EXPECT_CALL(mockApplication,
+              submitOrder(_, "ETHBTC",
+                          opportunity.getTrades().front().getOrderQty(),
+                          opportunity.getTrades().front().getOrderPrice(),
+                          Position::LONG))
+      .Times(1);
   trader.callProcessExecution(execution);
 
   // Now create an execution report for the completed trade
   std::string id = "0"; // Generated ID in Trader::processExecution starts at 0
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       feeDelta{
-          {"BTC",
-           boost::multiprecision::cpp_dec_float_50(-0.001)} // Example fee
+          {"BTC", boost::multiprecision::cpp_dec_float_50(-0.1)} // Example fee
       };
 
   auto executionReport =
       new ExecutionReport(id, TradeExecutionStatus::FILLED, feeDelta);
 
-  // Process the report
-  trader.callProcessReport(executionReport);
-
   // Since there is still one more trade in the execution, expect another
   // submitOrder
   EXPECT_CALL(mockApplication,
               submitOrder(id, "ETHUSDT",
-                          boost::multiprecision::cpp_dec_float_50(1.0),
-                          boost::multiprecision::cpp_dec_float_50(1000.0),
+                          opportunity.getTrades().back().getOrderQty(),
+                          opportunity.getTrades().back().getOrderPrice(),
                           Position::SHORT))
       .Times(1);
+
+  // Process the report
+  trader.callProcessReport(executionReport);
 
   // Process another report to complete the execution
   auto finalReport =
@@ -150,12 +154,12 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
 
   // Verify the balance is updated correctly
   // Initial balance: 1.0 BTC
-  // First trade: -0.05 BTC (used) + 1.0 ETH (received)
-  // Second trade: -1.0 ETH (used) + 1000.0 USDT (received)
-  // Fees: -0.002 BTC
-  EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 0.948, 1e-5);
-  EXPECT_NEAR(balance.getBalance("USDT").convert_to<double>(), 1000.0, 1e-5);
-  EXPECT_NEAR(balance.getBalance("ETH").convert_to<double>(), 0.0, 1e-5);
+  // Fees: -0.2 BTC
+  // Final balance: 1.0 - 0.2 = 0.8 BTC
+  // other assets should be unchanged
+  EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 0.8, 1e-5);
+  EXPECT_NEAR(balance.getBalance("USDT").convert_to<double>(), 0, 1e-5);
+  EXPECT_NEAR(balance.getBalance("ETH").convert_to<double>(), 0, 1e-5);
 }
 
 TEST_F(TraderTest, processesExpiredExecutionReport) {
