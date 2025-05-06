@@ -263,6 +263,31 @@ void Application::onMessage(const FIX44::Reject &,
                            sessionID.toString());
 }
 
+void Application::onMessage(const FIX44::MarketDataRequestReject &message,
+                            const FIX::SessionID &) {
+  try {
+    // Extract the human readable message
+    FIX::Text text;
+    message.get(text);
+    std::string errorMessage = text.getValue();
+
+    // extract reason
+    FIX::MDReqRejReason reason;
+    message.get(reason);
+    auto reasonValue = reason.getValue();
+
+    BOOST_LOG_TRIVIAL(error) << "Market Data Request Rejected: " << errorMessage
+                             << " (Reason: " << reasonValue << ")";
+
+  } catch (const std::exception &e) {
+    std::cerr << "Error processing market data request rejection: " << e.what()
+              << std::endl;
+  }
+
+  throw std::runtime_error("Market Data Request Rejected: " +
+                           message.toString());
+}
+
 void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
                             const FIX::SessionID &) {
   try {
