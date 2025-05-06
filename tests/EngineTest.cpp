@@ -1,6 +1,6 @@
 /*
  * EngineTest.cpp
- * Testing the reserved symbols.
+ * Testing the Engine class.
  */
 
 #include "Engine.h"
