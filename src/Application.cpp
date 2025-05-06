@@ -8,6 +8,8 @@
 #include <quickfix/FixFields.h>
 #include <quickfix/FixValues.h>
 #include <quickfix/Session.h>
+#include <quickfix/fix44/MarketDataRequestReject.h>
+#include <quickfix/fix44/Reject.h>
 
 Application::Application(IConfiguration &conf,
                          boost::lockfree::queue<PriceUpdate *> &queue,
@@ -257,10 +259,29 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
   }
 }
 
-void Application::onMessage(const FIX44::Reject &,
-                            const FIX::SessionID &sessionID) {
+void Application::onMessage(const FIX44::Reject &message,
+                            const FIX::SessionID &) {
+
+  try {
+    // Extract the human readable message
+    FIX::Text text;
+    message.get(text);
+    std::string errorMessage = text.getValue();
+
+    // extract error code
+    auto errorCode = message.getField(25016);
+
+    BOOST_LOG_TRIVIAL(error) << "Request rejected: " << errorMessage
+                             << " (Errorcode: " << errorCode << ")";
+
+  } catch (const std::exception &e) {
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error processing request rejection: " << e.what();
+  }
+
   throw std::runtime_error("Received rejection message on session: " +
-                           sessionID.toString());
+                           message.toString());
 }
 
 void Application::onMessage(const FIX44::MarketDataRequestReject &message,
@@ -280,8 +301,9 @@ void Application::onMessage(const FIX44::MarketDataRequestReject &message,
                              << " (Reason: " << reasonValue << ")";
 
   } catch (const std::exception &e) {
-    std::cerr << "Error processing market data request rejection: " << e.what()
-              << std::endl;
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error processing market data request rejection: " << e.what();
   }
 
   throw std::runtime_error("Market Data Request Rejected: " +
