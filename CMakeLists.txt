@@ -170,6 +170,13 @@ gtest_discover_tests(EngineTest)
 
 
 add_executable(TraderTest tests/TraderTest.cpp
+  src/Trader.cpp
+  src/Opportunity.cpp
+  src/Trade.cpp
+  src/ReservedTrades.cpp
+  src/Balance.cpp
+  src/Execution.cpp
+  src/ExecutionReport.cpp
 )
 target_link_libraries(TraderTest PRIVATE
   gtest_main
