@@ -54,6 +54,7 @@ add_executable(harjus
   src/ReservedTrades.cpp
   src/ExecutionReport.cpp
   src/Trader.cpp
+  src/PriceUpdate.cpp
 )
 target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
 
@@ -157,6 +158,7 @@ add_executable(EngineTest tests/EngineTest.cpp
   src/ReservedTrades.cpp
   src/Balance.cpp
   src/Execution.cpp
+  src/PriceUpdate.cpp
 )
 target_link_libraries(EngineTest PRIVATE
   gtest_main

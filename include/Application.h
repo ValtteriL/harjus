@@ -127,6 +127,8 @@ private:
                  const FIX::SessionID &sessionID);
   void onMessage(const FIX44::MarketDataIncrementalRefresh &message,
                  const FIX::SessionID &sessionID);
+  void onMessage(const FIX44::MarketDataRequestReject &message,
+                 const FIX::SessionID &);
 
 public:
   Application(IConfiguration &conf,

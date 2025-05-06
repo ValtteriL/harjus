@@ -99,34 +99,52 @@ FIX::SessionSettings getFixSessionSettings(const Configuration config) {
   # set TCP_NODELAY (disable Nagle's algorithm)
   # this is required for low latency
   SocketNodelay=Y
-    
+)";
+
+  // hide screen logging of FIX messages unless highest verbosity used
+  if (config.getLogLevel() > 0) {
+    fixConfig += R"(
+  # silence logging
+  ScreenLogShowEvents=N
+  ScreenLogShowOutgoing=N
+  ScreenLogShowIncoming=N
+)";
+  }
+
+  fixConfig += R"(    
   # sessions
   [SESSION]
   SenderCompID=HARJUSM1
   SessionQualifier=MARKETDATA
   DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
-  SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
-                          R"(
-  SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
-                          R"(
+  SocketConnectHost=)" +
+               config.getBinanceFIXApiHostnameMarketData() +
+               R"(
+  SocketConnectPort=)" +
+               config.getBinanceFIXApiPortMarketData() +
+               R"(
     
   [SESSION]
   SenderCompID=HARJUSM2
   SessionQualifier=MARKETDATA
   DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
-  SocketConnectHost=)" + config.getBinanceFIXApiHostnameMarketData() +
-                          R"(
-  SocketConnectPort=)" + config.getBinanceFIXApiPortMarketData() +
-                          R"(
+  SocketConnectHost=)" +
+               config.getBinanceFIXApiHostnameMarketData() +
+               R"(
+  SocketConnectPort=)" +
+               config.getBinanceFIXApiPortMarketData() +
+               R"(
 
   [SESSION]
   SenderCompID=HARJUSOE
   SessionQualifier=ORDERENTRY
   DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
-  SocketConnectHost=)" + config.getBinanceFIXApiHostnameOrderEntry() +
-                          R"(
-  SocketConnectPort=)" + config.getBinanceFIXApiPortOrderEntry() +
-                          R"(
+  SocketConnectHost=)" +
+               config.getBinanceFIXApiHostnameOrderEntry() +
+               R"(
+  SocketConnectPort=)" +
+               config.getBinanceFIXApiPortOrderEntry() +
+               R"(
   )";
 
   std::istringstream fixConfigStream{fixConfig};
@@ -178,8 +196,8 @@ int main() {
   // "TRXBTC"};
 
   // Log the number of symbols we'll subscribe to
-  BOOST_LOG_TRIVIAL(info) << "Subscribing to " << symbols.size()
-                          << " trading symbols";
+  BOOST_LOG_TRIVIAL(info) << "There are " << symbols.size()
+                          << " available trading symbols";
 
   // fix settings
   auto settings = getFixSessionSettings(config);
@@ -193,6 +211,8 @@ int main() {
 
   // create a jthread to run the application
   std::jthread j_thread_application([&initiator, &application, symbols]() {
+    BOOST_LOG_TRIVIAL(debug) << "Starting QuickFIX initiator";
+
     initiator->start();
 
     // Wait for the session to be established

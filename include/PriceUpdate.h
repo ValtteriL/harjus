@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <ostream>
 #include <string>
 
 /**
@@ -16,3 +17,11 @@ struct PriceUpdate {
   boost::multiprecision::cpp_dec_float_50 bidQty;
   boost::multiprecision::cpp_dec_float_50 askQty;
 };
+
+/**
+ * @brief Stream operator overload for PriceUpdate
+ * @param os Output stream
+ * @param update PriceUpdate to print
+ * @return Reference to the output stream
+ */
+std::ostream &operator<<(std::ostream &os, const PriceUpdate &update);

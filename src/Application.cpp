@@ -3,11 +3,12 @@
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include <iostream>
 #include <quickfix/Field.h>
 #include <quickfix/FixFields.h>
 #include <quickfix/FixValues.h>
 #include <quickfix/Session.h>
+#include <quickfix/fix44/MarketDataRequestReject.h>
+#include <quickfix/fix44/Reject.h>
 
 Application::Application(IConfiguration &conf,
                          boost::lockfree::queue<PriceUpdate *> &queue,
@@ -27,18 +28,19 @@ void Application::onCreate(const FIX::SessionID &sessionID) {
 }
 
 void Application::onLogon(const FIX::SessionID &sessionID) {
-  std::cout << std::endl << "Logon - " << sessionID << std::endl;
+  BOOST_LOG_TRIVIAL(debug) << "FIX logon - " << sessionID;
 }
 
 void Application::onLogout(const FIX::SessionID &sessionID) {
-  std::cout << std::endl << "Logout - " << sessionID << std::endl;
+  BOOST_LOG_TRIVIAL(debug) << "FIX logout - " << sessionID;
 }
 
 void Application::fromAdmin(const FIX::Message &, const FIX::SessionID &)
     EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue,
            FIX::RejectLogon) {}
 
-void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
+void Application::toAdmin(FIX::Message &message,
+                          const FIX::SessionID &sessionID) {
   FIX::MsgType msgType;
   message.getHeader().getField(msgType);
 
@@ -72,6 +74,8 @@ void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
     std::string password = Ed25519::sign(privateKeySeed, payload);
     header.setField(FIX::RawData(password.c_str()));
     header.setField(FIX::RawDataLength(password.length()));
+
+    BOOST_LOG_TRIVIAL(debug) << "Sending logon request - " << sessionID;
   }
 }
 
@@ -80,11 +84,6 @@ void Application::fromApp(const FIX::Message &message,
     EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue,
            FIX::UnsupportedMessageType) {
   crack(message, sessionID); // crack the message to the appropriate handler
-
-  // print message to console with SOH replaced with |s
-  std::string messageStr = message.toString();
-  std::replace(messageStr.begin(), messageStr.end(), '\x01', '|');
-  BOOST_LOG_TRIVIAL(debug) << "IN: " << messageStr << std::endl;
 }
 
 void Application::toApp(FIX::Message &message, const FIX::SessionID &)
@@ -97,11 +96,6 @@ void Application::toApp(FIX::Message &message, const FIX::SessionID &)
     }
   } catch (FIX::FieldNotFound &) {
   }
-
-  // print message to console with SOH replaced with |s
-  std::string messageStr = message.toString();
-  std::replace(messageStr.begin(), messageStr.end(), '\x01', '|');
-  BOOST_LOG_TRIVIAL(debug) << "OUT: " << messageStr << std::endl;
 }
 
 bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
@@ -174,8 +168,12 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
     }
     return true;
   } catch (const std::exception &e) {
-    std::cerr << "Error sending market data request: " << e.what() << std::endl;
-    return false;
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error sending market data request: " << e.what();
+
+    throw std::runtime_error("Error sending market data request: " +
+                             std::string(e.what()));
   }
 }
 
@@ -203,10 +201,13 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       break;
     default:
       // For other cases, just log and return without creating execution report
-      BOOST_LOG_TRIVIAL(debug)
+      BOOST_LOG_TRIVIAL(error)
           << "Received ExecutionReport with unhandled ExecType: "
           << execTypeValue;
-      return;
+
+      throw std::runtime_error(
+          "Received ExecutionReport with unhandled ExecType: " +
+          std::to_string(execTypeValue));
     }
 
     // Create asset delta map
@@ -243,6 +244,9 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     // Create execution report
     ExecutionReport *report = new ExecutionReport(id, status, feeDelta);
 
+    BOOST_LOG_TRIVIAL(trace)
+        << "Pushing execution report to queue: " << *report;
+
     // Push to the queue
     if (!executionReportQueue.push(report)) {
       // If push fails (queue full), delete the report to avoid memory leak
@@ -257,10 +261,55 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
   }
 }
 
-void Application::onMessage(const FIX44::Reject &,
-                            const FIX::SessionID &sessionID) {
+void Application::onMessage(const FIX44::Reject &message,
+                            const FIX::SessionID &) {
+
+  try {
+    // Extract the human readable message
+    FIX::Text text;
+    message.get(text);
+    std::string errorMessage = text.getValue();
+
+    // extract error code
+    auto errorCode = message.getField(25016);
+
+    BOOST_LOG_TRIVIAL(error) << "Request rejected: " << errorMessage
+                             << " (Errorcode: " << errorCode << ")";
+
+  } catch (const std::exception &e) {
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error processing request rejection: " << e.what();
+  }
+
   throw std::runtime_error("Received rejection message on session: " +
-                           sessionID.toString());
+                           message.toString());
+}
+
+void Application::onMessage(const FIX44::MarketDataRequestReject &message,
+                            const FIX::SessionID &) {
+  try {
+    // Extract the human readable message
+    FIX::Text text;
+    message.get(text);
+    std::string errorMessage = text.getValue();
+
+    // extract reason
+    FIX::MDReqRejReason reason;
+    message.get(reason);
+    auto reasonValue = reason.getValue();
+
+    BOOST_LOG_TRIVIAL(error) << "Market Data Request Rejected: " << errorMessage
+                             << " (Reason: " << reasonValue << ")";
+
+  } catch (const std::exception &e) {
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error processing market data request rejection: " << e.what();
+  }
+
+  throw std::runtime_error("Market Data Request Rejected: " +
+                           message.toString());
 }
 
 void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
@@ -321,10 +370,15 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
 
     // Push to the queue - if queue is full, this may fail but we don't want to
     // block
+    BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << *update;
     priceUpdateQueue.push(update);
   } catch (const std::exception &e) {
-    std::cerr << "Error processing market data snapshot: " << e.what()
-              << std::endl;
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error processing market data snapshot: " << e.what();
+
+    throw std::runtime_error("Error processing market data snapshot: " +
+                             std::string(e.what()));
   }
 }
 
@@ -393,11 +447,16 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
     // Add all updates to the queue
     for (const auto &[symbol, update] : updates) {
+      BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << *update;
       priceUpdateQueue.push(update);
     }
   } catch (const std::exception &e) {
-    std::cerr << "Error processing incremental refresh: " << e.what()
-              << std::endl;
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error processing incremental refresh: " << e.what();
+
+    throw std::runtime_error("Error processing incremental refresh: " +
+                             std::string(e.what()));
   }
 }
 

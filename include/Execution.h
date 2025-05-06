@@ -71,4 +71,12 @@ public:
    * construction.
    */
   std::vector<Trade> &getOriginalTrades() { return _tradesVector; }
+
+  /**
+   * @brief Stream operator overload for Execution
+   * @param os Output stream
+   * @param execution Execution object to print
+   * @return Reference to the output stream
+   */
+  friend std::ostream &operator<<(std::ostream &os, const Execution &execution);
 };
