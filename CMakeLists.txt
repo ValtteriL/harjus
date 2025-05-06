@@ -167,3 +167,14 @@ target_link_libraries(EngineTest PRIVATE
 )
 
 gtest_discover_tests(EngineTest)
+
+
+add_executable(TraderTest tests/TraderTest.cpp
+)
+target_link_libraries(TraderTest PRIVATE
+  gtest_main
+  GTest::gmock
+  Boost::log
+)
+
+gtest_discover_tests(TraderTest)
