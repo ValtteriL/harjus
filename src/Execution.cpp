@@ -22,3 +22,30 @@ boost::multiprecision::cpp_dec_float_50 Execution::getCapacity() const {
 }
 
 void Execution::update(boost::multiprecision::cpp_dec_float_50) {}
+
+/**
+ * @brief Stream operator overload for Execution
+ * @param os Output stream
+ * @param execution Execution object to print
+ * @return Reference to the output stream
+ */
+std::ostream &operator<<(std::ostream &os, const Execution &execution) {
+  os << "Execution{"
+     << "startingAsset='" << execution._startingAsset << "', "
+     << "totalProfit=" << execution._totalProfit << ", "
+     << "capacity=" << execution._trades.front().getUsedQty() << ", "
+     << "symbols=[";
+
+  // Add the symbols of all trades
+  bool first = true;
+  for (const auto &trade : execution._tradesVector) {
+    if (!first) {
+      os << ", ";
+    }
+    os << "'" << trade.getSymbol().symbol << "'";
+    first = false;
+  }
+
+  os << "]}";
+  return os;
+}
