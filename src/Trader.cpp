@@ -25,6 +25,9 @@ std::string generateId() {
 }
 
 void Trader::processExecution(Execution *execution) {
+
+  BOOST_LOG_TRIVIAL(trace) << "Processing execution " << *execution;
+
   auto id = generateId();
   auto delta =
       std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>{
@@ -50,6 +53,9 @@ void Trader::processExecution(Execution *execution) {
 }
 
 void Trader::processReport(ExecutionReport *execReport) {
+
+  BOOST_LOG_TRIVIAL(debug) << "Processing execution report " << *execReport;
+
   auto id = execReport->getId();
 
   auto pair = _executionsMap.at(id);
@@ -60,7 +66,7 @@ void Trader::processReport(ExecutionReport *execReport) {
 
   if (status == TradeExecutionStatus::EXPIRED) {
 
-    BOOST_LOG_TRIVIAL(info) << "Trade expired. ID: " << id;
+    BOOST_LOG_TRIVIAL(info) << "Failed execution: " << *execution;
 
     // update balance
     _balance.updateBalance(delta);
@@ -76,8 +82,6 @@ void Trader::processReport(ExecutionReport *execReport) {
 
     return;
   }
-
-  BOOST_LOG_TRIVIAL(info) << "Trade completed. ID: " << id;
 
   // update delta
   // get fees from the execution report
@@ -98,7 +102,7 @@ void Trader::processReport(ExecutionReport *execReport) {
 
   if (execution->getTrades().empty()) {
 
-    BOOST_LOG_TRIVIAL(info) << "Execution completed. ID: " << id;
+    BOOST_LOG_TRIVIAL(info) << "Succesful execution: " << *execution;
 
     // remove the execution from the map
     _executionsMap.erase(id);
@@ -116,6 +120,7 @@ void Trader::processReport(ExecutionReport *execReport) {
   }
 
   // submit the next order
+  BOOST_LOG_TRIVIAL(debug) << "Submitting next order ";
   auto trade = execution->getTrades().front();
 
   _application.submitOrder(id, trade.getSymbol().symbol, trade.getOrderQty(),
@@ -123,6 +128,8 @@ void Trader::processReport(ExecutionReport *execReport) {
 }
 
 void Trader::run(std::stop_token stoken) {
+
+  BOOST_LOG_TRIVIAL(debug) << "Starting Trader";
 
   Execution *execution = nullptr;
   ExecutionReport *execReport = nullptr;
@@ -140,6 +147,8 @@ void Trader::run(std::stop_token stoken) {
     }
   }
 
+  BOOST_LOG_TRIVIAL(debug) << "Finishing executions...";
+
   // Finish executions that are still in the map
   while (!_executionsMap.empty()) {
 
@@ -148,4 +157,6 @@ void Trader::run(std::stop_token stoken) {
       delete execReport; // Free the memory after processing
     }
   }
+
+  BOOST_LOG_TRIVIAL(debug) << "Stopping Trader";
 }
