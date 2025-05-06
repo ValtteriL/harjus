@@ -244,6 +244,9 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     // Create execution report
     ExecutionReport *report = new ExecutionReport(id, status, feeDelta);
 
+    BOOST_LOG_TRIVIAL(trace)
+        << "Pushing execution report to queue: " << *report;
+
     // Push to the queue
     if (!executionReportQueue.push(report)) {
       // If push fails (queue full), delete the report to avoid memory leak
@@ -367,6 +370,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
 
     // Push to the queue - if queue is full, this may fail but we don't want to
     // block
+    BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << *update;
     priceUpdateQueue.push(update);
   } catch (const std::exception &e) {
 
@@ -443,6 +447,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
     // Add all updates to the queue
     for (const auto &[symbol, update] : updates) {
+      BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << *update;
       priceUpdateQueue.push(update);
     }
   } catch (const std::exception &e) {
