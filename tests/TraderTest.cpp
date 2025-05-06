@@ -100,8 +100,8 @@ TEST_F(TraderTest, processesExecutions) {
   // Expect a call to submitOrder with the correct parameters
   EXPECT_CALL(mockApplication,
               submitOrder(_, "ETHBTC",
-                          boost::multiprecision::cpp_dec_float_50(1.0),
-                          boost::multiprecision::cpp_dec_float_50(0.05),
+                          opportunity.getTrades().front().getOrderQty(),
+                          opportunity.getTrades().front().getOrderPrice(),
                           Position::LONG))
       .Times(1);
 
