@@ -3,7 +3,6 @@
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include <iostream>
 #include <quickfix/Field.h>
 #include <quickfix/FixFields.h>
 #include <quickfix/FixValues.h>
@@ -29,18 +28,19 @@ void Application::onCreate(const FIX::SessionID &sessionID) {
 }
 
 void Application::onLogon(const FIX::SessionID &sessionID) {
-  std::cout << std::endl << "Logon - " << sessionID << std::endl;
+  BOOST_LOG_TRIVIAL(debug) << "FIX logon - " << sessionID;
 }
 
 void Application::onLogout(const FIX::SessionID &sessionID) {
-  std::cout << std::endl << "Logout - " << sessionID << std::endl;
+  BOOST_LOG_TRIVIAL(debug) << "FIX logout - " << sessionID;
 }
 
 void Application::fromAdmin(const FIX::Message &, const FIX::SessionID &)
     EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue,
            FIX::RejectLogon) {}
 
-void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
+void Application::toAdmin(FIX::Message &message,
+                          const FIX::SessionID &sessionID) {
   FIX::MsgType msgType;
   message.getHeader().getField(msgType);
 
@@ -74,6 +74,8 @@ void Application::toAdmin(FIX::Message &message, const FIX::SessionID &) {
     std::string password = Ed25519::sign(privateKeySeed, payload);
     header.setField(FIX::RawData(password.c_str()));
     header.setField(FIX::RawDataLength(password.length()));
+
+    BOOST_LOG_TRIVIAL(debug) << "Sending logon request - " << sessionID;
   }
 }
 
@@ -82,11 +84,6 @@ void Application::fromApp(const FIX::Message &message,
     EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue,
            FIX::UnsupportedMessageType) {
   crack(message, sessionID); // crack the message to the appropriate handler
-
-  // print message to console with SOH replaced with |s
-  std::string messageStr = message.toString();
-  std::replace(messageStr.begin(), messageStr.end(), '\x01', '|');
-  BOOST_LOG_TRIVIAL(debug) << "IN: " << messageStr << std::endl;
 }
 
 void Application::toApp(FIX::Message &message, const FIX::SessionID &)
@@ -99,11 +96,6 @@ void Application::toApp(FIX::Message &message, const FIX::SessionID &)
     }
   } catch (FIX::FieldNotFound &) {
   }
-
-  // print message to console with SOH replaced with |s
-  std::string messageStr = message.toString();
-  std::replace(messageStr.begin(), messageStr.end(), '\x01', '|');
-  BOOST_LOG_TRIVIAL(debug) << "OUT: " << messageStr << std::endl;
 }
 
 bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
@@ -176,8 +168,12 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
     }
     return true;
   } catch (const std::exception &e) {
-    std::cerr << "Error sending market data request: " << e.what() << std::endl;
-    return false;
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error sending market data request: " << e.what();
+
+    throw std::runtime_error("Error sending market data request: " +
+                             std::string(e.what()));
   }
 }
 
@@ -370,8 +366,12 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
     // block
     priceUpdateQueue.push(update);
   } catch (const std::exception &e) {
-    std::cerr << "Error processing market data snapshot: " << e.what()
-              << std::endl;
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error processing market data snapshot: " << e.what();
+
+    throw std::runtime_error("Error processing market data snapshot: " +
+                             std::string(e.what()));
   }
 }
 
@@ -443,8 +443,12 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       priceUpdateQueue.push(update);
     }
   } catch (const std::exception &e) {
-    std::cerr << "Error processing incremental refresh: " << e.what()
-              << std::endl;
+
+    BOOST_LOG_TRIVIAL(error)
+        << "Error processing incremental refresh: " << e.what();
+
+    throw std::runtime_error("Error processing incremental refresh: " +
+                             std::string(e.what()));
   }
 }
 
