@@ -97,7 +97,7 @@ protected:
 TEST_F(TraderTest, processesExecutions) {
   // Create an opportunity and execution
   auto opportunity = createSimpleOpportunity();
-  auto execution = new Execution(opportunity);
+  auto execution = Execution(opportunity);
 
   // Expect a call to submitOrder with the correct parameters
   EXPECT_CALL(mockApplication,
@@ -108,7 +108,7 @@ TEST_F(TraderTest, processesExecutions) {
       .Times(1);
 
   // Process the execution
-  trader.callProcessExecution(execution);
+  trader.callProcessExecution(&execution);
 
   // Clean up - don't delete execution here, it's stored in the executionsMap
 }
@@ -116,7 +116,7 @@ TEST_F(TraderTest, processesExecutions) {
 TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   // Create an opportunity and execution
   auto opportunity = createSimpleOpportunity();
-  auto execution = new Execution(opportunity);
+  auto execution = Execution(opportunity);
 
   // Process the execution first
   EXPECT_CALL(mockApplication,
@@ -125,7 +125,7 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
                           opportunity.getTrades().front().getOrderPrice(),
                           Position::LONG))
       .Times(1);
-  trader.callProcessExecution(execution);
+  trader.callProcessExecution(&execution);
 
   // Now create an execution report for the completed trade
   std::string id = "0"; // Generated ID in Trader::processExecution starts at 0
@@ -135,7 +135,7 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
       };
 
   auto executionReport =
-      new ExecutionReport(id, TradeExecutionStatus::FILLED, feeDelta);
+      ExecutionReport(id, TradeExecutionStatus::FILLED, feeDelta);
 
   // Since there is still one more trade in the execution, expect another
   // submitOrder
@@ -147,12 +147,12 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
       .Times(1);
 
   // Process the report
-  trader.callProcessReport(executionReport);
+  trader.callProcessReport(&executionReport);
 
   // Process another report to complete the execution
   auto finalReport =
-      new ExecutionReport(id, TradeExecutionStatus::FILLED, feeDelta);
-  trader.callProcessReport(finalReport);
+      ExecutionReport(id, TradeExecutionStatus::FILLED, feeDelta);
+  trader.callProcessReport(&finalReport);
 
   // Verify the balance is updated correctly
   // Initial balance: 1.0 BTC
@@ -167,16 +167,16 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
 TEST_F(TraderTest, processesExpiredExecutionReport) {
   // Create an opportunity and execution
   auto opportunity = createSimpleOpportunity();
-  auto execution = new Execution(opportunity);
+  auto execution = Execution(opportunity);
 
   // Reserve the trades
-  for (auto &trade : execution->getOriginalTrades()) {
+  for (auto &trade : execution.getOriginalTrades()) {
     reservedTrades.reserve(trade);
   }
 
   // Process the execution first
   EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(1);
-  trader.callProcessExecution(execution);
+  trader.callProcessExecution(&execution);
 
   // Now create an EXPIRED execution report
   std::string id = "0"; // Generated ID in Trader::processExecution starts at 0
@@ -184,16 +184,16 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
       feeDelta{};
 
   auto executionReport =
-      new ExecutionReport(id, TradeExecutionStatus::EXPIRED, feeDelta);
+      ExecutionReport(id, TradeExecutionStatus::EXPIRED, feeDelta);
 
   // Process the report
-  trader.callProcessReport(executionReport);
+  trader.callProcessReport(&executionReport);
 
   // Verify the balance is unchanged (except maybe for fees)
   EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 1.0, 1e-5);
 
   // Verify that trades are released
-  for (auto &trade : execution->getOriginalTrades()) {
+  for (auto &trade : execution.getOriginalTrades()) {
     EXPECT_FALSE(reservedTrades.isReserved(trade));
   }
 }
