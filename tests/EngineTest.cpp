@@ -8,9 +8,11 @@
 #include "Execution.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
+#include "ThreadSafeQueue.h"
 #include <boost/lockfree/queue.hpp>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <semaphore>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -22,7 +24,7 @@ public:
       std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
       ReservedTrades &reservedTrades,
       boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-      boost::lockfree::queue<Execution *> &executionQueue,
+      ThreadSafeQueue<Execution> &executionQueue,
       std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
           relativeValues,
       boost::multiprecision::cpp_dec_float_50 commission)
@@ -71,14 +73,15 @@ protected:
       relativeValues{{"BTC", 1.0}, {"ETH", 1.0}, {"USDT", 1.0}};
   boost::multiprecision::cpp_dec_float_50 commission{0.001};
 
+  std::binary_semaphore semaphore{0};
+  ThreadSafeQueue<Execution> executionQueue{semaphore};
   boost::lockfree::queue<PriceUpdate *> priceUpdateQueue{1000};
-  boost::lockfree::queue<Execution *> executionQueue{1000};
 
   // simple triangular arbitrage
   // BTC -> ETH -> USDT -> BTC
-  std::vector<Trade> trades{Trade{*symbols["ETHBTC"], Position::LONG},
-                            Trade{*symbols["ETHUSDT"], Position::SHORT},
-                            Trade{*symbols["USDTBTC"], Position::SHORT}};
+  std::vector<Trade> trades{Trade{symbols["ETHBTC"], Position::LONG},
+                            Trade{symbols["ETHUSDT"], Position::SHORT},
+                            Trade{symbols["USDTBTC"], Position::SHORT}};
 
   TestableEngine engine;
 };
@@ -96,16 +99,16 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   }
 
   // Verify execution is queued
-  Execution *execution = nullptr;
-  ASSERT_TRUE(executionQueue.pop(execution));
+  Execution execution;
+  ASSERT_TRUE(executionQueue.try_pop(execution));
 
-  EXPECT_EQ(execution->getTrades().size(), 3);
+  EXPECT_EQ(execution.getTrades().size(), 3);
 
   // Check if the total profit is calculated correctly
-  EXPECT_NEAR(execution->getTotalProfit().convert_to<double>(), 8.997, 1e-5);
+  EXPECT_NEAR(execution.getTotalProfit().convert_to<double>(), 8.997, 1e-5);
   // Check if the capacity is calculated correctly
-  EXPECT_EQ(execution->getCapacity(),
+  EXPECT_EQ(execution.getCapacity(),
             boost::multiprecision::cpp_dec_float_50{startingAssetBudget});
   // Check if the starting asset is correct
-  EXPECT_EQ(execution->getStartingAsset(), "BTC");
+  EXPECT_EQ(execution.getStartingAsset(), "BTC");
 }

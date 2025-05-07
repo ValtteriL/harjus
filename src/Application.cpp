@@ -12,7 +12,7 @@
 
 Application::Application(IConfiguration &conf,
                          boost::lockfree::queue<PriceUpdate *> &queue,
-                         boost::lockfree::queue<ExecutionReport *> &reportQueue)
+                         ThreadSafeQueue<ExecutionReport> &reportQueue)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
       priceUpdateQueue(queue), executionReportQueue(reportQueue) {}
 
@@ -241,19 +241,12 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       }
     }
 
-    // Create execution report
-    ExecutionReport *report = new ExecutionReport(id, status, feeDelta);
-
+    // Create execution report & push to the queue
     BOOST_LOG_TRIVIAL(trace)
-        << "Pushing execution report to queue: " << *report;
+        << "Pushing execution report to queue";
 
-    // Push to the queue
-    if (!executionReportQueue.push(report)) {
-      // If push fails (queue full), delete the report to avoid memory leak
-      BOOST_LOG_TRIVIAL(error)
-          << "Failed to push execution report to queue, queue full";
-      delete report;
-    }
+    executionReportQueue.push(ExecutionReport(id, status, feeDelta));
+
   } catch (const std::exception &e) {
 
     throw std::runtime_error("Error processing execution report: " +

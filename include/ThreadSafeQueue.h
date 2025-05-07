@@ -13,15 +13,6 @@ private:
   std::mutex _mutex;
   std::binary_semaphore &_semaphore;
 
-  /*
-   * @brief Check if the queue is empty
-   * @return True if the queue is empty, false otherwise
-   */
-  bool empty() {
-    std::lock_guard<std::mutex> lock(_mutex);
-    return _deque.empty();
-  }
-
 public:
   /*
    * @brief Constructor
@@ -50,6 +41,15 @@ public:
     item = std::move(_deque.front());
     _deque.pop_front();
     return true;
+  }
+
+  /*
+   * @brief Check if the queue is empty
+   * @return True if the queue is empty, false otherwise
+   */
+  bool empty() {
+    std::lock_guard<std::mutex> lock(_mutex);
+    return _deque.empty();
   }
 
   /*

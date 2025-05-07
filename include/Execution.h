@@ -28,6 +28,11 @@ public:
    */
   Execution(Opportunity &opportunity);
 
+  /**
+   * @brief Default constructor for Execution class.
+   */
+  Execution() = default;
+
   virtual ~Execution() = default; // Add a virtual destructor
 
   /**

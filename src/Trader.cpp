@@ -5,13 +5,14 @@
 #include "ExecutionReport.h"
 #include "IApplication.h"
 #include "ReservedTrades.h"
+#include "ThreadSafeQueue.h"
 #include "TradeExecutionStatus.h"
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 
-Trader::Trader(boost::lockfree::queue<Execution *> &executionQueue,
-               boost::lockfree::queue<ExecutionReport *> &executionReportQueue,
+Trader::Trader(ThreadSafeQueue<Execution> &executionQueue,
+               ThreadSafeQueue<ExecutionReport> &executionReportQueue,
                IApplication &application, Balance &balance,
                ReservedTrades &reservedTrades)
     : _executionQueue(executionQueue),
@@ -48,7 +49,7 @@ void Trader::processExecution(Execution *execution) {
   // submit the first trade
   auto trade = execution->getTrades().front();
 
-  _application.submitOrder(id, trade.getSymbol().symbol, trade.getOrderQty(),
+  _application.submitOrder(id, trade.getSymbol()->symbol, trade.getOrderQty(),
                            trade.getOrderPrice(), trade.getPosition());
 }
 
@@ -76,9 +77,6 @@ void Trader::processReport(ExecutionReport *execReport) {
 
     // remove the execution from the map
     _executionsMap.erase(id);
-
-    // free the execution
-    delete execution;
 
     return;
   }
@@ -113,9 +111,6 @@ void Trader::processReport(ExecutionReport *execReport) {
     // free symbols
     _reservedTrades.releaseAll(execution->getOriginalTrades());
 
-    // free the execution
-    delete execution;
-
     return;
   }
 
@@ -123,7 +118,7 @@ void Trader::processReport(ExecutionReport *execReport) {
   BOOST_LOG_TRIVIAL(debug) << "Submitting next order ";
   auto trade = execution->getTrades().front();
 
-  _application.submitOrder(id, trade.getSymbol().symbol, trade.getOrderQty(),
+  _application.submitOrder(id, trade.getSymbol()->symbol, trade.getOrderQty(),
                            trade.getOrderPrice(), trade.getPosition());
 }
 
@@ -131,19 +126,24 @@ void Trader::run(std::stop_token stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Trader";
 
-  Execution *execution = nullptr;
-  ExecutionReport *execReport = nullptr;
+  // Wait for the semaphore to be released
+  // or stop requested
+  while (!stoken.stop_requested() &&
+         _executionQueue.getSemaphore().try_acquire_for(
+             std::chrono::milliseconds(100))) {
 
-  while (!stoken.stop_requested()) {
+    Execution execution;
+
     // Process execution
-    if (_executionQueue.pop(execution)) {
-      processExecution(execution);
+    if (_executionQueue.try_pop(execution)) {
+      processExecution(&execution);
     }
 
+    ExecutionReport executionReport;
+
     // Process execution report
-    if (_executionReportQueue.pop(execReport)) {
-      processReport(execReport);
-      delete execReport; // Free the memory after processing
+    if (_executionReportQueue.try_pop(executionReport)) {
+      processReport(&executionReport);
     }
   }
 
@@ -152,9 +152,12 @@ void Trader::run(std::stop_token stoken) {
   // Finish executions that are still in the map
   while (!_executionsMap.empty()) {
 
-    if (_executionReportQueue.pop(execReport)) {
-      processReport(execReport);
-      delete execReport; // Free the memory after processing
+    ExecutionReport executionReport;
+
+    _executionReportQueue.getSemaphore().acquire();
+
+    if (_executionReportQueue.try_pop(executionReport)) {
+      processReport(&executionReport);
     }
   }
 

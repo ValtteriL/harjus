@@ -28,6 +28,11 @@ public:
           std::string, boost::multiprecision::cpp_dec_float_50> &feeDelta);
 
   /**
+   * @brief Default constructor for ExecutionReport class
+   */
+  ExecutionReport() = default;
+
+  /**
    * @brief Destructor for ExecutionReport class
    */
   virtual ~ExecutionReport() = default;

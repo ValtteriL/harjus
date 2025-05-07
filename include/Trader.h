@@ -11,6 +11,7 @@
 #include "ExecutionReport.h"
 #include "IApplication.h"
 #include "ReservedTrades.h"
+#include "ThreadSafeQueue.h"
 #include <boost/lockfree/queue.hpp>
 #include <stop_token>
 #include <string>
@@ -22,8 +23,8 @@ using entry = std::pair<
 class Trader {
 
 private:
-  boost::lockfree::queue<Execution *> &_executionQueue;
-  boost::lockfree::queue<ExecutionReport *> &_executionReportQueue;
+  ThreadSafeQueue<Execution> &_executionQueue;
+  ThreadSafeQueue<ExecutionReport> &_executionReportQueue;
   IApplication &_application;
   Balance &_balance;
   ReservedTrades &_reservedTrades;
@@ -36,8 +37,8 @@ protected:
   void processReport(ExecutionReport *execReport);
 
 public:
-  Trader(boost::lockfree::queue<Execution *> &executionQueue,
-         boost::lockfree::queue<ExecutionReport *> &executionReportQueue,
+  Trader(ThreadSafeQueue<Execution> &_executionQueue,
+         ThreadSafeQueue<ExecutionReport> &executionReportQueue,
          IApplication &application, Balance &balance,
          ReservedTrades &reservedTrades);
 

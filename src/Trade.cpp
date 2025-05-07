@@ -1,12 +1,12 @@
 #include "Trade.h"
 #include <cmath>
 
-Trade::Trade(const Symbol &symbol, Position position)
+Trade::Trade(const Symbol *symbol, Position position)
     : _symbol(symbol), _position(position), _orderQty(getOfferQty()),
-      _recvCurrency(position == Position::LONG ? symbol.baseAsset
-                                               : symbol.quoteAsset),
-      _usedCurrency(position == Position::LONG ? symbol.quoteAsset
-                                               : symbol.baseAsset) {}
+      _recvCurrency(position == Position::LONG ? symbol->baseAsset
+                                               : symbol->quoteAsset),
+      _usedCurrency(position == Position::LONG ? symbol->quoteAsset
+                                               : symbol->baseAsset) {}
 
 enum Position Trade::getPosition() const { return _position; }
 
@@ -17,14 +17,14 @@ boost::multiprecision::cpp_dec_float_50 Trade::getOrderQty() const {
 void Trade::resetOrderQty() { _orderQty = getOfferQty(); }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getOrderPrice() const {
-  return _position == Position::LONG ? _symbol.askPrice : _symbol.bidPrice;
+  return _position == Position::LONG ? _symbol->askPrice : _symbol->bidPrice;
 }
 
 boost::multiprecision::cpp_dec_float_50 Trade::getOfferQty() const {
-  return _position == Position::LONG ? _symbol.askQty : _symbol.bidQty;
+  return _position == Position::LONG ? _symbol->askQty : _symbol->bidQty;
 }
 
-const Symbol &Trade::getSymbol() const { return _symbol; }
+const Symbol *Trade::getSymbol() const { return _symbol; }
 
 void Trade::setBudget(boost::multiprecision::cpp_dec_float_50 budget) {
 
@@ -57,12 +57,12 @@ std::string Trade::getRecvCurrency() const { return _recvCurrency; }
 std::string Trade::getUsedCurrency() const { return _usedCurrency; }
 
 bool Trade::operator==(const Trade &other) const {
-  return getSymbol().symbol == other.getSymbol().symbol &&
+  return getSymbol()->symbol == other.getSymbol()->symbol &&
          getPosition() == other.getPosition() &&
          getOrderQty() == other.getOrderQty();
 }
 
 std::size_t Trade::hash() const {
-  return std::hash<std::string>()(getSymbol().symbol) ^
+  return std::hash<std::string>()(getSymbol()->symbol) ^
          std::hash<Position>()(getPosition());
 }

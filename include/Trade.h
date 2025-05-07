@@ -11,7 +11,7 @@
 class Trade {
 
 private:
-  const Symbol &_symbol;
+  const Symbol *_symbol;
   const Position _position;
   boost::multiprecision::cpp_dec_float_50 _orderQty;
   const std::string _recvCurrency;
@@ -23,7 +23,7 @@ public:
    * @param symbol The symbol of the trade.
    * @param position The position of the trade (LONG or SHORT).
    */
-  Trade(const Symbol &symbol, Position position);
+  Trade(const Symbol *symbol, Position position);
 
   /**
    * Get the position of the trade.
@@ -60,7 +60,7 @@ public:
    * Get the symbol of the trade.
    * @return The symbol of the trade.
    */
-  const Symbol &getSymbol() const;
+  const Symbol *getSymbol() const;
 
   /**
    * Set the budget for the trade. Updates the order quantity and price to the
