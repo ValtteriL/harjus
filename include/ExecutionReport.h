@@ -12,6 +12,8 @@ class ExecutionReport {
 private:
   std::string _id;
   TradeExecutionStatus _status;
+  boost::multiprecision::cpp_dec_float_50 _usedQty;
+  boost::multiprecision::cpp_dec_float_50 _recvQty;
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       _feeDelta;
 
@@ -24,6 +26,8 @@ public:
    */
   ExecutionReport(
       const std::string &id, TradeExecutionStatus status,
+      boost::multiprecision::cpp_dec_float_50 usedQty,
+      boost::multiprecision::cpp_dec_float_50 recvQty,
       const std::unordered_map<
           std::string, boost::multiprecision::cpp_dec_float_50> &feeDelta);
 

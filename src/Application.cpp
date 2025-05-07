@@ -210,6 +210,9 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
           std::to_string(execTypeValue));
     }
 
+    // Extract the used and received quantities
+    // TODO
+
     // Create asset delta map
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
         feeDelta;
@@ -242,10 +245,10 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     }
 
     // Create execution report & push to the queue
-    BOOST_LOG_TRIVIAL(trace)
-        << "Pushing execution report to queue";
+    BOOST_LOG_TRIVIAL(trace) << "Pushing execution report to queue";
 
-    executionReportQueue.push(ExecutionReport(id, status, feeDelta));
+    executionReportQueue.push(
+        ExecutionReport(id, status, feeDelta)); // TODO: add required arguments
 
   } catch (const std::exception &e) {
 

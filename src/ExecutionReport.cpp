@@ -2,9 +2,12 @@
 
 ExecutionReport::ExecutionReport(
     const std::string &id, TradeExecutionStatus status,
+    boost::multiprecision::cpp_dec_float_50 usedQty,
+    boost::multiprecision::cpp_dec_float_50 recvQty,
     const std::unordered_map<std::string,
                              boost::multiprecision::cpp_dec_float_50> &feeDelta)
-    : _id(id), _status(status), _feeDelta(feeDelta) {};
+    : _id(id), _status(status), _usedQty(usedQty), _recvQty(recvQty),
+      _feeDelta(feeDelta) {};
 
 std::string ExecutionReport::getId() const { return _id; }
 
@@ -38,6 +41,8 @@ std::ostream &operator<<(std::ostream &os, const ExecutionReport &report) {
     os << "UNKNOWN";
     break;
   }
+
+  os << ", usedQty=" << report._usedQty << ", recvQty=" << report._recvQty;
 
   os << ", fees=[";
 
