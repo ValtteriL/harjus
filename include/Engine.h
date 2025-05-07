@@ -6,6 +6,7 @@
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "Symbol.h"
+#include "ThreadSafeQueue.h"
 #include "Trade.h"
 #include <stop_token>
 #include <string>
@@ -31,7 +32,7 @@ private:
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       _relativeValues;
   boost::lockfree::queue<PriceUpdate *> &_priceUpdateQueue;
-  boost::lockfree::queue<Execution *> &_executionQueue;
+  ThreadSafeQueue<Execution> &_executionQueue;
   ReservedTrades &_reservedTrades;
   Balance &_balance;
 
@@ -61,7 +62,7 @@ public:
    * @param balance A reference to a Balance object.
    * @param reservedTrades A reference to a ReservedTrades object.
    * @param priceUpdateQueue A reference to a lock-free queue for price updates.
-   * @param executionQueue A reference to a lock-free queue for executions.
+   * @param executionQueue A reference to a thread safe queue for executions.
    * @param relativeValues A map of relative values for symbols.
    */
   Engine(
@@ -69,7 +70,7 @@ public:
       std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
       ReservedTrades &reservedTrades,
       boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-      boost::lockfree::queue<Execution *> &executionQueue,
+      ThreadSafeQueue<Execution> &executionQueue,
       std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
           relativeValues,
       boost::multiprecision::cpp_dec_float_50 commission);

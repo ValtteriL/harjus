@@ -52,13 +52,13 @@ void buildGraph(Graph &graph,
     // long
     boost::add_edge(vertex1, vertex2,
                     EdgeProperties{std::shared_ptr<Trade>{
-                        new Trade{*symbol, Position::LONG}}},
+                        new Trade{symbol, Position::LONG}}},
                     graph);
 
     // short
     boost::add_edge(vertex2, vertex1,
                     EdgeProperties{std::shared_ptr<Trade>{
-                        new Trade{*symbol, Position::SHORT}}},
+                        new Trade{symbol, Position::SHORT}}},
                     graph);
   }
 }

@@ -67,9 +67,9 @@ TEST(OpportunityTest, update) {
       8          // quoteAssetPrecision;
   };
 
-  Trade trade1(symbol1, Position::SHORT);
-  Trade trade2(symbol2, Position::SHORT);
-  Trade trade3(symbol3, Position::LONG);
+  Trade trade1(&symbol1, Position::SHORT);
+  Trade trade2(&symbol2, Position::SHORT);
+  Trade trade3(&symbol3, Position::LONG);
 
   std::vector<Trade> trades{trade1, trade2, trade3};
   boost::multiprecision::cpp_dec_float_50 startingAssetBudget = 1.0;

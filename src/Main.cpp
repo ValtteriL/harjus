@@ -7,6 +7,7 @@
 #include "ExecutionReport.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
+#include "ThreadSafeQueue.h"
 #include "Trade.h"
 #include "Trader.h"
 #include <boost/lockfree/queue.hpp>
@@ -185,8 +186,9 @@ int main() {
 
   // Create lockfree queues for price updates & executions
   boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(1000);
-  boost::lockfree::queue<Execution *> executionQueue(1000);
-  boost::lockfree::queue<ExecutionReport *> reportQueue(1000);
+  std::binary_semaphore semaphore(0);
+  ThreadSafeQueue<Execution> executionQueue(semaphore);
+  ThreadSafeQueue<ExecutionReport> reportQueue(semaphore);
 
   ReservedTrades reservedTrades;
 

@@ -42,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const Execution &execution) {
     if (!first) {
       os << ", ";
     }
-    os << "'" << trade.getSymbol().symbol << "'";
+    os << "'" << trade.getSymbol()->symbol << "'";
     first = false;
   }
 

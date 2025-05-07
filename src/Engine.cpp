@@ -13,7 +13,7 @@ Engine::Engine(
     std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
     ReservedTrades &reservedTrades,
     boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-    boost::lockfree::queue<Execution *> &executionQueue,
+    ThreadSafeQueue<Execution> &executionQueue,
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
         relativeValues,
     boost::multiprecision::cpp_dec_float_50 commission)
@@ -31,7 +31,7 @@ Engine::Engine(
 
     // add opportunity to _opportunities with every trade symbol as the key
     for (auto &trade : *path) {
-      _opportunities.insert({trade.getSymbol().symbol, *opportunity});
+      _opportunities.insert({trade.getSymbol()->symbol, *opportunity});
     }
   }
 };
@@ -137,12 +137,8 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
   // freeze and queue chosen opportunities for execution
   for (auto opportunity : opportunitiesToQueue) {
-    Execution *independentCopy = new Execution(*opportunity);
-
-    BOOST_LOG_TRIVIAL(debug)
-        << "Queuing execution for trader: " << *independentCopy;
-
-    _executionQueue.push(independentCopy);
+    BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader";
+    _executionQueue.push(Execution(*opportunity));
   }
 }
 

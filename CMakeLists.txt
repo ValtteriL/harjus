@@ -185,3 +185,13 @@ target_link_libraries(TraderTest PRIVATE
 )
 
 gtest_discover_tests(TraderTest)
+
+
+add_executable(ThreadSafeQueueTest tests/ThreadSafeQueueTest.cpp)
+target_link_libraries(ThreadSafeQueueTest PRIVATE
+  gtest_main
+  GTest::gmock
+  Boost::log
+)
+
+gtest_discover_tests(ThreadSafeQueueTest)

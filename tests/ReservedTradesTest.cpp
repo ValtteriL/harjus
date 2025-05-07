@@ -33,9 +33,9 @@ protected:
       8,        // baseAssetPrecision;
       8         // quoteAssetPrecision;
   };
-  Trade trade1{symbol, Position::LONG};
-  Trade trade2{symbol, Position::LONG};
-  Trade trade3{symbol, Position::SHORT};
+  Trade trade1{&symbol, Position::LONG};
+  Trade trade2{&symbol, Position::LONG};
+  Trade trade3{&symbol, Position::SHORT};
   ReservedTrades reservedTrades;
 };
 

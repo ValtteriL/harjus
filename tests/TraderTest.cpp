@@ -10,10 +10,12 @@
 #include "ExecutionReport.h"
 #include "Opportunity.h"
 #include "ReservedTrades.h"
+#include "ThreadSafeQueue.h"
 #include "TradeExecutionStatus.h"
 #include <boost/lockfree/queue.hpp>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <semaphore>
 
 using ::testing::_;
 using ::testing::Return;
@@ -21,11 +23,10 @@ using ::testing::Return;
 // TestableTrader class to expose private methods for testing
 class TestableTrader : public Trader {
 public:
-  TestableTrader(
-      boost::lockfree::queue<Execution *> &executionQueue,
-      boost::lockfree::queue<ExecutionReport *> &executionReportQueue,
-      IApplication &application, Balance &balance,
-      ReservedTrades &reservedTrades)
+  TestableTrader(ThreadSafeQueue<Execution> &executionQueue,
+                 ThreadSafeQueue<ExecutionReport> &executionReportQueue,
+                 IApplication &application, Balance &balance,
+                 ReservedTrades &reservedTrades)
       : Trader(executionQueue, executionReportQueue, application, balance,
                reservedTrades) {}
 
@@ -70,14 +71,15 @@ protected:
 
     // Setup trades using the stored symbols
     std::vector<Trade> *trades =
-        new std::vector<Trade>{Trade{*symbolsMap["ETHBTC"], Position::LONG},
-                               Trade{*symbolsMap["ETHUSDT"], Position::SHORT}};
+        new std::vector<Trade>{Trade{symbolsMap["ETHBTC"], Position::LONG},
+                               Trade{symbolsMap["ETHUSDT"], Position::SHORT}};
 
     return Opportunity(*trades, 1, 0.001);
   }
 
-  boost::lockfree::queue<Execution *> executionQueue{1000};
-  boost::lockfree::queue<ExecutionReport *> executionReportQueue{1000};
+  std::binary_semaphore semaphore{0};
+  ThreadSafeQueue<Execution> executionQueue{semaphore};
+  ThreadSafeQueue<ExecutionReport> executionReportQueue{semaphore};
   MockApplication mockApplication;
   Balance balance;
   ReservedTrades reservedTrades;
