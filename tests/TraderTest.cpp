@@ -31,11 +31,11 @@ public:
                reservedTrades) {}
 
   // Expose private methods for testing
-  void callProcessExecution(Execution &execution) {
+  void callProcessExecution(Execution *execution) {
     processExecution(execution);
   }
 
-  void callProcessReport(ExecutionReport &execReport) {
+  void callProcessReport(ExecutionReport *execReport) {
     processReport(execReport);
   }
 };
