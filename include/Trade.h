@@ -12,10 +12,10 @@ class Trade {
 
 private:
   const Symbol *_symbol;
-  const Position _position;
+  Position _position;
   boost::multiprecision::cpp_dec_float_50 _orderQty;
-  const std::string _recvCurrency;
-  const std::string _usedCurrency;
+  std::string _recvCurrency;
+  std::string _usedCurrency;
 
 public:
   /**
@@ -107,6 +107,28 @@ public:
    * treated as the same.
    */
   std::size_t hash() const;
+
+  /**
+   * @brief Copy assignment operator for Trade class.
+   * @param other The Trade object to copy from.
+   * @return A reference to this Trade object.
+   */
+  Trade &operator=(const Trade &other) {
+    if (this != &other) {
+      _symbol = other._symbol;
+      _position = other._position;
+      _orderQty = other._orderQty;
+      _recvCurrency = other._recvCurrency;
+      _usedCurrency = other._usedCurrency;
+    }
+    return *this;
+  };
+
+  /**
+   * @brief Copy constructor for Trade class.
+   * @param other The Trade object to copy from.
+   */
+  Trade(const Trade &other) = default;
 };
 
 // Specialization of std::hash for Trade

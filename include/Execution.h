@@ -36,6 +36,21 @@ public:
   virtual ~Execution() = default; // Add a virtual destructor
 
   /**
+   * @brief Copy assignment operator for Execution class.
+   * @param other The Execution object to copy from.
+   * @return A reference to this Execution object.
+   */
+  Execution &operator=(const Execution &other) {
+    if (this != &other) {
+      _trades = other._trades;
+      _tradesVector = other._tradesVector;
+      _startingAsset = other._startingAsset;
+      _totalProfit = other._totalProfit;
+    }
+    return *this;
+  }
+
+  /**
    * @brief Recalculate the opportunity associated with the
    * opportunity.
    * @details This method should be called after a price update that affects
