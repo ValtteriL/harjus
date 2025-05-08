@@ -63,9 +63,13 @@ public:
   const Symbol *getSymbol() const;
 
   /**
-   * Set the budget for the trade. Updates the order quantity and price to the
-   * maximum allowed by the budget and best offers.
-   * @param budget The budget (in used asset) to be set.
+   * @brief Set the budget for the trade. Updates the order to the maximum
+   * allowed by the budget and symbol.
+   * @details Sets the maximum correct order quantity given the budget and
+   * symbol. The order quantity is a multiple of the base asset increment.
+   * If the maximum order quantity is less than the minimum notional, the order
+   * quantity is set to 0.
+   * @param budget The budget (in used asset) for the trade.
    */
   void setBudget(boost::multiprecision::cpp_dec_float_50 budget);
 

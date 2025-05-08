@@ -28,11 +28,26 @@ const Symbol *Trade::getSymbol() const { return _symbol; }
 
 void Trade::setBudget(boost::multiprecision::cpp_dec_float_50 budget) {
 
+  boost::multiprecision::cpp_dec_float_50 budgetOrderQty = 0;
+
   if (_position == Position::LONG) {
-    auto budgetOrderPrice = budget / getOrderPrice();
-    _orderQty = boost::multiprecision::min(budgetOrderPrice, getOfferQty());
+
+    auto temp = budget / getOrderPrice();
+    // ensure Qty is multiple of minNotional
+    budgetOrderQty = temp - fmod(temp, _symbol->minNotional);
+
   } else {
-    _orderQty = boost::multiprecision::min(getOfferQty(), budget);
+    // ensure Qty is multiple of minNotional
+    budgetOrderQty = budget - fmod(budget, _symbol->minNotional);
+  }
+
+  auto maxOrderQty = boost::multiprecision::min(budgetOrderQty, getOfferQty());
+
+  // ensure order value is gte minNotional
+  if (maxOrderQty * getOrderPrice() < _symbol->minNotional) {
+    _orderQty = 0;
+  } else {
+    _orderQty = maxOrderQty;
   }
 }
 
