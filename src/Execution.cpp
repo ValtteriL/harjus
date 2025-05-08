@@ -32,7 +32,7 @@ void Execution::update(boost::multiprecision::cpp_dec_float_50) {}
 std::ostream &operator<<(std::ostream &os, const Execution &execution) {
   os << "Execution{"
      << "startingAsset='" << execution._startingAsset << "', "
-     << "totalProfit=" << execution._totalProfit << ", "
+     << "totalProfit=" << execution._totalProfit << " BTC, "
      << "capacity=" << execution.getCapacity() << ", "
      << "symbols=[";
 

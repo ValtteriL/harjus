@@ -224,7 +224,8 @@ int main() {
 
     // Subscribe to market data for all symbols
     if (application.subscribeToSymbols(symbols)) {
-      BOOST_LOG_TRIVIAL(debug) << "Subscribed to symbols: " << symbols.size();
+      BOOST_LOG_TRIVIAL(debug)
+          << "Subscribed to " << symbols.size() << " symbols";
     } else {
       std::cerr << "Failed to subscribe to market data." << std::endl;
       BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";

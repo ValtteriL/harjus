@@ -263,10 +263,9 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     }
 
     // Create execution report & push to the queue
-    BOOST_LOG_TRIVIAL(trace) << "Pushing execution report to queue";
-
-    executionReportQueue.push(
-        ExecutionReport(id, status, usedQty, recvQty, feeDelta));
+    ExecutionReport report{id, status, usedQty, recvQty, feeDelta};
+    BOOST_LOG_TRIVIAL(debug) << "Pushing execution report to queue: " << report;
+    executionReportQueue.push(std::move(report));
 
   } catch (const std::exception &e) {
 

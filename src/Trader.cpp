@@ -27,7 +27,7 @@ std::string generateId() {
 
 void Trader::processExecution(Execution *execution) {
 
-  BOOST_LOG_TRIVIAL(trace) << "Processing execution " << *execution;
+  BOOST_LOG_TRIVIAL(debug) << "Processing execution " << *execution;
 
   auto id = generateId();
   auto delta =
@@ -131,20 +131,20 @@ void Trader::run(std::stop_token stoken) {
   while (!stoken.stop_requested()) {
 
     if (_executionQueue.getSemaphore().try_acquire_for(
-             std::chrono::milliseconds(100))) {
+            std::chrono::milliseconds(100))) {
 
-    Execution execution;
+      Execution execution;
 
-    // Process execution
-    if (_executionQueue.try_pop(execution)) {
-      processExecution(&execution);
-    }
+      // Process execution
+      if (_executionQueue.try_pop(execution)) {
+        processExecution(&execution);
+      }
 
-    ExecutionReport executionReport;
+      ExecutionReport executionReport;
 
-    // Process execution report
-    if (_executionReportQueue.try_pop(executionReport)) {
-      processReport(&executionReport);
+      // Process execution report
+      if (_executionReportQueue.try_pop(executionReport)) {
+        processReport(&executionReport);
       }
     }
   }
