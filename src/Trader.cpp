@@ -62,7 +62,6 @@ void Trader::processReport(ExecutionReport *execReport) {
   auto pair = _executionsMap.at(id);
   auto execution = pair.first;
   auto delta = pair.second;
-  // TODO: add useqQty, recvQty from the execution report?
 
   auto status = execReport->getStatus();
 
@@ -90,10 +89,9 @@ void Trader::processReport(ExecutionReport *execReport) {
     delta[currency] += amount;
   }
 
-  // TODO: replace with useqQty, recvQty from the execution report
   auto oldTrade = execution->getTrades().front();
-  delta[oldTrade.getUsedCurrency()] -= oldTrade.getUsedQty();
-  delta[oldTrade.getRecvCurrency()] += oldTrade.getRecvQty();
+  delta[oldTrade.getUsedCurrency()] -= execReport->getUsedQty();
+  delta[oldTrade.getRecvCurrency()] += execReport->getRecvQty();
 
   _executionsMap[id].second = delta;
 

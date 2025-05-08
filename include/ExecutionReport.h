@@ -63,6 +63,18 @@ public:
   getFeeDelta() const;
 
   /**
+   * @brief Get the used quantity of the execution report
+   * @return The used quantity of the execution report
+   */
+  boost::multiprecision::cpp_dec_float_50 getUsedQty();
+
+  /**
+   * @brief Get the received quantity of the execution report
+   * @return The received quantity of the execution report
+   */
+  boost::multiprecision::cpp_dec_float_50 getRecvQty();
+
+  /**
    * @brief Stream operator overload for ExecutionReport
    * @param os Output stream
    * @param report ExecutionReport object to print

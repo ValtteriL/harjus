@@ -134,8 +134,8 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
           {"BTC", boost::multiprecision::cpp_dec_float_50(-0.1)} // Example fee
       };
 
-  auto executionReport =
-      ExecutionReport(id, TradeExecutionStatus::FILLED, feeDelta);
+  ExecutionReport executionReport{id, TradeExecutionStatus::FILLED, 0.1, 0.2,
+                                  feeDelta};
 
   // Since there is still one more trade in the execution, expect another
   // submitOrder
@@ -150,18 +150,28 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   trader.callProcessReport(&executionReport);
 
   // Process another report to complete the execution
-  auto finalReport =
-      ExecutionReport(id, TradeExecutionStatus::FILLED, feeDelta);
+  ExecutionReport finalReport{id, TradeExecutionStatus::FILLED, 0.1, 0.2,
+                              feeDelta};
   trader.callProcessReport(&finalReport);
 
   // Verify the balance is updated correctly
-  // Initial balance: 1.0 BTC
+  // Initial BTC balance: 1.0
   // Fees: -0.2 BTC
-  // Final balance: 1.0 - 0.2 = 0.8 BTC
-  // other assets should be unchanged
-  EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 0.8, 1e-5);
-  EXPECT_NEAR(balance.getBalance("USDT").convert_to<double>(), 0, 1e-5);
-  EXPECT_NEAR(balance.getBalance("ETH").convert_to<double>(), 0, 1e-5);
+  // 1st trade, spending: 0.1 BTC
+  // Final BTC balance: 1.0 - 0.2 - 0.1 = 0.7
+  //
+  // Initial ETH balance: 0.0
+  // 1st trade, receiving: 0.2 ETH
+  // 2nd trade, spending: 0.1 ETH
+  // Final ETH balance: 0.0 + 0.2 - 0.1 = 0.1
+  //
+  // Initial USDT balance: 0.0
+  // 1st trade, no change
+  // 2nd trade, receiving: 0.2 USDT
+  // Final USDT balance: 0.0 + 0.2 = 0.2
+  EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 0.7, 1e-5);
+  EXPECT_NEAR(balance.getBalance("USDT").convert_to<double>(), 0.2, 1e-5);
+  EXPECT_NEAR(balance.getBalance("ETH").convert_to<double>(), 0.1, 1e-5);
 }
 
 TEST_F(TraderTest, processesExpiredExecutionReport) {
@@ -183,8 +193,8 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       feeDelta{};
 
-  auto executionReport =
-      ExecutionReport(id, TradeExecutionStatus::EXPIRED, feeDelta);
+  ExecutionReport executionReport{id, TradeExecutionStatus::EXPIRED, 0, 0,
+                                  feeDelta};
 
   // Process the report
   trader.callProcessReport(&executionReport);

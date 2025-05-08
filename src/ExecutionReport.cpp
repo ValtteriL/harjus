@@ -18,12 +18,14 @@ ExecutionReport::getFeeDelta() const {
   return _feeDelta;
 }
 
-/**
- * @brief Stream operator overload for ExecutionReport
- * @param os Output stream
- * @param report ExecutionReport object to print
- * @return Reference to the output stream
- */
+boost::multiprecision::cpp_dec_float_50 ExecutionReport::getUsedQty() {
+  return _usedQty;
+}
+
+boost::multiprecision::cpp_dec_float_50 ExecutionReport::getRecvQty() {
+  return _recvQty;
+}
+
 std::ostream &operator<<(std::ostream &os, const ExecutionReport &report) {
   os << "ExecutionReport{"
      << "id='" << report.getId() << "', "
