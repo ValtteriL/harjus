@@ -5,7 +5,7 @@
 Opportunity::Opportunity(std::vector<Trade> &trades,
                          boost::multiprecision::cpp_dec_float_50 relativeValue,
                          boost::multiprecision::cpp_dec_float_50 commission)
-    : _trades(trades), _startingAsset(trades.front().getUsedCurrency()),
+    : _trades(trades), _startingAsset(trades.front().usedCurrency()),
       _commission(commission), _relativeValue(relativeValue) {}
 
 /**
@@ -26,18 +26,18 @@ boost::multiprecision::cpp_dec_float_50 calculateMaxQtyAfterTrades(
     // this is needed to avoid capping to outdated order qty
     trade.resetOrderQty();
 
-    if (trade.getPosition() == Position::LONG) {
-      if (trade.getOrderPrice() == 0) {
+    if (trade.position() == Position::LONG) {
+      if (trade.orderPrice() == 0) {
         // avoid division by zero
         // this may happen if not all trades have been updated in the path
         return 0;
       }
-      acc = boost::multiprecision::min(acc, trade.getUsedQty() *
-                                                trade.getOrderPrice()) /
-            trade.getOrderPrice();
+      acc = boost::multiprecision::min(acc,
+                                       trade.usedQty() * trade.orderPrice()) /
+            trade.orderPrice();
     } else {
-      acc = boost::multiprecision::min(acc, trade.getUsedQty()) *
-            trade.getOrderPrice();
+      acc =
+          boost::multiprecision::min(acc, trade.usedQty()) * trade.orderPrice();
     }
   }
   return acc;
@@ -53,17 +53,17 @@ boost::multiprecision::cpp_dec_float_50 calculateStartingAssetQty(
   for (auto it = trades.rbegin(); it != trades.rend(); ++it) {
     const auto &trade = *it;
 
-    if (trade.getPosition() == Position::LONG) {
-      acc *= trade.getOrderPrice();
+    if (trade.position() == Position::LONG) {
+      acc *= trade.orderPrice();
     } else {
 
-      if (trade.getOrderPrice() == 0) {
+      if (trade.orderPrice() == 0) {
         // avoid division by zero
         // this may happen if not all trades have been updated in the path
         return 0;
       }
 
-      acc /= trade.getOrderPrice();
+      acc /= trade.orderPrice();
     }
   }
   return acc;
@@ -82,17 +82,17 @@ void Opportunity::update(
   // update trades with quantities
   auto acc = startingAssetQty;
   for (auto &trade : _trades) {
-    trade.setBudget(acc);
-    acc = trade.getRecvQty();
+    trade.recalculateOrderQty(acc);
+    acc = trade.recvQty();
   }
 
   // update profit
   boost::multiprecision::cpp_dec_float_50 totalCommission =
-      _trades.front().getUsedQty() *
+      _trades.front().usedQty() *
       (boost::multiprecision::pow((1 + _commission), _trades.size()) - 1);
-  _totalProfit = (_trades.back().getRecvQty() - _trades.front().getUsedQty() -
-                  totalCommission) *
-                 _relativeValue;
+  _totalProfit =
+      (_trades.back().recvQty() - _trades.front().usedQty() - totalCommission) *
+      _relativeValue;
 }
 boost::multiprecision::cpp_dec_float_50 Opportunity::getTotalProfit() const {
   return _totalProfit;
@@ -101,7 +101,7 @@ boost::multiprecision::cpp_dec_float_50 Opportunity::getTotalProfit() const {
 std::string Opportunity::getStartingAsset() const { return _startingAsset; }
 
 boost::multiprecision::cpp_dec_float_50 Opportunity::getCapacity() const {
-  return _trades.front().getUsedQty();
+  return _trades.front().usedQty();
 }
 
 std::vector<Trade> &Opportunity::getTrades() { return _trades; }

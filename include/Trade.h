@@ -29,13 +29,13 @@ public:
    * Get the position of the trade.
    * @return The position of the trade.
    */
-  enum Position getPosition() const;
+  enum Position position() const;
 
   /**
    * Get the order quantity of the trade.
    * @return The quantity of the base asset to be traded.
    */
-  boost::multiprecision::cpp_dec_float_50 getOrderQty() const;
+  boost::multiprecision::cpp_dec_float_50 orderQty() const;
 
   /**
    * Reset the order quantity of the trade.
@@ -48,19 +48,19 @@ public:
    * Get the offer quantity of the trade.
    * @return The quantity of the base asset available for trading.
    */
-  boost::multiprecision::cpp_dec_float_50 getOfferQty() const;
+  boost::multiprecision::cpp_dec_float_50 offerQty() const;
 
   /**
    * Get the order price of the trade.
    * @return The price per unit of base asset.
    */
-  boost::multiprecision::cpp_dec_float_50 getOrderPrice() const;
+  boost::multiprecision::cpp_dec_float_50 orderPrice() const;
 
   /**
    * Get the symbol of the trade.
    * @return The symbol of the trade.
    */
-  const Symbol *getSymbol() const;
+  const Symbol *symbol() const;
 
   /**
    * @brief Set the budget for the trade. Updates the order to the maximum
@@ -71,31 +71,31 @@ public:
    * quantity is set to 0.
    * @param budget The budget (in used asset) for the trade.
    */
-  void setBudget(boost::multiprecision::cpp_dec_float_50 budget);
+  void recalculateOrderQty(boost::multiprecision::cpp_dec_float_50 budget);
 
   /**
    * Get the quantity of the asset to be received.
    * @return The quantity of the asset to be received.
    */
-  boost::multiprecision::cpp_dec_float_50 getRecvQty() const;
+  boost::multiprecision::cpp_dec_float_50 recvQty() const;
 
   /**
    * Get the quantity of the asset to be used.
    * @return The quantity of the asset to be used.
    */
-  boost::multiprecision::cpp_dec_float_50 getUsedQty() const;
+  boost::multiprecision::cpp_dec_float_50 usedQty() const;
 
   /**
    * Get the currency of the asset to be received.
    * @return The currency of the asset to be received.
    */
-  std::string getRecvCurrency() const;
+  std::string recvCurrency() const;
 
   /**
    * Get the currency of the asset to be used.
    * @return The currency of the asset to be used.
    */
-  std::string getUsedCurrency() const;
+  std::string usedCurrency() const;
 
   /**
    * Compare two trades for equality. This is used to check if a trade is

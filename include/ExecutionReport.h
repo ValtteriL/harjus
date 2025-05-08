@@ -66,13 +66,13 @@ public:
    * @brief Get the used quantity of the execution report
    * @return The used quantity of the execution report
    */
-  boost::multiprecision::cpp_dec_float_50 getUsedQty();
+  boost::multiprecision::cpp_dec_float_50 usedQty();
 
   /**
    * @brief Get the received quantity of the execution report
    * @return The received quantity of the execution report
    */
-  boost::multiprecision::cpp_dec_float_50 getRecvQty();
+  boost::multiprecision::cpp_dec_float_50 recvQty();
 
   /**
    * @brief Stream operator overload for ExecutionReport

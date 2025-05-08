@@ -25,13 +25,13 @@ Engine::Engine(
   for (auto &path : tradingPaths) {
 
     // create an opportunity
-    std::string startingAsset = path->at(0).getUsedCurrency();
+    std::string startingAsset = path->at(0).usedCurrency();
     Opportunity *opportunity =
         new Opportunity(*path, _relativeValues[startingAsset], commission);
 
     // add opportunity to _opportunities with every trade symbol as the key
     for (auto &trade : *path) {
-      _opportunities.insert({trade.getSymbol()->symbol, *opportunity});
+      _opportunities.insert({trade.symbol()->symbol, *opportunity});
     }
   }
 };

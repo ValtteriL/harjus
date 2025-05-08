@@ -18,7 +18,7 @@ std::string Execution::getStartingAsset() const { return _startingAsset; }
 std::queue<Trade> &Execution::getTrades() { return _trades; }
 
 boost::multiprecision::cpp_dec_float_50 Execution::getCapacity() const {
-  return _tradesVector.front().getUsedQty();
+  return _tradesVector.front().usedQty();
 }
 
 void Execution::update(boost::multiprecision::cpp_dec_float_50) {}
@@ -42,7 +42,7 @@ std::ostream &operator<<(std::ostream &os, const Execution &execution) {
     if (!first) {
       os << ", ";
     }
-    os << "'" << trade.getSymbol()->symbol << "'";
+    os << "'" << trade.symbol()->symbol << "'";
     first = false;
   }
 

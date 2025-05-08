@@ -80,7 +80,7 @@ TEST(OpportunityTest, update) {
 
   // verify the initial state of the opportunity
   EXPECT_EQ(opportunity.getTotalProfit(), 0.0); // Default profit is 0
-  EXPECT_EQ(opportunity.getStartingAsset(), trades.front().getUsedCurrency());
+  EXPECT_EQ(opportunity.getStartingAsset(), trades.front().usedCurrency());
   EXPECT_EQ(opportunity.getCapacity(),
             boost::multiprecision::cpp_dec_float_50{100});
 
@@ -93,5 +93,5 @@ TEST(OpportunityTest, update) {
   EXPECT_NEAR(opportunity.getCapacity().convert_to<double>(),
               startingAssetBudget.convert_to<double>(), 1e-4);
   // Check if the starting asset is correct
-  EXPECT_EQ(opportunity.getStartingAsset(), trades.front().getUsedCurrency());
+  EXPECT_EQ(opportunity.getStartingAsset(), trades.front().usedCurrency());
 }
