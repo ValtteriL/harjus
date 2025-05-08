@@ -90,8 +90,8 @@ void Trader::processReport(ExecutionReport *execReport) {
   }
 
   auto oldTrade = execution->getTrades().front();
-  delta[oldTrade.getUsedCurrency()] -= oldTrade.getUsedQty();
-  delta[oldTrade.getRecvCurrency()] += oldTrade.getRecvQty();
+  delta[oldTrade.getUsedCurrency()] -= execReport->getUsedQty();
+  delta[oldTrade.getRecvCurrency()] += execReport->getRecvQty();
 
   _executionsMap[id].second = delta;
 

@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "Ed25519.h"
+#include "Position.h"
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
@@ -210,6 +211,26 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
           std::to_string(execTypeValue));
     }
 
+    // Extract the used and received quantities
+    FIX::CumQty cumQty; // Total number of base asset traded on this order.
+    message.get(cumQty);
+    boost::multiprecision::cpp_dec_float_50 qtyBase =
+        boost::multiprecision::cpp_dec_float_50(cumQty.getValue());
+
+    FIX::QtyField cumQuoteQty(
+        25017); // Total number of quote asset traded on this order.
+    message.getField(cumQuoteQty);
+    boost::multiprecision::cpp_dec_float_50 qtyQuote =
+        boost::multiprecision::cpp_dec_float_50(cumQuoteQty.getValue());
+
+    FIX::Side side;
+    message.get(side);
+    Position position =
+        (side == FIX::Side_BUY) ? Position::LONG : Position::SHORT;
+
+    auto usedQty = position == Position::LONG ? qtyQuote : qtyBase;
+    auto recvQty = position == Position::LONG ? qtyBase : qtyQuote;
+
     // Create asset delta map
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
         feeDelta;
@@ -242,10 +263,10 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     }
 
     // Create execution report & push to the queue
-    BOOST_LOG_TRIVIAL(trace)
-        << "Pushing execution report to queue";
+    BOOST_LOG_TRIVIAL(trace) << "Pushing execution report to queue";
 
-    executionReportQueue.push(ExecutionReport(id, status, feeDelta));
+    executionReportQueue.push(
+        ExecutionReport(id, status, usedQty, recvQty, feeDelta));
 
   } catch (const std::exception &e) {
 

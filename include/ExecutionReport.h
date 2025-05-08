@@ -12,6 +12,8 @@ class ExecutionReport {
 private:
   std::string _id;
   TradeExecutionStatus _status;
+  boost::multiprecision::cpp_dec_float_50 _usedQty;
+  boost::multiprecision::cpp_dec_float_50 _recvQty;
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       _feeDelta;
 
@@ -24,6 +26,8 @@ public:
    */
   ExecutionReport(
       const std::string &id, TradeExecutionStatus status,
+      boost::multiprecision::cpp_dec_float_50 usedQty,
+      boost::multiprecision::cpp_dec_float_50 recvQty,
       const std::unordered_map<
           std::string, boost::multiprecision::cpp_dec_float_50> &feeDelta);
 
@@ -57,6 +61,18 @@ public:
    */
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
   getFeeDelta() const;
+
+  /**
+   * @brief Get the used quantity of the execution report
+   * @return The used quantity of the execution report
+   */
+  boost::multiprecision::cpp_dec_float_50 getUsedQty();
+
+  /**
+   * @brief Get the received quantity of the execution report
+   * @return The received quantity of the execution report
+   */
+  boost::multiprecision::cpp_dec_float_50 getRecvQty();
 
   /**
    * @brief Stream operator overload for ExecutionReport

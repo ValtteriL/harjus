@@ -2,9 +2,12 @@
 
 ExecutionReport::ExecutionReport(
     const std::string &id, TradeExecutionStatus status,
+    boost::multiprecision::cpp_dec_float_50 usedQty,
+    boost::multiprecision::cpp_dec_float_50 recvQty,
     const std::unordered_map<std::string,
                              boost::multiprecision::cpp_dec_float_50> &feeDelta)
-    : _id(id), _status(status), _feeDelta(feeDelta) {};
+    : _id(id), _status(status), _usedQty(usedQty), _recvQty(recvQty),
+      _feeDelta(feeDelta) {};
 
 std::string ExecutionReport::getId() const { return _id; }
 
@@ -15,12 +18,14 @@ ExecutionReport::getFeeDelta() const {
   return _feeDelta;
 }
 
-/**
- * @brief Stream operator overload for ExecutionReport
- * @param os Output stream
- * @param report ExecutionReport object to print
- * @return Reference to the output stream
- */
+boost::multiprecision::cpp_dec_float_50 ExecutionReport::getUsedQty() {
+  return _usedQty;
+}
+
+boost::multiprecision::cpp_dec_float_50 ExecutionReport::getRecvQty() {
+  return _recvQty;
+}
+
 std::ostream &operator<<(std::ostream &os, const ExecutionReport &report) {
   os << "ExecutionReport{"
      << "id='" << report.getId() << "', "
@@ -38,6 +43,8 @@ std::ostream &operator<<(std::ostream &os, const ExecutionReport &report) {
     os << "UNKNOWN";
     break;
   }
+
+  os << ", usedQty=" << report._usedQty << ", recvQty=" << report._recvQty;
 
   os << ", fees=[";
 
