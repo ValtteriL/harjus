@@ -49,8 +49,8 @@ void Trader::processExecution(Execution *execution) {
   // submit the first trade
   auto trade = execution->getTrades().front();
 
-  _application.submitOrder(id, trade.getSymbol()->symbol, trade.getOrderQty(),
-                           trade.getOrderPrice(), trade.getPosition());
+  _application.submitOrder(id, trade.symbol()->symbol, trade.orderQty(),
+                           trade.orderPrice(), trade.position());
 }
 
 void Trader::processReport(ExecutionReport *execReport) {
@@ -90,8 +90,8 @@ void Trader::processReport(ExecutionReport *execReport) {
   }
 
   auto oldTrade = execution->getTrades().front();
-  delta[oldTrade.getUsedCurrency()] -= execReport->getUsedQty();
-  delta[oldTrade.getRecvCurrency()] += execReport->getRecvQty();
+  delta[oldTrade.usedCurrency()] -= execReport->usedQty();
+  delta[oldTrade.recvCurrency()] += execReport->recvQty();
 
   _executionsMap[id].second = delta;
 
@@ -118,8 +118,8 @@ void Trader::processReport(ExecutionReport *execReport) {
   BOOST_LOG_TRIVIAL(debug) << "Submitting next order ";
   auto trade = execution->getTrades().front();
 
-  _application.submitOrder(id, trade.getSymbol()->symbol, trade.getOrderQty(),
-                           trade.getOrderPrice(), trade.getPosition());
+  _application.submitOrder(id, trade.symbol()->symbol, trade.orderQty(),
+                           trade.orderPrice(), trade.position());
 }
 
 void Trader::run(std::stop_token stoken) {

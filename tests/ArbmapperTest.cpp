@@ -63,7 +63,7 @@ TEST(ArbmapperTest, detectsAllTradingOpportunities) {
   // with each of the following as the first usedCurrency: BTC, ETH, DOGE
   std::unordered_set<std::string> firstUsedCurrencies;
   for (const auto &path : opportunities) {
-    firstUsedCurrencies.insert(std::string{path->front().getUsedCurrency()});
+    firstUsedCurrencies.insert(std::string{path->front().usedCurrency()});
   }
   EXPECT_TRUE(firstUsedCurrencies.count("BTC"));
   EXPECT_TRUE(firstUsedCurrencies.count("ETH"));

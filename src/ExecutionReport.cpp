@@ -18,11 +18,11 @@ ExecutionReport::getFeeDelta() const {
   return _feeDelta;
 }
 
-boost::multiprecision::cpp_dec_float_50 ExecutionReport::getUsedQty() {
+boost::multiprecision::cpp_dec_float_50 ExecutionReport::usedQty() {
   return _usedQty;
 }
 
-boost::multiprecision::cpp_dec_float_50 ExecutionReport::getRecvQty() {
+boost::multiprecision::cpp_dec_float_50 ExecutionReport::recvQty() {
   return _recvQty;
 }
 

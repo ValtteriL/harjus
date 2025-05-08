@@ -72,12 +72,12 @@ rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
 
   // Copy the second part (from middle to last)
   for (auto it = middle; it != last; ++it) {
-    result.push_back(Trade{it->getSymbol(), it->getPosition()});
+    result.push_back(Trade{it->symbol(), it->position()});
   }
 
   // Copy the first part (from first to middle)
   for (auto it = first; it != middle; ++it) {
-    result.push_back(Trade{it->getSymbol(), it->getPosition()});
+    result.push_back(Trade{it->symbol(), it->position()});
   }
 
   return result;
@@ -151,7 +151,7 @@ getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
   std::erase_if(cycles, [&skipSymbols](const auto &cycle) {
     auto firstTrade = cycle->front();
     return std::find(skipSymbols.begin(), skipSymbols.end(),
-                     firstTrade.getUsedCurrency()) != skipSymbols.end();
+                     firstTrade.usedCurrency()) != skipSymbols.end();
   });
 
   return cycles;
