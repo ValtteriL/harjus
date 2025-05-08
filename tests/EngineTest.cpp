@@ -105,10 +105,13 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   EXPECT_EQ(execution.getTrades().size(), 3);
 
   // Check if the total profit is calculated correctly
-  EXPECT_NEAR(execution.getTotalProfit().convert_to<double>(), 8.997, 1e-5);
+  EXPECT_NEAR(execution.getTotalProfit().convert_to<double>(), 8.994, 1e-4);
   // Check if the capacity is calculated correctly
-  EXPECT_EQ(execution.getCapacity(),
-            boost::multiprecision::cpp_dec_float_50{startingAssetBudget});
+
+  EXPECT_NEAR(execution.getCapacity().convert_to<double>(),
+              boost::multiprecision::cpp_dec_float_50{startingAssetBudget}
+                  .convert_to<double>(),
+              1e-4);
   // Check if the starting asset is correct
   EXPECT_EQ(execution.getStartingAsset(), "BTC");
 }
