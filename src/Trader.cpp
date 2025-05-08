@@ -128,8 +128,9 @@ void Trader::run(std::stop_token stoken) {
 
   // Wait for the semaphore to be released
   // or stop requested
-  while (!stoken.stop_requested() &&
-         _executionQueue.getSemaphore().try_acquire_for(
+  while (!stoken.stop_requested()) {
+
+    if (_executionQueue.getSemaphore().try_acquire_for(
              std::chrono::milliseconds(100))) {
 
     Execution execution;
@@ -144,6 +145,7 @@ void Trader::run(std::stop_token stoken) {
     // Process execution report
     if (_executionReportQueue.try_pop(executionReport)) {
       processReport(&executionReport);
+      }
     }
   }
 
