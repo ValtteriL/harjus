@@ -440,6 +440,9 @@ void Application::submitOrder(std::string id, std::string symbol,
   newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
   newOrder.set(FIX::Price(static_cast<double>(price)));
 
+  BOOST_LOG_TRIVIAL(debug) << "Submitting order: " << newOrder.toString()
+                           << " to session " << orderEntrySessionID;
+
   // Send the order to the order entry session
   FIX::Session::sendToTarget(newOrder, orderEntrySessionID);
 }
