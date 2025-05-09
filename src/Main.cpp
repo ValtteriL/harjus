@@ -262,7 +262,11 @@ int main() {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
-  BOOST_LOG_TRIVIAL(info) << "Stopping threads...";
+  // remove signal handler for SIGINT
+  signal(SIGINT, SIG_DFL);
+
+  BOOST_LOG_TRIVIAL(info)
+      << "Stopping threads... Press Ctrl+C to exit immediately.";
   // Stop the engine
   j_thread_engine.request_stop();
   j_thread_engine.join();
