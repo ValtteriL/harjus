@@ -106,10 +106,17 @@ FIX::SessionSettings getFixSessionSettings(const Configuration config) {
   if (config.getLogLevel() > 0) {
     fixConfig += R"(
   # silence logging
-  ScreenLogShowEvents=N
   ScreenLogShowOutgoing=N
   ScreenLogShowIncoming=N
 )";
+  }
+
+  // hide events when not in trace or debug mode
+  if (config.getLogLevel() > 1) {
+    fixConfig += R"(
+  # silence logging
+  ScreenLogShowEvents=N
+  )";
   }
 
   fixConfig += R"(    
@@ -194,8 +201,6 @@ int main() {
 
   // Extract the list of symbols for subscription
   std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
-  // std::vector<std::string> symbols = {"ETHBTC", "LTCBTC", "BNBBTC",
-  // "TRXBTC"};
 
   // Log the number of symbols we'll subscribe to
   BOOST_LOG_TRIVIAL(info) << "There are " << symbols.size()
