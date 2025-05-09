@@ -44,8 +44,6 @@ void Application::fromAdmin(const FIX::Message &message, const FIX::SessionID &)
   message.getHeader().getField(msgType);
 
   if (msgType == FIX::MsgType_Reject) {
-    BOOST_LOG_TRIVIAL(error)
-        << "Received Reject message: " << message.toString();
     throw std::runtime_error("Received Reject message: " + message.toString());
   }
 }
@@ -179,10 +177,6 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
     }
     return true;
   } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error sending market data request: " << e.what();
-
     throw std::runtime_error("Error sending market data request: " +
                              std::string(e.what()));
   }
@@ -212,9 +206,6 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       break;
     default:
       // For other cases, just log and return without creating execution report
-      BOOST_LOG_TRIVIAL(error)
-          << "Received ExecutionReport with unhandled ExecType: "
-          << execTypeValue;
 
       throw std::runtime_error(
           "Received ExecutionReport with unhandled ExecType: " +
@@ -286,26 +277,6 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
 
 void Application::onMessage(const FIX44::MarketDataRequestReject &message,
                             const FIX::SessionID &) {
-  try {
-    // Extract the human readable message
-    FIX::Text text;
-    message.get(text);
-    std::string errorMessage = text.getValue();
-
-    // extract reason
-    FIX::MDReqRejReason reason;
-    message.get(reason);
-    auto reasonValue = reason.getValue();
-
-    BOOST_LOG_TRIVIAL(error) << "Market Data Request Rejected: " << errorMessage
-                             << " (Reason: " << reasonValue << ")";
-
-  } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error processing market data request rejection: " << e.what();
-  }
-
   throw std::runtime_error("Market Data Request Rejected: " +
                            message.toString());
 }
@@ -371,10 +342,6 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
     BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << *update;
     priceUpdateQueue.push(update);
   } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error processing market data snapshot: " << e.what();
-
     throw std::runtime_error("Error processing market data snapshot: " +
                              std::string(e.what()));
   }
@@ -449,10 +416,6 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       priceUpdateQueue.push(update);
     }
   } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error processing incremental refresh: " << e.what();
-
     throw std::runtime_error("Error processing incremental refresh: " +
                              std::string(e.what()));
   }
