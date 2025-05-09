@@ -421,6 +421,12 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
   }
 }
 
+void onMessage(const FIX::Message &message, const FIX::SessionID &) {
+  // Handle all unhandled message types
+  throw std::runtime_error("Received unexpected message: " +
+                           message.toString());
+}
+
 void Application::submitOrder(std::string id, std::string symbol,
                               boost::multiprecision::cpp_dec_float_50 qty,
                               boost::multiprecision::cpp_dec_float_50 price,
