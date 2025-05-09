@@ -36,9 +36,19 @@ void Application::onLogout(const FIX::SessionID &sessionID) {
   BOOST_LOG_TRIVIAL(debug) << "FIX logout - " << sessionID;
 }
 
-void Application::fromAdmin(const FIX::Message &, const FIX::SessionID &)
+void Application::fromAdmin(const FIX::Message &message, const FIX::SessionID &)
     EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue,
-           FIX::RejectLogon) {}
+           FIX::RejectLogon) {
+
+  FIX::MsgType msgType;
+  message.getHeader().getField(msgType);
+
+  if (msgType == FIX::MsgType_Reject) {
+    BOOST_LOG_TRIVIAL(error)
+        << "Received Reject message: " << message.toString();
+    throw std::runtime_error("Received Reject message: " + message.toString());
+  }
+}
 
 void Application::toAdmin(FIX::Message &message,
                           const FIX::SessionID &sessionID) {
@@ -272,31 +282,6 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     throw std::runtime_error("Error processing execution report: " +
                              std::string(e.what()));
   }
-}
-
-void Application::onMessage(const FIX44::Reject &message,
-                            const FIX::SessionID &) {
-
-  try {
-    // Extract the human readable message
-    FIX::Text text;
-    message.get(text);
-    std::string errorMessage = text.getValue();
-
-    // extract error code
-    auto errorCode = message.getField(25016);
-
-    BOOST_LOG_TRIVIAL(error) << "Request rejected: " << errorMessage
-                             << " (Errorcode: " << errorCode << ")";
-
-  } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error processing request rejection: " << e.what();
-  }
-
-  throw std::runtime_error("Received rejection message on session: " +
-                           message.toString());
 }
 
 void Application::onMessage(const FIX44::MarketDataRequestReject &message,
