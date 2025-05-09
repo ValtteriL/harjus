@@ -433,12 +433,12 @@ void Application::submitOrder(std::string id, std::string symbol,
                               Position position) {
   FIX44::NewOrderSingle newOrder;
   newOrder.set(FIX::ClOrdID(id));
-  newOrder.set(FIX::Symbol(symbol));
+  newOrder.set(FIX::OrdType('2')); // Limit order
   newOrder.set(FIX::Side(position == Position::LONG ? '1' : '2'));
-  newOrder.set(FIX::OrdType('2'));     // Limit order
-  newOrder.set(FIX::TimeInForce('4')); // Fill or Kill (FOK)
+  newOrder.set(FIX::Symbol(symbol));
   newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
   newOrder.set(FIX::Price(static_cast<double>(price)));
+  newOrder.set(FIX::TimeInForce('4')); // Fill or Kill (FOK)
 
   BOOST_LOG_TRIVIAL(debug) << "Submitting order: " << newOrder.toString()
                            << " to session " << orderEntrySessionID;
