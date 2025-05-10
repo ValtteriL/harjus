@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Ed25519.h"
 #include "Position.h"
+#include "Symbol.h"
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
@@ -427,18 +428,25 @@ void onMessage(const FIX::Message &message, const FIX::SessionID &) {
                            message.toString());
 }
 
-void Application::submitOrder(std::string id, std::string symbol,
+void Application::submitOrder(std::string id, const Symbol *symbol,
                               boost::multiprecision::cpp_dec_float_50 qty,
                               boost::multiprecision::cpp_dec_float_50 price,
                               Position position) {
   FIX44::NewOrderSingle newOrder;
+
   newOrder.set(FIX::ClOrdID(id));
   newOrder.set(FIX::OrdType('2')); // Limit order
   newOrder.set(FIX::Side(position == Position::LONG ? '1' : '2'));
-  newOrder.set(FIX::Symbol(symbol));
-  newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
-  newOrder.set(FIX::Price(static_cast<double>(price)));
+  newOrder.set(FIX::Symbol(symbol->symbol));
   newOrder.set(FIX::TimeInForce('4')); // Fill or Kill (FOK)
+
+  FIX::OrderQty orderQty;
+  orderQty.setValue(static_cast<double>(qty), symbol->baseAssetPrecision);
+  newOrder.set(orderQty);
+
+  FIX::Price orderPrice;
+  orderPrice.setValue(static_cast<double>(price), symbol->quoteAssetPrecision);
+  newOrder.set(orderPrice);
 
   BOOST_LOG_TRIVIAL(debug) << "Submitting order: " << newOrder.toString()
                            << " to session " << orderEntrySessionID;

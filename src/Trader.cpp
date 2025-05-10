@@ -49,7 +49,7 @@ void Trader::processExecution(Execution *execution) {
   // submit the first trade
   auto trade = execution->getTrades().front();
 
-  _application.submitOrder(id, trade.symbol()->symbol, trade.orderQty(),
+  _application.submitOrder(id, trade.symbol(), trade.orderQty(),
                            trade.orderPrice(), trade.position());
 }
 
@@ -118,7 +118,7 @@ void Trader::processReport(ExecutionReport *execReport) {
   BOOST_LOG_TRIVIAL(debug) << "Submitting next order ";
   auto trade = execution->getTrades().front();
 
-  _application.submitOrder(id, trade.symbol()->symbol, trade.orderQty(),
+  _application.submitOrder(id, trade.symbol(), trade.orderQty(),
                            trade.orderPrice(), trade.position());
 }
 

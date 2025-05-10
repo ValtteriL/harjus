@@ -11,6 +11,7 @@
 #include "IApplication.h"
 #include "IConfiguration.h"
 #include "PriceUpdate.h"
+#include "Symbol.h"
 #include "ThreadSafeQueue.h"
 
 #include <quickfix/Application.h>
@@ -135,7 +136,7 @@ public:
               boost::lockfree::queue<PriceUpdate *> &queue,
               ThreadSafeQueue<ExecutionReport> &reportQueue);
 
-  void submitOrder(std::string id, std::string symbol,
+  void submitOrder(std::string id, const Symbol *symbol,
                    boost::multiprecision::cpp_dec_float_50 qty,
                    boost::multiprecision::cpp_dec_float_50 price,
                    Position position) override;

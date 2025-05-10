@@ -100,10 +100,11 @@ TEST_F(TraderTest, processesExecutions) {
   auto execution = Execution(opportunity);
 
   // Expect a call to submitOrder with the correct parameters
-  EXPECT_CALL(
-      mockApplication,
-      submitOrder(_, "ETHBTC", opportunity.getTrades().front().orderQty(),
-                  opportunity.getTrades().front().orderPrice(), Position::LONG))
+  EXPECT_CALL(mockApplication,
+              submitOrder(_, symbolsMap["ETHBTC"],
+                          opportunity.getTrades().front().orderQty(),
+                          opportunity.getTrades().front().orderPrice(),
+                          Position::LONG))
       .Times(1);
 
   // Process the execution
@@ -118,10 +119,11 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   auto execution = Execution(opportunity);
 
   // Process the execution first
-  EXPECT_CALL(
-      mockApplication,
-      submitOrder(_, "ETHBTC", opportunity.getTrades().front().orderQty(),
-                  opportunity.getTrades().front().orderPrice(), Position::LONG))
+  EXPECT_CALL(mockApplication,
+              submitOrder(_, symbolsMap["ETHBTC"],
+                          opportunity.getTrades().front().orderQty(),
+                          opportunity.getTrades().front().orderPrice(),
+                          Position::LONG))
       .Times(1);
   trader.callProcessExecution(&execution);
 
@@ -137,10 +139,11 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
 
   // Since there is still one more trade in the execution, expect another
   // submitOrder
-  EXPECT_CALL(
-      mockApplication,
-      submitOrder(id, "ETHUSDT", opportunity.getTrades().back().orderQty(),
-                  opportunity.getTrades().back().orderPrice(), Position::SHORT))
+  EXPECT_CALL(mockApplication,
+              submitOrder(id, symbolsMap["ETHUSDT"],
+                          opportunity.getTrades().back().orderQty(),
+                          opportunity.getTrades().back().orderPrice(),
+                          Position::SHORT))
       .Times(1);
 
   // Process the report
