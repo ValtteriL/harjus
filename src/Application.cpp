@@ -438,15 +438,9 @@ void Application::submitOrder(std::string id, const Symbol *symbol,
   newOrder.set(FIX::OrdType('2')); // Limit order
   newOrder.set(FIX::Side(position == Position::LONG ? '1' : '2'));
   newOrder.set(FIX::Symbol(symbol->symbol));
+  newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
+  newOrder.set(FIX::Price(static_cast<double>(price)));
   newOrder.set(FIX::TimeInForce('4')); // Fill or Kill (FOK)
-
-  FIX::OrderQty orderQty;
-  orderQty.setValue(static_cast<double>(qty), symbol->baseAssetPrecision);
-  newOrder.set(orderQty);
-
-  FIX::Price orderPrice;
-  orderPrice.setValue(static_cast<double>(price), symbol->quoteAssetPrecision);
-  newOrder.set(orderPrice);
 
   BOOST_LOG_TRIVIAL(debug) << "Submitting order: " << newOrder.toString()
                            << " to session " << orderEntrySessionID;
