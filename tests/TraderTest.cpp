@@ -38,6 +38,16 @@ public:
   void callProcessReport(ExecutionReport *execReport) {
     processReport(execReport);
   }
+
+  // Expose a method to get the ID for a given execution pointer
+  std::string getIdForExecution(Execution *execution) {
+    for (const auto &pair : _executionsMap) {
+      if (pair.second.first == execution) {
+        return pair.first;
+      }
+    }
+    return "";
+  }
 };
 
 /**
@@ -128,7 +138,7 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   trader.callProcessExecution(&execution);
 
   // Now create an execution report for the completed trade
-  std::string id = "0"; // Generated ID in Trader::processExecution starts at 0
+  std::string id = trader.getIdForExecution(&execution);
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       feeDelta{
           {"BTC", boost::multiprecision::cpp_dec_float_50(-0.1)} // Example fee
@@ -140,7 +150,7 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   // Since there is still one more trade in the execution, expect another
   // submitOrder
   EXPECT_CALL(mockApplication,
-              submitOrder(id, symbolsMap["ETHUSDT"],
+              submitOrder(_, symbolsMap["ETHUSDT"],
                           opportunity.getTrades().back().orderQty(),
                           opportunity.getTrades().back().orderPrice(),
                           Position::SHORT))
@@ -149,8 +159,10 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   // Process the report
   trader.callProcessReport(&executionReport);
 
+  auto finalId = trader.getIdForExecution(&execution);
+
   // Process another report to complete the execution
-  ExecutionReport finalReport{id, TradeExecutionStatus::FILLED, 0.1, 0.2,
+  ExecutionReport finalReport{finalId, TradeExecutionStatus::FILLED, 0.1, 0.2,
                               feeDelta};
   trader.callProcessReport(&finalReport);
 
@@ -188,8 +200,10 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(1);
   trader.callProcessExecution(&execution);
 
-  // Now create an EXPIRED execution report
-  std::string id = "0"; // Generated ID in Trader::processExecution starts at 0
+  // Retrieve the actual generated ID from the trader's executionsMap using the
+  // public method
+  std::string id = trader.getIdForExecution(&execution);
+
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       feeDelta{};
 

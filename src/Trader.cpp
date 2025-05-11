@@ -7,9 +7,11 @@
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
 #include "TradeExecutionStatus.h"
+#include <algorithm>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
+#include <random>
 
 Trader::Trader(ThreadSafeQueue<Execution> &executionQueue,
                ThreadSafeQueue<ExecutionReport> &executionReportQueue,
@@ -21,8 +23,12 @@ Trader::Trader(ThreadSafeQueue<Execution> &executionQueue,
 
 /** Generate ID for execution */
 std::string generateId() {
-  static int id = 0;
-  return std::to_string(id++);
+  static const char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+  static thread_local std::mt19937 rng(std::random_device{}());
+  static std::uniform_int_distribution<> dist(0, sizeof(charset) - 2);
+  std::string id(8, '\0');
+  std::generate_n(id.begin(), 8, [&]() { return charset[dist(rng)]; });
+  return id;
 }
 
 void Trader::processExecution(Execution *execution) {
@@ -59,7 +65,7 @@ void Trader::processReport(ExecutionReport *execReport) {
 
   auto id = execReport->getId();
 
-  auto pair = _executionsMap.at(id);
+  auto pair = _executionsMap.at(id); // TODO: hard to guess random ID in tests
   auto execution = pair.first;
   auto delta = pair.second;
 
@@ -114,11 +120,17 @@ void Trader::processReport(ExecutionReport *execReport) {
     return;
   }
 
-  // submit the next order
+  // submit the next order with a new ID
   BOOST_LOG_TRIVIAL(debug) << "Submitting next order ";
   auto trade = execution->getTrades().front();
 
-  _application.submitOrder(id, trade.symbol(), trade.orderQty(),
+  // Generate a new ID for the next order
+  auto newId = generateId();
+  // Move the execution and delta to the new ID in the map
+  _executionsMap.emplace(newId, std::make_pair(execution, delta));
+  _executionsMap.erase(id);
+
+  _application.submitOrder(newId, trade.symbol(), trade.orderQty(),
                            trade.orderPrice(), trade.position());
 }
 

@@ -28,13 +28,13 @@ private:
   IApplication &_application;
   Balance &_balance;
   ReservedTrades &_reservedTrades;
-  std::unordered_map<std::string,
-                     entry>
-      _executionsMap; // Map of execution ID to execution and delta
 
 protected:
   void processExecution(Execution *execution);
   void processReport(ExecutionReport *execReport);
+  std::unordered_map<std::string,
+                     entry>
+      _executionsMap; // Map of execution ID to execution and delta
 
 public:
   Trader(ThreadSafeQueue<Execution> &_executionQueue,
