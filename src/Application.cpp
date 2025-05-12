@@ -201,7 +201,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     switch (execTypeValue) {
     case FIX::ExecType_NEW:
       return; // Ignore notification of new order
-    case FIX::ExecType_FILL:
+    case FIX::ExecType_TRADE:
       status = TradeExecutionStatus::FILLED;
       break;
     case FIX::ExecType_EXPIRED:
