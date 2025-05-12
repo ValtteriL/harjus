@@ -199,6 +199,8 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     // Determine the execution status based on ExecType
     TradeExecutionStatus status;
     switch (execTypeValue) {
+    case FIX::ExecType_NEW:
+      return; // Ignore notification of new order
     case FIX::ExecType_FILL:
       status = TradeExecutionStatus::FILLED;
       break;
