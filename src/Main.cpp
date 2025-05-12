@@ -146,7 +146,7 @@ FIX::SessionSettings getFixSessionSettings(const Configuration config) {
   [SESSION]
   SenderCompID=HARJUSOE
   SessionQualifier=ORDERENTRY
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
+  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-oe.xml
   SocketConnectHost=)" +
                config.getBinanceFIXApiHostnameOrderEntry() +
                R"(
