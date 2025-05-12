@@ -65,7 +65,7 @@ void Trader::processReport(ExecutionReport *execReport) {
 
   auto id = execReport->getId();
 
-  auto pair = _executionsMap.at(id); // TODO: hard to guess random ID in tests
+  auto pair = _executionsMap.at(id);
   auto execution = pair.first;
   auto delta = pair.second;
 
