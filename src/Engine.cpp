@@ -25,7 +25,7 @@ Engine::Engine(
   for (auto &path : tradingPaths) {
 
     // create an opportunity
-    std::string startingAsset = path->at(0).usedCurrency();
+    std::string startingAsset = path->front().usedCurrency();
     Opportunity *opportunity =
         new Opportunity(*path, _relativeValues[startingAsset], commission);
 
