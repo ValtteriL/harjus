@@ -150,7 +150,8 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
       marketDataRequest.set(FIX::MDReqID(reqId));
 
       // Set subscription type (1 = Subscribe)
-      marketDataRequest.set(FIX::SubscriptionRequestType('1'));
+      marketDataRequest.set(FIX::SubscriptionRequestType(
+          FIX::SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES));
 
       // Set market depth
       marketDataRequest.set(FIX::MarketDepth(1)); // 1 = Top of book
@@ -159,11 +160,11 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
       FIX44::MarketDataRequest::NoMDEntryTypes entryTypeGroup;
 
       // Add BID entry type (0)
-      entryTypeGroup.set(FIX::MDEntryType('0'));
+      entryTypeGroup.set(FIX::MDEntryType(FIX::MDEntryType_BID));
       marketDataRequest.addGroup(entryTypeGroup);
 
       // Add OFFER entry type (1)
-      entryTypeGroup.set(FIX::MDEntryType('1'));
+      entryTypeGroup.set(FIX::MDEntryType(FIX::MDEntryType_OFFER));
       marketDataRequest.addGroup(entryTypeGroup);
 
       // Add all symbols in the current chunk
@@ -311,7 +312,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
       group.get(entryType);
 
       // Process bid (0) or ask (1) entries
-      if (entryType == '0') { // Bid
+      if (entryType == FIX::MDEntryType_BID) {
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
 
@@ -322,7 +323,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
             boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
         bidQuantity =
             boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
-      } else if (entryType == '1') { // Ask/Offer
+      } else if (entryType == FIX::MDEntryType_OFFER) {
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
 
@@ -390,7 +391,8 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       group.get(action);
 
       // Only process "New" or "Change" actions (0 or 1)
-      if (action.getValue() == '0' || action.getValue() == '1') {
+      if (action.getValue() == FIX::MDUpdateAction_NEW ||
+          action.getValue() == FIX::MDUpdateAction_CHANGE) {
         FIX::MDEntryPx entryPrice;
         group.get(entryPrice);
 
@@ -398,12 +400,12 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
           FIX::MDEntrySize entrySize;
           group.get(entrySize);
 
-          if (entryType == '0') { // Bid
+          if (entryType == FIX::MDEntryType_BID) {
             updates[symbolValue]->bidPrice =
                 boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
             updates[symbolValue]->bidQty =
                 boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
-          } else if (entryType == '1') { // Ask/Offer
+          } else if (entryType == FIX::MDEntryType_OFFER) {
             updates[symbolValue]->askPrice =
                 boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
             updates[symbolValue]->askQty =
@@ -437,12 +439,13 @@ void Application::submitOrder(std::string id, const Symbol *symbol,
   FIX44::NewOrderSingle newOrder;
 
   newOrder.set(FIX::ClOrdID(id));
-  newOrder.set(FIX::OrdType('2')); // Limit order
-  newOrder.set(FIX::Side(position == Position::LONG ? '1' : '2'));
+  newOrder.set(FIX::OrdType(FIX::OrdType_LIMIT));
+  newOrder.set(
+      FIX::Side(position == Position::LONG ? FIX::Side_BUY : FIX::Side_SELL));
   newOrder.set(FIX::Symbol(symbol->symbol));
   newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
   newOrder.set(FIX::Price(static_cast<double>(price)));
-  newOrder.set(FIX::TimeInForce('4')); // Fill or Kill (FOK)
+  newOrder.set(FIX::TimeInForce(FIX::TimeInForce_FILL_OR_KILL));
 
   BOOST_LOG_TRIVIAL(debug) << "Submitting order: " << newOrder.toString()
                            << " to session " << orderEntrySessionID;
