@@ -2,7 +2,8 @@
 
 StaticTrade::StaticTrade(const Trade &trade)
     : _symbol(trade.symbol()->symbol), _position(trade.position()),
-      _orderQty(trade.orderQty()), _recvCurrency(trade.recvCurrency()),
+      _orderQty(trade.orderQty()), _orderPrice(trade.orderPrice()),
+      _recvCurrency(trade.recvCurrency()),
       _usedCurrency(trade.usedCurrency()) {};
 
 const std::string StaticTrade::symbol() const { return _symbol; }
