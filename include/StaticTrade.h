@@ -74,6 +74,11 @@ public:
    * for the unordered_set in ReservedTrades.
    */
   std::size_t hash() const;
+
+  /**
+   * Equality operator for StaticTrade
+   */
+  bool operator==(const StaticTrade &other) const;
 };
 
 // Specialization of std::hash for StaticTrade

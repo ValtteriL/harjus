@@ -31,7 +31,7 @@ public:
                reservedTrades) {}
 
   // Expose private methods for testing
-  void callProcessExecution(Execution *execution) {
+  void callProcessExecution(Execution execution) {
     processExecution(execution);
   }
 
@@ -40,9 +40,9 @@ public:
   }
 
   // Expose a method to get the ID for a given execution pointer
-  std::string getIdForExecution(Execution *execution) {
+  std::string getIdForExecution(const Execution *execution) {
     for (const auto &pair : _executionsMap) {
-      if (pair.second.first == execution) {
+      if (pair.second.first == *execution) {
         return pair.first;
       }
     }
@@ -117,7 +117,7 @@ TEST_F(TraderTest, processesExecutions) {
       .Times(1);
 
   // Process the execution
-  trader.callProcessExecution(&execution);
+  trader.callProcessExecution(execution);
 
   // Clean up - don't delete execution here, it's stored in the executionsMap
 }
@@ -133,7 +133,7 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
       submitOrder(_, "ETHBTC", opportunity.getTrades().front().orderQty(),
                   opportunity.getTrades().front().orderPrice(), Position::LONG))
       .Times(1);
-  trader.callProcessExecution(&execution);
+  trader.callProcessExecution(execution);
 
   // Now create an execution report for the completed trade
   std::string id = trader.getIdForExecution(&execution);
@@ -195,7 +195,7 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
 
   // Process the execution first
   EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(1);
-  trader.callProcessExecution(&execution);
+  trader.callProcessExecution(execution);
 
   // Retrieve the actual generated ID from the trader's executionsMap using the
   // public method

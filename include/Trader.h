@@ -17,7 +17,7 @@
 #include <string>
 
 using entry = std::pair<
-    Execution *,
+    Execution,
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>>;
 
 class Trader {
@@ -30,7 +30,7 @@ private:
   ReservedTrades &_reservedTrades;
 
 protected:
-  void processExecution(Execution *execution);
+  void processExecution(Execution execution);
   void processReport(ExecutionReport *execReport);
   std::unordered_map<std::string,
                      entry>

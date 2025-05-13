@@ -31,14 +31,14 @@ std::string generateId() {
   return id;
 }
 
-void Trader::processExecution(Execution *execution) {
+void Trader::processExecution(Execution execution) {
 
-  BOOST_LOG_TRIVIAL(debug) << "Processing execution " << *execution;
+  BOOST_LOG_TRIVIAL(debug) << "Processing execution " << execution;
 
   auto id = generateId();
   auto delta =
       std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>{
-          {execution->getStartingAsset(), execution->getCapacity()}};
+          {execution.getStartingAsset(), execution.getCapacity()}};
 
   auto pair = std::make_pair(execution, delta);
 
@@ -47,13 +47,13 @@ void Trader::processExecution(Execution *execution) {
 
   // pop the first trade from the execution
   // and submit the order
-  if (execution->getTrades().empty()) {
+  if (execution.getTrades().empty()) {
     // No trades available, handle this case
     throw std::runtime_error("No trades available in the execution object");
   }
 
   // submit the first trade
-  auto trade = execution->getTrades().front();
+  auto trade = execution.getTrades().front();
 
   _application.submitOrder(id, trade.symbol(), trade.orderQty(),
                            trade.orderPrice(), trade.position());
@@ -73,13 +73,13 @@ void Trader::processReport(ExecutionReport *execReport) {
 
   if (status == TradeExecutionStatus::EXPIRED) {
 
-    BOOST_LOG_TRIVIAL(info) << "Failed execution: " << *execution;
+    BOOST_LOG_TRIVIAL(info) << "Failed execution: " << execution;
 
     // update balance
     _balance.updateBalance(delta);
 
     // free symbols
-    _reservedTrades.releaseAll(execution->getOriginalTrades());
+    _reservedTrades.releaseAll(execution.getOriginalTrades());
 
     // remove the execution from the map
     _executionsMap.erase(id);
@@ -95,18 +95,18 @@ void Trader::processReport(ExecutionReport *execReport) {
     delta[currency] += amount;
   }
 
-  auto oldTrade = execution->getTrades().front();
+  auto oldTrade = execution.getTrades().front();
   delta[oldTrade.usedCurrency()] -= execReport->usedQty();
   delta[oldTrade.recvCurrency()] += execReport->recvQty();
 
   _executionsMap[id].second = delta;
 
   // remove the last order from the execution
-  execution->getTrades().pop();
+  execution.getTrades().pop();
 
-  if (execution->getTrades().empty()) {
+  if (execution.getTrades().empty()) {
 
-    BOOST_LOG_TRIVIAL(info) << "Succesful execution: " << *execution;
+    BOOST_LOG_TRIVIAL(info) << "Succesful execution: " << execution;
 
     // remove the execution from the map
     _executionsMap.erase(id);
@@ -115,14 +115,14 @@ void Trader::processReport(ExecutionReport *execReport) {
     _balance.updateBalance(delta);
 
     // free symbols
-    _reservedTrades.releaseAll(execution->getOriginalTrades());
+    _reservedTrades.releaseAll(execution.getOriginalTrades());
 
     return;
   }
 
   // submit the next order with a new ID
   BOOST_LOG_TRIVIAL(debug) << "Submitting next order ";
-  auto trade = execution->getTrades().front();
+  auto trade = execution.getTrades().front();
 
   // Generate a new ID for the next order
   auto newId = generateId();
@@ -145,17 +145,14 @@ void Trader::run(std::stop_token stoken) {
     if (_executionQueue.getSemaphore().try_acquire_for(
             std::chrono::milliseconds(100))) {
 
-      Execution execution;
-
       // Process execution
-      if (_executionQueue.try_pop(execution)) {
-        processExecution(&execution);
+      if (Execution execution; _executionQueue.try_pop(execution)) {
+        processExecution(execution);
       }
 
-      ExecutionReport executionReport;
-
       // Process execution report
-      if (_executionReportQueue.try_pop(executionReport)) {
+      if (ExecutionReport executionReport;
+          _executionReportQueue.try_pop(executionReport)) {
         processReport(&executionReport);
       }
     }
@@ -166,11 +163,10 @@ void Trader::run(std::stop_token stoken) {
   // Finish executions that are still in the map
   while (!_executionsMap.empty()) {
 
-    ExecutionReport executionReport;
-
     _executionReportQueue.getSemaphore().acquire();
 
-    if (_executionReportQueue.try_pop(executionReport)) {
+    if (ExecutionReport executionReport;
+        _executionReportQueue.try_pop(executionReport)) {
       processReport(&executionReport);
     }
   }

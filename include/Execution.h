@@ -54,6 +54,18 @@ public:
   }
 
   /**
+   * @brief Copy constructor
+   */
+  Execution(const Execution &other) = default;
+
+  /**
+   * @brief equality operator for Execution
+   */
+  bool operator==(const Execution &other) const {
+    return this->_tradesVector == other._tradesVector;
+  }
+
+  /**
    * @brief Recalculate the opportunity associated with the
    * opportunity.
    * @details This method should be called after a price update that affects

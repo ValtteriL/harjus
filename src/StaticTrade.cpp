@@ -25,3 +25,10 @@ std::string StaticTrade::usedCurrency() const { return _usedCurrency; }
 std::size_t StaticTrade::hash() const {
   return std::hash<std::string>()(symbol()) ^ std::hash<Position>()(position());
 }
+
+bool StaticTrade::operator==(const StaticTrade &other) const {
+  return _symbol == other._symbol && _position == other._position &&
+         _orderQty == other._orderQty && _orderPrice == other._orderPrice &&
+         _recvCurrency == other._recvCurrency &&
+         _usedCurrency == other._usedCurrency;
+}
