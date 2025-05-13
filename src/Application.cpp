@@ -187,6 +187,15 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
 void Application::onMessage(const FIX44::ExecutionReport &message,
                             const FIX::SessionID &) {
   try {
+
+    /**
+     * terminate called after throwing an instance of 'std::runtime_error'
+     * what():  Error processing execution report: Field not found
+     *Aborted (core dumped)
+     */
+    std::cout << "Received ExecutionReport: " << message.toString()
+              << std::endl;
+
     // Extract the ClOrdID
     FIX::ClOrdID clOrdID;
     message.get(clOrdID);
@@ -432,7 +441,7 @@ void onMessage(const FIX::Message &message, const FIX::SessionID &) {
                            message.toString());
 }
 
-void Application::submitOrder(std::string id, const Symbol *symbol,
+void Application::submitOrder(std::string id, std::string symbol,
                               boost::multiprecision::cpp_dec_float_50 qty,
                               boost::multiprecision::cpp_dec_float_50 price,
                               Position position) {
@@ -442,7 +451,7 @@ void Application::submitOrder(std::string id, const Symbol *symbol,
   newOrder.set(FIX::OrdType(FIX::OrdType_LIMIT));
   newOrder.set(
       FIX::Side(position == Position::LONG ? FIX::Side_BUY : FIX::Side_SELL));
-  newOrder.set(FIX::Symbol(symbol->symbol));
+  newOrder.set(FIX::Symbol(symbol));
   newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
   newOrder.set(FIX::Price(static_cast<double>(price)));
   newOrder.set(FIX::TimeInForce(FIX::TimeInForce_FILL_OR_KILL));

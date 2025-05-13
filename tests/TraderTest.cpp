@@ -110,11 +110,10 @@ TEST_F(TraderTest, processesExecutions) {
   auto execution = Execution(opportunity);
 
   // Expect a call to submitOrder with the correct parameters
-  EXPECT_CALL(mockApplication,
-              submitOrder(_, symbolsMap["ETHBTC"],
-                          opportunity.getTrades().front().orderQty(),
-                          opportunity.getTrades().front().orderPrice(),
-                          Position::LONG))
+  EXPECT_CALL(
+      mockApplication,
+      submitOrder(_, "ETHBTC", opportunity.getTrades().front().orderQty(),
+                  opportunity.getTrades().front().orderPrice(), Position::LONG))
       .Times(1);
 
   // Process the execution
@@ -129,11 +128,10 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   auto execution = Execution(opportunity);
 
   // Process the execution first
-  EXPECT_CALL(mockApplication,
-              submitOrder(_, symbolsMap["ETHBTC"],
-                          opportunity.getTrades().front().orderQty(),
-                          opportunity.getTrades().front().orderPrice(),
-                          Position::LONG))
+  EXPECT_CALL(
+      mockApplication,
+      submitOrder(_, "ETHBTC", opportunity.getTrades().front().orderQty(),
+                  opportunity.getTrades().front().orderPrice(), Position::LONG))
       .Times(1);
   trader.callProcessExecution(&execution);
 
@@ -149,11 +147,10 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
 
   // Since there is still one more trade in the execution, expect another
   // submitOrder
-  EXPECT_CALL(mockApplication,
-              submitOrder(_, symbolsMap["ETHUSDT"],
-                          opportunity.getTrades().back().orderQty(),
-                          opportunity.getTrades().back().orderPrice(),
-                          Position::SHORT))
+  EXPECT_CALL(
+      mockApplication,
+      submitOrder(_, "ETHUSDT", opportunity.getTrades().back().orderQty(),
+                  opportunity.getTrades().back().orderPrice(), Position::SHORT))
       .Times(1);
 
   // Process the report
@@ -192,7 +189,7 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   auto execution = Execution(opportunity);
 
   // Reserve the trades
-  for (auto &trade : execution.getOriginalTrades()) {
+  for (auto &trade : opportunity.getTrades()) {
     reservedTrades.reserve(trade);
   }
 
@@ -217,7 +214,7 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 1.0, 1e-5);
 
   // Verify that trades are released
-  for (auto &trade : execution.getOriginalTrades()) {
+  for (auto &trade : opportunity.getTrades()) {
     EXPECT_FALSE(reservedTrades.isReserved(trade));
   }
 }

@@ -4,6 +4,7 @@
  */
 
 #include "ReservedTrades.h"
+#include "StaticTrade.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 using ::testing::Return;
@@ -66,7 +67,7 @@ TEST_F(ReservedTradesTest, releaseAll) {
   EXPECT_TRUE(reservedTrades.isReserved(trade1));
   EXPECT_TRUE(reservedTrades.isReserved(trade2));
 
-  std::vector<Trade> trades{trade1, trade2};
+  std::vector<StaticTrade> trades{trade1, trade2};
 
   reservedTrades.releaseAll(trades);
 

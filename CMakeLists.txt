@@ -55,6 +55,7 @@ add_executable(harjus
   src/ExecutionReport.cpp
   src/Trader.cpp
   src/PriceUpdate.cpp
+  src/StaticTrade.cpp
 )
 target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
 
@@ -79,6 +80,7 @@ gtest_discover_tests(MainTest)
 add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
   src/Trade.cpp
   src/ReservedTrades.cpp
+  src/StaticTrade.cpp
 )
 target_link_libraries(ReservedTradesTest PRIVATE
   gtest_main
@@ -159,6 +161,7 @@ add_executable(EngineTest tests/EngineTest.cpp
   src/Balance.cpp
   src/Execution.cpp
   src/PriceUpdate.cpp
+  src/StaticTrade.cpp
 )
 target_link_libraries(EngineTest PRIVATE
   gtest_main
@@ -177,6 +180,7 @@ add_executable(TraderTest tests/TraderTest.cpp
   src/Balance.cpp
   src/Execution.cpp
   src/ExecutionReport.cpp
+  src/StaticTrade.cpp
 )
 target_link_libraries(TraderTest PRIVATE
   gtest_main

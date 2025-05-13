@@ -1,33 +1,45 @@
 #include "ReservedTrades.h"
+#include "StaticTrade.h"
 #include <mutex>
 #include <shared_mutex>
 
 void ReservedTrades::reserve(Trade &trade) {
   std::unique_lock<std::shared_mutex> lock(mtx);
-  reservedTrades.insert(&trade);
+  _reservedTrades.insert(
+      std::make_pair(trade.symbol()->symbol, trade.position()));
 }
 
 void ReservedTrades::release(Trade &trade) {
   std::unique_lock<std::shared_mutex> lock(mtx);
-  reservedTrades.erase(&trade);
+  _reservedTrades.erase(
+      std::make_pair(trade.symbol()->symbol, trade.position()));
 }
 
-void ReservedTrades::releaseAll(std::vector<Trade> &trades) {
+void ReservedTrades::release(const StaticTrade &staticTrade) {
   std::unique_lock<std::shared_mutex> lock(mtx);
-  for (auto &trade : trades) {
-    reservedTrades.erase(&trade);
+  _reservedTrades.erase(
+      std::make_pair(staticTrade.symbol(), staticTrade.position()));
+}
+
+void ReservedTrades::releaseAll(std::vector<StaticTrade> &trades) {
+  std::unique_lock<std::shared_mutex> lock(mtx);
+  for (auto &staticTrade : trades) {
+    _reservedTrades.erase(
+        std::make_pair(staticTrade.symbol(), staticTrade.position()));
   }
 }
 
 bool ReservedTrades::isReserved(Trade &trade) {
   std::shared_lock<std::shared_mutex> lock(mtx);
-  return reservedTrades.contains(&trade);
+  return _reservedTrades.contains(
+      std::make_pair(trade.symbol()->symbol, trade.position()));
 }
 
 bool ReservedTrades::isReserved(std::vector<Trade> &trades) {
   std::shared_lock<std::shared_mutex> lock(mtx);
   for (auto &trade : trades) {
-    if (reservedTrades.contains(&trade)) {
+    if (_reservedTrades.contains(
+            std::make_pair(trade.symbol()->symbol, trade.position()))) {
       return true;
     }
   }

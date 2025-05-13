@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Opportunity.h"
+#include "StaticTrade.h"
 #include "Trade.h"
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <queue>
@@ -16,10 +17,11 @@
 
 class Execution {
 private:
-  std::queue<Trade> _trades;
-  std::vector<Trade> _tradesVector;
+  std::queue<StaticTrade> _trades;
+  std::vector<StaticTrade> _tradesVector;
   std::string _startingAsset;
   boost::multiprecision::cpp_dec_float_50 _totalProfit;
+  boost::multiprecision::cpp_dec_float_50 _capacity;
 
 public:
   /**
@@ -46,6 +48,7 @@ public:
       _tradesVector = other._tradesVector;
       _startingAsset = other._startingAsset;
       _totalProfit = other._totalProfit;
+      _capacity = other._capacity;
     }
     return *this;
   }
@@ -83,14 +86,14 @@ public:
    * @brief Get the trades associated with the execution.
    * @return A queue of trades associated with the execution.
    */
-  std::queue<Trade> &getTrades();
+  std::queue<StaticTrade> &getTrades();
 
   /**
    * @brief Get the original trades associated with the execution.
    * @return A vector of trades associated with the execution since
    * construction.
    */
-  std::vector<Trade> &getOriginalTrades() { return _tradesVector; }
+  std::vector<StaticTrade> &getOriginalTrades() { return _tradesVector; }
 
   /**
    * @brief Stream operator overload for Execution
