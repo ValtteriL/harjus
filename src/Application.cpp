@@ -250,9 +250,12 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
         feeDelta;
 
     // Extract the fees from the message into the asset delta map
-    FIX::NoMiscFees noMiscFees;
-    message.get(noMiscFees);
-    int numMiscFees = noMiscFees.getValue();
+    int numMiscFees = 0;
+    if (FIX::NoMiscFees noMiscFees;
+        message.isSetField(FIX::FIELD::NoMiscFees)) {
+      message.get(noMiscFees);
+      numMiscFees = noMiscFees.getValue();
+    }
 
     for (int i = 1; i <= numMiscFees; i++) {
       FIX44::ExecutionReport::NoMiscFees group;
