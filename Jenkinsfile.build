@@ -1,0 +1,95 @@
+// Description: Jenkinsfile for building harjus and pushing to AWS ECR
+pipeline {
+    
+    agent any
+    
+    environment {
+        ECR_REGISTRY = '137068223640.dkr.ecr.ap-northeast-1.amazonaws.com/harjus'
+        ECR_REPOSITORY = 'harjus'
+        AWS_DEFAULT_REGION = 'ap-northeast-1'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Quality Check') {
+            steps {
+                sh """
+                  nix-shell --pure -A devEnv --run "
+                    cmake -B build
+                    cmake --build build --config Debug --target all --
+                    ctest -j8 -C Debug -T test --output-on-failure --test-dir build/
+                    "
+                """
+            }
+        }
+        
+        stage('Login to ECR') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                  credentialsId: 'aws-credentials']]) {
+                    script {
+                        sh "aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+                    }
+                }
+            }
+        }
+        
+        stage('Build Image') {
+            steps {
+                sh 'nix-build'
+            }
+        }
+        
+        stage('Push Images to ECR') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                  credentialsId: 'aws-credentials']]) {
+                    script {
+                        def gitCommit = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+                        
+                        // Tag and push with commit hash
+                        // and latest
+                        sh """
+                            IMAGE=\$(docker image load -q < result-2 | awk '{print \$3}')
+                            
+                            docker tag \$IMAGE ${ECR_REGISTRY}/${ECR_REPOSITORY}:${gitCommit}
+                            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${gitCommit}
+                            
+                            docker tag \$IMAGE ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
+                            docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
+                        """
+                        
+                        // Check if this is a release tag
+                        def isRelease = sh(script: 'git tag --points-at HEAD | grep -q "^releases/[1-9]\\+\\.[0-9]\\+\\.[0-9]\\+$"', returnStatus: true) == 0
+                        
+                        if (isRelease) {
+                            def releaseTag = sh(script: 'git tag --points-at HEAD | grep "^releases/" | head -1', returnStdout: true).trim()
+                            def semverTag = releaseTag.replaceAll('^releases/', '')
+                            
+                            // Tag and push with semver
+                            sh """
+                                docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:${gitCommit} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${semverTag}
+                                docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${semverTag}
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+             mail \
+                subject: "Failed Job: ${env.JOB_NAME} build ${env.BUILD_NUMBER}", \
+                body: "Failed CI job -> <a href=\"${env.BUILD_URL}\">${env.JOB_NAME} build ${env.BUILD_NUMBER}</a>", \
+                mimeType: 'text/html', \
+                to: "valtteri@shufflingbytes.com";
+        }
+    }
+}
