@@ -24,14 +24,14 @@ resource "aws_secretsmanager_secret_version" "binance_ed25519_api_key" {
   secret_string = var.binance_ed25519_api_key
 }
 
-resource "aws_secretsmanager_secret" "binance_ed25519_private_key" {
+resource "aws_secretsmanager_secret" "binance_ed25519_seed" {
   name_prefix = "harjus-binance-api-private-key"
   description = "Binance ED25519 private key for FIX API"
 }
 
-resource "aws_secretsmanager_secret_version" "binance_ed25519_private_key" {
-  secret_id     = aws_secretsmanager_secret.binance_ed25519_private_key.id
-  secret_string = var.binance_ed25519_private_key
+resource "aws_secretsmanager_secret_version" "binance_ed25519_seed" {
+  secret_id     = aws_secretsmanager_secret.binance_ed25519_seed.id
+  secret_string = var.binance_ed25519_seed
 }
 
 # resources required to SSH into the EC2 instance(s)
@@ -196,7 +196,7 @@ resource "aws_iam_policy" "task_exec_role_policy" {
         Effect = "Allow"
         Resource = [
           aws_secretsmanager_secret.binance_ed25519_api_key.arn,
-          aws_secretsmanager_secret.binance_ed25519_private_key.arn,
+          aws_secretsmanager_secret.binance_ed25519_seed.arn,
         ]
       },
       {
@@ -268,49 +268,29 @@ resource "aws_ecs_task_definition" "ecs_td" {
           value = "${tostring(var.commission)}"
         },
         {
-          name  = "BINANCE_WEBSOCKET_STREAM_URI"
-          value = var.binance_websocket_stream_uri
-        },
-        {
           name  = "BINANCE_REST_API_URI"
           value = var.binance_rest_api_uri
         },
         {
-          name  = "BINANCE_FIX_API_HOSTNAME"
-          value = var.binance_fix_api_hostname
+          name  = "BINANCE_FIX_API_HOSTNAME_MARKETDATA"
+          value = var.binance_fix_api_hostname_marketdata
         },
         {
-          name  = "BINANCE_FIX_API_PORT"
-          value = "${tostring(var.binance_fix_api_port)}"
+          name  = "BINANCE_FIX_API_PORT_MARKETDATA"
+          value = var.binance_fix_api_port_marketdata
         },
         {
-          name  = "BINANCE_MARKET_DATA_API_URI"
-          value = var.binance_market_data_api_uri
+          name  = "BINANCE_FIX_API_HOSTNAME_ORDERENTRY"
+          value = var.binance_fix_api_hostname_orderentry
         },
         {
-          name  = "VERBOSITY"
-          value = var.verbosity
+          name  = "BINANCE_FIX_API_PORT_ORDERENTRY"
+          value = var.binance_fix_api_port_orderentry
         },
         {
-          name  = "MARKET_DATA_EXCHANGE"
-          value = var.market_data_exchange
+          name  = "LOG_LEVEL"
+          value = "${tostring(var.log_level)}"
         },
-        {
-          name  = "PRICE_STREAMER_EXCHANGE"
-          value = var.price_streamer_exchange
-        },
-        {
-          name  = "TRADE_CLIENT_EXCHANGE"
-          value = var.trade_client_exchange
-        },
-        {
-          name  = "BALANCE_EXCHANGE"
-          value = var.balance_exchange
-        },
-        {
-          name  = "PATH_TO_PORT"
-          value = var.path_to_port
-        }
       ],
       secrets : [
         {
@@ -318,8 +298,8 @@ resource "aws_ecs_task_definition" "ecs_td" {
           valueFrom = aws_secretsmanager_secret_version.binance_ed25519_api_key.arn
         },
         {
-          name      = "BINANCE_ED25519_PRIVATE_KEY"
-          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_private_key.arn
+          name      = "BINANCE_ED25519_SEED"
+          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_seed.arn
         }
       ],
       "healthCheck" : {
