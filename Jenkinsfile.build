@@ -9,7 +9,7 @@ pipeline {
     // }
     
     environment {
-        ECR_REGISTRY = '137068223640.dkr.ecr.ap-northeast-1.amazonaws.com/harjus'
+        ECR_REGISTRY = '137068223640.dkr.ecr.ap-northeast-1.amazonaws.com'
         ECR_REPOSITORY = 'harjus'
         AWS_DEFAULT_REGION = 'ap-northeast-1'
     }
