@@ -67,23 +67,7 @@ public:
   std::string usedCurrency() const;
 
   /**
-   * Hash function for Trade.
-   * Combines the hash of the symbol and position to create a unique hash for
-   * the trade. This ensures that trades with the same symbol and position are
-   * treated as the same. Need to equal the has of corresponding trade. Required
-   * for the unordered_set in ReservedTrades.
-   */
-  std::size_t hash() const;
-
-  /**
    * Equality operator for StaticTrade
    */
   bool operator==(const StaticTrade &other) const;
 };
-
-// Specialization of std::hash for StaticTrade
-namespace std {
-template <> struct hash<StaticTrade> {
-  std::size_t operator()(const Trade &trade) const { return trade.hash(); }
-};
-} // namespace std
