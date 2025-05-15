@@ -1,7 +1,6 @@
 #include "Application.h"
 #include "Ed25519.h"
 #include "Position.h"
-#include "Symbol.h"
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
