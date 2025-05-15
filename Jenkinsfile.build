@@ -4,9 +4,9 @@ pipeline {
     agent any
 
     // Run only on main branch
-    when {
-        branch 'main'
-    }
+    // when {
+    //     branch 'main'
+    // }
     
     environment {
         ECR_REGISTRY = '137068223640.dkr.ecr.ap-northeast-1.amazonaws.com/harjus'
