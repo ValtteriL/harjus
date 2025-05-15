@@ -302,13 +302,6 @@ resource "aws_ecs_task_definition" "ecs_td" {
           valueFrom = aws_secretsmanager_secret_version.binance_ed25519_seed.arn
         }
       ],
-      "healthCheck" : {
-        "command" : ["CMD-SHELL", "harjus pid"],
-        "interval" : 30,
-        "timeout" : 2,
-        "retries" : 3,
-        "startPeriod" : 30
-      },
       "logConfiguration" : {
         "logDriver" : "awslogs",
         "options" : {
