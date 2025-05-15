@@ -46,17 +46,17 @@ void buildGraph(Graph &graph,
   for (const auto &pair : *symbolMap) {
     const auto &symbol = pair.second;
 
-    auto vertex1 = vertexMap[symbol->baseAsset];
-    auto vertex2 = vertexMap[symbol->quoteAsset];
+    auto base = vertexMap[symbol->baseAsset];
+    auto quote = vertexMap[symbol->quoteAsset];
 
     // long
-    boost::add_edge(vertex1, vertex2,
+    boost::add_edge(quote, base,
                     EdgeProperties{std::shared_ptr<Trade>{
                         new Trade{symbol, Position::LONG}}},
                     graph);
 
     // short
-    boost::add_edge(vertex2, vertex1,
+    boost::add_edge(base, quote,
                     EdgeProperties{std::shared_ptr<Trade>{
                         new Trade{symbol, Position::SHORT}}},
                     graph);

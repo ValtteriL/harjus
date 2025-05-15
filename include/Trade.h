@@ -105,14 +105,6 @@ public:
   bool operator==(const Trade &other) const;
 
   /**
-   * Hash function for Trade.
-   * Combines the hash of the symbol and position to create a unique hash for
-   * the trade. This ensures that trades with the same symbol and position are
-   * treated as the same.
-   */
-  std::size_t hash() const;
-
-  /**
    * @brief Copy assignment operator for Trade class.
    * @param other The Trade object to copy from.
    * @return A reference to this Trade object.
@@ -134,10 +126,3 @@ public:
    */
   Trade(const Trade &other) = default;
 };
-
-// Specialization of std::hash for Trade
-namespace std {
-template <> struct hash<Trade> {
-  std::size_t operator()(const Trade &trade) const { return trade.hash(); }
-};
-} // namespace std

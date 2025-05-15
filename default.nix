@@ -64,6 +64,7 @@ let
         ninja
         gdb
         clang-tools
+        ccache
         gtest
         boost
         openssl
@@ -100,7 +101,7 @@ let
 
       buildInputs =
         [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
-      nativeBuildInputs = [ cmake ninja pkg-config ];
+      nativeBuildInputs = [ cmake ninja pkg-config ccache ];
     };
 
     # docker packaging derivation

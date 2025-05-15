@@ -25,7 +25,7 @@ Engine::Engine(
   for (auto &path : tradingPaths) {
 
     // create an opportunity
-    std::string startingAsset = path->at(0).usedCurrency();
+    std::string startingAsset = path->front().usedCurrency();
     Opportunity *opportunity =
         new Opportunity(*path, _relativeValues[startingAsset], commission);
 
@@ -137,8 +137,11 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
   // freeze and queue chosen opportunities for execution
   for (auto opportunity : opportunitiesToQueue) {
-    BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader";
-    _executionQueue.push(Execution(*opportunity));
+
+    Execution execution{*opportunity};
+
+    BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
+    _executionQueue.push(std::move(execution));
   }
 }
 

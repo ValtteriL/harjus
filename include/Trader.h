@@ -17,7 +17,7 @@
 #include <string>
 
 using entry = std::pair<
-    Execution *,
+    Execution,
     std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>>;
 
 class Trader {
@@ -28,13 +28,13 @@ private:
   IApplication &_application;
   Balance &_balance;
   ReservedTrades &_reservedTrades;
+
+protected:
+  void processExecution(Execution execution);
+  void processReport(ExecutionReport *execReport);
   std::unordered_map<std::string,
                      entry>
       _executionsMap; // Map of execution ID to execution and delta
-
-protected:
-  void processExecution(Execution *execution);
-  void processReport(ExecutionReport *execReport);
 
 public:
   Trader(ThreadSafeQueue<Execution> &_executionQueue,

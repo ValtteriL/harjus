@@ -36,9 +36,17 @@ void Application::onLogout(const FIX::SessionID &sessionID) {
   BOOST_LOG_TRIVIAL(debug) << "FIX logout - " << sessionID;
 }
 
-void Application::fromAdmin(const FIX::Message &, const FIX::SessionID &)
+void Application::fromAdmin(const FIX::Message &message, const FIX::SessionID &)
     EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue,
-           FIX::RejectLogon) {}
+           FIX::RejectLogon) {
+
+  FIX::MsgType msgType;
+  message.getHeader().getField(msgType);
+
+  if (msgType == FIX::MsgType_Reject) {
+    throw std::runtime_error("Received Reject message: " + message.toString());
+  }
+}
 
 void Application::toAdmin(FIX::Message &message,
                           const FIX::SessionID &sessionID) {
@@ -141,7 +149,8 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
       marketDataRequest.set(FIX::MDReqID(reqId));
 
       // Set subscription type (1 = Subscribe)
-      marketDataRequest.set(FIX::SubscriptionRequestType('1'));
+      marketDataRequest.set(FIX::SubscriptionRequestType(
+          FIX::SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES));
 
       // Set market depth
       marketDataRequest.set(FIX::MarketDepth(1)); // 1 = Top of book
@@ -150,11 +159,11 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
       FIX44::MarketDataRequest::NoMDEntryTypes entryTypeGroup;
 
       // Add BID entry type (0)
-      entryTypeGroup.set(FIX::MDEntryType('0'));
+      entryTypeGroup.set(FIX::MDEntryType(FIX::MDEntryType_BID));
       marketDataRequest.addGroup(entryTypeGroup);
 
       // Add OFFER entry type (1)
-      entryTypeGroup.set(FIX::MDEntryType('1'));
+      entryTypeGroup.set(FIX::MDEntryType(FIX::MDEntryType_OFFER));
       marketDataRequest.addGroup(entryTypeGroup);
 
       // Add all symbols in the current chunk
@@ -169,10 +178,6 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
     }
     return true;
   } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error sending market data request: " << e.what();
-
     throw std::runtime_error("Error sending market data request: " +
                              std::string(e.what()));
   }
@@ -181,6 +186,15 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
 void Application::onMessage(const FIX44::ExecutionReport &message,
                             const FIX::SessionID &) {
   try {
+
+    /**
+     * terminate called after throwing an instance of 'std::runtime_error'
+     * what():  Error processing execution report: Field not found
+     *Aborted (core dumped)
+     */
+    std::cout << "Received ExecutionReport: " << message.toString()
+              << std::endl;
+
     // Extract the ClOrdID
     FIX::ClOrdID clOrdID;
     message.get(clOrdID);
@@ -194,7 +208,9 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     // Determine the execution status based on ExecType
     TradeExecutionStatus status;
     switch (execTypeValue) {
-    case FIX::ExecType_FILL:
+    case FIX::ExecType_NEW:
+      return; // Ignore notification of new order
+    case FIX::ExecType_TRADE:
       status = TradeExecutionStatus::FILLED;
       break;
     case FIX::ExecType_EXPIRED:
@@ -202,9 +218,6 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       break;
     default:
       // For other cases, just log and return without creating execution report
-      BOOST_LOG_TRIVIAL(error)
-          << "Received ExecutionReport with unhandled ExecType: "
-          << execTypeValue;
 
       throw std::runtime_error(
           "Received ExecutionReport with unhandled ExecType: " +
@@ -236,9 +249,12 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
         feeDelta;
 
     // Extract the fees from the message into the asset delta map
-    FIX::NoMiscFees noMiscFees;
-    message.get(noMiscFees);
-    int numMiscFees = noMiscFees.getValue();
+    int numMiscFees = 0;
+    if (FIX::NoMiscFees noMiscFees;
+        message.isSetField(FIX::FIELD::NoMiscFees)) {
+      message.get(noMiscFees);
+      numMiscFees = noMiscFees.getValue();
+    }
 
     for (int i = 1; i <= numMiscFees; i++) {
       FIX44::ExecutionReport::NoMiscFees group;
@@ -263,10 +279,9 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     }
 
     // Create execution report & push to the queue
-    BOOST_LOG_TRIVIAL(trace) << "Pushing execution report to queue";
-
-    executionReportQueue.push(
-        ExecutionReport(id, status, usedQty, recvQty, feeDelta));
+    ExecutionReport report{id, status, usedQty, recvQty, feeDelta};
+    BOOST_LOG_TRIVIAL(debug) << "Pushing execution report to queue: " << report;
+    executionReportQueue.push(std::move(report));
 
   } catch (const std::exception &e) {
 
@@ -275,53 +290,8 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
   }
 }
 
-void Application::onMessage(const FIX44::Reject &message,
-                            const FIX::SessionID &) {
-
-  try {
-    // Extract the human readable message
-    FIX::Text text;
-    message.get(text);
-    std::string errorMessage = text.getValue();
-
-    // extract error code
-    auto errorCode = message.getField(25016);
-
-    BOOST_LOG_TRIVIAL(error) << "Request rejected: " << errorMessage
-                             << " (Errorcode: " << errorCode << ")";
-
-  } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error processing request rejection: " << e.what();
-  }
-
-  throw std::runtime_error("Received rejection message on session: " +
-                           message.toString());
-}
-
 void Application::onMessage(const FIX44::MarketDataRequestReject &message,
                             const FIX::SessionID &) {
-  try {
-    // Extract the human readable message
-    FIX::Text text;
-    message.get(text);
-    std::string errorMessage = text.getValue();
-
-    // extract reason
-    FIX::MDReqRejReason reason;
-    message.get(reason);
-    auto reasonValue = reason.getValue();
-
-    BOOST_LOG_TRIVIAL(error) << "Market Data Request Rejected: " << errorMessage
-                             << " (Reason: " << reasonValue << ")";
-
-  } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error processing market data request rejection: " << e.what();
-  }
-
   throw std::runtime_error("Market Data Request Rejected: " +
                            message.toString());
 }
@@ -353,7 +323,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
       group.get(entryType);
 
       // Process bid (0) or ask (1) entries
-      if (entryType == '0') { // Bid
+      if (entryType == FIX::MDEntryType_BID) {
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
 
@@ -364,7 +334,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
             boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
         bidQuantity =
             boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
-      } else if (entryType == '1') { // Ask/Offer
+      } else if (entryType == FIX::MDEntryType_OFFER) {
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
 
@@ -387,10 +357,6 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
     BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << *update;
     priceUpdateQueue.push(update);
   } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error processing market data snapshot: " << e.what();
-
     throw std::runtime_error("Error processing market data snapshot: " +
                              std::string(e.what()));
   }
@@ -436,7 +402,8 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       group.get(action);
 
       // Only process "New" or "Change" actions (0 or 1)
-      if (action.getValue() == '0' || action.getValue() == '1') {
+      if (action.getValue() == FIX::MDUpdateAction_NEW ||
+          action.getValue() == FIX::MDUpdateAction_CHANGE) {
         FIX::MDEntryPx entryPrice;
         group.get(entryPrice);
 
@@ -444,12 +411,12 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
           FIX::MDEntrySize entrySize;
           group.get(entrySize);
 
-          if (entryType == '0') { // Bid
+          if (entryType == FIX::MDEntryType_BID) {
             updates[symbolValue]->bidPrice =
                 boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
             updates[symbolValue]->bidQty =
                 boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
-          } else if (entryType == '1') { // Ask/Offer
+          } else if (entryType == FIX::MDEntryType_OFFER) {
             updates[symbolValue]->askPrice =
                 boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
             updates[symbolValue]->askQty =
@@ -465,13 +432,15 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       priceUpdateQueue.push(update);
     }
   } catch (const std::exception &e) {
-
-    BOOST_LOG_TRIVIAL(error)
-        << "Error processing incremental refresh: " << e.what();
-
     throw std::runtime_error("Error processing incremental refresh: " +
                              std::string(e.what()));
   }
+}
+
+void onMessage(const FIX::Message &message, const FIX::SessionID &) {
+  // Handle all unhandled message types
+  throw std::runtime_error("Received unexpected message: " +
+                           message.toString());
 }
 
 void Application::submitOrder(std::string id, std::string symbol,
@@ -479,13 +448,18 @@ void Application::submitOrder(std::string id, std::string symbol,
                               boost::multiprecision::cpp_dec_float_50 price,
                               Position position) {
   FIX44::NewOrderSingle newOrder;
+
   newOrder.set(FIX::ClOrdID(id));
+  newOrder.set(FIX::OrdType(FIX::OrdType_LIMIT));
+  newOrder.set(
+      FIX::Side(position == Position::LONG ? FIX::Side_BUY : FIX::Side_SELL));
   newOrder.set(FIX::Symbol(symbol));
-  newOrder.set(FIX::Side(position == Position::LONG ? '1' : '2'));
-  newOrder.set(FIX::OrdType('2'));     // Limit order
-  newOrder.set(FIX::TimeInForce('4')); // Fill or Kill (FOK)
   newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
   newOrder.set(FIX::Price(static_cast<double>(price)));
+  newOrder.set(FIX::TimeInForce(FIX::TimeInForce_FILL_OR_KILL));
+
+  BOOST_LOG_TRIVIAL(debug) << "Submitting order: " << newOrder.toString()
+                           << " to session " << orderEntrySessionID;
 
   // Send the order to the order entry session
   FIX::Session::sendToTarget(newOrder, orderEntrySessionID);

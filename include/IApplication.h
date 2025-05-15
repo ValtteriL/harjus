@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Position.h"
+#include "Symbol.h"
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <string>
 

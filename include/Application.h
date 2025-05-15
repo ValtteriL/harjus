@@ -51,7 +51,7 @@ private:
    * If no one is logged on, the messages will be sent at the time a connection
    * is established with the counterparty.
    */
-  void onCreate(const FIX::SessionID &sessionID);
+  void onCreate(const FIX::SessionID &sessionID) override;
 
   /**
    * This notifies you when a valid logon has been established with a counter
@@ -59,14 +59,14 @@ private:
    * logon process has completed with both parties exchanging valid logon
    * messages.
    */
-  void onLogon(const FIX::SessionID &sessionID);
+  void onLogon(const FIX::SessionID &sessionID) override;
 
   /**
    * This notifies you when an FIX session is no longer online.
    * This could happen during a normal logout exchange or because of a forced
    * termination or a loss of network connection.
    */
-  void onLogout(const FIX::SessionID &sessionID);
+  void onLogout(const FIX::SessionID &sessionID) override;
 
   /**
    * This provides you with a peek at the administrative messages that are being
@@ -75,7 +75,7 @@ private:
    * do. Notice that the FIX::Message is not const. This allows you to add
    * fields to an adminstrative message before it is sent out.
    */
-  void toAdmin(FIX::Message &, const FIX::SessionID &);
+  void toAdmin(FIX::Message &, const FIX::SessionID &) override;
 
   /**
    * This is a callback for application messages that are being sent to a
@@ -89,7 +89,8 @@ private:
    * simply not be sent. Notice that the FIX::Message is not const. This allows
    * you to add fields to an application message before it is sent out.
    */
-  void toApp(FIX::Message &, const FIX::SessionID &) EXCEPT(FIX::DoNotSend);
+  void toApp(FIX::Message &, const FIX::SessionID &)
+      EXCEPT(FIX::DoNotSend) override;
 
   /**
    * This notifies you when an administrative message is sent from a
@@ -99,7 +100,7 @@ private:
    */
   void fromAdmin(const FIX::Message &, const FIX::SessionID &)
       EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat,
-             FIX::IncorrectTagValue, FIX::RejectLogon);
+             FIX::IncorrectTagValue, FIX::RejectLogon) override;
 
   /**
    * This receives application level request.
@@ -116,20 +117,20 @@ private:
    */
   void fromApp(const FIX::Message &message, const FIX::SessionID &sessionID)
       EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat,
-             FIX::IncorrectTagValue, FIX::UnsupportedMessageType);
+             FIX::IncorrectTagValue, FIX::UnsupportedMessageType) override;
 
   /**
    * Callbacks for specific message types.
    * MessageCracker overloads
    */
-  void onMessage(const FIX44::ExecutionReport &, const FIX::SessionID &);
-  void onMessage(const FIX44::Reject &message, const FIX::SessionID &sessionID);
+  void onMessage(const FIX44::ExecutionReport &,
+                 const FIX::SessionID &) override;
   void onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
-                 const FIX::SessionID &sessionID);
+                 const FIX::SessionID &sessionID) override;
   void onMessage(const FIX44::MarketDataIncrementalRefresh &message,
-                 const FIX::SessionID &sessionID);
+                 const FIX::SessionID &sessionID) override;
   void onMessage(const FIX44::MarketDataRequestReject &message,
-                 const FIX::SessionID &);
+                 const FIX::SessionID &) override;
 
 public:
   Application(IConfiguration &conf,

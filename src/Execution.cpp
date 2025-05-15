@@ -1,9 +1,16 @@
 #include "Execution.h"
+#include "StaticTrade.h"
 
 Execution::Execution(Opportunity &opportunity)
-    : _tradesVector(opportunity.getTrades()),
-      _startingAsset(opportunity.getStartingAsset()),
-      _totalProfit(opportunity.getTotalProfit()) {
+    : _startingAsset(opportunity.getStartingAsset()),
+      _totalProfit(opportunity.getTotalProfit()),
+      _capacity(opportunity.getCapacity()) {
+
+  // insert trades into the vector
+  _tradesVector.reserve(opportunity.getTrades().size());
+  for (const auto &trade : opportunity.getTrades()) {
+    _tradesVector.push_back(StaticTrade(trade));
+  }
 
   for (const auto &trade : opportunity.getTrades()) {
     _trades.push(trade);
@@ -15,10 +22,10 @@ boost::multiprecision::cpp_dec_float_50 Execution::getTotalProfit() const {
 }
 
 std::string Execution::getStartingAsset() const { return _startingAsset; }
-std::queue<Trade> &Execution::getTrades() { return _trades; }
+std::queue<StaticTrade> &Execution::getTrades() { return _trades; }
 
 boost::multiprecision::cpp_dec_float_50 Execution::getCapacity() const {
-  return _tradesVector.front().usedQty();
+  return _capacity;
 }
 
 void Execution::update(boost::multiprecision::cpp_dec_float_50) {}
@@ -32,7 +39,7 @@ void Execution::update(boost::multiprecision::cpp_dec_float_50) {}
 std::ostream &operator<<(std::ostream &os, const Execution &execution) {
   os << "Execution{"
      << "startingAsset='" << execution._startingAsset << "', "
-     << "totalProfit=" << execution._totalProfit << ", "
+     << "totalProfit=" << execution._totalProfit << " BTC, "
      << "capacity=" << execution.getCapacity() << ", "
      << "symbols=[";
 
@@ -42,7 +49,7 @@ std::ostream &operator<<(std::ostream &os, const Execution &execution) {
     if (!first) {
       os << ", ";
     }
-    os << "'" << trade.symbol()->symbol << "'";
+    os << "'" << trade.symbol() << "'";
     first = false;
   }
 

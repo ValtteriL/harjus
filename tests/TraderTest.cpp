@@ -31,12 +31,22 @@ public:
                reservedTrades) {}
 
   // Expose private methods for testing
-  void callProcessExecution(Execution *execution) {
+  void callProcessExecution(Execution execution) {
     processExecution(execution);
   }
 
   void callProcessReport(ExecutionReport *execReport) {
     processReport(execReport);
+  }
+
+  // Expose a method to get the ID for a given execution pointer
+  std::string getIdForExecution(const Execution *execution) {
+    for (const auto &pair : _executionsMap) {
+      if (pair.second.first == *execution) {
+        return pair.first;
+      }
+    }
+    return "";
   }
 };
 
@@ -107,7 +117,7 @@ TEST_F(TraderTest, processesExecutions) {
       .Times(1);
 
   // Process the execution
-  trader.callProcessExecution(&execution);
+  trader.callProcessExecution(execution);
 
   // Clean up - don't delete execution here, it's stored in the executionsMap
 }
@@ -123,10 +133,10 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
       submitOrder(_, "ETHBTC", opportunity.getTrades().front().orderQty(),
                   opportunity.getTrades().front().orderPrice(), Position::LONG))
       .Times(1);
-  trader.callProcessExecution(&execution);
+  trader.callProcessExecution(execution);
 
   // Now create an execution report for the completed trade
-  std::string id = "0"; // Generated ID in Trader::processExecution starts at 0
+  std::string id = trader.getIdForExecution(&execution);
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       feeDelta{
           {"BTC", boost::multiprecision::cpp_dec_float_50(-0.1)} // Example fee
@@ -139,15 +149,17 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   // submitOrder
   EXPECT_CALL(
       mockApplication,
-      submitOrder(id, "ETHUSDT", opportunity.getTrades().back().orderQty(),
+      submitOrder(_, "ETHUSDT", opportunity.getTrades().back().orderQty(),
                   opportunity.getTrades().back().orderPrice(), Position::SHORT))
       .Times(1);
 
   // Process the report
   trader.callProcessReport(&executionReport);
 
+  auto finalId = trader.getIdForExecution(&execution);
+
   // Process another report to complete the execution
-  ExecutionReport finalReport{id, TradeExecutionStatus::FILLED, 0.1, 0.2,
+  ExecutionReport finalReport{finalId, TradeExecutionStatus::FILLED, 0.1, 0.2,
                               feeDelta};
   trader.callProcessReport(&finalReport);
 
@@ -177,16 +189,18 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   auto execution = Execution(opportunity);
 
   // Reserve the trades
-  for (auto &trade : execution.getOriginalTrades()) {
+  for (auto &trade : opportunity.getTrades()) {
     reservedTrades.reserve(trade);
   }
 
   // Process the execution first
   EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(1);
-  trader.callProcessExecution(&execution);
+  trader.callProcessExecution(execution);
 
-  // Now create an EXPIRED execution report
-  std::string id = "0"; // Generated ID in Trader::processExecution starts at 0
+  // Retrieve the actual generated ID from the trader's executionsMap using the
+  // public method
+  std::string id = trader.getIdForExecution(&execution);
+
   std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
       feeDelta{};
 
@@ -200,7 +214,7 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 1.0, 1e-5);
 
   // Verify that trades are released
-  for (auto &trade : execution.getOriginalTrades()) {
+  for (auto &trade : opportunity.getTrades()) {
     EXPECT_FALSE(reservedTrades.isReserved(trade));
   }
 }

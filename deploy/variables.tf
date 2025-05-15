@@ -15,8 +15,8 @@ variable "binance_ed25519_api_key" {
   sensitive   = true
 }
 
-variable "binance_ed25519_private_key" {
-  description = "The private part of ED25519 key uploaded to Binance"
+variable "binance_ed25519_seed" {
+  description = "The private key seed of the public key uploaded to Binance"
   type        = string
   sensitive   = true
 }
@@ -24,7 +24,7 @@ variable "binance_ed25519_private_key" {
 variable "max_trading_path_length" {
   description = "Max number of trades to execute in a single path"
   type        = number
-  default     = 2
+  default     = 3
 }
 
 variable "start_symbols" {
@@ -36,7 +36,7 @@ variable "start_symbols" {
 variable "blacklisted_start_symbols" {
   description = "The symbols to avoid trading with"
   type        = string
-  default     = ""
+  default     = "BNB"
 }
 
 variable "commission" {
@@ -45,63 +45,32 @@ variable "commission" {
   default     = 0.001
 }
 
-variable "binance_websocket_stream_uri" {
-  description = "The URI of the Binance WebSocket stream"
-  type        = string
-}
-
 variable "binance_rest_api_uri" {
   description = "The URI of the Binance REST API"
   type        = string
 }
 
-variable "binance_fix_api_hostname" {
-  description = "The hostname of the Binance FIX API"
+variable "binance_fix_api_hostname_marketdata" {
+  description = "The hostname of the Binance FIX MARKETDATA API"
   type        = string
 }
 
-variable "binance_fix_api_port" {
-  description = "The port of the Binance FIX API"
+variable "binance_fix_api_port_marketdata" {
+  description = "The port of the Binance FIX MARKETDATA API"
   type        = number
 }
 
-variable "binance_market_data_api_uri" {
-  description = "The URI of the Binance Market Data API"
+variable "binance_fix_api_hostname_orderentry" {
+  description = "The hostname of the Binance FIX ORDERENTRY API"
   type        = string
 }
 
-variable "verbosity" {
-  description = "The verbosity of the logs"
-  type        = string
-}
-
-variable "market_data_exchange" {
-  description = "The exchange module to use in MarketData"
-  type        = string
-}
-
-variable "price_streamer_exchange" {
-  description = "The exchange module to use in PriceStreamer"
-  type        = string
-}
-
-variable "trade_client_exchange" {
-  description = "The exchange module to use in TradeClient"
-  type        = string
-}
-
-variable "balance_exchange" {
-  description = "The exchange module to use in Balance"
-  type        = string
-}
-
-variable "num_nping_probes" {
-  description = "The number of nping probes to send"
+variable "binance_fix_api_port_orderentry" {
+  description = "The port of the Binance FIX ORDERENTRY API"
   type        = number
-  default     = 100
 }
 
-variable "path_to_port" {
-  description = "The path to the harjus port binary"
-  type        = string
+variable "log_level" {
+  description = "The minimum level for logging. (0 = trace, 1 = debug, 2 = info, 3 = warning, 4 = error, 5 = fatal)"
+  type        = number
 }

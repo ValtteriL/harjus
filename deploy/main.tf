@@ -24,14 +24,14 @@ resource "aws_secretsmanager_secret_version" "binance_ed25519_api_key" {
   secret_string = var.binance_ed25519_api_key
 }
 
-resource "aws_secretsmanager_secret" "binance_ed25519_private_key" {
+resource "aws_secretsmanager_secret" "binance_ed25519_seed" {
   name_prefix = "harjus-binance-api-private-key"
   description = "Binance ED25519 private key for FIX API"
 }
 
-resource "aws_secretsmanager_secret_version" "binance_ed25519_private_key" {
-  secret_id     = aws_secretsmanager_secret.binance_ed25519_private_key.id
-  secret_string = var.binance_ed25519_private_key
+resource "aws_secretsmanager_secret_version" "binance_ed25519_seed" {
+  secret_id     = aws_secretsmanager_secret.binance_ed25519_seed.id
+  secret_string = var.binance_ed25519_seed
 }
 
 # resources required to SSH into the EC2 instance(s)
@@ -129,7 +129,7 @@ resource "aws_instance" "ecs_instance" {
   # this joins the given ECS cluster automatically at startup
   ami = "ami-029678e4f0fddbf9b"
 
-  instance_type   = "c7i.large"
+  instance_type   = "c5.large"
   key_name        = aws_key_pair.ec_key.key_name
   security_groups = [aws_security_group.security.name]
   user_data       = <<-EOF
@@ -138,27 +138,6 @@ resource "aws_instance" "ecs_instance" {
 
                       # required to join ECS
                       echo ECS_CLUSTER=${aws_ecs_cluster.ecs_cluster.name} >> /etc/ecs/ecs.config
-
-                      # begin optimized resolver config
-                      dnf install -y nmap bind-utils
-
-                      NUM_PROBES=${var.num_nping_probes}
-
-                      endpoints=( "data-stream.binance.vision:443" "stream.binance.com:443" "data-stream.binance.com:443" )
-                      for pair in "$${endpoints[@]}"; do
-                        host=$(echo $pair | awk -F: '{print $1}')
-                        port=$(echo $pair | awk -F: '{print $2}')
-
-                        best_ip=$(for ip in `dig +short $host`; do
-                          avg_rtt=`nping -c "$NUM_PROBES" --tcp -p "$port" "$ip" |grep "Avg rtt" |awk '{print $11}'`
-                          echo "$ip $avg_rtt"
-                        done|sort -k2 -n | head -n1|awk '{print $1}')
-
-                        # add the best IP to /etc/hosts
-                        echo "$best_ip $host" >> /etc/hosts
-                      done
-
-                      # end optimized resolver config
                       EOF
 
   user_data_replace_on_change = true
@@ -217,7 +196,7 @@ resource "aws_iam_policy" "task_exec_role_policy" {
         Effect = "Allow"
         Resource = [
           aws_secretsmanager_secret.binance_ed25519_api_key.arn,
-          aws_secretsmanager_secret.binance_ed25519_private_key.arn,
+          aws_secretsmanager_secret.binance_ed25519_seed.arn,
         ]
       },
       {
@@ -289,49 +268,29 @@ resource "aws_ecs_task_definition" "ecs_td" {
           value = "${tostring(var.commission)}"
         },
         {
-          name  = "BINANCE_WEBSOCKET_STREAM_URI"
-          value = var.binance_websocket_stream_uri
-        },
-        {
           name  = "BINANCE_REST_API_URI"
           value = var.binance_rest_api_uri
         },
         {
-          name  = "BINANCE_FIX_API_HOSTNAME"
-          value = var.binance_fix_api_hostname
+          name  = "BINANCE_FIX_API_HOSTNAME_MARKETDATA"
+          value = var.binance_fix_api_hostname_marketdata
         },
         {
-          name  = "BINANCE_FIX_API_PORT"
-          value = "${tostring(var.binance_fix_api_port)}"
+          name  = "BINANCE_FIX_API_PORT_MARKETDATA"
+          value = "${tostring(var.binance_fix_api_port_marketdata)}"
         },
         {
-          name  = "BINANCE_MARKET_DATA_API_URI"
-          value = var.binance_market_data_api_uri
+          name  = "BINANCE_FIX_API_HOSTNAME_ORDERENTRY"
+          value = var.binance_fix_api_hostname_orderentry
         },
         {
-          name  = "VERBOSITY"
-          value = var.verbosity
+          name  = "BINANCE_FIX_API_PORT_ORDERENTRY"
+          value = "${tostring(var.binance_fix_api_port_orderentry)}"
         },
         {
-          name  = "MARKET_DATA_EXCHANGE"
-          value = var.market_data_exchange
+          name  = "LOG_LEVEL"
+          value = "${tostring(var.log_level)}"
         },
-        {
-          name  = "PRICE_STREAMER_EXCHANGE"
-          value = var.price_streamer_exchange
-        },
-        {
-          name  = "TRADE_CLIENT_EXCHANGE"
-          value = var.trade_client_exchange
-        },
-        {
-          name  = "BALANCE_EXCHANGE"
-          value = var.balance_exchange
-        },
-        {
-          name  = "PATH_TO_PORT"
-          value = var.path_to_port
-        }
       ],
       secrets : [
         {
@@ -339,17 +298,10 @@ resource "aws_ecs_task_definition" "ecs_td" {
           valueFrom = aws_secretsmanager_secret_version.binance_ed25519_api_key.arn
         },
         {
-          name      = "BINANCE_ED25519_PRIVATE_KEY"
-          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_private_key.arn
+          name      = "BINANCE_ED25519_SEED"
+          valueFrom = aws_secretsmanager_secret_version.binance_ed25519_seed.arn
         }
       ],
-      "healthCheck" : {
-        "command" : ["CMD-SHELL", "harjus pid"],
-        "interval" : 30,
-        "timeout" : 2,
-        "retries" : 3,
-        "startPeriod" : 30
-      },
       "logConfiguration" : {
         "logDriver" : "awslogs",
         "options" : {
@@ -387,219 +339,3 @@ resource "aws_ecs_service" "ecs_service" {
 }
 
 # end ECS
-
-resource "aws_cloudwatch_dashboard" "dashboard" {
-  dashboard_name = "harjus"
-  dashboard_body = jsonencode({
-    "widgets" : [
-      {
-        "height" : 3,
-        "width" : 6,
-        "y" : 1,
-        "x" : 9,
-        "type" : "metric",
-        "properties" : {
-          "metrics" : [
-            [{ "color" : "#2ca02c", "expression" : "RUNNING_SUM(m1)", "id" : "e1", "label" : "Successful Executions", "period" : 86400, "region" : var.aws_region, "stat" : "Sum" }],
-            [{ "color" : "#d62728", "expression" : "RUNNING_SUM(m2)", "id" : "e2", "label" : "Failed executions", "period" : 86400, "region" : var.aws_region, "stat" : "Sum" }],
-            ["Harjus", "harjus.trader.trade.executed.count", { "color" : "#2ca02c", "id" : "m1", "region" : var.aws_region, "visible" : false, "label" : "harjus.trader.trade.executed.count" }],
-            [".", "harjus.trader.trade.failed.count", { "color" : "#d62728", "id" : "m2", "region" : var.aws_region, "visible" : false, "label" : "harjus.trader.trade.failed.count" }]
-          ],
-          "period" : 86400,
-          "region" : var.aws_region,
-          "stacked" : true,
-          "stat" : "Sum",
-          "title" : "Winning vs Losing trades in 24h",
-          "view" : "singleValue"
-        }
-      },
-      {
-        "height" : 1,
-        "width" : 15,
-        "y" : 0,
-        "x" : 0,
-        "type" : "text",
-        "properties" : {
-          "background" : "solid",
-          "markdown" : "# Business metrics"
-        }
-      },
-      {
-        "height" : 5,
-        "width" : 24,
-        "y" : 5,
-        "x" : 0,
-        "type" : "metric",
-        "properties" : {
-          "metrics" : [
-            ["Harjus", "vm.memory.total.last_value", { "region" : var.aws_region }],
-            [".", "vm.total_run_queue_lengths.cpu.last_value", { "region" : var.aws_region }],
-            [".", "vm.total_run_queue_lengths.io.last_value", { "region" : var.aws_region }],
-            [".", "vm.total_run_queue_lengths.total.last_value", { "region" : var.aws_region }]
-          ],
-          "period" : 300,
-          "region" : var.aws_region,
-          "sparkline" : true,
-          "title" : "Erlang VM metrics",
-          "view" : "singleValue"
-        }
-      },
-      {
-        "height" : 1,
-        "width" : 24,
-        "y" : 4,
-        "x" : 0,
-        "type" : "text",
-        "properties" : {
-          "background" : "solid",
-          "markdown" : "# Host, VM metrics"
-        }
-      },
-      {
-        "height" : 3,
-        "width" : 9,
-        "y" : 1,
-        "x" : 0,
-        "type" : "metric",
-        "properties" : {
-          "metrics" : [
-            [{ "expression" : "RATE(RUNNING_SUM(m1))", "id" : "e1", "label" : "Price updates", "period" : 1, "region" : var.aws_region, "stat" : "Sum" }],
-            [{ "expression" : "RATE(RUNNING_SUM(m3+m4))", "id" : "e2", "label" : "Execution attempts", "period" : 1, "region" : var.aws_region, "stat" : "Sum" }],
-            [{ "expression" : "RATE(RUNNING_SUM(m3))", "id" : "e3", "label" : "Executions", "period" : 1, "region" : var.aws_region, "stat" : "Sum" }],
-            ["Harjus", "harjus.price_streamer.price_update.count", { "id" : "m1", "region" : var.aws_region, "visible" : false }],
-            [".", "harjus.trader.trade.executed.count", { "id" : "m3", "region" : var.aws_region, "visible" : false }],
-            [".", "harjus.trader.trade.failed.count", { "id" : "m4", "region" : var.aws_region, "visible" : false, "label" : "harjus.trader.trade.failed.count" }]
-          ],
-          "period" : 1,
-          "region" : var.aws_region,
-          "stat" : "Sum",
-          "title" : "Events per second",
-          "view" : "singleValue",
-          "yAxis" : {
-            "left" : {
-              "max" : 100,
-              "min" : 0
-            }
-          }
-        }
-      },
-      {
-        "height" : 3,
-        "width" : 24,
-        "y" : 10,
-        "x" : 0,
-        "type" : "metric",
-        "properties" : {
-          "metrics" : [
-            ["AWS/ECS", "CPUUtilization", "ClusterName", "harjus"],
-            [".", "MemoryUtilization", ".", "."],
-            [".", "CPUReservation", ".", "."],
-            [".", "MemoryReservation", ".", "."]
-          ],
-          "region" : var.aws_region,
-          "sparkline" : true,
-          "view" : "singleValue"
-        }
-      }
-    ]
-  })
-
-
-}
-
-# alarms
-
-# EC2 recommended alarms https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Best_Practice_Recommended_Alarms_AWS_Services.html#EC2
-resource "aws_cloudwatch_metric_alarm" "cpu_utilization" {
-  alarm_name          = "ec2_cpu_utilization"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 3
-  datapoints_to_alarm = 3
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/EC2"
-  period              = 300
-  statistic           = "Average"
-  threshold           = 80
-  alarm_description   = "This metric monitors ec2 cpu utilization"
-}
-
-resource "aws_cloudwatch_metric_alarm" "status_check" {
-  alarm_name          = "ec2_cpu_utilization"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  datapoints_to_alarm = 2
-  metric_name         = "StatusCheckFailed"
-  namespace           = "AWS/EC2"
-  period              = 300
-  statistic           = "Maximum"
-  threshold           = 1.0
-  alarm_description   = "This alarm helps to monitor both system status checks and instance status checks."
-}
-
-# ECS recommended alarms https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Best_Practice_Recommended_Alarms_AWS_Services.html#ECS
-resource "aws_cloudwatch_metric_alarm" "ecs_cpu_reservation" {
-  alarm_name          = "ecs_cpu_reservation"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 5
-  datapoints_to_alarm = 5
-  metric_name         = "CPUReservation"
-  namespace           = "AWS/ECS"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 80.0
-  alarm_description   = "This alarm helps to monitor cpu reservation of the cluster."
-}
-
-resource "aws_cloudwatch_metric_alarm" "ecs_cpu_utilization" {
-  alarm_name          = "ecs_cpu_utilization"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 5
-  datapoints_to_alarm = 5
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/ECS"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 80.0
-  alarm_description   = "This alarm helps to monitor cpu utilization of the cluster."
-}
-
-resource "aws_cloudwatch_metric_alarm" "ecs_memory_reservation" {
-  alarm_name          = "ecs_memory_reservation"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 5
-  datapoints_to_alarm = 5
-  metric_name         = "MemoryReservation"
-  namespace           = "AWS/ECS"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 80.0
-  alarm_description   = "This alarm helps to monitor memory reservation of the cluster."
-}
-
-# container insights recommended alarms https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/Best_Practice_Recommended_Alarms_AWS_Services.html#ECS-ContainerInsights
-
-resource "aws_cloudwatch_metric_alarm" "ecs_instance_filesystem_utilization" {
-  alarm_name          = "ecs_instance_filesystem_utilization"
-  comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods  = 5
-  datapoints_to_alarm = 5
-  metric_name         = "RunningTaskCount"
-  namespace           = "AWS/ECS"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 0.0
-  alarm_description   = "This alarm helps detect a low running task count of the ECS service."
-}
-
-resource "aws_cloudwatch_metric_alarm" "ecs_running_task_count" {
-  alarm_name          = "ecs_runnin_task_count"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 5
-  datapoints_to_alarm = 5
-  metric_name         = "instance_filesystem_utilization"
-  namespace           = "AWS/ECS"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 90.0
-  alarm_description   = "This alarm helps you detect a high file system utilization of the ECS cluster."
-}

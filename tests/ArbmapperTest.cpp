@@ -37,6 +37,16 @@ TEST(ArbmapperTest, detectsAllTradingOpportunities) {
   std::vector<std::string> skipSymbols{};
   auto opportunities = getTradingPaths(&symbolMap, depth, skipSymbols);
 
+  // Print out the detected opportunities with symbols and positions
+  for (const auto &path : opportunities) {
+    std::cout << "Path: ";
+    for (const auto &trade : *path) {
+      auto position = trade.position() == Position::LONG ? "LONG" : "SHORT";
+      std::cout << trade.symbol()->symbol << " (" << position << ") ";
+    }
+    std::cout << std::endl;
+  }
+
   // Verify that 6 opportunities are detected
   EXPECT_EQ(opportunities.size(), 6);
 
@@ -68,4 +78,18 @@ TEST(ArbmapperTest, detectsAllTradingOpportunities) {
   EXPECT_TRUE(firstUsedCurrencies.count("BTC"));
   EXPECT_TRUE(firstUsedCurrencies.count("ETH"));
   EXPECT_TRUE(firstUsedCurrencies.count("DOGE"));
+
+  // Additional checks for path consistency
+  for (const auto &path : opportunities) {
+    // 1. For every trade except the first, usedCurrency == previous trade's
+    // recvCurrency
+    for (size_t i = 1; i < path->size(); ++i) {
+      EXPECT_EQ(path->at(i).usedCurrency(), path->at(i - 1).recvCurrency());
+    }
+
+    // 3. Starting asset is the same as recvCurrency of the last trade
+    std::string startingAsset = path->front().usedCurrency();
+    std::string lastRecvCurrency = path->back().recvCurrency();
+    EXPECT_EQ(startingAsset, lastRecvCurrency);
+  }
 }

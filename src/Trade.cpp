@@ -76,8 +76,3 @@ bool Trade::operator==(const Trade &other) const {
   return symbol()->symbol == other.symbol()->symbol &&
          position() == other.position() && orderQty() == other.orderQty();
 }
-
-std::size_t Trade::hash() const {
-  return std::hash<std::string>()(symbol()->symbol) ^
-         std::hash<Position>()(position());
-}
