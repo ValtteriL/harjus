@@ -203,3 +203,113 @@ target_link_libraries(ThreadSafeQueueTest PRIVATE
 )
 
 gtest_discover_tests(ThreadSafeQueueTest)
+
+
+# optimize build time with precompiled headers
+
+# Define Boost macros globally to avoid PCH issues
+add_compile_definitions(BOOST_CONTAINER_NO_LIB)
+add_compile_definitions(BOOST_CONTAINER_DYN_LINK)
+add_compile_definitions(BOOST_LOG_NO_LIB)
+add_compile_definitions(BOOST_LOG_DYN_LINK)
+add_compile_definitions(BOOST_THREAD_DYN_LINK)
+add_compile_definitions(BOOST_THREAD_NO_LIB)
+add_compile_definitions(BOOST_CHRONO_NO_LIB)
+add_compile_definitions(BOOST_CHRONO_DYN_LINK)
+add_compile_definitions(BOOST_URL_NO_LIB)
+add_compile_definitions(BOOST_URL_DYN_LINK)
+add_compile_definitions(HAVE_STD_UNIQUE_PTR)
+add_compile_definitions(BOOST_ATOMIC_NO_LIB)
+add_compile_definitions(BOOST_ATOMIC_DYN_LINK)
+add_compile_definitions(HAVE_STD_SHARED_PTR)
+add_compile_definitions(BOOST_GRAPH_NO_LIB)
+add_compile_definitions(BOOST_GRAPH_DYN_LINK)
+add_compile_definitions(BOOST_JSON_NO_LIB)
+add_compile_definitions(BOOST_JSON_DYN_LINK)
+add_compile_definitions(BOOST_REGEX_NO_LIB)
+add_compile_definitions(BOOST_REGEX_DYN_LINK)
+add_compile_definitions(BOOST_FILESYSTEM_NO_LIB)
+add_compile_definitions(BOOST_FILESYSTEM_DYN_LINK)
+# and same for quickfix
+add_compile_definitions(HAVE_SSL)
+
+
+target_precompile_headers(harjus PRIVATE
+
+  # Standard Library
+  <iostream>
+  <string>
+  <cstring>
+  <unordered_map>
+  <unordered_set>
+  <vector>
+  <thread>
+  <mutex>
+  <shared_mutex>
+  <stop_token>
+  <queue>
+  <fstream>
+  <ostream>
+  <utility>
+  <memory>
+  <semaphore>
+  <filesystem>
+  <thread>
+  <cmath>
+  <random>
+  <condition_variable>
+  <chrono>
+  <algorithm>
+  <functional>
+  <iomanip>
+  <stdexcept>
+
+  # Boost
+  <boost/lockfree/queue.hpp>
+  <boost/multiprecision/cpp_dec_float.hpp>
+  <boost/log/core.hpp>
+  <boost/log/expressions.hpp>
+  <boost/log/trivial.hpp>
+  <boost/graph/adjacency_list.hpp>
+  <boost/graph/tiernan_all_cycles.hpp>
+  <boost/json.hpp>
+
+  # Quickfix Engine
+  <quickfix/Application.h>
+  <quickfix/MessageCracker.h>
+  <quickfix/Mutex.h>
+  <quickfix/SessionID.h>
+  <quickfix/Values.h>
+  <quickfix/fix44/ExecutionReport.h>
+  <quickfix/fix44/MarketDataIncrementalRefresh.h>
+  <quickfix/fix44/MarketDataRequest.h>
+  <quickfix/fix44/MarketDataSnapshotFullRefresh.h>
+  <quickfix/fix44/NewOrderSingle.h>
+  <quickfix/fix44/OrderCancelReject.h>
+  <quickfix/fix44/OrderCancelReplaceRequest.h>
+  <quickfix/fix44/OrderCancelRequest.h>
+  <quickfix/Field.h>
+  <quickfix/FixFields.h>
+  <quickfix/FixValues.h>
+  <quickfix/Session.h>
+  <quickfix/fix44/MarketDataRequestReject.h>
+  <quickfix/fix44/Reject.h>
+  <quickfix/FileStore.h>
+  <quickfix/Log.h>
+  <quickfix/SSLSocketInitiator.h>
+  <quickfix/SessionSettings.h>
+  <quickfix/SocketInitiator.h>
+  <quickfix/ThreadedSSLSocketInitiator.h>
+)
+
+target_precompile_headers(MainTest REUSE_FROM harjus)
+target_precompile_headers(ReservedTradesTest REUSE_FROM harjus)
+target_precompile_headers(BalanceTest REUSE_FROM harjus)
+target_precompile_headers(Ed25519Test REUSE_FROM harjus)
+target_precompile_headers(ExchangeTest REUSE_FROM harjus)
+target_precompile_headers(ArbmapperTest REUSE_FROM harjus)
+target_precompile_headers(OpportunityTest REUSE_FROM harjus)
+target_precompile_headers(EngineTest REUSE_FROM harjus)
+target_precompile_headers(TraderTest REUSE_FROM harjus)
+target_precompile_headers(ThreadSafeQueueTest REUSE_FROM harjus)
+
