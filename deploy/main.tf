@@ -277,7 +277,7 @@ resource "aws_ecs_task_definition" "ecs_td" {
         },
         {
           name  = "BINANCE_FIX_API_PORT_MARKETDATA"
-          value = var.binance_fix_api_port_marketdata
+          value = "${tostring(var.binance_fix_api_port_marketdata)}"
         },
         {
           name  = "BINANCE_FIX_API_HOSTNAME_ORDERENTRY"
@@ -285,7 +285,7 @@ resource "aws_ecs_task_definition" "ecs_td" {
         },
         {
           name  = "BINANCE_FIX_API_PORT_ORDERENTRY"
-          value = var.binance_fix_api_port_orderentry
+          value = "${tostring(var.binance_fix_api_port_orderentry)}"
         },
         {
           name  = "LOG_LEVEL"
