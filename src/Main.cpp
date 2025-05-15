@@ -5,6 +5,7 @@
 #include "Exchange.h"
 #include "Execution.h"
 #include "ExecutionReport.h"
+#include "FixConfig.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
@@ -15,7 +16,6 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 #include <chrono>
-#include <filesystem>
 #include <iostream>
 #include <quickfix/FileStore.h>
 #include <quickfix/Log.h>
@@ -70,96 +70,6 @@ void initLogging(int logLevel) {
                                       logLevel);
 }
 
-void prepareFixFileStore(const std::string &dir) {
-  std::filesystem::create_directory(dir);
-
-  for (const auto &entry : std::filesystem::directory_iterator(dir)) {
-    if (entry.path().extension() == ".session" ||
-        entry.path().extension() == ".body" ||
-        entry.path().extension() == ".header" ||
-        entry.path().extension() == ".seqnums") {
-      std::filesystem::remove(entry.path());
-    }
-  }
-}
-
-FIX::SessionSettings getFixSessionSettings(const Configuration config) {
-  std::string fixConfig = R"(
-  # default settings for sessions
-  [DEFAULT]
-  StartTime=00:00:00
-  EndTime=00:00:00
-  HeartBtInt=30
-  FileStorePath=)" + config.getFixFileStorePath() +
-                          R"(
-  ConnectionType=initiator
-  TargetCompID=SPOT
-  DefaultApplVerID=FIX.4.4
-  BeginString=FIX.4.4
-    
-  # set TCP_NODELAY (disable Nagle's algorithm)
-  # this is required for low latency
-  SocketNodelay=Y
-)";
-
-  // hide screen logging of FIX messages unless highest verbosity used
-  if (config.getLogLevel() > 0) {
-    fixConfig += R"(
-  # silence logging
-  ScreenLogShowOutgoing=N
-  ScreenLogShowIncoming=N
-)";
-  }
-
-  // hide events when not in trace or debug mode
-  if (config.getLogLevel() > 1) {
-    fixConfig += R"(
-  # silence logging
-  ScreenLogShowEvents=N
-  )";
-  }
-
-  fixConfig += R"(    
-  # sessions
-  [SESSION]
-  SenderCompID=HARJUSM1
-  SessionQualifier=MARKETDATA
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
-  SocketConnectHost=)" +
-               config.getBinanceFIXApiHostnameMarketData() +
-               R"(
-  SocketConnectPort=)" +
-               config.getBinanceFIXApiPortMarketData() +
-               R"(
-    
-  [SESSION]
-  SenderCompID=HARJUSM2
-  SessionQualifier=MARKETDATA
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-md.xml
-  SocketConnectHost=)" +
-               config.getBinanceFIXApiHostnameMarketData() +
-               R"(
-  SocketConnectPort=)" +
-               config.getBinanceFIXApiPortMarketData() +
-               R"(
-
-  [SESSION]
-  SenderCompID=HARJUSOE
-  SessionQualifier=ORDERENTRY
-  DataDictionary=/home/valtteri/development/harjus/fix-schema/spot-fix-oe.xml
-  SocketConnectHost=)" +
-               config.getBinanceFIXApiHostnameOrderEntry() +
-               R"(
-  SocketConnectPort=)" +
-               config.getBinanceFIXApiPortOrderEntry() +
-               R"(
-  )";
-
-  std::istringstream fixConfigStream{fixConfig};
-
-  return FIX::SessionSettings{fixConfigStream};
-}
-
 int main() {
   banner();
   Configuration config;
@@ -168,10 +78,6 @@ int main() {
   initLogging(config.getLogLevel());
 
   BOOST_LOG_TRIVIAL(info) << "Starting Harjus";
-
-  // Create directory if it doesn't exist and delete .session files
-  std::string fixFileStorePath = config.getFixFileStorePath();
-  prepareFixFileStore(fixFileStorePath);
 
   // get balance, available symbols & relative values
   BOOST_LOG_TRIVIAL(debug) << "Getting balance";
@@ -207,7 +113,8 @@ int main() {
                           << " available trading symbols";
 
   // fix settings
-  auto settings = getFixSessionSettings(config);
+  auto fixConfig = FixConfig(config);
+  auto settings = fixConfig.sessionSettings();
 
   Application application{config, priceUpdateQueue, reportQueue};
   FIX::FileStoreFactory storeFactory{settings};

@@ -60,6 +60,7 @@ add_executable(harjus
   src/Trader.cpp
   src/PriceUpdate.cpp
   src/StaticTrade.cpp
+  src/FixConfig.cpp
 )
 target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
 
