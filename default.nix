@@ -64,6 +64,7 @@ let
         ninja
         gdb
         clang-tools
+        ccache
         gtest
         boost
         openssl

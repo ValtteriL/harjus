@@ -37,6 +37,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 # Optimize release builds for performance
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+
+# add ccache for faster builds
+set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+
 include_directories(include)
 
 add_executable(harjus
