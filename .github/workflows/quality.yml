@@ -17,8 +17,11 @@ jobs:
 
       - name: Build
         run: |
-          nix-shell -A devEnv --run "cmake -S harjus -B build"
-          nix-shell -A devEnv --run "cmake --build build --config Debug --target all --"
+              nix-shell --pure -A devEnv --run "
+                cmake -B build
+                cmake --build build --config Debug --target all --
+                ctest -j8 -C Debug -T test --output-on-failure --test-dir build/
+                "
 
       - name: Test
         run: |
