@@ -1,4 +1,4 @@
-// Description: Jenkinsfile for building harjus and pushing to AWS ECR
+// Description: Jenkinsfile for building harjus, testing, and pushing to AWS ECR
 pipeline {
     
     agent any
