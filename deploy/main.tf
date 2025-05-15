@@ -129,7 +129,7 @@ resource "aws_instance" "ecs_instance" {
   # this joins the given ECS cluster automatically at startup
   ami = "ami-029678e4f0fddbf9b"
 
-  instance_type   = "c7i.large"
+  instance_type   = "c5.large"
   key_name        = aws_key_pair.ec_key.key_name
   security_groups = [aws_security_group.security.name]
   user_data       = <<-EOF
