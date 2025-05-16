@@ -44,7 +44,7 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
                                   credentialsId: 'aws-credentials']]) {
                   sh """
-                    nix-shell --pure -A devEnv --run "
+                    nix-shell -A devEnv --run "
 
                     # Login to ECR
                     aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
