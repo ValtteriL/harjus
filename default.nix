@@ -48,9 +48,6 @@ let
     devEnv = mkShell rec {
       name = "devEnv";
 
-      # environment variables
-      AWS_PROFILE = "137068223640_AdministratorAccess";
-
       # packages to be installed in env
       packages = with pkgs; [
         # for working with nix
