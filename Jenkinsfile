@@ -65,9 +65,11 @@ pipeline {
         stage('Release') {
             // Run on main when tagged with a version
             // (theres a tag releases/x.y.z where x.y.v is a semver)
-            when allOf {
+            when {
+              allOf {
                 branch 'main';
                 tag pattern: '^releases/\\d+\\.\\d+\\.\\d+$', comparator: "REGEXP"
+              }
             }
             steps {
                 sh """
@@ -83,11 +85,12 @@ pipeline {
     }
     post {
         failure {
-             mail \
-                subject: "Failed Job: ${env.JOB_NAME} build ${env.BUILD_NUMBER}", \
-                body: "Failed CI job -> <a href=\"${env.BUILD_URL}\">${env.JOB_NAME} build ${env.BUILD_NUMBER}</a>", \
-                mimeType: 'text/html', \
-                to: "valtteri@shufflingbytes.com";
+             mail (
+                subject: "Failed Job: ${env.JOB_NAME} build ${env.BUILD_NUMBER}",
+                body: "Failed CI job -> <a href=\"${env.BUILD_URL}\">${env.JOB_NAME} build ${env.BUILD_NUMBER}</a>",
+                mimeType: 'text/html',
+                to: "valtteri@shufflingbytes.com"
+             )
         }
     }
 }
