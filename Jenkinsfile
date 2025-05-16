@@ -26,7 +26,7 @@ pipeline {
         stage('Build') {
             // Run on the main branch or when a pull request is made to the main branch
             when {
-                anyof {
+                anyOf {
                     branch 'main';
                     changeRequest target: 'main'
                 }
