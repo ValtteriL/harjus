@@ -67,7 +67,7 @@ pipeline {
             // (theres a tag releases/x.y.z where x.y.v is a semver)
             when allOf {
                 branch 'main';
-                tag pattern: "^releases/\\d+\\.\\d+\\.\\d$", comparator: "REGEXP"
+                tag pattern: '^releases/\\d+\\.\\d+\\.\\d+$', comparator: "REGEXP"
             }
             steps {
                 sh """
