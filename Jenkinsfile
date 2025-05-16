@@ -47,9 +47,9 @@ pipeline {
                     nix-shell -A devEnv --run "
 
                     # Login to ECR
-                    aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+                    aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
-                    # Tag and push with commit hash and "latest"
+                    # Tag and push with commit hash and latest
                     IMAGE=\$(docker image load -q < result-2 | awk '{print \$3}')
                             
                     docker tag \$IMAGE ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT}
