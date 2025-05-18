@@ -25,8 +25,8 @@ resource "aws_secretsmanager_secret_version" "binance_ed25519_api_key" {
 }
 
 resource "aws_secretsmanager_secret" "binance_ed25519_seed" {
-  name_prefix = "harjus-binance-api-private-key"
-  description = "Binance ED25519 private key for FIX API"
+  name_prefix = "harjus-binance-api-private-key-seed"
+  description = "Binance ED25519 private key seed for FIX API"
 }
 
 resource "aws_secretsmanager_secret_version" "binance_ed25519_seed" {
