@@ -39,8 +39,11 @@ std::string getBalancesJson(std::string uri, std::string apiKey,
       cpr::Get(cpr::Url{uri + "/api/v3/account?" + signature},
                cpr::Header{{"Connection", "close"}, {"X-MBX-APIKEY", apiKey}});
 
-  if (r.status_code != 200) {
-    throw std::runtime_error("Error fetching balances from Binance API: (" +
+  if (r.status_code == 0) {
+    throw std::runtime_error("CPR Error fetching balances: (" +
+                             r.error.message + ")");
+  } else if (r.status_code != 200) {
+    throw std::runtime_error("Error fetching balances: (" +
                              std::to_string(r.status_code) + "), " + r.text);
   }
 
@@ -90,10 +93,12 @@ std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config) {
   std::string uri = config.getBinanceRESTApiUri() + "/api/v3/exchangeInfo";
   cpr::Response r = cpr::Get(cpr::Url{uri});
 
-  if (r.status_code != 200) {
-    throw std::runtime_error(
-        "Error fetching exchange info from Binance API: (" +
-        std::to_string(r.status_code) + "), " + r.text);
+  if (r.status_code == 0) {
+    throw std::runtime_error("CPR Error fetching exchange info: (" +
+                             r.error.message + ")");
+  } else if (r.status_code != 200) {
+    throw std::runtime_error("Error fetching exchange info: (" +
+                             std::to_string(r.status_code) + "), " + r.text);
   }
 
   // Parse JSON response
@@ -151,10 +156,12 @@ getRelativeValues(IConfiguration &config,
   std::string uri = config.getBinanceRESTApiUri() + "/api/v3/ticker/price";
   cpr::Response r = cpr::Get(cpr::Url{uri});
 
-  if (r.status_code != 200) {
-    throw std::runtime_error(
-        "Error fetching symbol prices from Binance API: (" +
-        std::to_string(r.status_code) + "), " + r.text);
+  if (r.status_code == 0) {
+    throw std::runtime_error("CPR Error fetching prices: (" + r.error.message +
+                             ")");
+  } else if (r.status_code != 200) {
+    throw std::runtime_error("Error fetching symbol prices: (" +
+                             std::to_string(r.status_code) + "), " + r.text);
   }
 
   // Parse JSON response
