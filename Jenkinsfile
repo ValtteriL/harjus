@@ -14,13 +14,15 @@ pipeline {
         }
         stage('Quality') {
             steps {
-                sh """
+                sh '''
                   nix-shell --pure -A devEnv --run "
+                    set -e
+                    
                     cmake -B build
                     cmake --build build --config Debug --target all --
                     ctest -j8 -C Debug -T test --output-on-failure --test-dir build/
                     "
-                """
+                '''
             }
         }
         stage('Build') {
@@ -43,22 +45,24 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
                                   credentialsId: 'aws-credentials']]) {
-                  sh """
+                  sh '''
+                    set -e
+                    IMAGE=$(docker image load -q < result-2 | awk '{print $3}')
+                    
                     nix-shell -A devEnv --run "
+                    set -e
 
                     # Login to ECR
                     aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REGISTRY}
 
                     # Tag and push with commit hash and latest
-                    IMAGE=\$(docker image load -q < result-2 | awk '{print \$3}')
-                            
-                    docker tag \$IMAGE ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT}
+                    docker tag ${IMAGE} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT}
                     docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT}
                             
-                    docker tag \$IMAGE ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
+                    docker tag ${IMAGE} ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
                     docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
                     "
-                  """
+                  '''
                 }
             }
         }
@@ -72,14 +76,18 @@ pipeline {
               }
             }
             steps {
-                sh """
+                sh '''
+                set -e
+                
+                SEMVER_TAG=$(echo ${TAG_NAME} | sed 's/releases\\////')
+                
                   nix-shell --pure -A devEnv --run "
-                    SEMVER_TAG=\$(echo ${TAG_NAME} | sed 's/releases\\////')
+                    set -e
 
                     docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${SEMVER_TAG}
                     docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${SEMVER_TAG}
                     "
-                """
+                '''
             }
         }
     }
