@@ -1,0 +1,81 @@
+---
+- name: Deploy Harjus
+  hosts: harjus_instance
+  become: yes
+  # Variables from group_vars/harjus_instance/common.yml are loaded automatically
+  # Variables from group_vars/harjus_instance/<env>.yml will be loaded based on 'env' var
+
+  vars:
+    # Mandatory: User must specify 'qa' or 'prod' when running the playbook
+    # e.g., ansible-playbook ... -e "env=prod"
+    # Set a default or leave empty to force user input. An empty string will fail the pre_task check.
+    env: ""
+    service_override_dir: "/etc/systemd/system/{{ service_name }}.service.d"
+    image_tag_override_file: "{{ service_override_dir }}/10-image-tag-override.conf"
+    app_env_override_file: "{{ service_override_dir }}/20-app-environment.conf"
+
+  pre_tasks:
+    - name: Validate 'env' variable
+      ansible.builtin.fail:
+        msg: "Variable 'env' must be set and be either 'qa' or 'prod'."
+      when: env is not defined or env not in ['qa', 'prod']
+
+    - name: Load environment-specific variables (qa.yml or prod.yml)
+      ansible.builtin.include_vars:
+        file: "{{ playbook_dir }}/group_vars/harjus_instance/{{ env }}.yml"
+
+  tasks:
+    - name: Display deployment information
+      ansible.builtin.debug:
+        msg: "Starting deployment of '{{ service_name }}' for '{{ env_name | default(env) }}' env with image tag: '{{ image_tag }}' on {{ inventory_hostname }}"
+
+    - name: Copy service file to systemd directory
+      ansible.builtin.copy:
+        src: harjus.service
+        dest: "/etc/systemd/system/{{ service_name }}.service"
+        mode: '0644'
+      notify: Reload systemd and restart myapp
+
+    - name: Ensure systemd override directory exists
+      ansible.builtin.file:
+        path: "{{ service_override_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Create/Update systemd override for IMAGE_TAG
+      ansible.builtin.template:
+        src: templates/image_tag_override.conf.j2 # Assumes image_tag_override.conf.j2 exists and uses {{ image_tag }}
+        dest: "{{ image_tag_override_file }}"
+        mode: '0644'
+      notify: Reload systemd and restart myapp
+
+    - name: Create/Update systemd override for Application Environment
+      ansible.builtin.template:
+        src: templates/app_environment.conf.j2
+        dest: "{{ app_env_override_file }}"
+        mode: '0600' # Stricter permissions as it contains resolved secrets
+      notify: Reload systemd and restart myapp
+
+    - name: Ensure handlers are flushed to apply changes now
+      ansible.builtin.meta: flush_handlers
+
+    - name: Final deployment status message
+      ansible.builtin.debug:
+        msg: |
+          Deployment of '{{ service_name }}' for '{{ env_name | default(env) }}' with tag '{{ image_tag }}' has been triggered.
+          To check status: sudo systemctl status {{ service_name }}
+          To tail logs: sudo journalctl -fu {{ service_name }}.service
+
+  handlers:
+    - name: Reload systemd and restart myapp
+      listen: "Reload systemd and restart myapp"
+      block:
+        - name: Reload systemd daemon
+          ansible.builtin.systemd_service:
+            daemon_reload: yes
+
+        - name: Restart {{ service_name }} service
+          ansible.builtin.systemd_service:
+            name: "{{ service_name }}"
+            state: restarted
+            enabled: no

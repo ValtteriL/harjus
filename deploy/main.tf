@@ -81,10 +81,9 @@ resource "aws_iam_instance_profile" "ec2_ecr_profile" {
 
 resource "aws_instance" "instance" {
 
-  # Debian 12 (64-bit) AMI
-  # in ap-northeast-1 region
-  # source: https://wiki.debian.org/Cloud/AmazonEC2Image/Bookworm
-  ami = "ami-0086868006278e8b1"
+  # Ubuntu 25.04 (for newer docker)
+  # source: https://cloud-images.ubuntu.com/locator/ec2/
+  ami = "ami-007513f9e994af27d"
 
   instance_type        = "c5.large"
   key_name             = aws_key_pair.ec_key.key_name

@@ -1,0 +1,40 @@
+[Unit]
+Description=Harjus
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+TimeoutStartSec=0
+TimeoutStopSec=30 # Time to wait for graceful shutdown
+
+# Pull the latest version of the image (or specific tag if overridden)
+ExecStartPre=/usr/bin/docker stop harjus
+ExecStartPre=/usr/bin/docker rm harjus
+ExecStartPre=/usr/bin/aws ecr get-login-password | /usr/bin/docker login --username AWS --password-stdin ${ECR_REGISTRY}
+ExecStartPre=/usr/bin/docker pull ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+
+# Start the container
+# Note the -e VAR_NAME syntax for variables to be passed from systemd's environment
+ExecStart=/usr/bin/docker run --rm --name harjus --network host \
+  # == Add environment variables to be passed to the container below ==
+  -e BINANCE_REST_API_URI \
+  -e BINANCE_FIX_API_HOSTNAME_ORDERENTRY \
+  -e BINANCE_FIX_API_HOSTNAME_MARKETDATA \
+  -e BINANCE_ED25519_SEED \
+  -e BINANCE_ED25519_API_KEY \
+  -e FIX_FILE_DIR \
+  -e BINANCE_FIX_API_PORT_ORDERENTRY \
+  -e BINANCE_FIX_API_PORT_MARKETDATA \
+  -e MAX_TRADING_PATH_LENGTH \
+  -e START_SYMBOLS \
+  -e BLACKLISTED_START_SYMBOLS \
+  -e COMMISSION \
+  -e LOG_LEVEL \
+
+  # Add any other environment variables your application needs
+  ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
+
+# Stop the container gracefully
+ExecStop=/usr/bin/docker stop -t 25 harjus
+

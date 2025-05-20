@@ -36,11 +36,14 @@ void Trade::recalculateOrderQty(
     auto temp = budget / orderPrice();
     // ensure Qty is multiple of minNotional
     budgetOrderQty = temp - fmod(temp, _symbol->minNotional);
-
   } else {
     // ensure Qty is multiple of minNotional
     budgetOrderQty = budget - fmod(budget, _symbol->minNotional);
   }
+
+  // ensure Qty is multiple of baseAssetIncrement (step size)
+  budgetOrderQty =
+      budgetOrderQty - fmod(budgetOrderQty, _symbol->baseAssetIncrement);
 
   auto maxOrderQty = boost::multiprecision::min(budgetOrderQty, offerQty());
 

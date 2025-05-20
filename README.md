@@ -65,13 +65,24 @@ terraform -chdir=deploy/backend init
 terraform -chdir=deploy/backend apply
 ```
 
-Set the output from into s3 backend in deploy
+### Prerequisite: Provision host
+
+```bash
+terraform -chdir=deploy init
+terraform -chdir=deploy apply"
+
+cd deploy/playbooks && ansible-playbook setup.yml
+```
 
 ### Deploy
 
 ```bash
-terraform -chdir=deploy init
-terraform -chdir=deploy apply -var-file="$env.tfvars" -var "image_tag=$image_tag_to_deploy"
+# QA (testnet)
+cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" # defaults to latest tag
+cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "image_tag=your-git-hash-for-qa"
+
+# Prod
+cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod"
 ```
 
 ## Debugging
@@ -79,7 +90,19 @@ terraform -chdir=deploy apply -var-file="$env.tfvars" -var "image_tag=$image_tag
 ### Access container runner
 
 ```bash
-ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem admin@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
+ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ubuntu@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
+```
+
+### Access container registry from instance
+
+```bash
+apt update
+apt install -y docker.io
+usermod -aG docker $USER
+aws ecr get-login-password | docker login --username AWS --password-stdin 137068223640.dkr.ecr.ap-northeast-1.amazonaws.com
+
+docker run --pull=always -it --env-file <.env-file> 137068223640.dkr.ecr.ap-northeast-1.amazonaws.com/harjus:latest
+
 ```
 
 ### Inspect containers running on runner
