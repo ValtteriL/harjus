@@ -65,15 +65,24 @@ terraform -chdir=deploy/backend init
 terraform -chdir=deploy/backend apply
 ```
 
-Set the output from into s3 backend in deploy
-
-### Deploy
+### Prerequisite: Provision host
 
 ```bash
 terraform -chdir=deploy init
 terraform -chdir=deploy apply"
 
 cd deploy/playbooks && ansible-playbook setup.yml
+```
+
+### Deploy
+
+```bash
+# QA (testnet)
+cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" # defaults to latest tag
+cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "image_tag=your-git-hash-for-qa"
+
+# Prod
+cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod"
 ```
 
 ## Debugging

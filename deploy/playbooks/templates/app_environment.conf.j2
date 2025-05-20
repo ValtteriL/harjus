@@ -1,0 +1,17 @@
+[Service]
+# This file is managed by Ansible
+# It provides environment variables to the {{ service_name }} service.
+
+Environment="BINANCE_REST_API_URI={{ binance_rest_api_uri }}"
+Environment="BINANCE_FIX_API_HOSTNAME_ORDERENTRY={{ binance_fix_api_hostname_orerentry }}"
+Environment="BINANCE_FIX_API_HOSTNAME_MARKETDATA={{ binance_fix_api_hostname_marketdata }}"
+Environment="BINANCE_ED25519_SEED={{ binance_ed25519_seed }}"
+Environment="BINANCE_ED25519_API_KEY={{ binance_ed25519_api_key }}"
+Environment="FIX_FILE_DIR={{ fix_file_dir }}"
+Environment="BINANCE_FIX_API_PORT_ORDERENTRY={{ binance_fix_api_port_orderentry }}"
+Environment="BINANCE_FIX_API_PORT_MARKETDATA={{ binance_fix_api_port_marketdata }}"
+Environment="MAX_TRADING_PATH_LENGTH={{ max_trading_path_length }}"
+Environment="START_SYMBOLS={{ start_symbols }}"
+Environment="BLACKLISTED_START_SYMBOLS={{ blacklisted_start_symbols }}"
+Environment="COMMISSION={{ commission }}"
+Environment="LOG_LEVEL={{ log_level }}"
