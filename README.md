@@ -82,6 +82,18 @@ terraform -chdir=deploy apply -var-file="$env.tfvars" -var "image_tag=$image_tag
 ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem admin@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
 ```
 
+### Access container registry from instance
+
+```bash
+apt update
+apt install -y docker.io
+usermod -aG docker $USER
+aws ecr get-login-password | docker login --username AWS --password-stdin 137068223640.dkr.ecr.ap-northeast-1.amazonaws.com
+
+docker run --pull=always -it --env-file <.env-file> 137068223640.dkr.ecr.ap-northeast-1.amazonaws.com/harjus:latest
+
+```
+
 ### Inspect containers running on runner
 
 ```bash
