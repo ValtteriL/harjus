@@ -105,10 +105,13 @@ let
     docker = pkgs.dockerTools.buildLayeredImage {
       name = "harjus";
       created = "now";
-      config = { Cmd = [ "harjus" ]; };
+      config = {
+        Cmd = [ "harjus" ];
+        Env = [ "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" ];
+      };
 
       # Minimize the size by using only runtime dependencies
-      contents = [ glibcLocales harjusBuild ];
+      contents = [ glibcLocales harjusBuild cacert ];
     };
 
   };
