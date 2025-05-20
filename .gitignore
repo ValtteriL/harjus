@@ -42,7 +42,7 @@ override.tf.json
 terraform.rc
 # end terraform
 
-.env
+.env*
 result
 result-*
 *.pem
