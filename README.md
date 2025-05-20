@@ -71,7 +71,9 @@ Set the output from into s3 backend in deploy
 
 ```bash
 terraform -chdir=deploy init
-terraform -chdir=deploy apply -var-file="$env.tfvars" -var "image_tag=$image_tag_to_deploy"
+terraform -chdir=deploy apply"
+
+cd deploy/playbooks && ansible-playbook setup.yml
 ```
 
 ## Debugging

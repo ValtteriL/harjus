@@ -73,6 +73,9 @@ let
         # deployment
         terraform
         awscli2
+        python3
+        python3Packages.boto3
+        python3Packages.botocore
       ];
 
       # disable hardenings (for better debugging experience)

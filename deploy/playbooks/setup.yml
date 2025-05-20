@@ -1,0 +1,12 @@
+---
+- name: Providion Harjus instance
+  hosts: harjus_instance
+  gather_facts: no
+  become: yes
+  vars:
+    ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
+    ansible_user: ubuntu
+  tasks:
+    - name: Ping instance
+      ansible.builtin.ping:
+
