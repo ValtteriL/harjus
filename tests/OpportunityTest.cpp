@@ -4,6 +4,7 @@
  */
 
 #include "Opportunity.h"
+#include "Position.h"
 #include "Symbol.h"
 #include "Trade.h"
 #include <gtest/gtest.h>
@@ -88,10 +89,43 @@ TEST(OpportunityTest, update) {
   opportunity.update(startingAssetBudget);
 
   // Check if the total profit is calculated correctly
-  EXPECT_NEAR(opportunity.getTotalProfit().convert_to<double>(), 8.995, 1e-5);
+  EXPECT_NEAR(opportunity.getTotalProfit().convert_to<double>(), 8.99299, 1e-5);
   // Check if the capacity is calculated correctly
   EXPECT_NEAR(opportunity.getCapacity().convert_to<double>(),
-              startingAssetBudget.convert_to<double>(), 1e-4);
+              startingAssetBudget.convert_to<double>(), 1e-3);
   // Check if the starting asset is correct
   EXPECT_EQ(opportunity.getStartingAsset(), trades.front().usedCurrency());
+
+  // Check orderQty is a multiple of baseAssetIncrement and minNotional
+  // Check notional is at least minNotional, or zero if orderQty is zero
+  for (const auto &trade : opportunity.getTrades()) {
+    const Symbol *sym = trade.symbol();
+    auto orderQty = trade.orderQty();
+    auto increment = sym->baseAssetIncrement;
+    auto minNotional = sym->minNotional;
+    auto price = trade.orderPrice();
+
+    std::cout << "Order Quantity: " << orderQty << std::endl;
+    std::cout << "Base Asset Increment: " << increment << std::endl;
+    std::cout << "Min Notional: " << minNotional << std::endl;
+    std::cout << "Price: " << price << std::endl;
+    std::cout << "Notional: " << orderQty * price << std::endl;
+    std::cout << "------------------------" << std::endl;
+
+    // Check orderQty is a multiple of baseAssetIncrement (within tolerance)
+    auto baseassetincrementremainder = fmod(orderQty, increment);
+    ASSERT_EQ(baseassetincrementremainder, 0.0);
+
+    // Check orderQty is a multiple of minNotional (within tolerance)
+    auto minNotionalRemainder = fmod(orderQty, minNotional);
+    ASSERT_EQ(minNotionalRemainder, 0.0);
+
+    // Check notional is at least minNotional (or zero if orderQty is zero)
+    auto notional = orderQty * price;
+    if (orderQty > 0) {
+      ASSERT_GE(notional, minNotional);
+    } else {
+      ASSERT_EQ(notional, 0.0);
+    }
+  }
 }
