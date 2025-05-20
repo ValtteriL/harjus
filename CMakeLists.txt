@@ -61,6 +61,7 @@ add_executable(harjus
   src/PriceUpdate.cpp
   src/StaticTrade.cpp
   src/FixConfig.cpp
+  src/Currency.cpp
 )
 target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
 
@@ -204,6 +205,18 @@ target_link_libraries(ThreadSafeQueueTest PRIVATE
 )
 
 gtest_discover_tests(ThreadSafeQueueTest)
+
+
+add_executable(CurrencyTest tests/CurrencyTest.cpp
+  src/Currency.cpp
+)
+target_link_libraries(CurrencyTest PRIVATE
+  gtest_main
+  GTest::gmock
+  Boost::log
+)
+
+gtest_discover_tests(CurrencyTest)
 
 
 # optimize build time with precompiled headers
