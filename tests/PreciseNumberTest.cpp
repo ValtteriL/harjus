@@ -79,6 +79,13 @@ TEST(PreciseNumberTest, LessThanOperator) {
   EXPECT_FALSE(c2 < c1);
 }
 
+TEST(PreciseNumberTest, GreaterThanOperator) {
+  PreciseNumber c1(3.0);
+  PreciseNumber c2(2.0);
+  EXPECT_TRUE(c1 > c2);
+  EXPECT_FALSE(c2 > c1);
+}
+
 TEST(PreciseNumberTest, FmodOperator) {
   PreciseNumber c1(5.75);
   PreciseNumber c2(2.5);
