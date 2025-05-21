@@ -87,6 +87,7 @@ add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
   src/Trade.cpp
   src/ReservedTrades.cpp
   src/StaticTrade.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(ReservedTradesTest PRIVATE
   gtest_main
@@ -108,6 +109,7 @@ gtest_discover_tests(ReservedTradesTest)
 
 add_executable(Ed25519Test tests/Ed25519Test.cpp
   src/Ed25519.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(Ed25519Test PRIVATE
   gtest_main
@@ -139,6 +141,7 @@ gtest_discover_tests(ExchangeTest)
 add_executable(ArbmapperTest tests/ArbmapperTest.cpp
   src/Arbmapper.cpp
   src/Trade.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(ArbmapperTest PRIVATE
   gtest_main
@@ -152,6 +155,7 @@ gtest_discover_tests(ArbmapperTest)
 add_executable(OpportunityTest tests/OpportunityTest.cpp
   src/Opportunity.cpp
   src/Trade.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(OpportunityTest PRIVATE
   gtest_main
