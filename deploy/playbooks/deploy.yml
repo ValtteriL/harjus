@@ -72,14 +72,14 @@
           To tail logs: sudo journalctl -fu {{ service_name }}.service
 
   handlers:
-    - name: Reload systemd and restart myapp
-      block:
-        - name: Reload systemd daemon
-          ansible.builtin.systemd_service:
-            daemon_reload: yes
+    - name: Reload systemd daemon
+      ansible.builtin.systemd_service:
+        daemon_reload: yes
+      listen: Reload systemd and restart myapp
 
-        - name: Restart {{ service_name }} service
-          ansible.builtin.systemd_service:
-            name: "{{ service_name }}"
-            state: restarted
-            enabled: no
+    - name: Restart {{ service_name }} service
+      ansible.builtin.systemd_service:
+        name: "{{ service_name }}"
+        state: restarted
+        enabled: no
+      listen: Reload systemd and restart myapp
