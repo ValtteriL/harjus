@@ -68,7 +68,6 @@
 
   handlers:
     - name: Reload systemd and restart myapp
-      listen: "Reload systemd and restart myapp"
       block:
         - name: Reload systemd daemon
           ansible.builtin.systemd_service:
