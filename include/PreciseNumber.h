@@ -49,6 +49,13 @@ public:
   PreciseNumber operator*(const PreciseNumber &other) const;
 
   /**
+   * @brief Divides this PreciseNumber by another.
+   * @param other The divisor PreciseNumber object.
+   * @return The quotient as a new PreciseNumber object.
+   */
+  PreciseNumber operator/(const PreciseNumber &other) const;
+
+  /**
    * @brief Computes the floating-point remainder of division (modulo) with
    * another PreciseNumber.
    * @param other The divisor PreciseNumber object.

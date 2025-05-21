@@ -24,6 +24,15 @@ PreciseNumber PreciseNumber::operator*(const PreciseNumber &other) const {
   return result;
 }
 
+PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
+  if (other.smallestUnit == 0) {
+    throw std::invalid_argument("Division by zero");
+  }
+  // To preserve precision, scale up before division
+  auto quotient = this->smallestUnit / other.smallestUnit;
+  return PreciseNumber(quotient);
+}
+
 PreciseNumber PreciseNumber::fmod(const PreciseNumber &other) const {
   PreciseNumber result;
   if (other.smallestUnit == 0) {
