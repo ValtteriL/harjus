@@ -12,6 +12,7 @@
 class PreciseNumber {
 private:
   long long smallestUnit = 0;
+  static constexpr double kPrecision = 1e8;
 
 public:
   /**

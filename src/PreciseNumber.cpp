@@ -2,7 +2,7 @@
 #include <cmath>
 
 PreciseNumber::PreciseNumber(double amount)
-    : smallestUnit(static_cast<long long>(std::round(amount * 1e8))) {}
+    : smallestUnit(static_cast<long long>(std::round(amount * kPrecision))) {}
 
 PreciseNumber PreciseNumber::operator+(const PreciseNumber &other) const {
   PreciseNumber result{0};
@@ -30,13 +30,13 @@ PreciseNumber PreciseNumber::operator*(const PreciseNumber &other) const {
   // Multiply smallest units and scale back to original unit
   PreciseNumber result{0};
   result.smallestUnit = static_cast<long long>(
-      std::round((this->smallestUnit * other.smallestUnit) / 1e8));
+      std::round((this->smallestUnit * other.smallestUnit) / kPrecision));
   return result;
 }
 
 PreciseNumber &PreciseNumber::operator*=(const PreciseNumber &other) {
   this->smallestUnit = static_cast<long long>(
-      std::round((this->smallestUnit * other.smallestUnit) / 1e8));
+      std::round((this->smallestUnit * other.smallestUnit) / kPrecision));
   return *this;
 }
 
@@ -56,7 +56,8 @@ PreciseNumber &PreciseNumber::operator/=(const PreciseNumber &other) {
   }
   double quotient =
       static_cast<double>(this->smallestUnit) / other.smallestUnit;
-  this->smallestUnit = static_cast<long long>(std::round(quotient * 1e8));
+  this->smallestUnit =
+      static_cast<long long>(std::round(quotient * kPrecision));
   return *this;
 }
 
@@ -85,7 +86,7 @@ bool PreciseNumber::operator>=(const PreciseNumber &other) const {
   return this->smallestUnit >= other.smallestUnit;
 }
 
-double PreciseNumber::toDouble() const { return smallestUnit / 1e8; }
+double PreciseNumber::toDouble() const { return smallestUnit / kPrecision; }
 
 PreciseNumber PreciseNumber::min(const PreciseNumber &a,
                                  const PreciseNumber &b) {
