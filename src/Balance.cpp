@@ -26,5 +26,5 @@ PreciseNumber Balance::getBalance(const std::string &currency) {
   if (balanceMap.find(currency) != balanceMap.end()) {
     return balanceMap.at(currency);
   }
-  return PreciseNumber(0);
+  return PreciseNumber{0};
 }

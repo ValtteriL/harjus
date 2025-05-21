@@ -125,14 +125,14 @@ std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config) {
         std::string filterType = filterObj["filterType"].as_string().c_str();
 
         if (filterType == "NOTIONAL") {
-          symbol->minNotional =
-              PreciseNumber(std::stod(filterObj["minNotional"].as_string().c_str()));
+          symbol->minNotional = PreciseNumber{
+              std::stod(filterObj["minNotional"].as_string().c_str())};
         } else if (filterType == "LOT_SIZE") {
-          symbol->baseAssetIncrement =
-              PreciseNumber(std::stod(filterObj["stepSize"].as_string().c_str()));
+          symbol->baseAssetIncrement = PreciseNumber{
+              std::stod(filterObj["stepSize"].as_string().c_str())};
         } else if (filterType == "PRICE_FILTER") {
-          symbol->quoteAssetIncrement =
-              PreciseNumber(std::stod(filterObj["tickSize"].as_string().c_str()));
+          symbol->quoteAssetIncrement = PreciseNumber{
+              std::stod(filterObj["tickSize"].as_string().c_str())};
         }
       }
 
@@ -184,8 +184,7 @@ getRelativeValues(IConfiguration &config,
     if (symbol->quoteAsset == "BTC") {
       // price already in BTC (shorting gets btc)
       relativeValues[symbol->baseAsset] = symbolPrices[symbolName];
-      lowestValue =
-          PreciseNumber::min(lowestValue, symbolPrices[symbolName]);
+      lowestValue = PreciseNumber::min(lowestValue, symbolPrices[symbolName]);
     } else if (symbol->baseAsset == "BTC") {
       // price in 1 / BTC (longing gets btc)
       PreciseNumber value = PreciseNumber{1} / symbolPrices[symbolName];

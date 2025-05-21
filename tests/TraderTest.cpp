@@ -138,10 +138,11 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   // Now create an execution report for the completed trade
   std::string id = trader.getIdForExecution(&execution);
   std::unordered_map<std::string, PreciseNumber> feeDelta{
-      {"BTC", PreciseNumber(-0.1)} // Example fee
+      {"BTC", PreciseNumber{-0.1}} // Example fee
   };
 
-  ExecutionReport executionReport{id, TradeExecutionStatus::FILLED, 0.1, 0.2,
+  ExecutionReport executionReport{id, TradeExecutionStatus::FILLED,
+                                  PreciseNumber{0.1}, PreciseNumber{0.2},
                                   feeDelta};
 
   // Since there is still one more trade in the execution, expect another
@@ -158,8 +159,8 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   auto finalId = trader.getIdForExecution(&execution);
 
   // Process another report to complete the execution
-  ExecutionReport finalReport{finalId, TradeExecutionStatus::FILLED, 0.1, 0.2,
-                              feeDelta};
+  ExecutionReport finalReport{finalId, TradeExecutionStatus::FILLED,
+                              PreciseNumber{0.1}, PreciseNumber{0.2}, feeDelta};
   trader.callProcessReport(&finalReport);
 
   // Verify the balance is updated correctly
@@ -202,8 +203,8 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
 
   std::unordered_map<std::string, PreciseNumber> feeDelta{};
 
-  ExecutionReport executionReport{id, TradeExecutionStatus::EXPIRED, 0, 0,
-                                  feeDelta};
+  ExecutionReport executionReport{id, TradeExecutionStatus::EXPIRED,
+                                  PreciseNumber{0}, PreciseNumber{0}, feeDelta};
 
   // Process the report
   trader.callProcessReport(&executionReport);

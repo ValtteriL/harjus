@@ -228,12 +228,12 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     // Extract the used and received quantities
     FIX::CumQty cumQty; // Total number of base asset traded on this order.
     message.get(cumQty);
-    PreciseNumber qtyBase = PreciseNumber(cumQty.getValue());
+    PreciseNumber qtyBase = PreciseNumber{cumQty.getValue()};
 
     FIX::QtyField cumQuoteQty(
         25017); // Total number of quote asset traded on this order.
     message.getField(cumQuoteQty);
-    PreciseNumber qtyQuote = PreciseNumber(cumQuoteQty.getValue());
+    PreciseNumber qtyQuote = PreciseNumber{cumQuoteQty.getValue()};
 
     FIX::Side side;
     message.get(side);
@@ -271,7 +271,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
         group.get(feeAmount);
 
         // Add the fee amount to the asset delta map
-        feeDelta[currency] -= PreciseNumber(feeAmount.getValue());
+        feeDelta[currency] -= PreciseNumber{feeAmount.getValue()};
       }
     }
 
@@ -327,8 +327,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
         group.get(entryPrice);
         group.get(entrySize);
 
-        bidPrice = PreciseNumber(entryPrice.getValue());
-        bidQuantity = PreciseNumber(entrySize.getValue());
+        bidPrice = PreciseNumber{entryPrice.getValue()};
+        bidQuantity = PreciseNumber{entrySize.getValue()};
       } else if (entryType == FIX::MDEntryType_OFFER) {
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
@@ -336,8 +336,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
         group.get(entryPrice);
         group.get(entrySize);
 
-        askPrice = PreciseNumber(entryPrice.getValue());
-        askQuantity = PreciseNumber(entrySize.getValue());
+        askPrice = PreciseNumber{entryPrice.getValue()};
+        askQuantity = PreciseNumber{entrySize.getValue()};
       }
     }
 
@@ -406,12 +406,12 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
           if (entryType == FIX::MDEntryType_BID) {
             updates[symbolValue]->bidPrice =
-                PreciseNumber(entryPrice.getValue());
-            updates[symbolValue]->bidQty = PreciseNumber(entrySize.getValue());
+                PreciseNumber{entryPrice.getValue()};
+            updates[symbolValue]->bidQty = PreciseNumber{entrySize.getValue()};
           } else if (entryType == FIX::MDEntryType_OFFER) {
             updates[symbolValue]->askPrice =
-                PreciseNumber(entryPrice.getValue());
-            updates[symbolValue]->askQty = PreciseNumber(entrySize.getValue());
+                PreciseNumber{entryPrice.getValue()};
+            updates[symbolValue]->askQty = PreciseNumber{entrySize.getValue()};
           }
         }
       }
