@@ -69,7 +69,7 @@ terraform -chdir=deploy/backend apply
 
 ```bash
 terraform -chdir=deploy init
-terraform -chdir=deploy apply"
+terraform -chdir=deploy apply
 
 cd deploy/playbooks && ansible-playbook setup.yml
 ```
