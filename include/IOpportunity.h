@@ -1,7 +1,7 @@
 #pragma once
 
+#include "PreciseNumber.h"
 #include "Trade.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <string>
 
 /**
@@ -18,14 +18,13 @@ public:
    * @details This method should be called after a price update that affects
    * this opportunity to update the total profit.
    */
-  virtual void
-  update(boost::multiprecision::cpp_dec_float_50 startingAssetBudget) = 0;
+  virtual void update(PreciseNumber startingAssetBudget) = 0;
 
   /**
    * @brief Get the total profit
    * @return The total profit of the opportunity in relative value.
    */
-  virtual boost::multiprecision::cpp_dec_float_50 getTotalProfit() const = 0;
+  virtual PreciseNumber getTotalProfit() const = 0;
 
   /**
    * @brief Get the starting asset.
@@ -39,7 +38,7 @@ public:
    * that can be used in the opportunity.
    * @return The capacity of the opportunity in the starting asset.
    */
-  virtual boost::multiprecision::cpp_dec_float_50 getCapacity() const = 0;
+  virtual PreciseNumber getCapacity() const = 0;
 
   /**
    * @brief Get the trades associated with the opportunity.

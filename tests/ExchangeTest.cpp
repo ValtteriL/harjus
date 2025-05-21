@@ -57,12 +57,9 @@ TEST_F(ExchangeTest,
   EXPECT_EQ(btcEthSymbol->quoteAsset, "BTC");
   EXPECT_EQ(btcEthSymbol->baseAssetPrecision, 8);
   EXPECT_EQ(btcEthSymbol->quoteAssetPrecision, 8);
-  EXPECT_EQ(btcEthSymbol->minNotional,
-            boost::multiprecision::cpp_dec_float_50{"0.0001"});
-  EXPECT_EQ(btcEthSymbol->baseAssetIncrement,
-            boost::multiprecision::cpp_dec_float_50{"0.0001"});
-  EXPECT_EQ(btcEthSymbol->quoteAssetIncrement,
-            boost::multiprecision::cpp_dec_float_50{"0.00001"});
+  EXPECT_EQ(btcEthSymbol->minNotional, PreciseNumber{0.0001});
+  EXPECT_EQ(btcEthSymbol->baseAssetIncrement, PreciseNumber{0.0001});
+  EXPECT_EQ(btcEthSymbol->quoteAssetIncrement, PreciseNumber{0.00001});
 }
 
 TEST_F(ExchangeTest,
@@ -112,12 +109,11 @@ TEST_F(ExchangeTest,
 
   // Verify the value of assets that cannot be traded with Bitcoin equals the
   // lowest value
-  boost::multiprecision::cpp_dec_float_50 lowestValue =
-      std::numeric_limits<boost::multiprecision::cpp_dec_float_50>::max();
+  PreciseNumber lowestValue = std::numeric_limits<PreciseNumber>::max();
   for (const auto &[symbolName, symbol] : symbols) {
     if (symbol->quoteAsset == "BTC") {
-      lowestValue = boost::multiprecision::min(
-          lowestValue, relativeValues[symbol->baseAsset]);
+      lowestValue =
+          PreciseNumber::min(lowestValue, relativeValues[symbol->baseAsset]);
     }
   }
 

@@ -125,14 +125,14 @@ std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config) {
         std::string filterType = filterObj["filterType"].as_string().c_str();
 
         if (filterType == "NOTIONAL") {
-          symbol->minNotional = boost::multiprecision::cpp_dec_float_50(
-              filterObj["minNotional"].as_string().c_str());
+          symbol->minNotional = PreciseNumber{
+              std::stod(filterObj["minNotional"].as_string().c_str())};
         } else if (filterType == "LOT_SIZE") {
-          symbol->baseAssetIncrement = boost::multiprecision::cpp_dec_float_50(
-              filterObj["stepSize"].as_string().c_str());
+          symbol->baseAssetIncrement = PreciseNumber{
+              std::stod(filterObj["stepSize"].as_string().c_str())};
         } else if (filterType == "PRICE_FILTER") {
-          symbol->quoteAssetIncrement = boost::multiprecision::cpp_dec_float_50(
-              filterObj["tickSize"].as_string().c_str());
+          symbol->quoteAssetIncrement = PreciseNumber{
+              std::stod(filterObj["tickSize"].as_string().c_str())};
         }
       }
 
@@ -146,11 +146,10 @@ std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config) {
   return symbols;
 }
 
-std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+std::unordered_map<std::string, PreciseNumber>
 getRelativeValues(IConfiguration &config,
                   const std::unordered_map<std::string, Symbol *> &symbols) {
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      relativeValues;
+  std::unordered_map<std::string, PreciseNumber> relativeValues;
 
   // Fetch symbol prices from Binance API
   std::string uri = config.getBinanceRESTApiUri() + "/api/v3/ticker/price";
@@ -165,15 +164,13 @@ getRelativeValues(IConfiguration &config,
   }
 
   // Parse JSON response
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      symbolPrices;
+  std::unordered_map<std::string, PreciseNumber> symbolPrices;
   try {
     boost::json::value json = boost::json::parse(r.text);
     for (const auto &item : json.as_array()) {
       boost::json::object priceObj = item.as_object();
       std::string symbol = priceObj["symbol"].as_string().c_str();
-      boost::multiprecision::cpp_dec_float_50 price(
-          priceObj["price"].as_string().c_str());
+      PreciseNumber price(std::stod(priceObj["price"].as_string().c_str()));
       symbolPrices[symbol] = price;
     }
   } catch (const boost::json::system_error &e) {
@@ -182,20 +179,17 @@ getRelativeValues(IConfiguration &config,
   }
 
   // Calculate relative values in Bitcoin
-  boost::multiprecision::cpp_dec_float_50 lowestValue =
-      std::numeric_limits<boost::multiprecision::cpp_dec_float_50>::max();
+  PreciseNumber lowestValue = std::numeric_limits<PreciseNumber>::max();
   for (const auto &[symbolName, symbol] : symbols) {
     if (symbol->quoteAsset == "BTC") {
       // price already in BTC (shorting gets btc)
       relativeValues[symbol->baseAsset] = symbolPrices[symbolName];
-      lowestValue =
-          boost::multiprecision::min(lowestValue, symbolPrices[symbolName]);
+      lowestValue = PreciseNumber::min(lowestValue, symbolPrices[symbolName]);
     } else if (symbol->baseAsset == "BTC") {
       // price in 1 / BTC (longing gets btc)
-      boost::multiprecision::cpp_dec_float_50 value =
-          1 / symbolPrices[symbolName];
+      PreciseNumber value = PreciseNumber{1} / symbolPrices[symbolName];
       relativeValues[symbol->quoteAsset] = value;
-      lowestValue = boost::multiprecision::min(lowestValue, value);
+      lowestValue = PreciseNumber::min(lowestValue, value);
     }
   }
 

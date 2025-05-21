@@ -28,8 +28,8 @@ TEST(BalanceTest, insertUpdateBalance) {
 
 TEST(BalanceTest, updateBalanceMap) {
   Balance balance;
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      assetDelta = {{"BTC", 1}, {"ETH", 2}};
+  std::unordered_map<std::string, PreciseNumber> assetDelta = {{"BTC", 1},
+                                                               {"ETH", 2}};
 
   // Update balance with assetDelta
   balance.updateBalance(assetDelta);

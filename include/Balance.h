@@ -1,8 +1,8 @@
 #pragma once
 
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <shared_mutex>
 #include <unordered_map>
+#include "PreciseNumber.h"
 
 /**
  * Balance class. Contains logic for accounting balance.
@@ -14,8 +14,7 @@ private:
   /**
    *  Balance map
    */
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      balanceMap;
+  std::unordered_map<std::string, PreciseNumber> balanceMap;
 
   /**
    * Mutex for thread safety.
@@ -33,8 +32,7 @@ public:
    *  @param currency The currency to add.
    *  @param amount The amount to add.
    */
-  void updateBalance(const std::string &currency,
-                     boost::multiprecision::cpp_dec_float_50 amount);
+  void updateBalance(const std::string &currency, PreciseNumber amount);
 
   /**
    *  Add a currency to the balance.
@@ -46,8 +44,7 @@ public:
    *  @param assetDelta The map of currencies and amounts to add.
    */
   void updateBalance(
-      const std::unordered_map<
-          std::string, boost::multiprecision::cpp_dec_float_50> &assetDelta);
+      const std::unordered_map<std::string, PreciseNumber> &assetDelta);
 
   /**
    *  Get the balance for a currency.
@@ -55,6 +52,5 @@ public:
    *  If the currency is not present in the map, it will return 0.
    *  @param currency The currency to get the balance for.
    */
-  boost::multiprecision::cpp_dec_float_50
-  getBalance(const std::string &currency);
+  PreciseNumber getBalance(const std::string &currency);
 };

@@ -2,8 +2,8 @@
 
 #include "Balance.h"
 #include "IConfiguration.h"
+#include "PreciseNumber.h"
 #include "Symbol.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <memory>
 #include <unordered_map>
 
@@ -43,6 +43,6 @@ std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config);
  * information.
  * @return A map of symbol names to their relative values in Bitcoin.
  */
-std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+std::unordered_map<std::string, PreciseNumber>
 getRelativeValues(IConfiguration &config,
                   const std::unordered_map<std::string, Symbol *> &symbols);

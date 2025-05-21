@@ -5,6 +5,7 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 #include <quickfix/Field.h>
+#include <quickfix/FieldTypes.h>
 #include <quickfix/FixFields.h>
 #include <quickfix/FixValues.h>
 #include <quickfix/Session.h>
@@ -227,14 +228,12 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     // Extract the used and received quantities
     FIX::CumQty cumQty; // Total number of base asset traded on this order.
     message.get(cumQty);
-    boost::multiprecision::cpp_dec_float_50 qtyBase =
-        boost::multiprecision::cpp_dec_float_50(cumQty.getValue());
+    PreciseNumber qtyBase = PreciseNumber{cumQty.getValue()};
 
     FIX::QtyField cumQuoteQty(
         25017); // Total number of quote asset traded on this order.
     message.getField(cumQuoteQty);
-    boost::multiprecision::cpp_dec_float_50 qtyQuote =
-        boost::multiprecision::cpp_dec_float_50(cumQuoteQty.getValue());
+    PreciseNumber qtyQuote = PreciseNumber{cumQuoteQty.getValue()};
 
     FIX::Side side;
     message.get(side);
@@ -245,8 +244,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     auto recvQty = position == Position::LONG ? qtyBase : qtyQuote;
 
     // Create asset delta map
-    std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-        feeDelta;
+    std::unordered_map<std::string, PreciseNumber> feeDelta;
 
     // Extract the fees from the message into the asset delta map
     int numMiscFees = 0;
@@ -273,8 +271,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
         group.get(feeAmount);
 
         // Add the fee amount to the asset delta map
-        feeDelta[currency] -=
-            boost::multiprecision::cpp_dec_float_50(feeAmount.getValue());
+        feeDelta[currency] -= PreciseNumber{feeAmount.getValue()};
       }
     }
 
@@ -306,10 +303,10 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
     std::string symbolValue = symbol.getValue();
 
     // We need variables to store best bid/ask data
-    boost::multiprecision::cpp_dec_float_50 bidPrice = 0;
-    boost::multiprecision::cpp_dec_float_50 bidQuantity = 0;
-    boost::multiprecision::cpp_dec_float_50 askPrice = 0;
-    boost::multiprecision::cpp_dec_float_50 askQuantity = 0;
+    PreciseNumber bidPrice = 0;
+    PreciseNumber bidQuantity = 0;
+    PreciseNumber askPrice = 0;
+    PreciseNumber askQuantity = 0;
 
     FIX::NoMDEntries noMDEntries;
     message.get(noMDEntries);
@@ -330,10 +327,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
         group.get(entryPrice);
         group.get(entrySize);
 
-        bidPrice =
-            boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-        bidQuantity =
-            boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+        bidPrice = PreciseNumber{entryPrice.getValue()};
+        bidQuantity = PreciseNumber{entrySize.getValue()};
       } else if (entryType == FIX::MDEntryType_OFFER) {
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
@@ -341,10 +336,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
         group.get(entryPrice);
         group.get(entrySize);
 
-        askPrice =
-            boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-        askQuantity =
-            boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+        askPrice = PreciseNumber{entryPrice.getValue()};
+        askQuantity = PreciseNumber{entrySize.getValue()};
       }
     }
 
@@ -413,14 +406,12 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
           if (entryType == FIX::MDEntryType_BID) {
             updates[symbolValue]->bidPrice =
-                boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-            updates[symbolValue]->bidQty =
-                boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+                PreciseNumber{entryPrice.getValue()};
+            updates[symbolValue]->bidQty = PreciseNumber{entrySize.getValue()};
           } else if (entryType == FIX::MDEntryType_OFFER) {
             updates[symbolValue]->askPrice =
-                boost::multiprecision::cpp_dec_float_50(entryPrice.getValue());
-            updates[symbolValue]->askQty =
-                boost::multiprecision::cpp_dec_float_50(entrySize.getValue());
+                PreciseNumber{entryPrice.getValue()};
+            updates[symbolValue]->askQty = PreciseNumber{entrySize.getValue()};
           }
         }
       }
@@ -444,8 +435,7 @@ void onMessage(const FIX::Message &message, const FIX::SessionID &) {
 }
 
 void Application::submitOrder(std::string id, std::string symbol,
-                              boost::multiprecision::cpp_dec_float_50 qty,
-                              boost::multiprecision::cpp_dec_float_50 price,
+                              PreciseNumber qty, PreciseNumber price,
                               Position position) {
   FIX44::NewOrderSingle newOrder;
 
@@ -454,8 +444,8 @@ void Application::submitOrder(std::string id, std::string symbol,
   newOrder.set(
       FIX::Side(position == Position::LONG ? FIX::Side_BUY : FIX::Side_SELL));
   newOrder.set(FIX::Symbol(symbol));
-  newOrder.set(FIX::OrderQty(static_cast<double>(qty)));
-  newOrder.set(FIX::Price(static_cast<double>(price)));
+  newOrder.set(FIX::OrderQty(qty.toDouble()));
+  newOrder.set(FIX::Price(price.toDouble()));
   newOrder.set(FIX::TimeInForce(FIX::TimeInForce_FILL_OR_KILL));
 
   BOOST_LOG_TRIVIAL(debug) << "Submitting order: " << newOrder.toString()

@@ -75,9 +75,9 @@ public:
 
   /**
    * @brief Get the commission for trading.
-   * @return The commission as a boost::multiprecision::cpp_dec_float_50.
+   * @return The commission as a PreciseNumber.
    */
-  boost::multiprecision::cpp_dec_float_50 getCommission() const override;
+  PreciseNumber getCommission() const override;
 
   /**
    * @brief Get the Logging level

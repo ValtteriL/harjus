@@ -1,11 +1,9 @@
 #include "ExecutionReport.h"
 
 ExecutionReport::ExecutionReport(
-    const std::string &id, TradeExecutionStatus status,
-    boost::multiprecision::cpp_dec_float_50 usedQty,
-    boost::multiprecision::cpp_dec_float_50 recvQty,
-    const std::unordered_map<std::string,
-                             boost::multiprecision::cpp_dec_float_50> &feeDelta)
+    const std::string &id, TradeExecutionStatus status, PreciseNumber usedQty,
+    PreciseNumber recvQty,
+    const std::unordered_map<std::string, PreciseNumber> &feeDelta)
     : _id(id), _status(status), _usedQty(usedQty), _recvQty(recvQty),
       _feeDelta(feeDelta) {};
 
@@ -13,18 +11,14 @@ std::string ExecutionReport::getId() const { return _id; }
 
 TradeExecutionStatus ExecutionReport::getStatus() const { return _status; }
 
-std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
+std::unordered_map<std::string, PreciseNumber>
 ExecutionReport::getFeeDelta() const {
   return _feeDelta;
 }
 
-boost::multiprecision::cpp_dec_float_50 ExecutionReport::usedQty() {
-  return _usedQty;
-}
+PreciseNumber ExecutionReport::usedQty() { return _usedQty; }
 
-boost::multiprecision::cpp_dec_float_50 ExecutionReport::recvQty() {
-  return _recvQty;
-}
+PreciseNumber ExecutionReport::recvQty() { return _recvQty; }
 
 std::ostream &operator<<(std::ostream &os, const ExecutionReport &report) {
   os << "ExecutionReport{"

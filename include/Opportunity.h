@@ -12,9 +12,9 @@ class Opportunity : public IOpportunity {
 private:
   std::vector<Trade> &_trades;
   std::string _startingAsset;
-  const boost::multiprecision::cpp_dec_float_50 _commission;
-  const boost::multiprecision::cpp_dec_float_50 _relativeValue;
-  boost::multiprecision::cpp_dec_float_50 _totalProfit;
+  const PreciseNumber _commission;
+  const PreciseNumber _relativeValue;
+  PreciseNumber _totalProfit;
 
 public:
   /**
@@ -23,18 +23,16 @@ public:
    * @param commission Commission percentage per trade.
    * @param relativeValue The relative value of the starting asset.
    */
-  Opportunity(std::vector<Trade> &trades,
-              boost::multiprecision::cpp_dec_float_50 relativeValue,
-              boost::multiprecision::cpp_dec_float_50 commission);
+  Opportunity(std::vector<Trade> &trades, PreciseNumber relativeValue,
+              PreciseNumber commission);
 
-  void
-  update(boost::multiprecision::cpp_dec_float_50 startingAssetBudget) override;
+  void update(PreciseNumber startingAssetBudget) override;
 
-  boost::multiprecision::cpp_dec_float_50 getTotalProfit() const override;
+  PreciseNumber getTotalProfit() const override;
 
   std::string getStartingAsset() const override;
 
-  boost::multiprecision::cpp_dec_float_50 getCapacity() const override;
+  PreciseNumber getCapacity() const override;
 
   std::vector<Trade> &getTrades() override;
 };

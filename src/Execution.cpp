@@ -17,18 +17,14 @@ Execution::Execution(Opportunity &opportunity)
   }
 }
 
-boost::multiprecision::cpp_dec_float_50 Execution::getTotalProfit() const {
-  return _totalProfit;
-}
+PreciseNumber Execution::getTotalProfit() const { return _totalProfit; }
 
 std::string Execution::getStartingAsset() const { return _startingAsset; }
 std::queue<StaticTrade> &Execution::getTrades() { return _trades; }
 
-boost::multiprecision::cpp_dec_float_50 Execution::getCapacity() const {
-  return _capacity;
-}
+PreciseNumber Execution::getCapacity() const { return _capacity; }
 
-void Execution::update(boost::multiprecision::cpp_dec_float_50) {}
+void Execution::update(PreciseNumber) {}
 
 /**
  * @brief Stream operator overload for Execution

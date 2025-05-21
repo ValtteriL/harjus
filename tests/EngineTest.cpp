@@ -6,6 +6,7 @@
 #include "Engine.h"
 #include "Balance.h"
 #include "Execution.h"
+#include "PreciseNumber.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
@@ -19,15 +20,13 @@
 
 class TestableEngine : public Engine {
 public:
-  TestableEngine(
-      std::unordered_map<std::string, Symbol *> &symbols,
-      std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
-      ReservedTrades &reservedTrades,
-      boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-      ThreadSafeQueue<Execution> &executionQueue,
-      std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-          relativeValues,
-      boost::multiprecision::cpp_dec_float_50 commission)
+  TestableEngine(std::unordered_map<std::string, Symbol *> &symbols,
+                 std::vector<std::vector<Trade> *> &tradingPaths,
+                 Balance &balance, ReservedTrades &reservedTrades,
+                 boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
+                 ThreadSafeQueue<Execution> &executionQueue,
+                 std::unordered_map<std::string, PreciseNumber> relativeValues,
+                 PreciseNumber commission)
       : Engine(symbols, tradingPaths, balance, reservedTrades, priceUpdateQueue,
                executionQueue, relativeValues, commission) {}
 
@@ -51,7 +50,7 @@ protected:
     balance.updateBalance("BTC", startingAssetBudget);
   }
 
-  boost::multiprecision::cpp_dec_float_50 startingAssetBudget = 1.0;
+  PreciseNumber startingAssetBudget = 1.0;
 
   // Allocate symbols manually
   Symbol *ethBtcSymbol = new Symbol{"ETHBTC", "ETH",  "BTC",  0.0,    0.0, 0.0,
@@ -69,9 +68,9 @@ protected:
   std::vector<std::vector<Trade> *> tradingPaths;
   Balance balance;
   ReservedTrades reservedTrades;
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      relativeValues{{"BTC", 1.0}, {"ETH", 1.0}, {"USDT", 1.0}};
-  boost::multiprecision::cpp_dec_float_50 commission{0.001};
+  std::unordered_map<std::string, PreciseNumber> relativeValues{
+      {"BTC", 1.0}, {"ETH", 1.0}, {"USDT", 1.0}};
+  PreciseNumber commission{0.001};
 
   std::binary_semaphore semaphore{0};
   ThreadSafeQueue<Execution> executionQueue{semaphore};
@@ -105,13 +104,10 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   EXPECT_EQ(execution.getTrades().size(), 3);
 
   // Check if the total profit is calculated correctly
-  EXPECT_NEAR(execution.getTotalProfit().convert_to<double>(), 8.9911, 1e-4);
+  EXPECT_EQ(execution.getTotalProfit(), PreciseNumber{8.996997});
   // Check if the capacity is calculated correctly
 
-  EXPECT_NEAR(execution.getCapacity().convert_to<double>(),
-              boost::multiprecision::cpp_dec_float_50{startingAssetBudget}
-                  .convert_to<double>(),
-              1e-3);
+  EXPECT_EQ(execution.getCapacity(), PreciseNumber{startingAssetBudget});
   // Check if the starting asset is correct
   EXPECT_EQ(execution.getStartingAsset(), "BTC");
 }

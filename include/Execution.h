@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Opportunity.h"
+#include "PreciseNumber.h"
 #include "StaticTrade.h"
 #include "Trade.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <queue>
 #include <vector>
 
@@ -20,8 +20,8 @@ private:
   std::queue<StaticTrade> _trades;
   std::vector<StaticTrade> _tradesVector;
   std::string _startingAsset;
-  boost::multiprecision::cpp_dec_float_50 _totalProfit;
-  boost::multiprecision::cpp_dec_float_50 _capacity;
+  PreciseNumber _totalProfit;
+  PreciseNumber _capacity;
 
 public:
   /**
@@ -71,13 +71,13 @@ public:
    * @details This method should be called after a price update that affects
    * this opportunity to update the total profit.
    */
-  void update(boost::multiprecision::cpp_dec_float_50 startingAssetBudget);
+  void update(PreciseNumber startingAssetBudget);
 
   /**
    * @brief Get the total profit
    * @return The total profit of the opportunity in relative value.
    */
-  boost::multiprecision::cpp_dec_float_50 getTotalProfit() const;
+  PreciseNumber getTotalProfit() const;
 
   /**
    * @brief Get the capacity of the opportunity.
@@ -86,7 +86,7 @@ public:
    * @return The capacity of the opportunity in the starting asset.
    */
 
-  boost::multiprecision::cpp_dec_float_50 getCapacity() const;
+  PreciseNumber getCapacity() const;
 
   /**
    * @brief Get the starting asset.

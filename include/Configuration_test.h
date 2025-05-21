@@ -20,8 +20,7 @@ public:
   MOCK_METHOD(std::vector<std::string>, getStartSymbols, (), (const, override));
   MOCK_METHOD(std::vector<std::string>, getBlacklistedStartSymbols, (),
               (const, override));
-  MOCK_METHOD(boost::multiprecision::cpp_dec_float_50, getCommission, (),
-              (const, override));
+  MOCK_METHOD(PreciseNumber, getCommission, (), (const, override));
   MOCK_METHOD(int, getLogLevel, (), (const, override));
   MOCK_METHOD(std::string, getFixFileStorePath, (), (const, override));
 };

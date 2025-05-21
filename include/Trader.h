@@ -16,9 +16,8 @@
 #include <stop_token>
 #include <string>
 
-using entry = std::pair<
-    Execution,
-    std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>>;
+using entry =
+    std::pair<Execution, std::unordered_map<std::string, PreciseNumber>>;
 
 class Trader {
 

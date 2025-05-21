@@ -39,7 +39,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
 # add ccache for faster builds
-set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+if(DEFINED ENV{USE_CCACHE})
+  set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+endif()
 
 include_directories(include)
 
@@ -61,6 +63,7 @@ add_executable(harjus
   src/PriceUpdate.cpp
   src/StaticTrade.cpp
   src/FixConfig.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
 
@@ -86,6 +89,7 @@ add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
   src/Trade.cpp
   src/ReservedTrades.cpp
   src/StaticTrade.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(ReservedTradesTest PRIVATE
   gtest_main
@@ -96,6 +100,7 @@ gtest_discover_tests(ReservedTradesTest)
 
 add_executable(BalanceTest tests/BalanceTest.cpp
   src/Balance.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(BalanceTest PRIVATE
   gtest_main
@@ -106,6 +111,7 @@ gtest_discover_tests(ReservedTradesTest)
 
 add_executable(Ed25519Test tests/Ed25519Test.cpp
   src/Ed25519.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(Ed25519Test PRIVATE
   gtest_main
@@ -120,6 +126,7 @@ add_executable(ExchangeTest tests/ExchangeTest.cpp
   src/Exchange.cpp
   src/Ed25519.cpp
   src/Balance.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(ExchangeTest PRIVATE
   gtest_main
@@ -136,6 +143,7 @@ gtest_discover_tests(ExchangeTest)
 add_executable(ArbmapperTest tests/ArbmapperTest.cpp
   src/Arbmapper.cpp
   src/Trade.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(ArbmapperTest PRIVATE
   gtest_main
@@ -149,6 +157,7 @@ gtest_discover_tests(ArbmapperTest)
 add_executable(OpportunityTest tests/OpportunityTest.cpp
   src/Opportunity.cpp
   src/Trade.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(OpportunityTest PRIVATE
   gtest_main
@@ -164,6 +173,7 @@ add_executable(EngineTest tests/EngineTest.cpp
   src/Engine.cpp
   src/ReservedTrades.cpp
   src/Balance.cpp
+  src/PreciseNumber.cpp
   src/Execution.cpp
   src/PriceUpdate.cpp
   src/StaticTrade.cpp
@@ -183,6 +193,7 @@ add_executable(TraderTest tests/TraderTest.cpp
   src/Trade.cpp
   src/ReservedTrades.cpp
   src/Balance.cpp
+  src/PreciseNumber.cpp
   src/Execution.cpp
   src/ExecutionReport.cpp
   src/StaticTrade.cpp
@@ -204,6 +215,18 @@ target_link_libraries(ThreadSafeQueueTest PRIVATE
 )
 
 gtest_discover_tests(ThreadSafeQueueTest)
+
+
+add_executable(PreciseNumberTest tests/PreciseNumberTest.cpp
+  src/PreciseNumber.cpp
+)
+target_link_libraries(PreciseNumberTest PRIVATE
+  gtest_main
+  GTest::gmock
+  Boost::log
+)
+
+gtest_discover_tests(PreciseNumberTest)
 
 
 # optimize build time with precompiled headers
@@ -267,7 +290,6 @@ target_precompile_headers(harjus PRIVATE
 
   # Boost
   <boost/lockfree/queue.hpp>
-  <boost/multiprecision/cpp_dec_float.hpp>
   <boost/log/core.hpp>
   <boost/log/expressions.hpp>
   <boost/log/trivial.hpp>
