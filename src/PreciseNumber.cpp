@@ -16,6 +16,11 @@ PreciseNumber PreciseNumber::operator-(const PreciseNumber &other) const {
   return result;
 }
 
+PreciseNumber& PreciseNumber::operator-=(const PreciseNumber &other) {
+  this->smallestUnit -= other.smallestUnit;
+  return *this;
+}
+
 PreciseNumber PreciseNumber::operator*(const PreciseNumber &other) const {
   // Multiply smallest units and scale back to original unit
   PreciseNumber result{0};

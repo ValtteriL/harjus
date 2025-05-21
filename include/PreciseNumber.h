@@ -42,6 +42,13 @@ public:
   PreciseNumber operator-(const PreciseNumber &other) const;
 
   /**
+   * @brief Subtracts another PreciseNumber from this one (in-place).
+   * @param other The other PreciseNumber object to subtract.
+   * @return Reference to this object after subtraction.
+   */
+  PreciseNumber& operator-=(const PreciseNumber &other);
+
+  /**
    * @brief Multiplies two PreciseNumber amounts.
    * @param other The other PreciseNumber object to multiply by.
    * @return The result as a new PreciseNumber object.

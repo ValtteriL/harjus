@@ -29,6 +29,13 @@ TEST(PreciseNumberTest, SubtractionOperator) {
   EXPECT_EQ(diff.toDouble(), 2.5);
 }
 
+TEST(PreciseNumberTest, SubtractAssignOperator) {
+  PreciseNumber c1(5.0);
+  PreciseNumber c2(2.5);
+  c1 -= c2;
+  EXPECT_DOUBLE_EQ(c1.toDouble(), 2.5);
+}
+
 TEST(PreciseNumberTest, MultiplicationOperator) {
   PreciseNumber c1(2.0);
   PreciseNumber c2(2.5);
