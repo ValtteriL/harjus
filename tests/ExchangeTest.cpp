@@ -57,9 +57,9 @@ TEST_F(ExchangeTest,
   EXPECT_EQ(btcEthSymbol->quoteAsset, "BTC");
   EXPECT_EQ(btcEthSymbol->baseAssetPrecision, 8);
   EXPECT_EQ(btcEthSymbol->quoteAssetPrecision, 8);
-  EXPECT_EQ(btcEthSymbol->minNotional, PreciseNumber{"0.0001"});
-  EXPECT_EQ(btcEthSymbol->baseAssetIncrement, PreciseNumber{"0.0001"});
-  EXPECT_EQ(btcEthSymbol->quoteAssetIncrement, PreciseNumber{"0.00001"});
+  EXPECT_EQ(btcEthSymbol->minNotional, PreciseNumber{0.0001});
+  EXPECT_EQ(btcEthSymbol->baseAssetIncrement, PreciseNumber{0.0001});
+  EXPECT_EQ(btcEthSymbol->quoteAssetIncrement, PreciseNumber{0.00001});
 }
 
 TEST_F(ExchangeTest,
@@ -112,8 +112,8 @@ TEST_F(ExchangeTest,
   PreciseNumber lowestValue = std::numeric_limits<PreciseNumber>::max();
   for (const auto &[symbolName, symbol] : symbols) {
     if (symbol->quoteAsset == "BTC") {
-      lowestValue = PreciseNumber::min(
-          lowestValue, relativeValues[symbol->baseAsset]);
+      lowestValue =
+          PreciseNumber::min(lowestValue, relativeValues[symbol->baseAsset]);
     }
   }
 

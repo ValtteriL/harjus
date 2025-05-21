@@ -33,7 +33,7 @@ TEST(PreciseNumberTest, SubtractAssignOperator) {
   PreciseNumber c1(5.0);
   PreciseNumber c2(2.5);
   c1 -= c2;
-  EXPECT_DOUBLE_EQ(c1.toDouble(), 2.5);
+  EXPECT_EQ(c1.toDouble(), 2.5);
 }
 
 TEST(PreciseNumberTest, MultiplicationOperator) {
@@ -47,21 +47,21 @@ TEST(PreciseNumberTest, MultiplyAssignOperator) {
   PreciseNumber c1(2.0);
   PreciseNumber c2(2.5);
   c1 *= c2;
-  EXPECT_DOUBLE_EQ(c1.toDouble(), 5.0);
+  EXPECT_EQ(c1.toDouble(), 5.0);
 }
 
 TEST(PreciseNumberTest, DivisionOperator) {
   PreciseNumber c1(5.0);
   PreciseNumber c2(2.0);
   PreciseNumber quotient = c1 / c2;
-  EXPECT_DOUBLE_EQ(quotient.toDouble(), 2.5);
+  EXPECT_EQ(quotient.toDouble(), 2.5);
 }
 
 TEST(PreciseNumberTest, DivideAssignOperator) {
   PreciseNumber c1(5.0);
   PreciseNumber c2(2.0);
   c1 /= c2;
-  EXPECT_DOUBLE_EQ(c1.toDouble(), 2.5);
+  EXPECT_EQ(c1.toDouble(), 2.5);
 }
 
 TEST(PreciseNumberTest, EqualityOperator) {
@@ -99,10 +99,10 @@ TEST(PreciseNumberTest, FmodOperator) {
   PreciseNumber c1(5.75);
   PreciseNumber c2(2.5);
   PreciseNumber rem = PreciseNumber::fmod(c1, c2);
-  EXPECT_DOUBLE_EQ(rem.toDouble(), 0.75);
+  EXPECT_EQ(rem.toDouble(), 0.75);
   PreciseNumber c3(-5.75);
   PreciseNumber rem2 = PreciseNumber::fmod(c3, c2);
-  EXPECT_DOUBLE_EQ(rem2.toDouble(), -0.75);
+  EXPECT_EQ(rem2.toDouble(), -0.75);
 }
 
 TEST(PreciseNumberTest, MinValue) {
@@ -119,16 +119,16 @@ TEST(PreciseNumberTest, PowOperator) {
   PreciseNumber base(2.0);
   PreciseNumber exp(3.0);
   PreciseNumber result = PreciseNumber::pow(base, exp);
-  EXPECT_DOUBLE_EQ(result.toDouble(), 8.0);
+  EXPECT_EQ(result.toDouble(), 8.0);
   PreciseNumber base2(9.0);
   PreciseNumber exp2(0.5);
   result = PreciseNumber::pow(base2, exp2);
-  EXPECT_DOUBLE_EQ(result.toDouble(), 3.0);
+  EXPECT_EQ(result.toDouble(), 3.0);
 }
 
 TEST(PreciseNumberTest, AddAssignOperator) {
   PreciseNumber c1(1.5);
   PreciseNumber c2(2.25);
   c1 += c2;
-  EXPECT_DOUBLE_EQ(c1.toDouble(), 3.75);
+  EXPECT_EQ(c1.toDouble(), 3.75);
 }

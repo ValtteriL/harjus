@@ -177,9 +177,9 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   // 1st trade, no change
   // 2nd trade, receiving: 0.2 USDT
   // Final USDT balance: 0.0 + 0.2 = 0.2
-  EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 0.7, 1e-5);
-  EXPECT_NEAR(balance.getBalance("USDT").convert_to<double>(), 0.2, 1e-5);
-  EXPECT_NEAR(balance.getBalance("ETH").convert_to<double>(), 0.1, 1e-5);
+  EXPECT_EQ(balance.getBalance("BTC"), 0.7);
+  EXPECT_EQ(balance.getBalance("USDT"), 0.2);
+  EXPECT_EQ(balance.getBalance("ETH"), 0.1);
 }
 
 TEST_F(TraderTest, processesExpiredExecutionReport) {
@@ -209,7 +209,7 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   trader.callProcessReport(&executionReport);
 
   // Verify the balance is unchanged (except maybe for fees)
-  EXPECT_NEAR(balance.getBalance("BTC").convert_to<double>(), 1.0, 1e-5);
+  EXPECT_EQ(balance.getBalance("BTC"), 1.0);
 
   // Verify that trades are released
   for (auto &trade : opportunity.getTrades()) {

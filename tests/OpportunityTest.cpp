@@ -88,10 +88,9 @@ TEST(OpportunityTest, update) {
   opportunity.update(startingAssetBudget);
 
   // Check if the total profit is calculated correctly
-  EXPECT_NEAR(opportunity.getTotalProfit().convert_to<double>(), 8.99299, 1e-5);
+  EXPECT_EQ(opportunity.getTotalProfit(), 8.99299);
   // Check if the capacity is calculated correctly
-  EXPECT_NEAR(opportunity.getCapacity().convert_to<double>(),
-              startingAssetBudget.convert_to<double>(), 1e-3);
+  EXPECT_EQ(opportunity.getCapacity(), startingAssetBudget);
   // Check if the starting asset is correct
   EXPECT_EQ(opportunity.getStartingAsset(), trades.front().usedCurrency());
 
