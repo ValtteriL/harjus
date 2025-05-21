@@ -59,3 +59,13 @@ TEST(PreciseNumberTest, FmodOperator) {
   PreciseNumber rem2 = c3.fmod(c2);
   EXPECT_DOUBLE_EQ(rem2.toDouble(), -0.75);
 }
+
+TEST(PreciseNumberTest, MinValue) {
+  PreciseNumber c1(1.23);
+  PreciseNumber c2(0.99);
+  PreciseNumber minVal = PreciseNumber::min(c1, c2);
+  EXPECT_EQ(minVal, c2);
+  PreciseNumber c3(-2.5);
+  minVal = PreciseNumber::min(c1, c3);
+  EXPECT_EQ(minVal, c3);
+}

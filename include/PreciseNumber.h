@@ -76,6 +76,14 @@ public:
    */
   double toDouble() const;
 
+  /**
+   * @brief Returns the smaller of two PreciseNumbers.
+   * @param a The first PreciseNumber object to compare.
+   * @param b The second PreciseNumber object to compare.
+   * @return The minimum PreciseNumber.
+   */
+  static PreciseNumber min(const PreciseNumber &a, const PreciseNumber &b);
+
   // Friend function for output stream
   friend std::ostream &operator<<(std::ostream &os, const PreciseNumber &c) {
     os << (c.smallestUnit < 0 ? "-" : "") << std::abs(c.smallestUnit)

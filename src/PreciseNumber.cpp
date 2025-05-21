@@ -41,3 +41,7 @@ bool PreciseNumber::operator<(const PreciseNumber &other) const {
 }
 
 double PreciseNumber::toDouble() const { return smallestUnit / 1e8; }
+
+PreciseNumber PreciseNumber::min(const PreciseNumber &a, const PreciseNumber &b) {
+  return (a.smallestUnit < b.smallestUnit) ? a : b;
+}
