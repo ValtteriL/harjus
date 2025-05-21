@@ -61,10 +61,10 @@ TEST(PreciseNumberTest, LessThanOperator) {
 TEST(PreciseNumberTest, FmodOperator) {
   PreciseNumber c1(5.75);
   PreciseNumber c2(2.5);
-  PreciseNumber rem = c1.fmod(c2);
+  PreciseNumber rem = PreciseNumber::fmod(c1, c2);
   EXPECT_DOUBLE_EQ(rem.toDouble(), 0.75);
   PreciseNumber c3(-5.75);
-  PreciseNumber rem2 = c3.fmod(c2);
+  PreciseNumber rem2 = PreciseNumber::fmod(c3, c2);
   EXPECT_DOUBLE_EQ(rem2.toDouble(), -0.75);
 }
 

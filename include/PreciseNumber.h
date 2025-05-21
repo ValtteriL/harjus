@@ -58,10 +58,11 @@ public:
   /**
    * @brief Computes the floating-point remainder of division (modulo) with
    * another PreciseNumber.
-   * @param other The divisor PreciseNumber object.
+   * @param a The dividend PreciseNumber object.
+   * @param b The divisor PreciseNumber object.
    * @return The remainder as a new PreciseNumber object.
    */
-  PreciseNumber fmod(const PreciseNumber &other) const;
+  static PreciseNumber fmod(const PreciseNumber &a, const PreciseNumber &b);
 
   /**
    * @brief Checks if two PreciseNumber objects are equal.

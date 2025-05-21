@@ -33,13 +33,12 @@ PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
   return PreciseNumber(quotient);
 }
 
-PreciseNumber PreciseNumber::fmod(const PreciseNumber &other) const {
-  PreciseNumber result;
-  if (other.smallestUnit == 0) {
-    // Division by zero, return zero or throw if desired
+PreciseNumber PreciseNumber::fmod(const PreciseNumber &a, const PreciseNumber &b) {
+  if (b.smallestUnit == 0) {
     throw std::invalid_argument("Division by zero");
   }
-  result.smallestUnit = this->smallestUnit % other.smallestUnit;
+  PreciseNumber result;
+  result.smallestUnit = a.smallestUnit % b.smallestUnit;
   return result;
 }
 
