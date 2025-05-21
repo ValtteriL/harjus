@@ -13,7 +13,6 @@ TimeoutStopSec=30
 ExecStartPre=-/usr/bin/docker stop harjus
 ExecStartPre=-/usr/bin/docker rm harjus
 ExecStartPre=/usr/bin/aws ecr get-login-password | /usr/bin/docker login --username AWS --password-stdin ${ECR_REGISTRY}
-ExecStartPre=/usr/bin/docker pull ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
 
 # Start the container
 # Note the -e VAR_NAME syntax for variables to be passed from systemd's environment
