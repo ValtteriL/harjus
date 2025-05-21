@@ -49,6 +49,14 @@ public:
   PreciseNumber operator*(double multiplier) const;
 
   /**
+   * @brief Computes the floating-point remainder of division (modulo) with
+   * another PreciseNumber.
+   * @param other The divisor PreciseNumber object.
+   * @return The remainder as a new PreciseNumber object.
+   */
+  PreciseNumber fmod(const PreciseNumber &other) const;
+
+  /**
    * @brief Checks if two PreciseNumber objects are equal.
    * @param other The other PreciseNumber object to compare.
    * @return True if equal, false otherwise.
