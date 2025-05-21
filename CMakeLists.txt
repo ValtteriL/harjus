@@ -39,7 +39,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
 # add ccache for faster builds
-set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+if(DEFINED ENV{USE_CCACHE})
+  set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+endif()
 
 include_directories(include)
 

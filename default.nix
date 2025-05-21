@@ -83,6 +83,7 @@ let
 
       # this is executed when shell entered
       shellHook = ''
+        export USE_CCACHE=1
         cowsay "Harjus!"
       '';
     };
@@ -101,7 +102,7 @@ let
 
       buildInputs =
         [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
-      nativeBuildInputs = [ cmake ninja pkg-config ccache ];
+      nativeBuildInputs = [ cmake ninja pkg-config ];
     };
 
     # docker packaging derivation
