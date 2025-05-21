@@ -36,9 +36,8 @@ void Trader::processExecution(Execution execution) {
   BOOST_LOG_TRIVIAL(debug) << "Processing execution " << execution;
 
   auto id = generateId();
-  auto delta =
-      std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>{
-          {execution.getStartingAsset(), execution.getCapacity()}};
+  auto delta = std::unordered_map<std::string, PreciseNumber>{
+      {execution.getStartingAsset(), execution.getCapacity()}};
 
   auto pair = std::make_pair(execution, delta);
 

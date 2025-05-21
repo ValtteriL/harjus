@@ -1,7 +1,7 @@
 #pragma once
 
+#include "PreciseNumber.h"
 #include "TradeExecutionStatus.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <string>
 #include <unordered_map>
 
@@ -12,10 +12,9 @@ class ExecutionReport {
 private:
   std::string _id;
   TradeExecutionStatus _status;
-  boost::multiprecision::cpp_dec_float_50 _usedQty;
-  boost::multiprecision::cpp_dec_float_50 _recvQty;
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      _feeDelta;
+  PreciseNumber _usedQty;
+  PreciseNumber _recvQty;
+  std::unordered_map<std::string, PreciseNumber> _feeDelta;
 
 public:
   /**
@@ -25,11 +24,9 @@ public:
    * @param feeDelta The fee delta of the execution report
    */
   ExecutionReport(
-      const std::string &id, TradeExecutionStatus status,
-      boost::multiprecision::cpp_dec_float_50 usedQty,
-      boost::multiprecision::cpp_dec_float_50 recvQty,
-      const std::unordered_map<
-          std::string, boost::multiprecision::cpp_dec_float_50> &feeDelta);
+      const std::string &id, TradeExecutionStatus status, PreciseNumber usedQty,
+      PreciseNumber recvQty,
+      const std::unordered_map<std::string, PreciseNumber> &feeDelta);
 
   /**
    * @brief Default constructor for ExecutionReport class
@@ -59,20 +56,19 @@ public:
    * This does not include the changes to base and quote assets. Those need to
    * be fetched from the Execution object.
    */
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-  getFeeDelta() const;
+  std::unordered_map<std::string, PreciseNumber> getFeeDelta() const;
 
   /**
    * @brief Get the used quantity of the execution report
    * @return The used quantity of the execution report
    */
-  boost::multiprecision::cpp_dec_float_50 usedQty();
+  PreciseNumber usedQty();
 
   /**
    * @brief Get the received quantity of the execution report
    * @return The received quantity of the execution report
    */
-  boost::multiprecision::cpp_dec_float_50 recvQty();
+  PreciseNumber recvQty();
 
   /**
    * @brief Stream operator overload for ExecutionReport

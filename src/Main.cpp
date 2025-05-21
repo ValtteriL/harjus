@@ -87,8 +87,8 @@ int main() {
   std::unordered_map<std::string, Symbol *> symbolMap = getSymbols(config);
 
   BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      relativeValueMap = getRelativeValues(config, symbolMap);
+  std::unordered_map<std::string, PreciseNumber> relativeValueMap =
+      getRelativeValues(config, symbolMap);
 
   // calculate trading paths
   BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";

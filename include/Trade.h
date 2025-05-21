@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Position.h"
+#include "PreciseNumber.h"
 #include "Symbol.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <string>
 
 /**
@@ -13,7 +13,7 @@ class Trade {
 private:
   const Symbol *_symbol;
   Position _position;
-  boost::multiprecision::cpp_dec_float_50 _orderQty;
+  PreciseNumber _orderQty;
   std::string _recvCurrency;
   std::string _usedCurrency;
 
@@ -35,7 +35,7 @@ public:
    * Get the order quantity of the trade.
    * @return The quantity of the base asset to be traded.
    */
-  boost::multiprecision::cpp_dec_float_50 orderQty() const;
+  PreciseNumber orderQty() const;
 
   /**
    * Reset the order quantity of the trade.
@@ -48,13 +48,13 @@ public:
    * Get the offer quantity of the trade.
    * @return The quantity of the base asset available for trading.
    */
-  boost::multiprecision::cpp_dec_float_50 offerQty() const;
+  PreciseNumber offerQty() const;
 
   /**
    * Get the order price of the trade.
    * @return The price per unit of base asset.
    */
-  boost::multiprecision::cpp_dec_float_50 orderPrice() const;
+  PreciseNumber orderPrice() const;
 
   /**
    * Get the symbol of the trade.
@@ -71,19 +71,19 @@ public:
    * quantity is set to 0.
    * @param budget The budget (in used asset) for the trade.
    */
-  void recalculateOrderQty(boost::multiprecision::cpp_dec_float_50 budget);
+  void recalculateOrderQty(PreciseNumber budget);
 
   /**
    * Get the quantity of the asset to be received.
    * @return The quantity of the asset to be received.
    */
-  boost::multiprecision::cpp_dec_float_50 recvQty() const;
+  PreciseNumber recvQty() const;
 
   /**
    * Get the quantity of the asset to be used.
    * @return The quantity of the asset to be used.
    */
-  boost::multiprecision::cpp_dec_float_50 usedQty() const;
+  PreciseNumber usedQty() const;
 
   /**
    * Get the currency of the asset to be received.

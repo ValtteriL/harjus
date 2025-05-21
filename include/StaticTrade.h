@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Position.h"
+#include "PreciseNumber.h"
 #include "Symbol.h"
 #include "Trade.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <string>
 
 /**
@@ -14,8 +14,8 @@ class StaticTrade {
 private:
   std::string _symbol;
   Position _position;
-  boost::multiprecision::cpp_dec_float_50 _orderQty;
-  boost::multiprecision::cpp_dec_float_50 _orderPrice;
+  PreciseNumber _orderQty;
+  PreciseNumber _orderPrice;
   std::string _recvCurrency;
   std::string _usedCurrency;
 
@@ -46,13 +46,13 @@ public:
    * Get the order quantity of the trade.
    * @return The quantity of the base asset to be traded.
    */
-  boost::multiprecision::cpp_dec_float_50 orderQty() const;
+  PreciseNumber orderQty() const;
 
   /**
    * Get the order price of the trade.
    * @return The price per unit of base asset.
    */
-  boost::multiprecision::cpp_dec_float_50 orderPrice() const;
+  PreciseNumber orderPrice() const;
 
   /**
    * Get the currency of the asset to be received.

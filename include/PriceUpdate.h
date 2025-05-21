@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/multiprecision/cpp_dec_float.hpp>
+#include "PreciseNumber.h"
 #include <ostream>
 #include <string>
 
@@ -12,10 +12,10 @@
  */
 struct PriceUpdate {
   std::string symbol;
-  boost::multiprecision::cpp_dec_float_50 bidPrice;
-  boost::multiprecision::cpp_dec_float_50 askPrice;
-  boost::multiprecision::cpp_dec_float_50 bidQty;
-  boost::multiprecision::cpp_dec_float_50 askQty;
+  PreciseNumber bidPrice;
+  PreciseNumber askPrice;
+  PreciseNumber bidQty;
+  PreciseNumber askQty;
 };
 
 /**

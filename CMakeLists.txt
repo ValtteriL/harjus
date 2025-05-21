@@ -97,6 +97,7 @@ gtest_discover_tests(ReservedTradesTest)
 
 add_executable(BalanceTest tests/BalanceTest.cpp
   src/Balance.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(BalanceTest PRIVATE
   gtest_main
@@ -121,6 +122,7 @@ add_executable(ExchangeTest tests/ExchangeTest.cpp
   src/Exchange.cpp
   src/Ed25519.cpp
   src/Balance.cpp
+  src/PreciseNumber.cpp
 )
 target_link_libraries(ExchangeTest PRIVATE
   gtest_main
@@ -165,6 +167,7 @@ add_executable(EngineTest tests/EngineTest.cpp
   src/Engine.cpp
   src/ReservedTrades.cpp
   src/Balance.cpp
+  src/PreciseNumber.cpp
   src/Execution.cpp
   src/PriceUpdate.cpp
   src/StaticTrade.cpp
@@ -184,6 +187,7 @@ add_executable(TraderTest tests/TraderTest.cpp
   src/Trade.cpp
   src/ReservedTrades.cpp
   src/Balance.cpp
+  src/PreciseNumber.cpp
   src/Execution.cpp
   src/ExecutionReport.cpp
   src/StaticTrade.cpp
@@ -280,7 +284,6 @@ target_precompile_headers(harjus PRIVATE
 
   # Boost
   <boost/lockfree/queue.hpp>
-  <boost/multiprecision/cpp_dec_float.hpp>
   <boost/log/core.hpp>
   <boost/log/expressions.hpp>
   <boost/log/trivial.hpp>

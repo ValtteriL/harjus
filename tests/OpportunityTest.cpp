@@ -73,17 +73,16 @@ TEST(OpportunityTest, update) {
   Trade trade3(&symbol3, Position::LONG);
 
   std::vector<Trade> trades{trade1, trade2, trade3};
-  boost::multiprecision::cpp_dec_float_50 startingAssetBudget = 1.0;
-  boost::multiprecision::cpp_dec_float_50 relativeValue = 1.0;
-  boost::multiprecision::cpp_dec_float_50 commission = 0.001;
+  PreciseNumber startingAssetBudget = 1.0;
+  PreciseNumber relativeValue = 1.0;
+  PreciseNumber commission = 0.001;
 
   Opportunity opportunity{trades, relativeValue, commission};
 
   // verify the initial state of the opportunity
   EXPECT_EQ(opportunity.getTotalProfit(), 0.0); // Default profit is 0
   EXPECT_EQ(opportunity.getStartingAsset(), trades.front().usedCurrency());
-  EXPECT_EQ(opportunity.getCapacity(),
-            boost::multiprecision::cpp_dec_float_50{100});
+  EXPECT_EQ(opportunity.getCapacity(), PreciseNumber{100});
 
   // Update the opportunity with the starting asset budget
   opportunity.update(startingAssetBudget);
@@ -113,11 +112,11 @@ TEST(OpportunityTest, update) {
     std::cout << "------------------------" << std::endl;
 
     // Check orderQty is a multiple of baseAssetIncrement (within tolerance)
-    auto baseassetincrementremainder = fmod(orderQty, increment);
+    auto baseassetincrementremainder = PreciseNumber::fmod(orderQty, increment);
     ASSERT_EQ(baseassetincrementremainder, 0.0);
 
     // Check orderQty is a multiple of minNotional (within tolerance)
-    auto minNotionalRemainder = fmod(orderQty, minNotional);
+    auto minNotionalRemainder = PreciseNumber::fmod(orderQty, minNotional);
     ASSERT_EQ(minNotionalRemainder, 0.0);
 
     // Check notional is at least minNotional (or zero if orderQty is zero)

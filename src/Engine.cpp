@@ -8,15 +8,13 @@
 #include <string>
 #include <vector>
 
-Engine::Engine(
-    std::unordered_map<std::string, Symbol *> &symbols,
-    std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
-    ReservedTrades &reservedTrades,
-    boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-    ThreadSafeQueue<Execution> &executionQueue,
-    std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-        relativeValues,
-    boost::multiprecision::cpp_dec_float_50 commission)
+Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
+               std::vector<std::vector<Trade> *> &tradingPaths,
+               Balance &balance, ReservedTrades &reservedTrades,
+               boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
+               ThreadSafeQueue<Execution> &executionQueue,
+               std::unordered_map<std::string, PreciseNumber> relativeValues,
+               PreciseNumber commission)
     : _symbols(symbols), _relativeValues(relativeValues),
       _priceUpdateQueue(priceUpdateQueue), _executionQueue(executionQueue),
       _reservedTrades(reservedTrades), _balance(balance) {
@@ -73,7 +71,7 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
     Opportunity &opportunity = it->second;
 
-    if (opportunity.getTotalProfit() > 0 &&
+    if (opportunity.getTotalProfit() > PreciseNumber{0} &&
         (!mostProfitableOpportunity ||
          opportunity.getTotalProfit() >
              mostProfitableOpportunity->getTotalProfit()) &&

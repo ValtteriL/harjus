@@ -12,8 +12,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "PreciseNumber.h"
 #include <boost/lockfree/queue.hpp>
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <vector>
 
 /**
@@ -29,8 +29,7 @@ class Engine {
 private:
   std::unordered_map<std::string, Symbol *> &_symbols;
   std::unordered_multimap<std::string, Opportunity &> _opportunities;
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      _relativeValues;
+  std::unordered_map<std::string, PreciseNumber> _relativeValues;
   boost::lockfree::queue<PriceUpdate *> &_priceUpdateQueue;
   ThreadSafeQueue<Execution> &_executionQueue;
   ReservedTrades &_reservedTrades;
@@ -65,15 +64,13 @@ public:
    * @param executionQueue A reference to a thread safe queue for executions.
    * @param relativeValues A map of relative values for symbols.
    */
-  Engine(
-      std::unordered_map<std::string, Symbol *> &symbols,
-      std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
-      ReservedTrades &reservedTrades,
-      boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
-      ThreadSafeQueue<Execution> &executionQueue,
-      std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-          relativeValues,
-      boost::multiprecision::cpp_dec_float_50 commission);
+  Engine(std::unordered_map<std::string, Symbol *> &symbols,
+         std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
+         ReservedTrades &reservedTrades,
+         boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
+         ThreadSafeQueue<Execution> &executionQueue,
+         std::unordered_map<std::string, PreciseNumber> relativeValues,
+         PreciseNumber commission);
 
   /**
    * @brief Run the engine

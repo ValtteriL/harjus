@@ -10,13 +10,9 @@ const std::string StaticTrade::symbol() const { return _symbol; }
 
 enum Position StaticTrade::position() const { return _position; }
 
-boost::multiprecision::cpp_dec_float_50 StaticTrade::orderQty() const {
-  return _orderQty;
-}
+PreciseNumber StaticTrade::orderQty() const { return _orderQty; }
 
-boost::multiprecision::cpp_dec_float_50 StaticTrade::orderPrice() const {
-  return _orderPrice;
-}
+PreciseNumber StaticTrade::orderPrice() const { return _orderPrice; }
 
 std::string StaticTrade::recvCurrency() const { return _recvCurrency; }
 

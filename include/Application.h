@@ -137,9 +137,7 @@ public:
               boost::lockfree::queue<PriceUpdate *> &queue,
               ThreadSafeQueue<ExecutionReport> &reportQueue);
 
-  void submitOrder(std::string id, std::string symbol,
-                   boost::multiprecision::cpp_dec_float_50 qty,
-                   boost::multiprecision::cpp_dec_float_50 price,
-                   Position position) override;
+  void submitOrder(std::string id, std::string symbol, PreciseNumber qty,
+                   PreciseNumber price, Position position) override;
   bool subscribeToSymbols(const std::vector<std::string> &symbols) override;
 };

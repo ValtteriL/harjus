@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Position.h"
+#include "PreciseNumber.h"
 #include "Symbol.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <string>
 
 /**
@@ -31,7 +31,6 @@ public:
    * @param position Position to buy/sell
    */
   virtual void submitOrder(std::string id, std::string symbol,
-                           boost::multiprecision::cpp_dec_float_50 qty,
-                           boost::multiprecision::cpp_dec_float_50 price,
+                           PreciseNumber qty, PreciseNumber price,
                            Position position) = 0;
 };

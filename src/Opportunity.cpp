@@ -3,8 +3,7 @@
 #include <vector>
 
 Opportunity::Opportunity(std::vector<Trade> &trades,
-                         boost::multiprecision::cpp_dec_float_50 relativeValue,
-                         boost::multiprecision::cpp_dec_float_50 commission)
+                         PreciseNumber relativeValue, PreciseNumber commission)
     : _trades(trades), _startingAsset(trades.front().usedCurrency()),
       _commission(commission), _relativeValue(relativeValue) {}
 
@@ -15,9 +14,8 @@ Opportunity::Opportunity(std::vector<Trade> &trades,
  * @return The maximum quantity of the starting asset after all trades in the
  * opportunity.
  */
-boost::multiprecision::cpp_dec_float_50 calculateMaxQtyAfterTrades(
-    std::vector<Trade> &trades,
-    boost::multiprecision::cpp_dec_float_50 startingAssetBudget) {
+PreciseNumber calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
+                                         PreciseNumber startingAssetBudget) {
   auto acc = startingAssetBudget;
 
   for (auto &trade : trades) {
@@ -32,22 +30,22 @@ boost::multiprecision::cpp_dec_float_50 calculateMaxQtyAfterTrades(
         // this may happen if not all trades have been updated in the path
         return 0;
       }
-      acc = boost::multiprecision::min(acc,
+      acc = PreciseNumber::min(acc,
                                        trade.usedQty() * trade.orderPrice()) /
             trade.orderPrice();
     } else {
       acc =
-          boost::multiprecision::min(acc, trade.usedQty()) * trade.orderPrice();
+          PreciseNumber::min(acc, trade.usedQty()) * trade.orderPrice();
     }
   }
   return acc;
 }
 
-boost::multiprecision::cpp_dec_float_50 calculateStartingAssetQty(
-    std::vector<Trade> &trades,
-    boost::multiprecision::cpp_dec_float_50 startingAssetQtyAfterTrades) {
+PreciseNumber
+calculateStartingAssetQty(std::vector<Trade> &trades,
+                          PreciseNumber startingAssetQtyAfterTrades) {
 
-  boost::multiprecision::cpp_dec_float_50 acc{startingAssetQtyAfterTrades};
+  PreciseNumber acc{startingAssetQtyAfterTrades};
 
   // backtrack the trades to calculate the starting asset qty
   for (auto it = trades.rbegin(); it != trades.rend(); ++it) {
@@ -69,8 +67,7 @@ boost::multiprecision::cpp_dec_float_50 calculateStartingAssetQty(
   return acc;
 }
 
-void Opportunity::update(
-    boost::multiprecision::cpp_dec_float_50 startingAssetBudget) {
+void Opportunity::update(PreciseNumber startingAssetBudget) {
 
   // calculate max qty starting asset we can have at the end of the trades
   auto maxQtyAfterTrades =
@@ -87,20 +84,18 @@ void Opportunity::update(
   }
 
   // update profit
-  boost::multiprecision::cpp_dec_float_50 totalCommission =
+  PreciseNumber totalCommission =
       _trades.front().usedQty() *
       (PreciseNumber::pow((1 + _commission), _trades.size()) - 1);
   _totalProfit =
       (_trades.back().recvQty() - _trades.front().usedQty() - totalCommission) *
       _relativeValue;
 }
-boost::multiprecision::cpp_dec_float_50 Opportunity::getTotalProfit() const {
-  return _totalProfit;
-}
+PreciseNumber Opportunity::getTotalProfit() const { return _totalProfit; }
 
 std::string Opportunity::getStartingAsset() const { return _startingAsset; }
 
-boost::multiprecision::cpp_dec_float_50 Opportunity::getCapacity() const {
+PreciseNumber Opportunity::getCapacity() const {
   return _trades.front().usedQty();
 }
 

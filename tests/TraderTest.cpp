@@ -137,10 +137,9 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
 
   // Now create an execution report for the completed trade
   std::string id = trader.getIdForExecution(&execution);
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      feeDelta{
-          {"BTC", boost::multiprecision::cpp_dec_float_50(-0.1)} // Example fee
-      };
+  std::unordered_map<std::string, PreciseNumber> feeDelta{
+      {"BTC", PreciseNumber(-0.1)} // Example fee
+  };
 
   ExecutionReport executionReport{id, TradeExecutionStatus::FILLED, 0.1, 0.2,
                                   feeDelta};
@@ -201,8 +200,7 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   // public method
   std::string id = trader.getIdForExecution(&execution);
 
-  std::unordered_map<std::string, boost::multiprecision::cpp_dec_float_50>
-      feeDelta{};
+  std::unordered_map<std::string, PreciseNumber> feeDelta{};
 
   ExecutionReport executionReport{id, TradeExecutionStatus::EXPIRED, 0, 0,
                                   feeDelta};

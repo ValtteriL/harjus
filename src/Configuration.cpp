@@ -1,6 +1,6 @@
 #include "Configuration.h"
+#include "PreciseNumber.h"
 #include "dotenv.h"
-#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <filesystem>
 #include <stdexcept> // For std::runtime_error
 #include <string>
@@ -95,9 +95,9 @@ std::vector<std::string> Configuration::getBlacklistedStartSymbols() const {
   return split(symbols, ',');
 }
 
-boost::multiprecision::cpp_dec_float_50 Configuration::getCommission() const {
+PreciseNumber Configuration::getCommission() const {
   auto commission = dotenv::getenv("COMMISSION", "0.001");
-  return boost::multiprecision::cpp_dec_float_50(commission);
+  return PreciseNumber(std::stod(commission));
 }
 
 int Configuration::getLogLevel() const {
