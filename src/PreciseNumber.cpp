@@ -29,6 +29,12 @@ PreciseNumber PreciseNumber::operator*(const PreciseNumber &other) const {
   return result;
 }
 
+PreciseNumber& PreciseNumber::operator*=(const PreciseNumber &other) {
+  this->smallestUnit = static_cast<long long>(
+      std::round((this->smallestUnit * other.smallestUnit) / 1e8));
+  return *this;
+}
+
 PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
   if (other.smallestUnit == 0) {
     throw std::invalid_argument("Division by zero");

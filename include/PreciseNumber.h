@@ -56,6 +56,13 @@ public:
   PreciseNumber operator*(const PreciseNumber &other) const;
 
   /**
+   * @brief Multiplies this PreciseNumber by another (in-place).
+   * @param other The other PreciseNumber object to multiply by.
+   * @return Reference to this object after multiplication.
+   */
+  PreciseNumber& operator*=(const PreciseNumber &other);
+
+  /**
    * @brief Divides this PreciseNumber by another.
    * @param other The divisor PreciseNumber object.
    * @return The quotient as a new PreciseNumber object.
