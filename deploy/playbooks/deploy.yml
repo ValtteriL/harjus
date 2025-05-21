@@ -1,11 +1,16 @@
 ---
 - name: Deploy Harjus
   hosts: harjus_instance
+  gather_facts: no
   become: yes
   # Variables from group_vars/harjus_instance/common.yml are loaded automatically
   # Variables from group_vars/harjus_instance/<env>.yml will be loaded based on 'env' var
 
   vars:
+
+    ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
+    ansible_user: ubuntu
+
     # Mandatory: User must specify 'qa' or 'prod' when running the playbook
     # e.g., ansible-playbook ... -e "env=prod"
     # Set a default or leave empty to force user input. An empty string will fail the pre_task check.
