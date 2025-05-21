@@ -35,6 +35,13 @@ public:
   PreciseNumber operator+(const PreciseNumber &other) const;
 
   /**
+   * @brief Adds another PreciseNumber to this one (in-place).
+   * @param other The other PreciseNumber object to add.
+   * @return Reference to this object after addition.
+   */
+  PreciseNumber &operator+=(const PreciseNumber &other);
+
+  /**
    * @brief Subtracts one PreciseNumber object from another.
    * @param other The other PreciseNumber object to subtract.
    * @return The difference as a new PreciseNumber object.
@@ -46,7 +53,7 @@ public:
    * @param other The other PreciseNumber object to subtract.
    * @return Reference to this object after subtraction.
    */
-  PreciseNumber& operator-=(const PreciseNumber &other);
+  PreciseNumber &operator-=(const PreciseNumber &other);
 
   /**
    * @brief Multiplies two PreciseNumber amounts.
@@ -60,7 +67,7 @@ public:
    * @param other The other PreciseNumber object to multiply by.
    * @return Reference to this object after multiplication.
    */
-  PreciseNumber& operator*=(const PreciseNumber &other);
+  PreciseNumber &operator*=(const PreciseNumber &other);
 
   /**
    * @brief Divides this PreciseNumber by another.
@@ -74,7 +81,7 @@ public:
    * @param other The divisor PreciseNumber object.
    * @return Reference to this object after division.
    */
-  PreciseNumber& operator/=(const PreciseNumber &other);
+  PreciseNumber &operator/=(const PreciseNumber &other);
 
   /**
    * @brief Computes the floating-point remainder of division (modulo) with
@@ -91,7 +98,8 @@ public:
    * @param exponent The exponent PreciseNumber.
    * @return The result as a new PreciseNumber.
    */
-  static PreciseNumber pow(const PreciseNumber &base, const PreciseNumber &exponent);
+  static PreciseNumber pow(const PreciseNumber &base,
+                           const PreciseNumber &exponent);
 
   /**
    * @brief Checks if two PreciseNumber objects are equal.

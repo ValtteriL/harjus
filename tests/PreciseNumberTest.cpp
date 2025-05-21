@@ -116,3 +116,10 @@ TEST(PreciseNumberTest, PowOperator) {
   result = PreciseNumber::pow(base2, exp2);
   EXPECT_DOUBLE_EQ(result.toDouble(), 3.0);
 }
+
+TEST(PreciseNumberTest, AddAssignOperator) {
+  PreciseNumber c1(1.5);
+  PreciseNumber c2(2.25);
+  c1 += c2;
+  EXPECT_DOUBLE_EQ(c1.toDouble(), 3.75);
+}
