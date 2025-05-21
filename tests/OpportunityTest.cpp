@@ -5,6 +5,7 @@
 
 #include "Opportunity.h"
 #include "Position.h"
+#include "PreciseNumber.h"
 #include "Symbol.h"
 #include "Trade.h"
 #include <gtest/gtest.h>
@@ -88,7 +89,7 @@ TEST(OpportunityTest, update) {
   opportunity.update(startingAssetBudget);
 
   // Check if the total profit is calculated correctly
-  EXPECT_EQ(opportunity.getTotalProfit(), 8.99299);
+  EXPECT_EQ(opportunity.getTotalProfit(), PreciseNumber{8.996997});
   // Check if the capacity is calculated correctly
   EXPECT_EQ(opportunity.getCapacity(), startingAssetBudget);
   // Check if the starting asset is correct
@@ -102,13 +103,6 @@ TEST(OpportunityTest, update) {
     auto increment = sym->baseAssetIncrement;
     auto minNotional = sym->minNotional;
     auto price = trade.orderPrice();
-
-    std::cout << "Order Quantity: " << orderQty << std::endl;
-    std::cout << "Base Asset Increment: " << increment << std::endl;
-    std::cout << "Min Notional: " << minNotional << std::endl;
-    std::cout << "Price: " << price << std::endl;
-    std::cout << "Notional: " << orderQty * price << std::endl;
-    std::cout << "------------------------" << std::endl;
 
     // Check orderQty is a multiple of baseAssetIncrement (within tolerance)
     auto baseassetincrementremainder = PreciseNumber::fmod(orderQty, increment);

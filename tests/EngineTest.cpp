@@ -6,6 +6,7 @@
 #include "Engine.h"
 #include "Balance.h"
 #include "Execution.h"
+#include "PreciseNumber.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
@@ -103,7 +104,7 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   EXPECT_EQ(execution.getTrades().size(), 3);
 
   // Check if the total profit is calculated correctly
-  EXPECT_EQ(execution.getTotalProfit(), 8.9911);
+  EXPECT_EQ(execution.getTotalProfit(), PreciseNumber{8.996997});
   // Check if the capacity is calculated correctly
 
   EXPECT_EQ(execution.getCapacity(), PreciseNumber{startingAssetBudget});
