@@ -2,16 +2,43 @@
 # This file is managed by Ansible
 # It provides environment variables to the {{ service_name }} service.
 
+# Mandatory params
 Environment="BINANCE_REST_API_URI={{ binance_rest_api_uri }}"
 Environment="BINANCE_FIX_API_HOSTNAME_ORDERENTRY={{ binance_fix_api_hostname_orerentry }}"
 Environment="BINANCE_FIX_API_HOSTNAME_MARKETDATA={{ binance_fix_api_hostname_marketdata }}"
 Environment="BINANCE_ED25519_SEED={{ binance_ed25519_seed }}"
 Environment="BINANCE_ED25519_API_KEY={{ binance_ed25519_api_key }}"
+
+# Rest is optional
+
+{% if fix_file_dir is defined %}
 Environment="FIX_FILE_DIR={{ fix_file_dir }}"
+{% endif %}
+
+{% if binance_fix_api_port_orderentry is defined %}
 Environment="BINANCE_FIX_API_PORT_ORDERENTRY={{ binance_fix_api_port_orderentry }}"
+{% endif %}
+
+{% if binance_fix_api_port_marketdata is defined %}
 Environment="BINANCE_FIX_API_PORT_MARKETDATA={{ binance_fix_api_port_marketdata }}"
+{% endif %}
+
+{% if max_trading_path_length is defined %}
 Environment="MAX_TRADING_PATH_LENGTH={{ max_trading_path_length }}"
+{% endif %}
+
+{% if start_symbols is defined %}
 Environment="START_SYMBOLS={{ start_symbols }}"
+{% endif %}
+
+{% if blacklisted_start_symbols is defined %}
 Environment="BLACKLISTED_START_SYMBOLS={{ blacklisted_start_symbols }}"
+{% endif %}
+
+{% if commission is defined %}
 Environment="COMMISSION={{ commission }}"
+{% endif %}
+
+{% if log_level is defined %}
 Environment="LOG_LEVEL={{ log_level }}"
+{% endif %}
