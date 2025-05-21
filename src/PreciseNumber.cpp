@@ -46,7 +46,8 @@ PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
     throw std::invalid_argument("Division by zero");
   }
   // To preserve precision, scale up before division
-  auto quotient = this->smallestUnit / other.smallestUnit;
+  double quotient =
+      static_cast<double>(this->smallestUnit) / other.smallestUnit;
   return PreciseNumber(quotient);
 }
 
