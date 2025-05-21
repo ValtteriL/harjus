@@ -5,6 +5,7 @@
 
 #include "PreciseNumber.h"
 #include <gtest/gtest.h>
+#include <sstream>
 
 TEST(PreciseNumberTest, ConstructorAndtoDouble) {
   PreciseNumber c1{1.23};
@@ -131,4 +132,15 @@ TEST(PreciseNumberTest, AddAssignOperator) {
   PreciseNumber c2{2.25};
   c1 += c2;
   EXPECT_EQ(c1.toDouble(), 3.75);
+}
+
+TEST(PreciseNumberTest, OutputStreamOperator) {
+  PreciseNumber c{1.2345};
+  std::ostringstream oss;
+  oss << c;
+  EXPECT_EQ(oss.str(), "1.2345");
+  PreciseNumber c2{-0.5678};
+  std::ostringstream oss2;
+  oss2 << c2;
+  EXPECT_EQ(oss2.str(), "-0.5678");
 }

@@ -98,3 +98,9 @@ PreciseNumber PreciseNumber::pow(const PreciseNumber &base,
   double result = std::pow(base.toDouble(), exponent.toDouble());
   return PreciseNumber(result);
 }
+
+// Friend function for output stream
+std::ostream &operator<<(std::ostream &os, const PreciseNumber &c) {
+  os << c.toDouble();
+  return os;
+}
