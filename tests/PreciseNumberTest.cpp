@@ -57,6 +57,13 @@ TEST(PreciseNumberTest, DivisionOperator) {
   EXPECT_DOUBLE_EQ(quotient.toDouble(), 2.5);
 }
 
+TEST(PreciseNumberTest, DivideAssignOperator) {
+  PreciseNumber c1(5.0);
+  PreciseNumber c2(2.0);
+  c1 /= c2;
+  EXPECT_DOUBLE_EQ(c1.toDouble(), 2.5);
+}
+
 TEST(PreciseNumberTest, EqualityOperator) {
   PreciseNumber c1(1.23456789);
   PreciseNumber c2(1.23456789);

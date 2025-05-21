@@ -70,6 +70,13 @@ public:
   PreciseNumber operator/(const PreciseNumber &other) const;
 
   /**
+   * @brief Divides this PreciseNumber by another (in-place).
+   * @param other The divisor PreciseNumber object.
+   * @return Reference to this object after division.
+   */
+  PreciseNumber& operator/=(const PreciseNumber &other);
+
+  /**
    * @brief Computes the floating-point remainder of division (modulo) with
    * another PreciseNumber.
    * @param a The dividend PreciseNumber object.

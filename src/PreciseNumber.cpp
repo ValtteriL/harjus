@@ -44,6 +44,15 @@ PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
   return PreciseNumber(quotient);
 }
 
+PreciseNumber& PreciseNumber::operator/=(const PreciseNumber &other) {
+  if (other.smallestUnit == 0) {
+    throw std::invalid_argument("Division by zero");
+  }
+  double quotient = static_cast<double>(this->smallestUnit) / other.smallestUnit;
+  this->smallestUnit = static_cast<long long>(std::round(quotient * 1e8));
+  return *this;
+}
+
 PreciseNumber PreciseNumber::fmod(const PreciseNumber &a, const PreciseNumber &b) {
   if (b.smallestUnit == 0) {
     throw std::invalid_argument("Division by zero");
