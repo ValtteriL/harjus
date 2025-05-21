@@ -89,7 +89,7 @@ void Opportunity::update(
   // update profit
   boost::multiprecision::cpp_dec_float_50 totalCommission =
       _trades.front().usedQty() *
-      (boost::multiprecision::pow((1 + _commission), _trades.size()) - 1);
+      (PreciseNumber::pow((1 + _commission), _trades.size()) - 1);
   _totalProfit =
       (_trades.back().recvQty() - _trades.front().usedQty() - totalCommission) *
       _relativeValue;

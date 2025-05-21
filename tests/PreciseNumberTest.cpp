@@ -98,3 +98,14 @@ TEST(PreciseNumberTest, MinValue) {
   minVal = PreciseNumber::min(c1, c3);
   EXPECT_EQ(minVal, c3);
 }
+
+TEST(PreciseNumberTest, PowOperator) {
+  PreciseNumber base(2.0);
+  PreciseNumber exp(3.0);
+  PreciseNumber result = PreciseNumber::pow(base, exp);
+  EXPECT_DOUBLE_EQ(result.toDouble(), 8.0);
+  PreciseNumber base2(9.0);
+  PreciseNumber exp2(0.5);
+  result = PreciseNumber::pow(base2, exp2);
+  EXPECT_DOUBLE_EQ(result.toDouble(), 3.0);
+}

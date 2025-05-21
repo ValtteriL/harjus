@@ -1,5 +1,6 @@
 #include <PreciseNumber.h>
 #include <stdexcept>
+#include <cmath>
 
 PreciseNumber::PreciseNumber(double amount)
     : smallestUnit(static_cast<long long>(std::round(amount * 1e8))) {}
@@ -73,4 +74,9 @@ double PreciseNumber::toDouble() const { return smallestUnit / 1e8; }
 
 PreciseNumber PreciseNumber::min(const PreciseNumber &a, const PreciseNumber &b) {
   return (a.smallestUnit < b.smallestUnit) ? a : b;
+}
+
+PreciseNumber PreciseNumber::pow(const PreciseNumber &base, const PreciseNumber &exponent) {
+  double result = std::pow(base.toDouble(), exponent.toDouble());
+  return PreciseNumber(result);
 }
