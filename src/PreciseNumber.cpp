@@ -1,6 +1,5 @@
 #include <PreciseNumber.h>
 #include <cmath>
-#include <stdexcept>
 
 PreciseNumber::PreciseNumber(double amount)
     : smallestUnit(static_cast<long long>(std::round(amount * 1e8))) {}
@@ -43,7 +42,7 @@ PreciseNumber &PreciseNumber::operator*=(const PreciseNumber &other) {
 
 PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
   if (other.smallestUnit == 0) {
-    throw std::invalid_argument("Division by zero");
+    return PreciseNumber{0}; // Handle division by zero
   }
   // To preserve precision, scale up before division
   double quotient =
@@ -53,7 +52,7 @@ PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
 
 PreciseNumber &PreciseNumber::operator/=(const PreciseNumber &other) {
   if (other.smallestUnit == 0) {
-    throw std::invalid_argument("Division by zero");
+    return *this; // Handle division by zero
   }
   double quotient =
       static_cast<double>(this->smallestUnit) / other.smallestUnit;
@@ -64,7 +63,7 @@ PreciseNumber &PreciseNumber::operator/=(const PreciseNumber &other) {
 PreciseNumber PreciseNumber::fmod(const PreciseNumber &a,
                                   const PreciseNumber &b) {
   if (b.smallestUnit == 0) {
-    throw std::invalid_argument("Division by zero");
+    return PreciseNumber{0}; // Handle division by zero
   }
   PreciseNumber result;
   result.smallestUnit = a.smallestUnit % b.smallestUnit;
