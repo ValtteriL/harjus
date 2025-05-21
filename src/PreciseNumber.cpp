@@ -29,6 +29,4 @@ bool PreciseNumber::operator<(const PreciseNumber &other) const {
   return this->smallestUnit < other.smallestUnit;
 }
 
-long long PreciseNumber::getOriginalAmount() const {
-  return smallestUnit / 1e8;
-}
+double PreciseNumber::toDouble() const { return smallestUnit / 1e8; }

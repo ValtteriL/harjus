@@ -15,6 +15,12 @@ private:
 
 public:
   /**
+   * @brief Default constructor for PreciseNumber.
+   * Initializes the smallest unit to zero.
+   */
+  PreciseNumber() = default;
+
+  /**
    * @brief Constructs a PreciseNumber object from a double amount.
    * @param amount The amount in the original currency (e.g., 1.23 for 1.23
    * units).
@@ -58,14 +64,14 @@ public:
 
   /**
    * @brief Gets the amount in the original unit.
-   * @return The amount as a long long in the original unit.
+   * @return The amount as a double in the original unit.
    */
-  long long getOriginalAmount() const;
+  double toDouble() const;
 
   // Friend function for output stream
   friend std::ostream &operator<<(std::ostream &os, const PreciseNumber &c) {
-    os << (c.smallestUnit < 0 ? "-" : "") << "Crypto"
-       << std::abs(c.smallestUnit) << "units";
+    os << (c.smallestUnit < 0 ? "-" : "") << std::abs(c.smallestUnit)
+       << "(smallest unit)";
     return os;
   }
 };

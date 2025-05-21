@@ -5,6 +5,7 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 #include <quickfix/Field.h>
+#include <quickfix/FieldTypes.h>
 #include <quickfix/FixFields.h>
 #include <quickfix/FixValues.h>
 #include <quickfix/Session.h>
