@@ -123,6 +123,14 @@ public:
   bool operator>(const PreciseNumber &other) const;
 
   /**
+   * @brief Checks if this PreciseNumber object is greater than or equal to
+   * another.
+   * @param other The other PreciseNumber object to compare.
+   * @return True if this is greater or equal, false otherwise.
+   */
+  bool operator>=(const PreciseNumber &other) const;
+
+  /**
    * @brief Gets the amount in the original unit.
    * @return The amount as a double in the original unit.
    */
