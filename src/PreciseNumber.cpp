@@ -16,10 +16,11 @@ PreciseNumber PreciseNumber::operator-(const PreciseNumber &other) const {
   return result;
 }
 
-PreciseNumber PreciseNumber::operator*(double multiplier) const {
+PreciseNumber PreciseNumber::operator*(const PreciseNumber &other) const {
+  // Multiply smallest units and scale back to original unit
   PreciseNumber result{0};
-  result.smallestUnit =
-      static_cast<long long>(std::round(this->smallestUnit * multiplier));
+  result.smallestUnit = static_cast<long long>(
+      std::round((this->smallestUnit * other.smallestUnit) / 1e8));
   return result;
 }
 

@@ -42,11 +42,11 @@ public:
   PreciseNumber operator-(const PreciseNumber &other) const;
 
   /**
-   * @brief Multiplies the PreciseNumber amount by a multiplier.
-   * @param multiplier The value to multiply by (e.g., quantity or percentage).
+   * @brief Multiplies two PreciseNumber amounts.
+   * @param other The other PreciseNumber object to multiply by.
    * @return The result as a new PreciseNumber object.
    */
-  PreciseNumber operator*(double multiplier) const;
+  PreciseNumber operator*(const PreciseNumber &other) const;
 
   /**
    * @brief Computes the floating-point remainder of division (modulo) with

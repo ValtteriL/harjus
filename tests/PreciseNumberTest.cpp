@@ -31,8 +31,9 @@ TEST(PreciseNumberTest, SubtractionOperator) {
 
 TEST(PreciseNumberTest, MultiplicationOperator) {
   PreciseNumber c1(2.0);
-  PreciseNumber prod = c1 * 2.5;
-  EXPECT_EQ(prod.toDouble(), 5);
+  PreciseNumber c2(2.5);
+  PreciseNumber prod = c1 * c2;
+  EXPECT_EQ(prod.toDouble(), 5.0);
 }
 
 TEST(PreciseNumberTest, EqualityOperator) {
