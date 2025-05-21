@@ -6,7 +6,8 @@ Wants=network-online.target
 
 [Service]
 TimeoutStartSec=0
-TimeoutStopSec=30 # Time to wait for graceful shutdown
+# Time to wait for graceful shutdown
+TimeoutStopSec=30
 
 # Pull the latest version of the image (or specific tag if overridden)
 ExecStartPre=/usr/bin/docker stop harjus
@@ -32,7 +33,6 @@ ExecStart=/usr/bin/docker run --rm --name harjus --pull=always --network host \
   -e COMMISSION \
   -e LOG_LEVEL \
 
-  # Add any other environment variables your application needs
   ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
 
 # Stop the container gracefully
