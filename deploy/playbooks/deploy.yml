@@ -71,6 +71,13 @@
           To check status: sudo systemctl status {{ service_name }}
           To tail logs: sudo journalctl -fu {{ service_name }}.service
 
+    # Trigger the handlers to ensure systemd is reloaded and the service is restarted
+    # This ensures that if 'latest' is already being run, the newer 'latest' is pulled and the service is restarted
+    # Thus this will always cause at least restart
+    - name: Force reload systemd and restart app
+      ansible.builtin.command: /bin/true
+      notify:  Reload systemd and restart myapp
+
   handlers:
     - name: Reload systemd daemon
       ansible.builtin.systemd_service:
