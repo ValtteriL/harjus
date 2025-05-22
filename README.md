@@ -118,4 +118,7 @@ docker stats
 
 # get detailed configuration and status for container
 docker inspect <id>
+
+# get envs of container
+docker inspect -f '{{range $index, $value := .Config.Env}}{{$value}} {{end}}' <id>
 ```
