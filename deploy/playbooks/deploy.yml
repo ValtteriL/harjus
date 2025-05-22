@@ -39,7 +39,7 @@
         src: harjus.service
         dest: "/etc/systemd/system/{{ service_name }}.service"
         mode: '0644'
-      notify: Reload systemd and restart myapp
+      notify: Reload systemd and restart app
 
     - name: Ensure systemd override directory exists
       ansible.builtin.file:
@@ -52,14 +52,14 @@
         src: templates/image_tag_override.conf.j2 # Assumes image_tag_override.conf.j2 exists and uses {{ image_tag }}
         dest: "{{ image_tag_override_file }}"
         mode: '0644'
-      notify: Reload systemd and restart myapp
+      notify: Reload systemd and restart app
 
     - name: Create/Update systemd override for Application Environment
       ansible.builtin.template:
         src: templates/app_environment.conf.j2
         dest: "{{ app_env_override_file }}"
         mode: '0600' # Stricter permissions as it contains resolved secrets
-      notify: Reload systemd and restart myapp
+      notify: Reload systemd and restart app
 
     - name: Ensure handlers are flushed to apply changes now
       ansible.builtin.meta: flush_handlers
@@ -76,17 +76,17 @@
     # Thus this will always cause at least restart
     - name: Force reload systemd and restart app
       ansible.builtin.command: /bin/true
-      notify:  Reload systemd and restart myapp
+      notify:  Reload systemd and restart app
 
   handlers:
     - name: Reload systemd daemon
       ansible.builtin.systemd_service:
         daemon_reload: yes
-      listen: Reload systemd and restart myapp
+      listen: Reload systemd and restart app
 
     - name: Restart {{ service_name }} service
       ansible.builtin.systemd_service:
         name: "{{ service_name }}"
         state: restarted
         enabled: no
-      listen: Reload systemd and restart myapp
+      listen: Reload systemd and restart app
