@@ -296,6 +296,8 @@ target_precompile_headers(harjus PRIVATE
   <boost/graph/adjacency_list.hpp>
   <boost/graph/tiernan_all_cycles.hpp>
   <boost/json.hpp>
+  <boost/multiprecision/cpp_int.hpp>
+
 
   # Quickfix Engine
   <quickfix/Application.h>
