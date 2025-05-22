@@ -1,11 +1,16 @@
 ---
 - name: Deploy Harjus
   hosts: harjus_instance
+  gather_facts: no
   become: yes
   # Variables from group_vars/harjus_instance/common.yml are loaded automatically
   # Variables from group_vars/harjus_instance/<env>.yml will be loaded based on 'env' var
 
   vars:
+
+    ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
+    ansible_user: ubuntu
+
     # Mandatory: User must specify 'qa' or 'prod' when running the playbook
     # e.g., ansible-playbook ... -e "env=prod"
     # Set a default or leave empty to force user input. An empty string will fail the pre_task check.
@@ -66,16 +71,22 @@
           To check status: sudo systemctl status {{ service_name }}
           To tail logs: sudo journalctl -fu {{ service_name }}.service
 
-  handlers:
-    - name: Reload systemd and restart myapp
-      listen: "Reload systemd and restart myapp"
-      block:
-        - name: Reload systemd daemon
-          ansible.builtin.systemd_service:
-            daemon_reload: yes
+    # Trigger the handlers to ensure systemd is reloaded and the service is restarted
+    # This ensures that if 'latest' is already being run, the newer 'latest' is pulled and the service is restarted
+    # Thus this will always cause at least restart
+    - name: Force reload systemd and restart app
+      ansible.builtin.command: /bin/true
+      notify:  Reload systemd and restart myapp
 
-        - name: Restart {{ service_name }} service
-          ansible.builtin.systemd_service:
-            name: "{{ service_name }}"
-            state: restarted
-            enabled: no
+  handlers:
+    - name: Reload systemd daemon
+      ansible.builtin.systemd_service:
+        daemon_reload: yes
+      listen: Reload systemd and restart myapp
+
+    - name: Restart {{ service_name }} service
+      ansible.builtin.systemd_service:
+        name: "{{ service_name }}"
+        state: restarted
+        enabled: no
+      listen: Reload systemd and restart myapp

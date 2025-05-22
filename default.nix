@@ -72,6 +72,8 @@ let
 
         # deployment
         terraform
+        ansible
+        ansible-lint
         awscli2
         python3
         python3Packages.boto3

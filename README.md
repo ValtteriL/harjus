@@ -69,20 +69,20 @@ terraform -chdir=deploy/backend apply
 
 ```bash
 terraform -chdir=deploy init
-terraform -chdir=deploy apply"
+terraform -chdir=deploy apply
 
-cd deploy/playbooks && ansible-playbook setup.yml
+(cd deploy/playbooks && ansible-playbook setup.yml)
 ```
 
 ### Deploy
 
 ```bash
 # QA (testnet)
-cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" # defaults to latest tag
-cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "image_tag=your-git-hash-for-qa"
+(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa") # defaults to latest tag
+(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "image_tag=your-git-hash-for-qa")
 
 # Prod
-cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod"
+(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod")
 ```
 
 ## Debugging
@@ -118,4 +118,7 @@ docker stats
 
 # get detailed configuration and status for container
 docker inspect <id>
+
+# get envs of container
+docker inspect -f '{{range $index, $value := .Config.Env}}{{$value}} {{end}}' <id>
 ```

@@ -6,12 +6,15 @@
  * represents a currency amount in its smallest unit.
  */
 
-#include <cmath> // For std::round
+#include <boost/multiprecision/cpp_int.hpp>
+#include <cmath>
 #include <iostream>
+
+using namespace boost::multiprecision;
 
 class PreciseNumber {
 private:
-  long long smallestUnit = 0;
+  checked_int128_t smallestUnit = 0;
   static constexpr long long kPrecision = 1e8;
 
 public:
