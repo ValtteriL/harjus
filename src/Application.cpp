@@ -188,13 +188,8 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
                             const FIX::SessionID &) {
   try {
 
-    /**
-     * terminate called after throwing an instance of 'std::runtime_error'
-     * what():  Error processing execution report: Field not found
-     *Aborted (core dumped)
-     */
-    std::cout << "Received ExecutionReport: " << message.toString()
-              << std::endl;
+    BOOST_LOG_TRIVIAL(debug)
+        << "Received ExecutionReport: " << message.toString();
 
     // Extract the ClOrdID
     FIX::ClOrdID clOrdID;
