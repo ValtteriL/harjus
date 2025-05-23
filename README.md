@@ -98,7 +98,7 @@ ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ubuntu@$(terraform 
 ```bash
 sudo systemctl status harjus
 # or
-sudo journalctl -u harjus.service
+sudo journalctl -ua harjus.service
 ```
 
 ### Inspect containers running on runner
