@@ -217,6 +217,18 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     case FIX::ExecType_EXPIRED:
       status = TradeExecutionStatus::EXPIRED;
       break;
+    case FIX::ExecType_REJECTED: {
+      // Extract the human readable error message (Text field)
+      FIX::Text textField;
+      std::string errorMsg;
+      if (message.isSetField(FIX::FIELD::Text)) {
+        message.get(textField);
+        errorMsg = textField.getValue();
+      } else {
+        errorMsg = "Unknown error (Text field not set)";
+      }
+      throw std::runtime_error("Order rejected: " + errorMsg);
+    }
     default:
       // For other cases, just log and return without creating execution report
 
