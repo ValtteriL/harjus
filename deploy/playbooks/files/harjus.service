@@ -16,7 +16,7 @@ ExecStartPre=/bin/sh -c '/usr/bin/aws ecr get-login-password | /usr/bin/docker l
 
 # Start the container
 # Note the -e VAR_NAME syntax for variables to be passed from systemd's environment
-ExecStart=/usr/bin/docker run --rm --name harjus --pull=always --network host \
+ExecStart=/usr/bin/docker run --name harjus --pull=always --network host \
   # == Add environment variables to be passed to the container below ==
   -e BINANCE_REST_API_URI \
   -e BINANCE_FIX_API_HOSTNAME_ORDERENTRY \
