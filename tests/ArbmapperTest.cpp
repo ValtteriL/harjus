@@ -4,6 +4,7 @@
  */
 
 #include "Arbmapper.h"
+#include "PreciseNumber.h"
 #include "Symbol.h"
 #include <gtest/gtest.h>
 #include <unordered_set>
@@ -20,12 +21,42 @@ TEST(ArbmapperTest, noPathsWhenDepthIsZero) {
 
 TEST(ArbmapperTest, detectsAllTradingOpportunities) {
 
-  Symbol *btcEthSymbol = new Symbol{"BTCETH", "BTC", "ETH",  30000, 30010, 1,
-                                    1,        10,    0.0001, 0.01,  8,     2};
-  Symbol *ethDogeSymbol = new Symbol{"ETHDOGE", "ETH", "DOGE", 0.07, 0.071, 1,
-                                     1,         10,    0.0001, 0.01, 8,     8};
-  Symbol *dogeBtcSymbol = new Symbol{"DOGEBTC", "DOGE", "BTC",  1400, 1410, 1,
-                                     1,         10,     0.0001, 0.01, 8,    8};
+  Symbol *btcEthSymbol = new Symbol{"BTCETH",
+                                    "BTC",
+                                    "ETH",
+                                    PreciseNumber{"30000"},
+                                    PreciseNumber{"30010"},
+                                    PreciseNumber{"1"},
+                                    PreciseNumber{"1"},
+                                    PreciseNumber{"10"},
+                                    PreciseNumber{"0.0001"},
+                                    PreciseNumber{"0.01"},
+                                    8,
+                                    2};
+  Symbol *ethDogeSymbol = new Symbol{"ETHDOGE",
+                                     "ETH",
+                                     "DOGE",
+                                     PreciseNumber{"0.07"},
+                                     PreciseNumber{"0.071"},
+                                     PreciseNumber{"1"},
+                                     PreciseNumber{"1"},
+                                     PreciseNumber{"10"},
+                                     PreciseNumber{"0.0001"},
+                                     PreciseNumber{"0.01"},
+                                     8,
+                                     8};
+  Symbol *dogeBtcSymbol = new Symbol{"DOGEBTC",
+                                     "DOGE",
+                                     "BTC",
+                                     PreciseNumber{"1400"},
+                                     PreciseNumber{"1410"},
+                                     PreciseNumber{"1"},
+                                     PreciseNumber{"1"},
+                                     PreciseNumber{"10"},
+                                     PreciseNumber{"0.0001"},
+                                     PreciseNumber{"0.01"},
+                                     8,
+                                     8};
 
   // Create a vector of symbols
   std::unordered_map<std::string, Symbol *> symbolMap{

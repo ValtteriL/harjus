@@ -1,8 +1,9 @@
 #include <PreciseNumber.h>
+#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <cmath>
 
-PreciseNumber::PreciseNumber(double amount)
-    : smallestUnit(checked_int128_t{std::floor(amount * kPrecision)}) {}
+PreciseNumber::PreciseNumber(const char *amount)
+    : smallestUnit(checked_int128_t{boost::multiprecision::cpp_dec_float_50{amount}*kPrecision}) {}
 
 PreciseNumber PreciseNumber::operator+(const PreciseNumber &other) const {
   PreciseNumber result{0};
@@ -83,10 +84,6 @@ bool PreciseNumber::operator>=(const PreciseNumber &other) const {
   return this->smallestUnit >= other.smallestUnit;
 }
 
-double PreciseNumber::toDouble() const {
-  return smallestUnit.convert_to<double>() / kPrecision;
-}
-
 PreciseNumber PreciseNumber::min(const PreciseNumber &a,
                                  const PreciseNumber &b) {
   return (a.smallestUnit < b.smallestUnit) ? a : b;
@@ -95,14 +92,24 @@ PreciseNumber PreciseNumber::min(const PreciseNumber &a,
 PreciseNumber PreciseNumber::pow(const PreciseNumber &base,
                                  const PreciseNumber &exponent) {
 
-  PreciseNumber result{0};
-  auto powValue = std::pow(base.toDouble(), exponent.toDouble());
-  result.smallestUnit = checked_int128_t{powValue * kPrecision};
-  return PreciseNumber(result);
+  boost::multiprecision::cpp_dec_float_50 b{base.toString()};
+  boost::multiprecision::cpp_dec_float_50 e{exponent.toString()};
+  cpp_dec_float_50 result = boost::multiprecision::pow(b, e);
+  return PreciseNumber{result.str().c_str()};
+}
+
+std::string PreciseNumber::toString() const {
+  // Convert smallestUnit to string with appropriate precision
+  boost::multiprecision::cpp_dec_float_50 value{smallestUnit.str()};
+
+  // Scale down by kPrecision to get the original value
+  value /= kPrecision;
+
+  return value.str();
 }
 
 // Friend function for output stream
 std::ostream &operator<<(std::ostream &os, const PreciseNumber &c) {
-  os << c.toDouble();
+  os << c.toString();
   return os;
 }

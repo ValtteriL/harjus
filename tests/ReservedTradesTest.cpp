@@ -21,18 +21,18 @@ protected:
   // trade1 and trade2 are identical trades
   // trade3 is a different (different position)
   Symbol symbol{
-      "BTCETH", // symbol;
-      "BTC",    // baseAsset;
-      "ETH",    // quoteAsset;
-      0.0,      // bidPrice;
-      1.0,      // askPrice;
-      0.0,      // bidQty;
-      100.0,    // askQty;
-      0.0001,   // minNotional;
-      0.0001,   // baseAssetIncrement;
-      0.0001,   // quoteAssetIncrement;
-      8,        // baseAssetPrecision;
-      8         // quoteAssetPrecision;
+      "BTCETH",                // symbol;
+      "BTC",                   // baseAsset;
+      "ETH",                   // quoteAsset;
+      PreciseNumber{"0.0"},    // bidPrice;
+      PreciseNumber{"1.0"},    // askPrice;
+      PreciseNumber{"0.0"},    // bidQty;
+      PreciseNumber{"100.0"},  // askQty;
+      PreciseNumber{"0.0001"}, // minNotional;
+      PreciseNumber{"0.0001"}, // baseAssetIncrement;
+      PreciseNumber{"0.0001"}, // quoteAssetIncrement;
+      8,                       // baseAssetPrecision;
+      8                        // quoteAssetPrecision;
   };
   Trade trade1{&symbol, Position::LONG};
   Trade trade2{&symbol, Position::LONG};

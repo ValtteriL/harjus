@@ -1,5 +1,7 @@
 #include "Opportunity.h"
+#include "PreciseNumber.h"
 #include "Trade.h"
+#include <string>
 #include <vector>
 
 Opportunity::Opportunity(std::vector<Trade> &trades,
@@ -30,12 +32,10 @@ PreciseNumber calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
         // this may happen if not all trades have been updated in the path
         return 0;
       }
-      acc = PreciseNumber::min(acc,
-                                       trade.usedQty() * trade.orderPrice()) /
+      acc = PreciseNumber::min(acc, trade.usedQty() * trade.orderPrice()) /
             trade.orderPrice();
     } else {
-      acc =
-          PreciseNumber::min(acc, trade.usedQty()) * trade.orderPrice();
+      acc = PreciseNumber::min(acc, trade.usedQty()) * trade.orderPrice();
     }
   }
   return acc;
@@ -86,7 +86,9 @@ void Opportunity::update(PreciseNumber startingAssetBudget) {
   // update profit
   PreciseNumber totalCommission =
       _trades.front().usedQty() *
-      (PreciseNumber::pow((PreciseNumber{1} + _commission), _trades.size()) - 1);
+      (PreciseNumber::pow((PreciseNumber{"1"} + _commission),
+                          std::to_string(_trades.size()).c_str()) -
+       PreciseNumber{"1"});
   _totalProfit =
       (_trades.back().recvQty() - _trades.front().usedQty() - totalCommission) *
       _relativeValue;

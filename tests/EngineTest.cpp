@@ -50,17 +50,45 @@ protected:
     balance.updateBalance("BTC", startingAssetBudget);
   }
 
-  PreciseNumber startingAssetBudget = 1.0;
+  PreciseNumber startingAssetBudget{"1.0"};
 
   // Allocate symbols manually
-  Symbol *ethBtcSymbol = new Symbol{"ETHBTC", "ETH",  "BTC",  0.0,    0.0, 0.0,
-                                    0.0,      0.0001, 0.0001, 0.0001, 8,   8};
-  Symbol *ethUsdtSymbol =
-      new Symbol{"ETHUSDT", "ETH",  "USDT", 0.0,    0.0, 0.0,
-                 0.0,       0.0001, 0.0001, 0.0001, 8,   8};
-  Symbol *usdtBtcSymbol =
-      new Symbol{"USDTBTC", "USDT", "BTC",  0.0,    0.0, 0.0,
-                 0.0,       0.0001, 0.0001, 0.0001, 8,   8};
+  Symbol *ethBtcSymbol = new Symbol{"ETHBTC",
+                                    "ETH",
+                                    "BTC",
+                                    PreciseNumber{"0.0"},
+                                    PreciseNumber{"0.0"},
+                                    PreciseNumber{"0.0"},
+                                    PreciseNumber{"0.0"},
+                                    PreciseNumber{"0.0001"},
+                                    PreciseNumber{"0.0001"},
+                                    PreciseNumber{"0.0001"},
+                                    8,
+                                    8};
+  Symbol *ethUsdtSymbol = new Symbol{"ETHUSDT",
+                                     "ETH",
+                                     "USDT",
+                                     PreciseNumber{"0.0"},
+                                     PreciseNumber{"0.0"},
+                                     PreciseNumber{"0.0"},
+                                     PreciseNumber{"0.0"},
+                                     PreciseNumber{"0.0001"},
+                                     PreciseNumber{"0.0001"},
+                                     PreciseNumber{"0.0001"},
+                                     8,
+                                     8};
+  Symbol *usdtBtcSymbol = new Symbol{"USDTBTC",
+                                     "USDT",
+                                     "BTC",
+                                     PreciseNumber{"0.0"},
+                                     PreciseNumber{"0.0"},
+                                     PreciseNumber{"0.0"},
+                                     PreciseNumber{"0.0"},
+                                     PreciseNumber{"0.0001"},
+                                     PreciseNumber{"0.0001"},
+                                     PreciseNumber{"0.0001"},
+                                     8,
+                                     8};
 
   std::unordered_map<std::string, Symbol *> symbols{{"ETHBTC", ethBtcSymbol},
                                                     {"ETHUSDT", ethUsdtSymbol},
@@ -69,8 +97,10 @@ protected:
   Balance balance;
   ReservedTrades reservedTrades;
   std::unordered_map<std::string, PreciseNumber> relativeValues{
-      {"BTC", 1.0}, {"ETH", 1.0}, {"USDT", 1.0}};
-  PreciseNumber commission{0.001};
+      {"BTC", PreciseNumber{"1.0"}},
+      {"ETH", PreciseNumber{"1.0"}},
+      {"USDT", PreciseNumber{"1.0"}}};
+  PreciseNumber commission{"0.001"};
 
   std::binary_semaphore semaphore{0};
   ThreadSafeQueue<Execution> executionQueue{semaphore};
@@ -88,10 +118,15 @@ protected:
 TEST_F(EngineTest, detectsArbitrageOpportunity) {
 
   std::vector<PriceUpdate *> updates;
-  updates.push_back(new PriceUpdate{"ETHBTC", 0, 1, 0, 100}); // BTC -> ETH 1:1
-  updates.push_back(new PriceUpdate{"ETHUSDT", 1, 0, 1, 0});  // ETH -> USDT 1:1
-  updates.push_back(
-      new PriceUpdate{"USDTBTC", 10.0, 0, 1.0, 0}); // USDT -> BTC 1:10
+  updates.push_back(new PriceUpdate{"ETHBTC", PreciseNumber{"0"},
+                                    PreciseNumber{"1"}, PreciseNumber{"0"},
+                                    PreciseNumber{"100"}}); // BTC -> ETH 1:1
+  updates.push_back(new PriceUpdate{"ETHUSDT", PreciseNumber{"1"},
+                                    PreciseNumber{"0"}, PreciseNumber{"1"},
+                                    PreciseNumber{"0"}}); // ETH -> USDT 1:1
+  updates.push_back(new PriceUpdate{
+      "USDTBTC", PreciseNumber{"10.0"}, PreciseNumber{" 0 "},
+      PreciseNumber{" 1.0 "}, PreciseNumber{" 0 "}}); // USDT -> BTC 1:10
 
   for (auto update : updates) {
     engine.callProcessPriceUpdate(update);
@@ -104,7 +139,7 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   EXPECT_EQ(execution.getTrades().size(), 3);
 
   // Check if the total profit is calculated correctly
-  EXPECT_EQ(execution.getTotalProfit(), PreciseNumber{8.9969969991});
+  EXPECT_EQ(execution.getTotalProfit(), PreciseNumber{"8.9969969991"});
   // Check if the capacity is calculated correctly
 
   EXPECT_EQ(execution.getCapacity(), PreciseNumber{startingAssetBudget});

@@ -25,11 +25,11 @@ public:
   PreciseNumber() = default;
 
   /**
-   * @brief Constructs a PreciseNumber object from a double amount.
-   * @param amount The amount in the original currency (e.g., 1.23 for 1.23
-   * units).
+   * @brief Constructs a PreciseNumber object from a string representation of
+   * the amount.
+   * @param amount The amount as a string (e.g., "1.23").
    */
-  PreciseNumber(double amount);
+  PreciseNumber(const char *amount);
 
   /**
    * @brief Adds two PreciseNumber objects.
@@ -135,10 +135,10 @@ public:
   bool operator>=(const PreciseNumber &other) const;
 
   /**
-   * @brief Gets the amount in the original unit.
-   * @return The amount as a double in the original unit.
+   * @brief Returns the string representation of the PreciseNumber.
+   * @return The amount as a string in the original unit.
    */
-  double toDouble() const;
+  std::string toString() const;
 
   /**
    * @brief Returns the smaller of two PreciseNumbers.

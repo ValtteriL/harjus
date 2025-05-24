@@ -97,7 +97,7 @@ std::vector<std::string> Configuration::getBlacklistedStartSymbols() const {
 
 PreciseNumber Configuration::getCommission() const {
   auto commission = dotenv::getenv("COMMISSION", "0.001");
-  return PreciseNumber{std::stod(commission)};
+  return PreciseNumber{commission.c_str()};
 }
 
 int Configuration::getLogLevel() const {

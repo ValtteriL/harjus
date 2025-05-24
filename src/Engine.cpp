@@ -96,7 +96,8 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
     _reservedTrades.reserve(trade);
   }
   _balance.updateBalance(mostProfitableOpportunity->getStartingAsset(),
-                         mostProfitableOpportunity->getCapacity() * -1);
+                         mostProfitableOpportunity->getCapacity() *
+                             PreciseNumber{"-1"});
 
   // update opportunity that use the same starting asset
   auto newBalance =

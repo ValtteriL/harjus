@@ -5,6 +5,7 @@
 
 #include "Exchange.h"
 #include "Configuration_test.h"
+#include "PreciseNumber.h"
 #include <gtest/gtest.h>
 #include <unordered_set>
 
@@ -57,9 +58,9 @@ TEST_F(ExchangeTest,
   EXPECT_EQ(btcEthSymbol->quoteAsset, "BTC");
   EXPECT_EQ(btcEthSymbol->baseAssetPrecision, 8);
   EXPECT_EQ(btcEthSymbol->quoteAssetPrecision, 8);
-  EXPECT_EQ(btcEthSymbol->minNotional, PreciseNumber{0.0001});
-  EXPECT_EQ(btcEthSymbol->baseAssetIncrement, PreciseNumber{0.0001});
-  EXPECT_EQ(btcEthSymbol->quoteAssetIncrement, PreciseNumber{0.00001});
+  EXPECT_EQ(btcEthSymbol->minNotional, PreciseNumber{"0.0001"});
+  EXPECT_EQ(btcEthSymbol->baseAssetIncrement, PreciseNumber{"0.0001"});
+  EXPECT_EQ(btcEthSymbol->quoteAssetIncrement, PreciseNumber{"0.00001"});
 }
 
 TEST_F(ExchangeTest,
@@ -91,11 +92,11 @@ TEST_F(ExchangeTest,
   auto relativeValues = getRelativeValues(config, symbols);
 
   // Verify the price of Bitcoin is 1
-  EXPECT_EQ(relativeValues["BTC"], 1);
+  EXPECT_EQ(relativeValues["BTC"], PreciseNumber{"1"});
 
   // Verify all values are greater than 0
   for (const auto &[asset, value] : relativeValues) {
-    EXPECT_GT(value, 0);
+    EXPECT_GT(value, PreciseNumber{"0"});
   }
 
   // Verify the size of relativeValues equals the number of different assets in

@@ -1,5 +1,6 @@
 #include "Exchange.h"
 #include "Ed25519.h"
+#include "PreciseNumber.h"
 #include <boost/json.hpp>
 #include <cpr/cpr.h>
 #include <stdexcept>
@@ -73,10 +74,10 @@ std::unique_ptr<Balance> getBalance(IConfiguration &config) {
     for (const auto &item : obj["balances"].as_array()) {
       const boost::json::object &itemObj = item.as_object();
       std::string asset = itemObj.at("asset").as_string().c_str();
-      double free = std::stod(itemObj.at("free").as_string().c_str());
+      auto free = itemObj.at("free").as_string().c_str();
 
       // Update the balance object (assuming Balance has a method to add assets)
-      balance->updateBalance(asset, free);
+      balance->updateBalance(asset, PreciseNumber{free});
     }
   } catch (const boost::json::system_error &e) {
     throw std::runtime_error("Failed to parse JSON response: " +
@@ -125,14 +126,14 @@ std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config) {
         std::string filterType = filterObj["filterType"].as_string().c_str();
 
         if (filterType == "NOTIONAL") {
-          symbol->minNotional = PreciseNumber{
-              std::stod(filterObj["minNotional"].as_string().c_str())};
+          symbol->minNotional =
+              PreciseNumber{filterObj["minNotional"].as_string().c_str()};
         } else if (filterType == "LOT_SIZE") {
-          symbol->baseAssetIncrement = PreciseNumber{
-              std::stod(filterObj["stepSize"].as_string().c_str())};
+          symbol->baseAssetIncrement =
+              PreciseNumber{filterObj["stepSize"].as_string().c_str()};
         } else if (filterType == "PRICE_FILTER") {
-          symbol->quoteAssetIncrement = PreciseNumber{
-              std::stod(filterObj["tickSize"].as_string().c_str())};
+          symbol->quoteAssetIncrement =
+              PreciseNumber{filterObj["tickSize"].as_string().c_str()};
         }
       }
 
@@ -170,7 +171,7 @@ getRelativeValues(IConfiguration &config,
     for (const auto &item : json.as_array()) {
       boost::json::object priceObj = item.as_object();
       std::string symbol = priceObj["symbol"].as_string().c_str();
-      PreciseNumber price(std::stod(priceObj["price"].as_string().c_str()));
+      PreciseNumber price{priceObj["price"].as_string().c_str()};
       symbolPrices[symbol] = price;
     }
   } catch (const boost::json::system_error &e) {
@@ -187,7 +188,7 @@ getRelativeValues(IConfiguration &config,
       lowestValue = PreciseNumber::min(lowestValue, symbolPrices[symbolName]);
     } else if (symbol->baseAsset == "BTC") {
       // price in 1 / BTC (longing gets btc)
-      PreciseNumber value = PreciseNumber{1} / symbolPrices[symbolName];
+      PreciseNumber value = PreciseNumber{"1"} / symbolPrices[symbolName];
       relativeValues[symbol->quoteAsset] = value;
       lowestValue = PreciseNumber::min(lowestValue, value);
     }
@@ -204,7 +205,7 @@ getRelativeValues(IConfiguration &config,
   }
 
   // Set Bitcoin's value to 1
-  relativeValues["BTC"] = 1;
+  relativeValues["BTC"] = PreciseNumber{"1"};
 
   return relativeValues;
 }
