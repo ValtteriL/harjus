@@ -3,16 +3,17 @@
 #include <cmath>
 
 PreciseNumber::PreciseNumber(const char *amount)
-    : smallestUnit(checked_int128_t{boost::multiprecision::cpp_dec_float_50{amount}*kPrecision}) {}
+    : smallestUnit(checked_int128_t{
+          boost::multiprecision::cpp_dec_float_50{amount} * kPrecision}) {}
 
 PreciseNumber PreciseNumber::operator+(const PreciseNumber &other) const {
-  PreciseNumber result{0};
+  PreciseNumber result{};
   result.smallestUnit = this->smallestUnit + other.smallestUnit;
   return result;
 }
 
 PreciseNumber PreciseNumber::operator-(const PreciseNumber &other) const {
-  PreciseNumber result{0};
+  PreciseNumber result{};
   result.smallestUnit = this->smallestUnit - other.smallestUnit;
   return result;
 }
@@ -29,7 +30,7 @@ PreciseNumber &PreciseNumber::operator+=(const PreciseNumber &other) {
 
 PreciseNumber PreciseNumber::operator*(const PreciseNumber &other) const {
   // Multiply smallest units and scale back to original unit
-  PreciseNumber result{0};
+  PreciseNumber result{};
   result.smallestUnit = this->smallestUnit * other.smallestUnit / kPrecision;
   return result;
 }
@@ -40,7 +41,7 @@ PreciseNumber &PreciseNumber::operator*=(const PreciseNumber &other) {
 }
 
 PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
-  PreciseNumber result{0};
+  PreciseNumber result{};
   if (other.smallestUnit == 0) {
     return result; // Handle division by zero
   }
@@ -61,7 +62,7 @@ PreciseNumber &PreciseNumber::operator/=(const PreciseNumber &other) {
 
 PreciseNumber PreciseNumber::fmod(const PreciseNumber &a,
                                   const PreciseNumber &b) {
-  PreciseNumber result{0};
+  PreciseNumber result{};
   if (b.smallestUnit == 0) {
     return result; // Handle division by zero
   }
