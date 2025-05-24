@@ -141,6 +141,16 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
       {"BTC", PreciseNumber{-0.1}} // Example fee
   };
 
+  // Insert a partial execution report (not full fill)
+  // using negative values as the test opportunity has zero recvQty & usedQty
+  ExecutionReport partialReport{id, TradeExecutionStatus::FILLED,
+                                PreciseNumber{-1}, PreciseNumber{-1}, feeDelta};
+
+  // Should not submit next order yet (still waiting for more reports)
+  // No new submitOrder expected here
+  trader.callProcessReport(&partialReport);
+
+  // Insert full execution report
   ExecutionReport executionReport{id, TradeExecutionStatus::FILLED,
                                   PreciseNumber{0.1}, PreciseNumber{0.2},
                                   feeDelta};

@@ -4,6 +4,7 @@
 #include "Execution.h"
 #include "ExecutionReport.h"
 #include "IApplication.h"
+#include "Position.h"
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
 #include "TradeExecutionStatus.h"
@@ -86,15 +87,29 @@ void Trader::processReport(ExecutionReport *execReport) {
     return;
   }
 
-  // update delta
+  // update delta with fees
   // get fees from the execution report
   // get base, quote delta from the first trade
+  // assuming the fees are unique for all partial executions
   auto tradeDelta = execReport->getFeeDelta();
   for (const auto &[currency, amount] : tradeDelta) {
     delta[currency] += amount;
   }
 
   auto oldTrade = execution.getTrades().front();
+
+  // If the full qty not received, additional ExecutionReports with same id will
+  // be received
+  auto compareQty = oldTrade.position() == Position::LONG
+                        ? execReport->recvQty()
+                        : execReport->usedQty();
+  if (compareQty < oldTrade.orderQty()) {
+    BOOST_LOG_TRIVIAL(debug) << "Partial execution, waiting for more reports";
+    return;
+  }
+
+  // If the full qty received, update delta with the trade
+  // assuming the delta is common for all trades in the execution (cumulative)
   delta[oldTrade.usedCurrency()] -= execReport->usedQty();
   delta[oldTrade.recvCurrency()] += execReport->recvQty();
 
