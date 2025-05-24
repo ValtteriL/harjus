@@ -66,9 +66,9 @@ TEST(PreciseNumberTest, DivideAssignOperator) {
 }
 
 TEST(PreciseNumberTest, EqualityOperator) {
-  PreciseNumber c1{1.23456789};
-  PreciseNumber c2{1.23456789};
-  PreciseNumber c3{1.23456788};
+  PreciseNumber c1{1.234567890};
+  PreciseNumber c2{1.234567890};
+  PreciseNumber c3{1.234567881};
   EXPECT_TRUE(c1 == c2);
   EXPECT_FALSE(c1 == c3);
 }

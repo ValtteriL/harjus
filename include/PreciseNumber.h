@@ -15,7 +15,7 @@ using namespace boost::multiprecision;
 class PreciseNumber {
 private:
   checked_int128_t smallestUnit = 0;
-  static constexpr long long kPrecision = 1e8;
+  static constexpr long long kPrecision = 1e10;
 
 public:
   /**

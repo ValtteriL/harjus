@@ -2,7 +2,7 @@
 #include <cmath>
 
 PreciseNumber::PreciseNumber(double amount)
-    : smallestUnit(checked_int128_t{std::round(amount * kPrecision)}) {}
+    : smallestUnit(checked_int128_t{std::floor(amount * kPrecision)}) {}
 
 PreciseNumber PreciseNumber::operator+(const PreciseNumber &other) const {
   PreciseNumber result{0};
