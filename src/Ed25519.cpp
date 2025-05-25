@@ -22,7 +22,7 @@ std::string Ed25519::base64_encode(const unsigned char *data, size_t length) {
   return b64String;
 }
 
-std::string Ed25519::base64_decode(const std::string encoded) {
+std::string Ed25519::base64_decode(const std::string &encoded) {
   std::vector<unsigned char> decoded(encoded.size());
   size_t decoded_length;
 
@@ -35,7 +35,8 @@ std::string Ed25519::base64_decode(const std::string encoded) {
   return std::string(decoded.begin(), decoded.begin() + decoded_length);
 }
 
-std::string Ed25519::sign(std::string extracted_seed, std::string payload) {
+std::string Ed25519::sign(const std::string &extracted_seed,
+                          const std::string &payload) {
   if (sodium_init() < 0) {
     throw std::runtime_error("Failed to initialize libsodium");
   }

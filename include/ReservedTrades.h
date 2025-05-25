@@ -53,12 +53,12 @@ public:
   /**
    *  Reserve a trade.
    */
-  void reserve(Trade &trade);
+  void reserve(const Trade &trade);
 
   /**
    *  Release a trade.
    */
-  void release(Trade &trade);
+  void release(const Trade &trade);
 
   /**
    *  Release a trade by StaticTrade.
@@ -69,15 +69,15 @@ public:
    * @brief Release all trades in vector.
    * @param trades Vector of trades to release.
    */
-  void releaseAll(std::vector<StaticTrade> &trades);
+  void releaseAll(const std::vector<StaticTrade> &trades);
 
   /**
    *  Check if a trade is reserved.
    */
-  bool isReserved(Trade &trade);
+  bool isReserved(const Trade &trade);
 
   /**
    *  Check if a trade is reserved.
    */
-  bool isReserved(std::vector<Trade> &trades);
+  bool isReserved(const std::vector<Trade> &trades);
 };

@@ -441,7 +441,7 @@ void onMessage(const FIX::Message &message, const FIX::SessionID &) {
                            message.toString());
 }
 
-void Application::submitOrder(std::string id, std::string symbol,
+void Application::submitOrder(const std::string& id, const std::string& symbol,
                               PreciseNumber qty, PreciseNumber price,
                               Position position) {
   FIX44::NewOrderSingle newOrder;

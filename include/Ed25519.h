@@ -8,14 +8,14 @@ namespace Ed25519 {
  * @param privateKey The private key to use for signing
  * @return The base64 encoded signature
  */
-std::string sign(std::string privateKey, std::string payload);
+std::string sign(const std::string &privateKey, const std::string &payload);
 
 /**
  * @brief Base64 decode a string
  * @param encoded The base64 encoded string
  * @return The decoded string
  */
-std::string base64_decode(const std::string encoded);
+std::string base64_decode(const std::string &encoded);
 
 /**
  * @brief Base64 encode a string
