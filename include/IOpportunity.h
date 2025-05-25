@@ -18,7 +18,7 @@ public:
    * @details This method should be called after a price update that affects
    * this opportunity to update the total profit.
    */
-  virtual void update(PreciseNumber startingAssetBudget) = 0;
+  virtual void update(const PreciseNumber startingAssetBudget) = 0;
 
   /**
    * @brief Get the total profit

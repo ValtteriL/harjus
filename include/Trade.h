@@ -23,7 +23,7 @@ public:
    * @param symbol The symbol of the trade.
    * @param position The position of the trade (LONG or SHORT).
    */
-  Trade(const Symbol *symbol, Position position);
+  Trade(const Symbol *symbol, const Position position);
 
   /**
    * Get the position of the trade.
@@ -71,7 +71,7 @@ public:
    * quantity is set to 0.
    * @param budget The budget (in used asset) for the trade.
    */
-  void recalculateOrderQty(PreciseNumber budget);
+  void recalculateOrderQty(const PreciseNumber budget);
 
   /**
    * Get the quantity of the asset to be received.

@@ -38,7 +38,7 @@ bool Engine::containsOnlyFreeSymbols(Opportunity &opportunity) {
   return !_reservedTrades.isReserved(opportunity.getTrades());
 }
 
-void Engine::processPriceUpdate(PriceUpdate *update) {
+void Engine::processPriceUpdate(const PriceUpdate *update) {
 
   // update symbol price
   _symbols.at(update->symbol)->askPrice = update->askPrice;

@@ -32,7 +32,7 @@ public:
    *  @param currency The currency to add.
    *  @param amount The amount to add.
    */
-  void updateBalance(const std::string &currency, PreciseNumber amount);
+  void updateBalance(const std::string &currency, const PreciseNumber amount);
 
   /**
    *  Add a currency to the balance.

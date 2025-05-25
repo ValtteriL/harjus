@@ -51,7 +51,7 @@ protected:
    * opportunities, reserves symbols and budget for them, and queues them for
    * execution.
    */
-  void processPriceUpdate(PriceUpdate *update);
+  void processPriceUpdate(const PriceUpdate *update);
 
 public:
   /**

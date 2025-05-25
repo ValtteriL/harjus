@@ -10,7 +10,7 @@
  * * @param privateKey The private key to use for signing
  * * @return The base64 encoded signature
  */
-std::string createSignature(std::string privateKeySeed) {
+std::string createSignature(const std::string& privateKeySeed) {
   // https://github.com/binance/binance-connector-python/blob/cf2bfbc634bf92a4d1153dd5b900a998fa9d499f/binance/api.py#L88
   // https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#ed25519-keys
 
@@ -31,8 +31,8 @@ std::string createSignature(std::string privateKeySeed) {
   return uriSignature;
 }
 
-std::string getBalancesJson(std::string uri, std::string apiKey,
-                            std::string privateKeySeed) {
+std::string getBalancesJson(const std::string& uri, const std::string& apiKey,
+                            const std::string& privateKeySeed) {
   // create signature
   std::string signature = createSignature(privateKeySeed);
 
@@ -51,7 +51,7 @@ std::string getBalancesJson(std::string uri, std::string apiKey,
   return r.text;
 }
 
-std::unique_ptr<Balance> getBalance(IConfiguration &config) {
+std::unique_ptr<Balance> getBalance(const IConfiguration &config) {
   auto balance = std::make_unique<Balance>();
 
   // Fetch balance from exchange API
@@ -87,7 +87,7 @@ std::unique_ptr<Balance> getBalance(IConfiguration &config) {
   return balance;
 }
 
-std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config) {
+std::unordered_map<std::string, Symbol *> getSymbols(const IConfiguration &config) {
   std::unordered_map<std::string, Symbol *> symbols;
 
   // Fetch exchange info from Binance API
@@ -148,7 +148,7 @@ std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config) {
 }
 
 std::unordered_map<std::string, PreciseNumber>
-getRelativeValues(IConfiguration &config,
+getRelativeValues(const IConfiguration &config,
                   const std::unordered_map<std::string, Symbol *> &symbols) {
   std::unordered_map<std::string, PreciseNumber> relativeValues;
 

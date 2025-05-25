@@ -20,7 +20,7 @@
  * @param config Configuration object containing API keys and other settings.
  * @return Balance object containing the current balance.
  */
-std::unique_ptr<Balance> getBalance(IConfiguration &config);
+std::unique_ptr<Balance> getBalance(const IConfiguration &config);
 
 /**
  * @brief Fetches symbol information from the exchange API.
@@ -34,7 +34,7 @@ std::unique_ptr<Balance> getBalance(IConfiguration &config);
  * @return A map of symbol names to Symbol objects containing symbol
  * information.
  */
-std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config);
+std::unordered_map<std::string, Symbol *> getSymbols(const IConfiguration &config);
 
 /**
  * @brief Fetches relative values of symbols in Bitcoin from the exchange API.
@@ -44,5 +44,5 @@ std::unordered_map<std::string, Symbol *> getSymbols(IConfiguration &config);
  * @return A map of symbol names to their relative values in Bitcoin.
  */
 std::unordered_map<std::string, PreciseNumber>
-getRelativeValues(IConfiguration &config,
+getRelativeValues(const IConfiguration &config,
                   const std::unordered_map<std::string, Symbol *> &symbols);

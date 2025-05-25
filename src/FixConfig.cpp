@@ -799,7 +799,7 @@ std::string FixOeSchema() {
 )";
 }
 
-FixConfig::FixConfig(IConfiguration &config) {
+FixConfig::FixConfig(const IConfiguration &config) {
 
   // prepare fix file store
   // delete old files that contain state
