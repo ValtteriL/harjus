@@ -82,7 +82,7 @@ TEST(OpportunityTest, update) {
 
   // verify the initial state of the opportunity
   EXPECT_EQ(opportunity.getTotalProfit(),
-            PreciseNumber{"0.0"}); // Default profit is 0
+            PreciseNumber{"0"}); // Default profit is 0
   EXPECT_EQ(opportunity.getStartingAsset(), trades.front().usedCurrency());
   EXPECT_EQ(opportunity.getCapacity(), PreciseNumber{"100"});
 
@@ -90,7 +90,7 @@ TEST(OpportunityTest, update) {
   opportunity.update(startingAssetBudget);
 
   // Check if the total profit is calculated correctly
-  EXPECT_EQ(opportunity.getTotalProfit(), PreciseNumber{"8.9969969991"});
+  EXPECT_EQ(opportunity.getTotalProfit(), PreciseNumber{"8.996996999"});
   // Check if the capacity is calculated correctly
   EXPECT_EQ(opportunity.getCapacity(), startingAssetBudget);
   // Check if the starting asset is correct
@@ -107,18 +107,18 @@ TEST(OpportunityTest, update) {
 
     // Check orderQty is a multiple of baseAssetIncrement (within tolerance)
     auto baseassetincrementremainder = PreciseNumber::fmod(orderQty, increment);
-    ASSERT_EQ(baseassetincrementremainder, PreciseNumber{"0.0"});
+    ASSERT_EQ(baseassetincrementremainder, PreciseNumber{"0"});
 
     // Check orderQty is a multiple of minNotional (within tolerance)
     auto minNotionalRemainder = PreciseNumber::fmod(orderQty, minNotional);
-    ASSERT_EQ(minNotionalRemainder, PreciseNumber{"0.0"});
+    ASSERT_EQ(minNotionalRemainder, PreciseNumber{"0"});
 
     // Check notional is at least minNotional (or zero if orderQty is zero)
     auto notional = orderQty * price;
-    if (orderQty > 0) {
+    if (orderQty > PreciseNumber{"0"}) {
       ASSERT_GE(notional, minNotional);
     } else {
-      ASSERT_EQ(notional, PreciseNumber{"0.0"});
+      ASSERT_EQ(notional, PreciseNumber{"0"});
     }
   }
 }

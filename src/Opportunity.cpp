@@ -27,7 +27,7 @@ PreciseNumber calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
     trade.resetOrderQty();
 
     if (trade.position() == Position::LONG) {
-      if (trade.orderPrice() == 0) {
+      if (trade.orderPrice() == PreciseNumber{"0"}) {
         // avoid division by zero
         // this may happen if not all trades have been updated in the path
         return PreciseNumber{};
@@ -55,7 +55,7 @@ calculateStartingAssetQty(std::vector<Trade> &trades,
       acc *= trade.orderPrice();
     } else {
 
-      if (trade.orderPrice() == 0) {
+      if (trade.orderPrice() == PreciseNumber{"0"}) {
         // avoid division by zero
         // this may happen if not all trades have been updated in the path
         return PreciseNumber{};
@@ -87,7 +87,7 @@ void Opportunity::update(PreciseNumber startingAssetBudget) {
   PreciseNumber totalCommission =
       _trades.front().usedQty() *
       (PreciseNumber::pow((PreciseNumber{"1"} + _commission),
-                          std::to_string(_trades.size()).c_str()) -
+                          std::to_string(_trades.size())) -
        PreciseNumber{"1"});
   _totalProfit =
       (_trades.back().recvQty() - _trades.front().usedQty() - totalCommission) *

@@ -124,9 +124,9 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   updates.push_back(new PriceUpdate{"ETHUSDT", PreciseNumber{"1"},
                                     PreciseNumber{"0"}, PreciseNumber{"1"},
                                     PreciseNumber{"0"}}); // ETH -> USDT 1:1
-  updates.push_back(new PriceUpdate{
-      "USDTBTC", PreciseNumber{"10.0"}, PreciseNumber{" 0 "},
-      PreciseNumber{" 1.0 "}, PreciseNumber{" 0 "}}); // USDT -> BTC 1:10
+  updates.push_back(new PriceUpdate{"USDTBTC", PreciseNumber{"10.0"},
+                                    PreciseNumber{"0"}, PreciseNumber{"1.0"},
+                                    PreciseNumber{"0"}}); // USDT -> BTC 1:10
 
   for (auto update : updates) {
     engine.callProcessPriceUpdate(update);
@@ -139,7 +139,7 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   EXPECT_EQ(execution.getTrades().size(), 3);
 
   // Check if the total profit is calculated correctly
-  EXPECT_EQ(execution.getTotalProfit(), PreciseNumber{"8.9969969991"});
+  EXPECT_EQ(execution.getTotalProfit(), PreciseNumber{"8.996996999"});
   // Check if the capacity is calculated correctly
 
   EXPECT_EQ(execution.getCapacity(), PreciseNumber{startingAssetBudget});

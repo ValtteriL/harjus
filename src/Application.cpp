@@ -235,12 +235,12 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     // Extract the used and received quantities
     FIX::CumQty cumQty; // Total number of base asset traded on this order.
     message.get(cumQty);
-    PreciseNumber qtyBase = PreciseNumber{cumQty.getString().c_str()};
+    PreciseNumber qtyBase = PreciseNumber{cumQty.getString()};
 
     FIX::QtyField cumQuoteQty(
         25017); // Total number of quote asset traded on this order.
     message.getField(cumQuoteQty);
-    PreciseNumber qtyQuote = PreciseNumber{cumQuoteQty.getString().c_str()};
+    PreciseNumber qtyQuote = PreciseNumber{cumQuoteQty.getString()};
 
     FIX::Side side;
     message.get(side);
@@ -278,7 +278,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
         group.get(feeAmount);
 
         // Add the fee amount to the asset delta map
-        feeDelta[currency] -= PreciseNumber{feeAmount.getString().c_str()};
+        feeDelta[currency] -= PreciseNumber{feeAmount.getString()};
       }
     }
 
@@ -310,10 +310,10 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
     std::string symbolValue = symbol.getValue();
 
     // We need variables to store best bid/ask data
-    PreciseNumber bidPrice = 0;
-    PreciseNumber bidQuantity = 0;
-    PreciseNumber askPrice = 0;
-    PreciseNumber askQuantity = 0;
+    PreciseNumber bidPrice{};
+    PreciseNumber bidQuantity{};
+    PreciseNumber askPrice{};
+    PreciseNumber askQuantity{};
 
     FIX::NoMDEntries noMDEntries;
     message.get(noMDEntries);
@@ -334,8 +334,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
         group.get(entryPrice);
         group.get(entrySize);
 
-        bidPrice = PreciseNumber{entryPrice.getString().c_str()};
-        bidQuantity = PreciseNumber{entrySize.getString().c_str()};
+        bidPrice = PreciseNumber{entryPrice.getString()};
+        bidQuantity = PreciseNumber{entrySize.getString()};
       } else if (entryType == FIX::MDEntryType_OFFER) {
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
@@ -343,8 +343,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
         group.get(entryPrice);
         group.get(entrySize);
 
-        askPrice = PreciseNumber{entryPrice.getString().c_str()};
-        askQuantity = PreciseNumber{entrySize.getString().c_str()};
+        askPrice = PreciseNumber{entryPrice.getString()};
+        askQuantity = PreciseNumber{entrySize.getString()};
       }
     }
 
@@ -413,14 +413,12 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
           if (entryType == FIX::MDEntryType_BID) {
             updates[symbolValue]->bidPrice =
-                PreciseNumber{entryPrice.getString().c_str()};
-            updates[symbolValue]->bidQty =
-                PreciseNumber{entrySize.getString().c_str()};
+                PreciseNumber{entryPrice.getString()};
+            updates[symbolValue]->bidQty = PreciseNumber{entrySize.getString()};
           } else if (entryType == FIX::MDEntryType_OFFER) {
             updates[symbolValue]->askPrice =
-                PreciseNumber{entryPrice.getString().c_str()};
-            updates[symbolValue]->askQty =
-                PreciseNumber{entrySize.getString().c_str()};
+                PreciseNumber{entryPrice.getString()};
+            updates[symbolValue]->askQty = PreciseNumber{entrySize.getString()};
           }
         }
       }

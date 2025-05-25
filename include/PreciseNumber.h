@@ -29,7 +29,18 @@ public:
    * the amount.
    * @param amount The amount as a string (e.g., "1.23").
    */
-  PreciseNumber(const char *amount);
+  PreciseNumber(const std::string &amount);
+
+  /**
+   * @brief Deleted constructor that prevents construction of PreciseNumber from
+   * an int.
+   *
+   * This constructor is explicitly deleted to avoid implicit or accidental
+   * conversion from int to PreciseNumber, ensuring type safety and precision.
+   *
+   * @param int Unused. Construction from int is not allowed.
+   */
+  PreciseNumber(int) = delete;
 
   /**
    * @brief Adds two PreciseNumber objects.

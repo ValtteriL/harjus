@@ -26,7 +26,7 @@ const Symbol *Trade::symbol() const { return _symbol; }
 
 void Trade::recalculateOrderQty(PreciseNumber budget) {
 
-  PreciseNumber budgetOrderQty = 0;
+  PreciseNumber budgetOrderQty{};
 
   if (_position == Position::LONG) {
 
@@ -40,13 +40,14 @@ void Trade::recalculateOrderQty(PreciseNumber budget) {
 
   // ensure Qty is multiple of baseAssetIncrement (step size)
   budgetOrderQty =
-      budgetOrderQty - PreciseNumber::fmod(budgetOrderQty, _symbol->baseAssetIncrement);
+      budgetOrderQty -
+      PreciseNumber::fmod(budgetOrderQty, _symbol->baseAssetIncrement);
 
   auto maxOrderQty = PreciseNumber::min(budgetOrderQty, offerQty());
 
   // ensure order value is gte minNotional
   if (maxOrderQty * orderPrice() < _symbol->minNotional) {
-    _orderQty = 0;
+    _orderQty = PreciseNumber{"0"};
   } else {
     _orderQty = maxOrderQty;
   }

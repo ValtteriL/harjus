@@ -1,8 +1,9 @@
 #include <PreciseNumber.h>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <cmath>
+#include <string>
 
-PreciseNumber::PreciseNumber(const char *amount)
+PreciseNumber::PreciseNumber(const std::string &amount)
     : smallestUnit(checked_int128_t{
           boost::multiprecision::cpp_dec_float_50{amount} * kPrecision}) {}
 

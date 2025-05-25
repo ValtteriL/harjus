@@ -39,7 +39,7 @@ TEST_F(ExchangeTest,
 
   auto balance = getBalance(config);
   EXPECT_TRUE(balance->getBalance("BTC") >
-              0); // assuming the testnet has some BTC
+              PreciseNumber{"0"}); // assuming the testnet has some BTC
 }
 
 TEST_F(ExchangeTest,

@@ -71,7 +71,7 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
     Opportunity &opportunity = it->second;
 
-    if (opportunity.getTotalProfit() > PreciseNumber{0} &&
+    if (opportunity.getTotalProfit() > PreciseNumber{"0"} &&
         (!mostProfitableOpportunity ||
          opportunity.getTotalProfit() >
              mostProfitableOpportunity->getTotalProfit()) &&
@@ -122,7 +122,7 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
     auto &opportunity = it->second;
 
-    if (opportunity.getTotalProfit() > 0 &&
+    if (opportunity.getTotalProfit() > PreciseNumber{"0"} &&
         (!secondMostProfitable || opportunity.getTotalProfit() >
                                       secondMostProfitable->getTotalProfit()) &&
         containsOnlyFreeSymbols(opportunity)) {
