@@ -30,7 +30,7 @@ PreciseNumber calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
       if (trade.orderPrice() == 0) {
         // avoid division by zero
         // this may happen if not all trades have been updated in the path
-        return 0;
+        return PreciseNumber{};
       }
       acc = PreciseNumber::min(acc, trade.usedQty() * trade.orderPrice()) /
             trade.orderPrice();
@@ -58,7 +58,7 @@ calculateStartingAssetQty(std::vector<Trade> &trades,
       if (trade.orderPrice() == 0) {
         // avoid division by zero
         // this may happen if not all trades have been updated in the path
-        return 0;
+        return PreciseNumber{};
       }
 
       acc /= trade.orderPrice();
