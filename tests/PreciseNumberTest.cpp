@@ -116,17 +116,6 @@ TEST(PreciseNumberTest, MinValue) {
   EXPECT_EQ(minVal, c3);
 }
 
-TEST(PreciseNumberTest, PowOperator) {
-  PreciseNumber base{"2.0"};
-  PreciseNumber exp{"3.0"};
-  PreciseNumber result = PreciseNumber::pow(base, exp);
-  EXPECT_EQ(result.toString(), "8");
-  PreciseNumber base2{"9.0"};
-  PreciseNumber exp2{"0.5"};
-  result = PreciseNumber::pow(base2, exp2);
-  EXPECT_EQ(result.toString(), "2.9999999999"); // Due to precision limits
-}
-
 TEST(PreciseNumberTest, AddAssignOperator) {
   PreciseNumber c1{"1.5"};
   PreciseNumber c2{"2.25"};

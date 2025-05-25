@@ -3,6 +3,9 @@
 #include "Trade.h"
 #include <string>
 #include <vector>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
 
 Opportunity::Opportunity(std::vector<Trade> &trades,
                          PreciseNumber relativeValue, PreciseNumber commission)
@@ -85,10 +88,8 @@ void Opportunity::update(PreciseNumber startingAssetBudget) {
 
   // update profit
   PreciseNumber totalCommission =
-      _trades.front().usedQty() *
-      (PreciseNumber::pow((PreciseNumber{"1"} + _commission),
-                          std::to_string(_trades.size())) -
-       PreciseNumber{"1"});
+      _trades.front().usedQty() * _commission * std::to_string(_trades.size());
+  
   _totalProfit =
       (_trades.back().recvQty() - _trades.front().usedQty() - totalCommission) *
       _relativeValue;

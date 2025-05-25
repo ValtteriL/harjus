@@ -90,7 +90,7 @@ TEST(OpportunityTest, update) {
   opportunity.update(startingAssetBudget);
 
   // Check if the total profit is calculated correctly
-  EXPECT_EQ(opportunity.getTotalProfit(), PreciseNumber{"8.996996999"});
+  EXPECT_EQ(opportunity.getTotalProfit(), PreciseNumber{"8.997"});
   // Check if the capacity is calculated correctly
   EXPECT_EQ(opportunity.getCapacity(), startingAssetBudget);
   // Check if the starting asset is correct

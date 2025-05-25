@@ -91,15 +91,6 @@ PreciseNumber PreciseNumber::min(const PreciseNumber &a,
   return (a.smallestUnit < b.smallestUnit) ? a : b;
 }
 
-PreciseNumber PreciseNumber::pow(const PreciseNumber &base,
-                                 const PreciseNumber &exponent) {
-
-  boost::multiprecision::cpp_dec_float_50 b{base.toString()};
-  boost::multiprecision::cpp_dec_float_50 e{exponent.toString()};
-  cpp_dec_float_50 result = boost::multiprecision::pow(b, e);
-  return PreciseNumber{result.str().c_str()};
-}
-
 std::string PreciseNumber::toString() const {
   // Convert smallestUnit to string with appropriate precision
   boost::multiprecision::cpp_dec_float_50 value{smallestUnit.str()};

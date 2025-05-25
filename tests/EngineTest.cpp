@@ -139,7 +139,7 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   EXPECT_EQ(execution.getTrades().size(), 3);
 
   // Check if the total profit is calculated correctly
-  EXPECT_EQ(execution.getTotalProfit(), PreciseNumber{"8.996996999"});
+  EXPECT_EQ(execution.getTotalProfit(), PreciseNumber{"8.997"});
   // Check if the capacity is calculated correctly
 
   EXPECT_EQ(execution.getCapacity(), PreciseNumber{startingAssetBudget});

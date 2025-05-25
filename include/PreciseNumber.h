@@ -108,15 +108,6 @@ public:
   static PreciseNumber fmod(const PreciseNumber &a, const PreciseNumber &b);
 
   /**
-   * @brief Raises a PreciseNumber to the power of another PreciseNumber.
-   * @param base The base PreciseNumber.
-   * @param exponent The exponent PreciseNumber.
-   * @return The result as a new PreciseNumber.
-   */
-  static PreciseNumber pow(const PreciseNumber &base,
-                           const PreciseNumber &exponent);
-
-  /**
    * @brief Checks if two PreciseNumber objects are equal.
    * @param other The other PreciseNumber object to compare.
    * @return True if equal, false otherwise.
