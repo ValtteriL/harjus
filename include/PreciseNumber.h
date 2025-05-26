@@ -10,11 +10,11 @@
 #include <cmath>
 #include <iostream>
 
-using namespace boost::multiprecision;
+namespace bm = boost::multiprecision;
 
 class PreciseNumber {
 private:
-  checked_int128_t smallestUnit = 0;
+  bm::checked_int128_t smallestUnit = 0;
   static constexpr long long kPrecision = 1e10;
 
 public:
