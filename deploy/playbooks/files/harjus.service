@@ -28,7 +28,7 @@ ExecStart=/usr/bin/docker run --name harjus --pull=always --network host \
   -e BINANCE_FIX_API_PORT_MARKETDATA \
   -e MAX_TRADING_PATH_LENGTH \
   -e START_SYMBOLS \
-  -e BLACKLISTED_START_SYMBOLS \
+  -e BLACKLISTED_START_ASSETS \
   -e COMMISSION \
   -e LOG_LEVEL \
   ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}

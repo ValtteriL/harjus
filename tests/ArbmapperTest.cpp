@@ -75,7 +75,7 @@ protected:
 TEST_F(ArbmapperTest, noPathsWhenDepthIsZero) {
   std::vector<std::string> skipSymbols{};
 
-  EXPECT_CALL(config, getBlacklistedStartSymbols())
+  EXPECT_CALL(config, getBlacklistedStartAssets())
       .WillOnce(testing::Return(skipSymbols));
   EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(0));
 
@@ -87,7 +87,7 @@ TEST_F(ArbmapperTest, noPathsWhenDepthIsZero) {
 TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
   std::vector<std::string> skipSymbols{};
 
-  EXPECT_CALL(config, getBlacklistedStartSymbols())
+  EXPECT_CALL(config, getBlacklistedStartAssets())
       .WillOnce(testing::Return(skipSymbols));
   EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(3));
 
@@ -152,7 +152,7 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
 
 TEST_F(ArbmapperTest, excludesBlacklistedSymbolsFromPaths) {
   std::vector<std::string> skipSymbols{};
-  EXPECT_CALL(config, getBlacklistedStartSymbols())
+  EXPECT_CALL(config, getBlacklistedStartAssets())
       .WillRepeatedly(testing::Return(skipSymbols));
   EXPECT_CALL(config, getMaxTradingPathLength())
       .WillRepeatedly(testing::Return(3));

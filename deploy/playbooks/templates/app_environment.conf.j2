@@ -31,8 +31,8 @@ Environment="MAX_TRADING_PATH_LENGTH={{ max_trading_path_length }}"
 Environment="START_SYMBOLS={{ start_symbols }}"
 {% endif %}
 
-{% if blacklisted_start_symbols is defined %}
-Environment="BLACKLISTED_START_SYMBOLS={{ blacklisted_start_symbols }}"
+{% if blacklisted_start_assets is defined %}
+Environment="BLACKLISTED_START_ASSETS={{ blacklisted_start_assets }}"
 {% endif %}
 
 {% if commission is defined %}
