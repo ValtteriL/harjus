@@ -23,4 +23,4 @@ binance_ed25519_api_key: !vault |
 max_trading_path_length: 3
 blacklisted_start_symbols: "BNB"
 commission: 0.001
-log_level: 0
+log_level: 1
