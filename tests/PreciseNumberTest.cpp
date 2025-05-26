@@ -137,4 +137,10 @@ TEST(PreciseNumberTest, OutputStreamOperator) {
   std::ostringstream oss3;
   oss3 << c3;
   EXPECT_EQ(oss3.str(), "0.00000148");
+  // Test number without decimals is printed without decimal point or trailing
+  // zeros
+  PreciseNumber c4{"5.000"};
+  std::ostringstream oss4;
+  oss4 << c4;
+  EXPECT_EQ(oss4.str(), "5");
 }
