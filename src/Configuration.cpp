@@ -85,11 +85,6 @@ int Configuration::getMaxTradingPathLength() const {
   return std::stoi(maxPathLength);
 }
 
-std::vector<std::string> Configuration::getStartSymbols() const {
-  std::string symbols = dotenv::getenv("START_SYMBOLS", "");
-  return split(symbols, ',');
-}
-
 std::vector<std::string> Configuration::getBlacklistedSymbols() const {
   std::string symbols = dotenv::getenv("BLACKLISTED_SYMBOLS", "");
   return split(symbols, ',');

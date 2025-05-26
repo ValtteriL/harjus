@@ -27,10 +27,6 @@ Environment="BINANCE_FIX_API_PORT_MARKETDATA={{ binance_fix_api_port_marketdata 
 Environment="MAX_TRADING_PATH_LENGTH={{ max_trading_path_length }}"
 {% endif %}
 
-{% if start_symbols is defined %}
-Environment="START_SYMBOLS={{ start_symbols }}"
-{% endif %}
-
 {% if blacklisted_start_assets is defined %}
 Environment="BLACKLISTED_START_ASSETS={{ blacklisted_start_assets }}"
 {% endif %}

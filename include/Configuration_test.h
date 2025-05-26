@@ -17,7 +17,6 @@ public:
   MOCK_METHOD(std::string, getEd25519Seed, (), (const, override));
   MOCK_METHOD(std::string, getEd25519ApiKey, (), (const, override));
   MOCK_METHOD(int, getMaxTradingPathLength, (), (const, override));
-  MOCK_METHOD(std::vector<std::string>, getStartSymbols, (), (const, override));
   MOCK_METHOD(std::vector<std::string>, getBlacklistedStartAssets, (),
               (const, override));
   MOCK_METHOD(std::vector<std::string>, getBlacklistedSymbols, (),
