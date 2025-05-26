@@ -19,7 +19,7 @@ public:
   MOCK_METHOD(int, getMaxTradingPathLength, (), (const, override));
   MOCK_METHOD(std::vector<std::string>, getBlacklistedStartAssets, (),
               (const, override));
-  MOCK_METHOD(std::vector<std::string>, getBlacklistedSymbols, (),
+  MOCK_METHOD(std::vector<std::string>, getBlacklistedAssets, (),
               (const, override));
   MOCK_METHOD(PreciseNumber, getCommission, (), (const, override));
   MOCK_METHOD(int, getLogLevel, (), (const, override));

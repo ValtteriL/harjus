@@ -68,10 +68,10 @@ public:
   std::vector<std::string> getBlacklistedStartAssets() const override;
 
   /**
-   * @brief Get the blacklisted symbols for trading.
-   * @return A vector of blacklisted symbols as strings.
+   * @brief Get the blacklisted assets for trading.
+   * @return A vector of blacklisted assets as strings.
    */
-  std::vector<std::string> getBlacklistedSymbols() const override;
+  std::vector<std::string> getBlacklistedAssets() const override;
 
   /**
    * @brief Get the commission for trading.

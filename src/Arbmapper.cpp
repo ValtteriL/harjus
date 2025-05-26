@@ -156,12 +156,14 @@ getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
                      firstTrade.usedCurrency()) != bannedStartAssets.end();
   });
 
-  // reject cycles containing blacklisted symbols
-  auto blacklistedSymbols = configuration.getBlacklistedSymbols();
-  std::erase_if(cycles, [&blacklistedSymbols](const auto &cycle) {
+  // reject cycles containing blacklisted assets
+  auto blacklistedAssets = configuration.getBlacklistedAssets();
+  std::erase_if(cycles, [&blacklistedAssets](const auto &cycle) {
     for (const auto &trade : *cycle) {
-      if (std::find(blacklistedSymbols.begin(), blacklistedSymbols.end(),
-                    trade.symbol()->symbol) != blacklistedSymbols.end()) {
+      if (std::find(blacklistedAssets.begin(), blacklistedAssets.end(),
+                    trade.usedCurrency()) != blacklistedAssets.end() ||
+          std::find(blacklistedAssets.begin(), blacklistedAssets.end(),
+                    trade.recvCurrency()) != blacklistedAssets.end()) {
         return true;
       }
     }

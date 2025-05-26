@@ -15,7 +15,7 @@ public:
   getEd25519ApiKey() const = 0; // public key in PEM without header and trailer
   virtual int getMaxTradingPathLength() const = 0;
   virtual std::vector<std::string> getBlacklistedStartAssets() const = 0;
-  virtual std::vector<std::string> getBlacklistedSymbols() const = 0;
+  virtual std::vector<std::string> getBlacklistedAssets() const = 0;
   virtual PreciseNumber getCommission() const = 0;
   virtual int getLogLevel() const = 0;
   virtual std::string getFixFileStorePath() const = 0;

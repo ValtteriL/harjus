@@ -150,58 +150,61 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
   }
 }
 
-TEST_F(ArbmapperTest, excludesBlacklistedSymbolsFromPaths) {
+TEST_F(ArbmapperTest, excludesBlacklistedAssetsFromPaths) {
   std::vector<std::string> skipSymbols{};
   EXPECT_CALL(config, getBlacklistedStartAssets())
       .WillRepeatedly(testing::Return(skipSymbols));
   EXPECT_CALL(config, getMaxTradingPathLength())
       .WillRepeatedly(testing::Return(3));
 
-  // Helper lambda to check that no path contains any blacklisted symbol
+  // Helper lambda to check that no path contains any blacklisted asset (used or
+  // received)
   auto pathsDoNotContain = [](const std::vector<std::vector<Trade> *> &paths,
                               const std::vector<std::string> &blacklist) {
     for (const auto &path : paths) {
       for (const auto &trade : *path) {
         EXPECT_TRUE(std::find(blacklist.begin(), blacklist.end(),
-                              trade.symbol()->symbol) == blacklist.end());
+                              trade.usedCurrency()) == blacklist.end());
+        EXPECT_TRUE(std::find(blacklist.begin(), blacklist.end(),
+                              trade.recvCurrency()) == blacklist.end());
       }
     }
   };
 
-  // No blacklisted symbols
+  // No blacklisted assets
   std::vector<std::string> noBlacklisted{};
-  EXPECT_CALL(config, getBlacklistedSymbols())
+  EXPECT_CALL(config, getBlacklistedAssets())
       .WillOnce(testing::Return(noBlacklisted));
   auto opportunities = getTradingPaths(&symbolMap, config);
   EXPECT_EQ(opportunities.size(), 6);
   pathsDoNotContain(opportunities, noBlacklisted);
 
-  // Irrelevant blacklisted symbols
+  // Irrelevant blacklisted assets
   std::vector<std::string> irrelevantBlacklisted{"SOMETHINGELSE"};
-  EXPECT_CALL(config, getBlacklistedSymbols())
+  EXPECT_CALL(config, getBlacklistedAssets())
       .WillOnce(testing::Return(irrelevantBlacklisted));
   auto opportunities1 = getTradingPaths(&symbolMap, config);
   pathsDoNotContain(opportunities1, irrelevantBlacklisted);
 
-  // One blacklisted symbol
-  std::vector<std::string> oneBlacklisted{"BTCETH"};
-  EXPECT_CALL(config, getBlacklistedSymbols())
+  // One blacklisted asset
+  std::vector<std::string> oneBlacklisted{"BTC"};
+  EXPECT_CALL(config, getBlacklistedAssets())
       .WillOnce(testing::Return(oneBlacklisted));
   auto opportunities2 = getTradingPaths(&symbolMap, config);
   pathsDoNotContain(opportunities2, oneBlacklisted);
   EXPECT_TRUE(opportunities2.empty());
 
-  // Multiple blacklisted symbols
-  std::vector<std::string> multiBlacklisted{"BTCETH", "SOMETHINGELSE"};
-  EXPECT_CALL(config, getBlacklistedSymbols())
+  // Multiple blacklisted assets
+  std::vector<std::string> multiBlacklisted{"BTC", "DOGE"};
+  EXPECT_CALL(config, getBlacklistedAssets())
       .WillOnce(testing::Return(multiBlacklisted));
   auto opportunities3 = getTradingPaths(&symbolMap, config);
   pathsDoNotContain(opportunities3, multiBlacklisted);
   EXPECT_TRUE(opportunities3.empty());
 
-  // All symbols blacklisted (should be zero paths)
-  std::vector<std::string> allBlacklisted{"BTCETH", "ETHDOGE", "DOGEBTC"};
-  EXPECT_CALL(config, getBlacklistedSymbols())
+  // All assets blacklisted (should be zero paths)
+  std::vector<std::string> allBlacklisted{"BTC", "ETH", "DOGE"};
+  EXPECT_CALL(config, getBlacklistedAssets())
       .WillOnce(testing::Return(allBlacklisted));
   auto opportunities4 = getTradingPaths(&symbolMap, config);
   EXPECT_TRUE(opportunities4.empty());
