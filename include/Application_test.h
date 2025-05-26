@@ -8,7 +8,7 @@ public:
   MOCK_METHOD(bool, subscribeToSymbols,
               (const std::vector<std::string> &symbols), (override));
   MOCK_METHOD(void, submitOrder,
-              (std::string id, std::string symbol, PreciseNumber qty,
-               PreciseNumber price, Position position),
+              (const std::string &id, const std::string &symbol,
+               PreciseNumber qty, PreciseNumber price, Position position),
               (override));
 };

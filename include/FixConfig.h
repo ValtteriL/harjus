@@ -22,7 +22,7 @@ public:
    * IConfiguration object and generates the necessary configuration string.
    * It also creates the required directories and files on disk.
    */
-  FixConfig(IConfiguration &config);
+  FixConfig(const IConfiguration &config);
 
   /**
    * @brief Get the session settings.

@@ -11,38 +11,38 @@ TEST(BalanceTest, insertUpdateBalance) {
   Balance balance;
   std::string currency = "BTC";
 
-  EXPECT_EQ(balance.getBalance(currency), 0);
+  EXPECT_EQ(balance.getBalance(currency), PreciseNumber{"0"});
 
   // Add 1 BTC to the balance
-  balance.updateBalance(currency, 1);
-  EXPECT_EQ(balance.getBalance(currency), 1);
+  balance.updateBalance(currency, PreciseNumber{"1"});
+  EXPECT_EQ(balance.getBalance(currency), PreciseNumber{"1"});
 
   // Decrease the balance by 0.5 BTC
-  balance.updateBalance(currency, -0.5);
-  EXPECT_EQ(balance.getBalance(currency), 0.5);
+  balance.updateBalance(currency, PreciseNumber{"-0.5"});
+  EXPECT_EQ(balance.getBalance(currency), PreciseNumber{"0.5"});
 
   // Balance of other currencies is not affected
   std::string currency2 = "ETH";
-  EXPECT_EQ(balance.getBalance(currency2), 0);
+  EXPECT_EQ(balance.getBalance(currency2), PreciseNumber{"0"});
 }
 
 TEST(BalanceTest, updateBalanceMap) {
   Balance balance;
-  std::unordered_map<std::string, PreciseNumber> assetDelta = {{"BTC", 1},
-                                                               {"ETH", 2}};
+  std::unordered_map<std::string, PreciseNumber> assetDelta = {
+      {"BTC", PreciseNumber{"1"}}, {"ETH", PreciseNumber{"2"}}};
 
   // Update balance with assetDelta
   balance.updateBalance(assetDelta);
 
   // Check the balances
-  EXPECT_EQ(balance.getBalance("BTC"), 1);
-  EXPECT_EQ(balance.getBalance("ETH"), 2);
+  EXPECT_EQ(balance.getBalance("BTC"), PreciseNumber{"1"});
+  EXPECT_EQ(balance.getBalance("ETH"), PreciseNumber{"2"});
 
   // Update balance with negative assetDelta
-  assetDelta = {{"BTC", -0.5}, {"ETH", -1}};
+  assetDelta = {{"BTC", PreciseNumber{"-0.5"}}, {"ETH", PreciseNumber{"-1"}}};
 
   balance.updateBalance(assetDelta);
 
-  EXPECT_EQ(balance.getBalance("BTC"), 0.5);
-  EXPECT_EQ(balance.getBalance("ETH"), 1);
+  EXPECT_EQ(balance.getBalance("BTC"), PreciseNumber{"0.5"});
+  EXPECT_EQ(balance.getBalance("ETH"), PreciseNumber{"1"});
 }

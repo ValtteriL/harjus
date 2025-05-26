@@ -15,7 +15,7 @@ using namespace boost::multiprecision;
 class PreciseNumber {
 private:
   checked_int128_t smallestUnit = 0;
-  static constexpr long long kPrecision = 1e8;
+  static constexpr long long kPrecision = 1e10;
 
 public:
   /**
@@ -25,11 +25,22 @@ public:
   PreciseNumber() = default;
 
   /**
-   * @brief Constructs a PreciseNumber object from a double amount.
-   * @param amount The amount in the original currency (e.g., 1.23 for 1.23
-   * units).
+   * @brief Constructs a PreciseNumber object from a string representation of
+   * the amount.
+   * @param amount The amount as a string (e.g., "1.23").
    */
-  PreciseNumber(double amount);
+  PreciseNumber(const std::string &amount);
+
+  /**
+   * @brief Deleted constructor that prevents construction of PreciseNumber from
+   * an int.
+   *
+   * This constructor is explicitly deleted to avoid implicit or accidental
+   * conversion from int to PreciseNumber, ensuring type safety and precision.
+   *
+   * @param int Unused. Construction from int is not allowed.
+   */
+  PreciseNumber(int) = delete;
 
   /**
    * @brief Adds two PreciseNumber objects.
@@ -97,15 +108,6 @@ public:
   static PreciseNumber fmod(const PreciseNumber &a, const PreciseNumber &b);
 
   /**
-   * @brief Raises a PreciseNumber to the power of another PreciseNumber.
-   * @param base The base PreciseNumber.
-   * @param exponent The exponent PreciseNumber.
-   * @return The result as a new PreciseNumber.
-   */
-  static PreciseNumber pow(const PreciseNumber &base,
-                           const PreciseNumber &exponent);
-
-  /**
    * @brief Checks if two PreciseNumber objects are equal.
    * @param other The other PreciseNumber object to compare.
    * @return True if equal, false otherwise.
@@ -135,10 +137,10 @@ public:
   bool operator>=(const PreciseNumber &other) const;
 
   /**
-   * @brief Gets the amount in the original unit.
-   * @return The amount as a double in the original unit.
+   * @brief Returns the string representation of the PreciseNumber.
+   * @return The amount as a string in the original unit.
    */
-  double toDouble() const;
+  std::string toString() const;
 
   /**
    * @brief Returns the smaller of two PreciseNumbers.

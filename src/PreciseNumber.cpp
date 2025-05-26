@@ -1,17 +1,22 @@
 #include <PreciseNumber.h>
+#include <boost/multiprecision/cpp_dec_float.hpp>
 #include <cmath>
+#include <iomanip>
+#include <sstream>
+#include <string>
 
-PreciseNumber::PreciseNumber(double amount)
-    : smallestUnit(checked_int128_t{std::round(amount * kPrecision)}) {}
+PreciseNumber::PreciseNumber(const std::string &amount)
+    : smallestUnit(checked_int128_t{
+          boost::multiprecision::cpp_dec_float_50{amount} * kPrecision}) {}
 
 PreciseNumber PreciseNumber::operator+(const PreciseNumber &other) const {
-  PreciseNumber result{0};
+  PreciseNumber result{};
   result.smallestUnit = this->smallestUnit + other.smallestUnit;
   return result;
 }
 
 PreciseNumber PreciseNumber::operator-(const PreciseNumber &other) const {
-  PreciseNumber result{0};
+  PreciseNumber result{};
   result.smallestUnit = this->smallestUnit - other.smallestUnit;
   return result;
 }
@@ -28,7 +33,7 @@ PreciseNumber &PreciseNumber::operator+=(const PreciseNumber &other) {
 
 PreciseNumber PreciseNumber::operator*(const PreciseNumber &other) const {
   // Multiply smallest units and scale back to original unit
-  PreciseNumber result{0};
+  PreciseNumber result{};
   result.smallestUnit = this->smallestUnit * other.smallestUnit / kPrecision;
   return result;
 }
@@ -39,7 +44,7 @@ PreciseNumber &PreciseNumber::operator*=(const PreciseNumber &other) {
 }
 
 PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
-  PreciseNumber result{0};
+  PreciseNumber result{};
   if (other.smallestUnit == 0) {
     return result; // Handle division by zero
   }
@@ -60,7 +65,7 @@ PreciseNumber &PreciseNumber::operator/=(const PreciseNumber &other) {
 
 PreciseNumber PreciseNumber::fmod(const PreciseNumber &a,
                                   const PreciseNumber &b) {
-  PreciseNumber result{0};
+  PreciseNumber result{};
   if (b.smallestUnit == 0) {
     return result; // Handle division by zero
   }
@@ -83,26 +88,33 @@ bool PreciseNumber::operator>=(const PreciseNumber &other) const {
   return this->smallestUnit >= other.smallestUnit;
 }
 
-double PreciseNumber::toDouble() const {
-  return smallestUnit.convert_to<double>() / kPrecision;
-}
-
 PreciseNumber PreciseNumber::min(const PreciseNumber &a,
                                  const PreciseNumber &b) {
   return (a.smallestUnit < b.smallestUnit) ? a : b;
 }
 
-PreciseNumber PreciseNumber::pow(const PreciseNumber &base,
-                                 const PreciseNumber &exponent) {
+std::string PreciseNumber::toString() const {
+  // Convert smallestUnit to string with appropriate precision
+  boost::multiprecision::cpp_dec_float_50 value{smallestUnit.str()};
 
-  PreciseNumber result{0};
-  auto powValue = std::pow(base.toDouble(), exponent.toDouble());
-  result.smallestUnit = checked_int128_t{powValue * kPrecision};
-  return PreciseNumber(result);
+  // Scale down by kPrecision to get the original value
+  value /= kPrecision;
+
+  // Always output in fixed-point decimal notation (no exponent)
+  std::ostringstream oss;
+  oss << std::fixed << std::setprecision(10) << value;
+  std::string str = oss.str();
+  // Strip trailing zeros and possibly the decimal point
+  str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+  if (!str.empty() && str.back() == '.') {
+    str.pop_back();
+  }
+
+  return str;
 }
 
 // Friend function for output stream
 std::ostream &operator<<(std::ostream &os, const PreciseNumber &c) {
-  os << c.toDouble();
+  os << c.toString();
   return os;
 }

@@ -188,13 +188,8 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
                             const FIX::SessionID &) {
   try {
 
-    /**
-     * terminate called after throwing an instance of 'std::runtime_error'
-     * what():  Error processing execution report: Field not found
-     *Aborted (core dumped)
-     */
-    std::cout << "Received ExecutionReport: " << message.toString()
-              << std::endl;
+    BOOST_LOG_TRIVIAL(debug)
+        << "Received ExecutionReport: " << message.toString();
 
     // Extract the ClOrdID
     FIX::ClOrdID clOrdID;
@@ -217,6 +212,18 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     case FIX::ExecType_EXPIRED:
       status = TradeExecutionStatus::EXPIRED;
       break;
+    case FIX::ExecType_REJECTED: {
+      // Extract the human readable error message (Text field)
+      FIX::Text textField;
+      std::string errorMsg;
+      if (message.isSetField(FIX::FIELD::Text)) {
+        message.get(textField);
+        errorMsg = textField.getValue();
+      } else {
+        errorMsg = "Unknown error (Text field not set)";
+      }
+      throw std::runtime_error("Order rejected: " + errorMsg);
+    }
     default:
       // For other cases, just log and return without creating execution report
 
@@ -228,12 +235,12 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     // Extract the used and received quantities
     FIX::CumQty cumQty; // Total number of base asset traded on this order.
     message.get(cumQty);
-    PreciseNumber qtyBase = PreciseNumber{cumQty.getValue()};
+    PreciseNumber qtyBase = PreciseNumber{cumQty.getString()};
 
     FIX::QtyField cumQuoteQty(
         25017); // Total number of quote asset traded on this order.
     message.getField(cumQuoteQty);
-    PreciseNumber qtyQuote = PreciseNumber{cumQuoteQty.getValue()};
+    PreciseNumber qtyQuote = PreciseNumber{cumQuoteQty.getString()};
 
     FIX::Side side;
     message.get(side);
@@ -271,7 +278,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
         group.get(feeAmount);
 
         // Add the fee amount to the asset delta map
-        feeDelta[currency] -= PreciseNumber{feeAmount.getValue()};
+        feeDelta[currency] -= PreciseNumber{feeAmount.getString()};
       }
     }
 
@@ -303,10 +310,10 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
     std::string symbolValue = symbol.getValue();
 
     // We need variables to store best bid/ask data
-    PreciseNumber bidPrice = 0;
-    PreciseNumber bidQuantity = 0;
-    PreciseNumber askPrice = 0;
-    PreciseNumber askQuantity = 0;
+    PreciseNumber bidPrice{};
+    PreciseNumber bidQuantity{};
+    PreciseNumber askPrice{};
+    PreciseNumber askQuantity{};
 
     FIX::NoMDEntries noMDEntries;
     message.get(noMDEntries);
@@ -327,8 +334,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
         group.get(entryPrice);
         group.get(entrySize);
 
-        bidPrice = PreciseNumber{entryPrice.getValue()};
-        bidQuantity = PreciseNumber{entrySize.getValue()};
+        bidPrice = PreciseNumber{entryPrice.getString()};
+        bidQuantity = PreciseNumber{entrySize.getString()};
       } else if (entryType == FIX::MDEntryType_OFFER) {
         FIX::MDEntryPx entryPrice;
         FIX::MDEntrySize entrySize;
@@ -336,8 +343,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
         group.get(entryPrice);
         group.get(entrySize);
 
-        askPrice = PreciseNumber{entryPrice.getValue()};
-        askQuantity = PreciseNumber{entrySize.getValue()};
+        askPrice = PreciseNumber{entryPrice.getString()};
+        askQuantity = PreciseNumber{entrySize.getString()};
       }
     }
 
@@ -406,12 +413,12 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
           if (entryType == FIX::MDEntryType_BID) {
             updates[symbolValue]->bidPrice =
-                PreciseNumber{entryPrice.getValue()};
-            updates[symbolValue]->bidQty = PreciseNumber{entrySize.getValue()};
+                PreciseNumber{entryPrice.getString()};
+            updates[symbolValue]->bidQty = PreciseNumber{entrySize.getString()};
           } else if (entryType == FIX::MDEntryType_OFFER) {
             updates[symbolValue]->askPrice =
-                PreciseNumber{entryPrice.getValue()};
-            updates[symbolValue]->askQty = PreciseNumber{entrySize.getValue()};
+                PreciseNumber{entryPrice.getString()};
+            updates[symbolValue]->askQty = PreciseNumber{entrySize.getString()};
           }
         }
       }
@@ -434,7 +441,7 @@ void onMessage(const FIX::Message &message, const FIX::SessionID &) {
                            message.toString());
 }
 
-void Application::submitOrder(std::string id, std::string symbol,
+void Application::submitOrder(const std::string& id, const std::string& symbol,
                               PreciseNumber qty, PreciseNumber price,
                               Position position) {
   FIX44::NewOrderSingle newOrder;
@@ -444,8 +451,11 @@ void Application::submitOrder(std::string id, std::string symbol,
   newOrder.set(
       FIX::Side(position == Position::LONG ? FIX::Side_BUY : FIX::Side_SELL));
   newOrder.set(FIX::Symbol(symbol));
-  newOrder.set(FIX::OrderQty(qty.toDouble()));
-  newOrder.set(FIX::Price(price.toDouble()));
+
+  // Get the tag number for OrderQty without constructing the field
+  newOrder.setField(FIX::FIELD::OrderQty, qty.toString());
+  newOrder.setField(FIX::FIELD::Price, price.toString());
+
   newOrder.set(FIX::TimeInForce(FIX::TimeInForce_FILL_OR_KILL));
 
   BOOST_LOG_TRIVIAL(debug) << "Submitting order: " << newOrder.toString()

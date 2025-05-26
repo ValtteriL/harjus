@@ -1,6 +1,11 @@
 #include "Opportunity.h"
+#include "PreciseNumber.h"
 #include "Trade.h"
+#include <string>
 #include <vector>
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
 
 Opportunity::Opportunity(std::vector<Trade> &trades,
                          PreciseNumber relativeValue, PreciseNumber commission)
@@ -25,17 +30,15 @@ PreciseNumber calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
     trade.resetOrderQty();
 
     if (trade.position() == Position::LONG) {
-      if (trade.orderPrice() == 0) {
+      if (trade.orderPrice() == PreciseNumber{"0"}) {
         // avoid division by zero
         // this may happen if not all trades have been updated in the path
-        return 0;
+        return PreciseNumber{};
       }
-      acc = PreciseNumber::min(acc,
-                                       trade.usedQty() * trade.orderPrice()) /
+      acc = PreciseNumber::min(acc, trade.usedQty() * trade.orderPrice()) /
             trade.orderPrice();
     } else {
-      acc =
-          PreciseNumber::min(acc, trade.usedQty()) * trade.orderPrice();
+      acc = PreciseNumber::min(acc, trade.usedQty()) * trade.orderPrice();
     }
   }
   return acc;
@@ -55,10 +58,10 @@ calculateStartingAssetQty(std::vector<Trade> &trades,
       acc *= trade.orderPrice();
     } else {
 
-      if (trade.orderPrice() == 0) {
+      if (trade.orderPrice() == PreciseNumber{"0"}) {
         // avoid division by zero
         // this may happen if not all trades have been updated in the path
-        return 0;
+        return PreciseNumber{};
       }
 
       acc /= trade.orderPrice();
@@ -85,8 +88,8 @@ void Opportunity::update(PreciseNumber startingAssetBudget) {
 
   // update profit
   PreciseNumber totalCommission =
-      _trades.front().usedQty() *
-      (PreciseNumber::pow((PreciseNumber{1} + _commission), _trades.size()) - 1);
+      _trades.front().usedQty() * _commission * std::to_string(_trades.size());
+  
   _totalProfit =
       (_trades.back().recvQty() - _trades.front().usedQty() - totalCommission) *
       _relativeValue;

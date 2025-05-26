@@ -30,7 +30,7 @@ public:
    * @param price Order price
    * @param position Position to buy/sell
    */
-  virtual void submitOrder(std::string id, std::string symbol,
-                           PreciseNumber qty, PreciseNumber price,
-                           Position position) = 0;
+  virtual void submitOrder(const std::string &id, const std::string &symbol,
+                           const PreciseNumber qty, const PreciseNumber price,
+                           const Position position) = 0;
 };

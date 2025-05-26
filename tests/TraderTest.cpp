@@ -9,6 +9,7 @@
 #include "Execution.h"
 #include "ExecutionReport.h"
 #include "Opportunity.h"
+#include "PreciseNumber.h"
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
 #include "TradeExecutionStatus.h"
@@ -63,18 +64,36 @@ protected:
         .WillRepeatedly(Return(true));
 
     // Setup initial balance
-    balance.updateBalance("BTC", 1.0);
+    balance.updateBalance("BTC", PreciseNumber{"1.0"});
   }
 
   // Helper method to create a simple opportunity
   Opportunity createSimpleOpportunity() {
     // Create and store symbols properly
-    Symbol *ethBtcSymbol =
-        new Symbol{"ETHBTC", "ETH",  "BTC",  0.0,    0.0, 0.0,
-                   0.0,      0.0001, 0.0001, 0.0001, 8,   8};
-    Symbol *ethUsdtSymbol =
-        new Symbol{"ETHUSDT", "ETH",  "USDT", 0.0,    0.0, 0.0,
-                   0.0,       0.0001, 0.0001, 0.0001, 8,   8};
+    Symbol *ethBtcSymbol = new Symbol{"ETHBTC",
+                                      "ETH",
+                                      "BTC",
+                                      PreciseNumber{"0.0"},
+                                      PreciseNumber{"0.0"},
+                                      PreciseNumber{"0.0"},
+                                      PreciseNumber{"0.0"},
+                                      PreciseNumber{"0.0001"},
+                                      PreciseNumber{"0.0001"},
+                                      PreciseNumber{"0.0001"},
+                                      8,
+                                      8};
+    Symbol *ethUsdtSymbol = new Symbol{"ETHUSDT",
+                                       "ETH",
+                                       "USDT",
+                                       PreciseNumber{"0.0"},
+                                       PreciseNumber{"0.0"},
+                                       PreciseNumber{"0.0"},
+                                       PreciseNumber{"0.0"},
+                                       PreciseNumber{"0.0001"},
+                                       PreciseNumber{"0.0001"},
+                                       PreciseNumber{"0.0001"},
+                                       8,
+                                       8};
 
     symbolsMap["ETHBTC"] = ethBtcSymbol;
     symbolsMap["ETHUSDT"] = ethUsdtSymbol;
@@ -84,7 +103,7 @@ protected:
         new std::vector<Trade>{Trade{symbolsMap["ETHBTC"], Position::LONG},
                                Trade{symbolsMap["ETHUSDT"], Position::SHORT}};
 
-    return Opportunity(*trades, 1, 0.001);
+    return Opportunity(*trades, PreciseNumber{"1"}, PreciseNumber{"0.001"});
   }
 
   std::binary_semaphore semaphore{0};
@@ -138,11 +157,22 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   // Now create an execution report for the completed trade
   std::string id = trader.getIdForExecution(&execution);
   std::unordered_map<std::string, PreciseNumber> feeDelta{
-      {"BTC", PreciseNumber{-0.1}} // Example fee
+      {"BTC", PreciseNumber{"-0.1"}} // Example fee
   };
 
+  // Insert a partial execution report (not full fill)
+  // using negative values as the test opportunity has zero recvQty & usedQty
+  ExecutionReport partialReport{id, TradeExecutionStatus::FILLED,
+                                PreciseNumber{"-1"}, PreciseNumber{"-1"},
+                                feeDelta};
+
+  // Should not submit next order yet (still waiting for more reports)
+  // No new submitOrder expected here
+  trader.callProcessReport(&partialReport);
+
+  // Insert full execution report
   ExecutionReport executionReport{id, TradeExecutionStatus::FILLED,
-                                  PreciseNumber{0.1}, PreciseNumber{0.2},
+                                  PreciseNumber{"0.1"}, PreciseNumber{"0.2"},
                                   feeDelta};
 
   // Since there is still one more trade in the execution, expect another
@@ -160,7 +190,8 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
 
   // Process another report to complete the execution
   ExecutionReport finalReport{finalId, TradeExecutionStatus::FILLED,
-                              PreciseNumber{0.1}, PreciseNumber{0.2}, feeDelta};
+                              PreciseNumber{"0.1"}, PreciseNumber{"0.2"},
+                              feeDelta};
   trader.callProcessReport(&finalReport);
 
   // Verify the balance is updated correctly
@@ -178,9 +209,9 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   // 1st trade, no change
   // 2nd trade, receiving: 0.2 USDT
   // Final USDT balance: 0.0 + 0.2 = 0.2
-  EXPECT_EQ(balance.getBalance("BTC"), 0.7);
-  EXPECT_EQ(balance.getBalance("USDT"), 0.2);
-  EXPECT_EQ(balance.getBalance("ETH"), 0.1);
+  EXPECT_EQ(balance.getBalance("BTC"), PreciseNumber{"0.7"});
+  EXPECT_EQ(balance.getBalance("USDT"), PreciseNumber{"0.2"});
+  EXPECT_EQ(balance.getBalance("ETH"), PreciseNumber{"0.1"});
 }
 
 TEST_F(TraderTest, processesExpiredExecutionReport) {
@@ -204,13 +235,14 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   std::unordered_map<std::string, PreciseNumber> feeDelta{};
 
   ExecutionReport executionReport{id, TradeExecutionStatus::EXPIRED,
-                                  PreciseNumber{0}, PreciseNumber{0}, feeDelta};
+                                  PreciseNumber{"0"}, PreciseNumber{"0"},
+                                  feeDelta};
 
   // Process the report
   trader.callProcessReport(&executionReport);
 
   // Verify the balance is unchanged (except maybe for fees)
-  EXPECT_EQ(balance.getBalance("BTC"), 1.0);
+  EXPECT_EQ(balance.getBalance("BTC"), PreciseNumber{"1.0"});
 
   // Verify that trades are released
   for (auto &trade : opportunity.getTrades()) {

@@ -24,8 +24,8 @@ public:
    * @param feeDelta The fee delta of the execution report
    */
   ExecutionReport(
-      const std::string &id, TradeExecutionStatus status, PreciseNumber usedQty,
-      PreciseNumber recvQty,
+      const std::string &id, const TradeExecutionStatus status, const PreciseNumber usedQty,
+      const PreciseNumber recvQty,
       const std::unordered_map<std::string, PreciseNumber> &feeDelta);
 
   /**

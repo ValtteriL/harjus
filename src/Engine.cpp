@@ -38,7 +38,7 @@ bool Engine::containsOnlyFreeSymbols(Opportunity &opportunity) {
   return !_reservedTrades.isReserved(opportunity.getTrades());
 }
 
-void Engine::processPriceUpdate(PriceUpdate *update) {
+void Engine::processPriceUpdate(const PriceUpdate *update) {
 
   // update symbol price
   _symbols.at(update->symbol)->askPrice = update->askPrice;
@@ -71,7 +71,7 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
     Opportunity &opportunity = it->second;
 
-    if (opportunity.getTotalProfit() > PreciseNumber{0} &&
+    if (opportunity.getTotalProfit() > PreciseNumber{"0"} &&
         (!mostProfitableOpportunity ||
          opportunity.getTotalProfit() >
              mostProfitableOpportunity->getTotalProfit()) &&
@@ -96,7 +96,8 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
     _reservedTrades.reserve(trade);
   }
   _balance.updateBalance(mostProfitableOpportunity->getStartingAsset(),
-                         mostProfitableOpportunity->getCapacity() * -1);
+                         mostProfitableOpportunity->getCapacity() *
+                             PreciseNumber{"-1"});
 
   // update opportunity that use the same starting asset
   auto newBalance =
@@ -121,7 +122,7 @@ void Engine::processPriceUpdate(PriceUpdate *update) {
 
     auto &opportunity = it->second;
 
-    if (opportunity.getTotalProfit() > 0 &&
+    if (opportunity.getTotalProfit() > PreciseNumber{"0"} &&
         (!secondMostProfitable || opportunity.getTotalProfit() >
                                       secondMostProfitable->getTotalProfit()) &&
         containsOnlyFreeSymbols(opportunity)) {
