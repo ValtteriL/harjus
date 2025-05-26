@@ -31,6 +31,10 @@ Environment="MAX_TRADING_PATH_LENGTH={{ max_trading_path_length }}"
 Environment="BLACKLISTED_START_ASSETS={{ blacklisted_start_assets }}"
 {% endif %}
 
+{% if blacklisted_assets is defined %}
+Environment="BLACKLISTED_ASSETS={{ blacklisted_assets }}"
+{% endif %}
+
 {% if commission is defined %}
 Environment="COMMISSION={{ commission }}"
 {% endif %}
