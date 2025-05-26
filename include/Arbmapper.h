@@ -13,4 +13,4 @@
  */
 std::vector<std::vector<Trade> *>
 getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
-                int maxDepth, const IConfiguration &configuration);
+                const IConfiguration &configuration);

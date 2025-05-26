@@ -25,13 +25,14 @@ protected:
 TEST_F(ArbmapperTest, noPathsWhenDepthIsZero) {
   // Create a vector of symbols
   std::unordered_map<std::string, Symbol *> symbolMap{};
-  int depth = 0;
   std::vector<std::string> skipSymbols{};
 
   EXPECT_CALL(config, getBlacklistedStartSymbols())
       .WillOnce(testing::Return(skipSymbols));
+  EXPECT_CALL(config, getMaxTradingPathLength())
+      .WillOnce(testing::Return(0));
 
-  auto opportunities = getTradingPaths(&symbolMap, depth, config);
+  auto opportunities = getTradingPaths(&symbolMap, config);
 
   EXPECT_TRUE(opportunities.empty());
 }
@@ -81,13 +82,14 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
       {"ETHDOGE", ethDogeSymbol},
       {"DOGEBTC", dogeBtcSymbol}};
 
-  int depth = 3;
   std::vector<std::string> skipSymbols{};
 
   EXPECT_CALL(config, getBlacklistedStartSymbols())
       .WillOnce(testing::Return(skipSymbols));
+  EXPECT_CALL(config, getMaxTradingPathLength())
+      .WillOnce(testing::Return(3));
 
-  auto opportunities = getTradingPaths(&symbolMap, depth, config);
+  auto opportunities = getTradingPaths(&symbolMap, config);
 
   // Print out the detected opportunities with symbols and positions
   for (const auto &path : opportunities) {

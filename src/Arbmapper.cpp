@@ -137,7 +137,7 @@ std::vector<std::vector<Trade> *> findCycles(const Graph &graph,
 
 std::vector<std::vector<Trade> *>
 getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
-                int maxDepth, const IConfiguration &configuration) {
+                const IConfiguration &configuration) {
   // Create a graph
   Graph graph;
 
@@ -145,6 +145,7 @@ getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
   buildGraph(graph, symbolMap);
 
   // find & return cycles in the graph
+  int maxDepth = configuration.getMaxTradingPathLength();
   auto cycles = findCycles(graph, maxDepth);
 
   // get skipSymbols from configuration
