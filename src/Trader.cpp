@@ -120,7 +120,7 @@ void Trader::processReport(ExecutionReport *execReport) {
 
   if (execution.getTrades().empty()) {
 
-    BOOST_LOG_TRIVIAL(info) << "Succesful execution: " << execution;
+    BOOST_LOG_TRIVIAL(info) << "Successful execution: " << execution;
 
     // remove the execution from the map
     _executionsMap.erase(id);
