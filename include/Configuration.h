@@ -74,6 +74,12 @@ public:
   std::vector<std::string> getBlacklistedStartSymbols() const override;
 
   /**
+   * @brief Get the blacklisted symbols for trading.
+   * @return A vector of blacklisted symbols as strings.
+   */
+  std::vector<std::string> getBlacklistedSymbols() const override;
+
+  /**
    * @brief Get the commission for trading.
    * @return The commission as a PreciseNumber.
    */

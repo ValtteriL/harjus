@@ -95,6 +95,11 @@ std::vector<std::string> Configuration::getBlacklistedStartSymbols() const {
   return split(symbols, ',');
 }
 
+std::vector<std::string> Configuration::getBlacklistedSymbols() const {
+  std::string symbols = dotenv::getenv("BLACKLISTED_SYMBOLS", "");
+  return split(symbols, ',');
+}
+
 PreciseNumber Configuration::getCommission() const {
   auto commission = dotenv::getenv("COMMISSION", "0.001");
   return PreciseNumber{commission.c_str()};
