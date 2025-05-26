@@ -29,8 +29,7 @@ TEST_F(ArbmapperTest, noPathsWhenDepthIsZero) {
 
   EXPECT_CALL(config, getBlacklistedStartSymbols())
       .WillOnce(testing::Return(skipSymbols));
-  EXPECT_CALL(config, getMaxTradingPathLength())
-      .WillOnce(testing::Return(0));
+  EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(0));
 
   auto opportunities = getTradingPaths(&symbolMap, config);
 
@@ -86,8 +85,7 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
 
   EXPECT_CALL(config, getBlacklistedStartSymbols())
       .WillOnce(testing::Return(skipSymbols));
-  EXPECT_CALL(config, getMaxTradingPathLength())
-      .WillOnce(testing::Return(3));
+  EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(3));
 
   auto opportunities = getTradingPaths(&symbolMap, config);
 
@@ -146,4 +144,120 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
     std::string lastRecvCurrency = path->back().recvCurrency();
     EXPECT_EQ(startingAsset, lastRecvCurrency);
   }
+}
+
+TEST_F(ArbmapperTest, excludesBlacklistedSymbolsFromPaths) {
+  // Setup symbols
+  Symbol *btcEthSymbol = new Symbol{"BTCETH",
+                                    "BTC",
+                                    "ETH",
+                                    PreciseNumber{"30000"},
+                                    PreciseNumber{"30010"},
+                                    PreciseNumber{"1"},
+                                    PreciseNumber{"1"},
+                                    PreciseNumber{"10"},
+                                    PreciseNumber{"0.0001"},
+                                    PreciseNumber{"0.01"},
+                                    8,
+                                    2};
+  Symbol *ethDogeSymbol = new Symbol{"ETHDOGE",
+                                     "ETH",
+                                     "DOGE",
+                                     PreciseNumber{"0.07"},
+                                     PreciseNumber{"0.071"},
+                                     PreciseNumber{"1"},
+                                     PreciseNumber{"1"},
+                                     PreciseNumber{"10"},
+                                     PreciseNumber{"0.0001"},
+                                     PreciseNumber{"0.01"},
+                                     8,
+                                     8};
+  Symbol *dogeBtcSymbol = new Symbol{"DOGEBTC",
+                                     "DOGE",
+                                     "BTC",
+                                     PreciseNumber{"1400"},
+                                     PreciseNumber{"1410"},
+                                     PreciseNumber{"1"},
+                                     PreciseNumber{"1"},
+                                     PreciseNumber{"10"},
+                                     PreciseNumber{"0.0001"},
+                                     PreciseNumber{"0.01"},
+                                     8,
+                                     8};
+
+  std::unordered_map<std::string, Symbol *> symbolMap{
+      {"BTCETH", btcEthSymbol},
+      {"ETHDOGE", ethDogeSymbol},
+      {"DOGEBTC", dogeBtcSymbol}};
+
+  std::vector<std::string> skipSymbols{};
+  std::vector<std::string> noBlacklisted{};
+  std::vector<std::string> irrelevantBlacklisted{"SOMETHINGELSE"};
+  std::vector<std::string> oneBlacklisted{"BTCETH"};
+  std::vector<std::string> multiBlacklisted{"BTCETH", "SOMETHINGELSE"};
+
+  // No blacklisted symbols
+  EXPECT_CALL(config, getBlacklistedStartSymbols())
+      .WillRepeatedly(testing::Return(skipSymbols));
+  EXPECT_CALL(config, getMaxTradingPathLength())
+      .WillRepeatedly(testing::Return(3));
+  EXPECT_CALL(config, getBlacklistedSymbols())
+      .WillOnce(testing::Return(noBlacklisted));
+  auto opportunities = getTradingPaths(&symbolMap, config);
+  // All 6 paths should be present
+  EXPECT_EQ(opportunities.size(), 6);
+  for (const auto &path : opportunities) {
+    for (const auto &trade : *path) {
+      EXPECT_TRUE(std::find(noBlacklisted.begin(), noBlacklisted.end(),
+                            trade.symbol()->symbol) == noBlacklisted.end());
+    }
+  }
+
+  // Irrelevant blacklisted symbols
+  EXPECT_CALL(config, getBlacklistedSymbols())
+      .WillOnce(testing::Return(irrelevantBlacklisted));
+  auto opportunities1 = getTradingPaths(&symbolMap, config);
+  for (const auto &path : opportunities1) {
+    for (const auto &trade : *path) {
+      EXPECT_TRUE(
+          std::find(irrelevantBlacklisted.begin(), irrelevantBlacklisted.end(),
+                    trade.symbol()->symbol) == irrelevantBlacklisted.end());
+    }
+  }
+
+  // One blacklisted symbol
+  EXPECT_CALL(config, getBlacklistedSymbols())
+      .WillOnce(testing::Return(oneBlacklisted));
+  auto opportunities2 = getTradingPaths(&symbolMap, config);
+  for (const auto &path : opportunities2) {
+    for (const auto &trade : *path) {
+      EXPECT_TRUE(std::find(oneBlacklisted.begin(), oneBlacklisted.end(),
+                            trade.symbol()->symbol) == oneBlacklisted.end());
+    }
+  }
+  EXPECT_TRUE(opportunities2.empty());
+
+  // Multiple blacklisted symbols
+  EXPECT_CALL(config, getBlacklistedSymbols())
+      .WillOnce(testing::Return(multiBlacklisted));
+  auto opportunities3 = getTradingPaths(&symbolMap, config);
+  for (const auto &path : opportunities3) {
+    for (const auto &trade : *path) {
+      EXPECT_TRUE(std::find(multiBlacklisted.begin(), multiBlacklisted.end(),
+                            trade.symbol()->symbol) == multiBlacklisted.end());
+    }
+  }
+  EXPECT_TRUE(opportunities3.empty());
+
+  // All symbols blacklisted (should be zero paths)
+  std::vector<std::string> allBlacklisted{"BTCETH", "ETHDOGE", "DOGEBTC"};
+  EXPECT_CALL(config, getBlacklistedSymbols())
+      .WillOnce(testing::Return(allBlacklisted));
+  auto opportunities4 = getTradingPaths(&symbolMap, config);
+  EXPECT_TRUE(opportunities4.empty());
+
+  // Clean up
+  delete btcEthSymbol;
+  delete ethDogeSymbol;
+  delete dogeBtcSymbol;
 }

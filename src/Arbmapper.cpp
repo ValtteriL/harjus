@@ -148,14 +148,24 @@ getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
   int maxDepth = configuration.getMaxTradingPathLength();
   auto cycles = findCycles(graph, maxDepth);
 
-  // get skipSymbols from configuration
-  auto skipSymbols = configuration.getBlacklistedStartSymbols();
-
-  // reject cycles where the first usedCurrency is in skipSymbols
-  std::erase_if(cycles, [&skipSymbols](const auto &cycle) {
+  // reject cycles where starting currency is blacklisted
+  auto bannedStartSymbols = configuration.getBlacklistedStartSymbols();
+  std::erase_if(cycles, [&bannedStartSymbols](const auto &cycle) {
     auto firstTrade = cycle->front();
-    return std::find(skipSymbols.begin(), skipSymbols.end(),
-                     firstTrade.usedCurrency()) != skipSymbols.end();
+    return std::find(bannedStartSymbols.begin(), bannedStartSymbols.end(),
+                     firstTrade.usedCurrency()) != bannedStartSymbols.end();
+  });
+
+  // reject cycles containing blacklisted symbols
+  auto blacklistedSymbols = configuration.getBlacklistedSymbols();
+  std::erase_if(cycles, [&blacklistedSymbols](const auto &cycle) {
+    for (const auto &trade : *cycle) {
+      if (std::find(blacklistedSymbols.begin(), blacklistedSymbols.end(),
+                    trade.symbol()->symbol) != blacklistedSymbols.end()) {
+        return true;
+      }
+    }
+    return false;
   });
 
   return cycles;
