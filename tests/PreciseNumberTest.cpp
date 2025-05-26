@@ -132,4 +132,9 @@ TEST(PreciseNumberTest, OutputStreamOperator) {
   std::ostringstream oss2;
   oss2 << c2;
   EXPECT_EQ(oss2.str(), "-0.5678");
+  // Test very small number is printed in decimal, not exponential form
+  PreciseNumber c3{"1.48e-6"};
+  std::ostringstream oss3;
+  oss3 << c3;
+  EXPECT_EQ(oss3.str(), "0.00000148");
 }

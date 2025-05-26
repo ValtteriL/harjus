@@ -1,6 +1,8 @@
 #include <PreciseNumber.h>
 #include <boost/multiprecision/cpp_dec_float.hpp>
 #include <cmath>
+#include <iomanip>
+#include <sstream>
 #include <string>
 
 PreciseNumber::PreciseNumber(const std::string &amount)
@@ -98,7 +100,17 @@ std::string PreciseNumber::toString() const {
   // Scale down by kPrecision to get the original value
   value /= kPrecision;
 
-  return value.str();
+  // Always output in fixed-point decimal notation (no exponent)
+  std::ostringstream oss;
+  oss << std::fixed << std::setprecision(10) << value;
+  std::string str = oss.str();
+  // Strip trailing zeros and possibly the decimal point
+  str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+  if (!str.empty() && str.back() == '.') {
+    str.pop_back();
+  }
+
+  return str;
 }
 
 // Friend function for output stream
