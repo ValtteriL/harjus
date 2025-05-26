@@ -4,22 +4,39 @@
  */
 
 #include "Arbmapper.h"
+#include "Configuration_test.h"
 #include "PreciseNumber.h"
 #include "Symbol.h"
+#include "gmock/gmock.h"
 #include <gtest/gtest.h>
 #include <unordered_set>
 
-TEST(ArbmapperTest, noPathsWhenDepthIsZero) {
+/**
+ * Test fixture for Engine.
+ */
+
+class ArbmapperTest : public testing::Test {
+protected:
+  ArbmapperTest() {}
+
+  MockConfiguration config;
+};
+
+TEST_F(ArbmapperTest, noPathsWhenDepthIsZero) {
   // Create a vector of symbols
   std::unordered_map<std::string, Symbol *> symbolMap{};
   int depth = 0;
   std::vector<std::string> skipSymbols{};
-  auto opportunities = getTradingPaths(&symbolMap, depth, skipSymbols);
+
+  EXPECT_CALL(config, getBlacklistedStartSymbols())
+      .WillOnce(testing::Return(skipSymbols));
+
+  auto opportunities = getTradingPaths(&symbolMap, depth, config);
 
   EXPECT_TRUE(opportunities.empty());
 }
 
-TEST(ArbmapperTest, detectsAllTradingOpportunities) {
+TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
 
   Symbol *btcEthSymbol = new Symbol{"BTCETH",
                                     "BTC",
@@ -66,7 +83,11 @@ TEST(ArbmapperTest, detectsAllTradingOpportunities) {
 
   int depth = 3;
   std::vector<std::string> skipSymbols{};
-  auto opportunities = getTradingPaths(&symbolMap, depth, skipSymbols);
+
+  EXPECT_CALL(config, getBlacklistedStartSymbols())
+      .WillOnce(testing::Return(skipSymbols));
+
+  auto opportunities = getTradingPaths(&symbolMap, depth, config);
 
   // Print out the detected opportunities with symbols and positions
   for (const auto &path : opportunities) {

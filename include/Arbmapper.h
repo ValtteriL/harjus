@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IConfiguration.h"
 #include "Symbol.h"
 #include "Trade.h"
 #include <vector>
@@ -12,4 +13,4 @@
  */
 std::vector<std::vector<Trade> *>
 getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
-                int maxDepth, std::vector<std::string> &skipSymbols);
+                int maxDepth, const IConfiguration &configuration);

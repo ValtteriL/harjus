@@ -137,7 +137,7 @@ std::vector<std::vector<Trade> *> findCycles(const Graph &graph,
 
 std::vector<std::vector<Trade> *>
 getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
-                int maxDepth, std::vector<std::string> &skipSymbols) {
+                int maxDepth, const IConfiguration &configuration) {
   // Create a graph
   Graph graph;
 
@@ -146,6 +146,9 @@ getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
 
   // find & return cycles in the graph
   auto cycles = findCycles(graph, maxDepth);
+
+  // get skipSymbols from configuration
+  auto skipSymbols = configuration.getBlacklistedStartSymbols();
 
   // reject cycles where the first usedCurrency is in skipSymbols
   std::erase_if(cycles, [&skipSymbols](const auto &cycle) {

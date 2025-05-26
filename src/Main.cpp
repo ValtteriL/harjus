@@ -92,10 +92,9 @@ int main() {
 
   // calculate trading paths
   BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
-  std::vector<std::string> skipSymbols = config.getBlacklistedStartSymbols();
   int maxDepth = config.getMaxTradingPathLength();
   std::vector<std::vector<Trade> *> tradingPaths =
-      getTradingPaths(&symbolMap, maxDepth, skipSymbols);
+      getTradingPaths(&symbolMap, maxDepth, config);
 
   // Create lockfree queues for price updates & executions
   boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(1000);
