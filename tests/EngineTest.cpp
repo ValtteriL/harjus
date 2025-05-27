@@ -56,12 +56,15 @@ protected:
                                  PreciseNumber initialBalance,
                                  const std::string &asset) {
     Execution execCopy = execution;
+
+    // Starting asset balance should be reserved
+    EXPECT_EQ(balance.getBalance(asset) + execution.getCapacity(),
+              initialBalance);
+
     EXPECT_EQ(execCopy.getTrades().size(), 3);
     EXPECT_EQ(execution.getTotalProfit(), profit);
     EXPECT_EQ(execution.getCapacity(), startingAssetBudget);
     EXPECT_EQ(execution.getStartingAsset(), asset);
-    EXPECT_EQ(balance.getBalance(asset) + execution.getCapacity(),
-              initialBalance);
   }
 
   PreciseNumber startingAssetBudget{"1.0"};
@@ -154,6 +157,13 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   ASSERT_TRUE(executionQueue.try_pop(execution));
   ASSERT_TRUE(executionQueue.empty());
 
+  // Trades should be reserved
+  for (const auto &tradeVector : tradingPaths) {
+    for (const auto &trade : *tradeVector) {
+      ASSERT_TRUE(reservedTrades.isReserved(trade));
+    }
+  }
+
   verifyExecutionProperties(execution, startingAssetBudget,
                             PreciseNumber{"8.997"}, initialBalance, "BTC");
 }
@@ -199,6 +209,13 @@ TEST_F(EngineTest, detectsTwoArbitrageOpportunities) {
   ASSERT_TRUE(executionQueue.try_pop(execution1));
   ASSERT_TRUE(executionQueue.try_pop(execution2));
   ASSERT_TRUE(executionQueue.empty());
+
+  // Trades should be reserved
+  for (const auto &tradeVector : tradingPaths) {
+    for (const auto &trade : *tradeVector) {
+      ASSERT_TRUE(reservedTrades.isReserved(trade));
+    }
+  }
 
   // Check both executions using the helper
   verifyExecutionProperties(execution1, startingAssetBudget,
