@@ -128,6 +128,9 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
                                     PreciseNumber{"0"}, PreciseNumber{"1.0"},
                                     PreciseNumber{"0"}}); // USDT -> BTC 1:10
 
+  // Store the initial balance before processing updates
+  PreciseNumber initialBalance = balance.getBalance("BTC");
+
   for (auto update : updates) {
     engine.callProcessPriceUpdate(update);
   }
@@ -145,4 +148,9 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   EXPECT_EQ(execution.getCapacity(), PreciseNumber{startingAssetBudget});
   // Check if the starting asset is correct
   EXPECT_EQ(execution.getStartingAsset(), "BTC");
+
+  // Check that the balance of the starting asset has been decremented by the
+  // capacity
+  EXPECT_EQ(balance.getBalance("BTC") + execution.getCapacity(),
+            initialBalance);
 }
