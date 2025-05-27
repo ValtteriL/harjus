@@ -137,7 +137,7 @@ std::vector<std::vector<Trade> *> findCycles(const Graph &graph,
 
 std::vector<std::vector<Trade> *>
 getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
-                int maxDepth, std::vector<std::string> &skipSymbols) {
+                const IConfiguration &configuration) {
   // Create a graph
   Graph graph;
 
@@ -145,13 +145,29 @@ getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
   buildGraph(graph, symbolMap);
 
   // find & return cycles in the graph
+  int maxDepth = configuration.getMaxTradingPathLength();
   auto cycles = findCycles(graph, maxDepth);
 
-  // reject cycles where the first usedCurrency is in skipSymbols
-  std::erase_if(cycles, [&skipSymbols](const auto &cycle) {
+  // reject cycles where starting currency is blacklisted
+  auto bannedStartAssets = configuration.getBlacklistedStartAssets();
+  std::erase_if(cycles, [&bannedStartAssets](const auto &cycle) {
     auto firstTrade = cycle->front();
-    return std::find(skipSymbols.begin(), skipSymbols.end(),
-                     firstTrade.usedCurrency()) != skipSymbols.end();
+    return std::find(bannedStartAssets.begin(), bannedStartAssets.end(),
+                     firstTrade.usedCurrency()) != bannedStartAssets.end();
+  });
+
+  // reject cycles containing blacklisted assets
+  auto blacklistedAssets = configuration.getBlacklistedAssets();
+  std::erase_if(cycles, [&blacklistedAssets](const auto &cycle) {
+    for (const auto &trade : *cycle) {
+      if (std::find(blacklistedAssets.begin(), blacklistedAssets.end(),
+                    trade.usedCurrency()) != blacklistedAssets.end() ||
+          std::find(blacklistedAssets.begin(), blacklistedAssets.end(),
+                    trade.recvCurrency()) != blacklistedAssets.end()) {
+        return true;
+      }
+    }
+    return false;
   });
 
   return cycles;

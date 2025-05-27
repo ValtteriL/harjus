@@ -7,8 +7,6 @@
 #include <gtest/gtest.h>
 #include <sodium.h>
 
-using namespace std::string_literals;
-
 TEST(Ed25519Test, base64EncodeDecode) {
   std::string input{"Hello, World!"};
   std::string expectedOutput{"SGVsbG8sIFdvcmxkIQ=="};

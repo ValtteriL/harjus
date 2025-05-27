@@ -85,14 +85,14 @@ int Configuration::getMaxTradingPathLength() const {
   return std::stoi(maxPathLength);
 }
 
-std::vector<std::string> Configuration::getStartSymbols() const {
-  std::string symbols = dotenv::getenv("START_SYMBOLS", "");
-  return split(symbols, ',');
+std::vector<std::string> Configuration::getBlacklistedStartAssets() const {
+  std::string assets = dotenv::getenv("BLACKLISTED_START_ASSETS", "");
+  return split(assets, ',');
 }
 
-std::vector<std::string> Configuration::getBlacklistedStartSymbols() const {
-  std::string symbols = dotenv::getenv("BLACKLISTED_START_SYMBOLS", "");
-  return split(symbols, ',');
+std::vector<std::string> Configuration::getBlacklistedAssets() const {
+  std::string assets = dotenv::getenv("BLACKLISTED_ASSETS", "");
+  return split(assets, ',');
 }
 
 PreciseNumber Configuration::getCommission() const {

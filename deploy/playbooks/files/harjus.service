@@ -12,6 +12,7 @@ TimeoutStopSec=30
 # Pull the latest version of the image (or specific tag if overridden)
 ExecStartPre=-/usr/bin/docker stop harjus
 ExecStartPre=-/usr/bin/docker rm harjus
+ExecStartPre=/bin/sh -c 'for i in {1..10}; do ! /usr/bin/docker ps -a --format "{{.Names}}" | grep -w harjus && break; sleep 1; done'
 ExecStartPre=/bin/sh -c '/usr/bin/aws ecr get-login-password | /usr/bin/docker login --username AWS --password-stdin ${ECR_REGISTRY}'
 
 # Start the container
@@ -27,8 +28,8 @@ ExecStart=/usr/bin/docker run --name harjus --pull=always --network host \
   -e BINANCE_FIX_API_PORT_ORDERENTRY \
   -e BINANCE_FIX_API_PORT_MARKETDATA \
   -e MAX_TRADING_PATH_LENGTH \
-  -e START_SYMBOLS \
-  -e BLACKLISTED_START_SYMBOLS \
+  -e BLACKLISTED_START_ASSETS \
+  -e BLACKLISTED_ASSETS \
   -e COMMISSION \
   -e LOG_LEVEL \
   ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}

@@ -6,8 +6,8 @@
 #include <string>
 
 PreciseNumber::PreciseNumber(const std::string &amount)
-    : smallestUnit(checked_int128_t{
-          boost::multiprecision::cpp_dec_float_50{amount} * kPrecision}) {}
+    : smallestUnit(
+          bm::checked_int128_t{bm::cpp_dec_float_50{amount} * kPrecision}) {}
 
 PreciseNumber PreciseNumber::operator+(const PreciseNumber &other) const {
   PreciseNumber result{};
@@ -95,7 +95,7 @@ PreciseNumber PreciseNumber::min(const PreciseNumber &a,
 
 std::string PreciseNumber::toString() const {
   // Convert smallestUnit to string with appropriate precision
-  boost::multiprecision::cpp_dec_float_50 value{smallestUnit.str()};
+  bm::cpp_dec_float_50 value{smallestUnit.str()};
 
   // Scale down by kPrecision to get the original value
   value /= kPrecision;

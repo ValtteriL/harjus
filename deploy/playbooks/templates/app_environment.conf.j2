@@ -27,12 +27,12 @@ Environment="BINANCE_FIX_API_PORT_MARKETDATA={{ binance_fix_api_port_marketdata 
 Environment="MAX_TRADING_PATH_LENGTH={{ max_trading_path_length }}"
 {% endif %}
 
-{% if start_symbols is defined %}
-Environment="START_SYMBOLS={{ start_symbols }}"
+{% if blacklisted_start_assets is defined %}
+Environment="BLACKLISTED_START_ASSETS={{ blacklisted_start_assets }}"
 {% endif %}
 
-{% if blacklisted_start_symbols is defined %}
-Environment="BLACKLISTED_START_SYMBOLS={{ blacklisted_start_symbols }}"
+{% if blacklisted_assets is defined %}
+Environment="BLACKLISTED_ASSETS={{ blacklisted_assets }}"
 {% endif %}
 
 {% if commission is defined %}
