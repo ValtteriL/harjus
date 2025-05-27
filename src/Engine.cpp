@@ -131,6 +131,15 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
   }
 
   if (secondMostProfitable) {
+
+    // lock symbols, balance for the secnd most profitable opportunity
+    for (auto &trade : secondMostProfitable->getTrades()) {
+      _reservedTrades.reserve(trade);
+    }
+    _balance.updateBalance(secondMostProfitable->getStartingAsset(),
+                           secondMostProfitable->getCapacity() *
+                               PreciseNumber{"-1"});
+
     opportunitiesToQueue.push_back(secondMostProfitable);
   }
 
