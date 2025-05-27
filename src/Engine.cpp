@@ -54,6 +54,22 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
                            opp.getCapacity() * PreciseNumber{"-1"});
   };
 
+  // Helper: Find the most profitable opportunity, optionally excluding one
+  auto findMostProfitable = [&](auto affected,
+                                Opportunity *exclude) -> Opportunity * {
+    Opportunity *best = nullptr;
+    for (auto it = affected.first; it != affected.second; ++it) {
+      Opportunity &opp = it->second;
+      if ((exclude == nullptr || &opp != exclude) &&
+          opp.getTotalProfit() > PreciseNumber{"0"} &&
+          (!best || opp.getTotalProfit() > best->getTotalProfit()) &&
+          containsOnlyFreeSymbols(opp)) {
+        best = &opp;
+      }
+    }
+    return best;
+  };
+
   // Update all affected opportunities
   auto affected = _opportunities.equal_range(update->symbol);
   for (auto it = affected.first; it != affected.second; ++it) {
@@ -63,15 +79,7 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
   }
 
   // Find the most profitable opportunity
-  Opportunity *best = nullptr;
-  for (auto it = affected.first; it != affected.second; ++it) {
-    Opportunity &opp = it->second;
-    if (opp.getTotalProfit() > PreciseNumber{"0"} &&
-        (!best || opp.getTotalProfit() > best->getTotalProfit()) &&
-        containsOnlyFreeSymbols(opp)) {
-      best = &opp;
-    }
-  }
+  Opportunity *best = findMostProfitable(affected, nullptr);
 
   delete update;
   if (!best)
@@ -91,15 +99,7 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
   }
 
   // Find the second most profitable
-  Opportunity *secondBest = nullptr;
-  for (auto it = affected.first; it != affected.second; ++it) {
-    Opportunity &opp = it->second;
-    if (opp.getTotalProfit() > PreciseNumber{"0"} &&
-        (!secondBest || opp.getTotalProfit() > secondBest->getTotalProfit()) &&
-        containsOnlyFreeSymbols(opp)) {
-      secondBest = &opp;
-    }
-  }
+  Opportunity *secondBest = findMostProfitable(affected, best);
 
   if (secondBest) {
     reserveBudgetAndSymbols(*secondBest);
