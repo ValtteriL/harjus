@@ -39,115 +39,76 @@ bool Engine::containsOnlyFreeSymbols(Opportunity &opportunity) {
 }
 
 void Engine::processPriceUpdate(const PriceUpdate *update) {
-
-  // update symbol price
+  // Update symbol price
   _symbols.at(update->symbol)->askPrice = update->askPrice;
   _symbols.at(update->symbol)->bidPrice = update->bidPrice;
   _symbols.at(update->symbol)->askQty = update->askQty;
   _symbols.at(update->symbol)->bidQty = update->bidQty;
 
-  std::vector<Opportunity *> opportunitiesToQueue;
-
-  // update all affected opportunities
-  auto affectedOpportunitys = _opportunities.equal_range(
-      update->symbol); // get all affected oppotunities
-
-  for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
-       ++it) {
-
-    Opportunity &opportunity = it->second;
-
-    auto startingAssetBudget =
-        _balance.getBalance(opportunity.getStartingAsset());
-
-    // update the opportunity with the new price
-    opportunity.update(startingAssetBudget);
-  }
-
-  // find the most profitable opportunity
-  Opportunity *mostProfitableOpportunity = nullptr;
-  for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
-       ++it) {
-
-    Opportunity &opportunity = it->second;
-
-    if (opportunity.getTotalProfit() > PreciseNumber{"0"} &&
-        (!mostProfitableOpportunity ||
-         opportunity.getTotalProfit() >
-             mostProfitableOpportunity->getTotalProfit()) &&
-        containsOnlyFreeSymbols(opportunity)) {
-      mostProfitableOpportunity = &opportunity;
-    }
-  }
-
-  // clean up the update
-  delete update;
-
-  // if no most profitable opportunity is found, there isn't second most
-  // profitable opportunity either
-  if (!mostProfitableOpportunity) {
-    return;
-  }
-
-  opportunitiesToQueue.push_back(mostProfitableOpportunity);
-
-  // lock symbols, balance for the best opportunity
-  for (auto &trade : mostProfitableOpportunity->getTrades()) {
-    _reservedTrades.reserve(trade);
-  }
-  _balance.updateBalance(mostProfitableOpportunity->getStartingAsset(),
-                         mostProfitableOpportunity->getCapacity() *
-                             PreciseNumber{"-1"});
-
-  // update opportunity that use the same starting asset
-  auto newBalance =
-      _balance.getBalance(mostProfitableOpportunity->getStartingAsset());
-  for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
-       ++it) {
-
-    auto &opportunity = it->second;
-
-    // skip the most profitable opportunity
-    if (opportunity.getStartingAsset() ==
-            mostProfitableOpportunity->getStartingAsset() &&
-        &opportunity != mostProfitableOpportunity) {
-      opportunity.update(newBalance);
-    }
-  }
-
-  // find the second most profitable
-  Opportunity *secondMostProfitable = nullptr;
-  for (auto it = affectedOpportunitys.first; it != affectedOpportunitys.second;
-       ++it) {
-
-    auto &opportunity = it->second;
-
-    if (opportunity.getTotalProfit() > PreciseNumber{"0"} &&
-        (!secondMostProfitable || opportunity.getTotalProfit() >
-                                      secondMostProfitable->getTotalProfit()) &&
-        containsOnlyFreeSymbols(opportunity)) {
-      secondMostProfitable = &opportunity;
-    }
-  }
-
-  if (secondMostProfitable) {
-
-    // lock symbols, balance for the secnd most profitable opportunity
-    for (auto &trade : secondMostProfitable->getTrades()) {
+  // Helper: Reserve all trades and budget for an opportunity
+  auto reserveBudgetAndSymbols = [&](Opportunity &opp) {
+    for (auto &trade : opp.getTrades()) {
       _reservedTrades.reserve(trade);
     }
-    _balance.updateBalance(secondMostProfitable->getStartingAsset(),
-                           secondMostProfitable->getCapacity() *
-                               PreciseNumber{"-1"});
+    _balance.updateBalance(opp.getStartingAsset(),
+                           opp.getCapacity() * PreciseNumber{"-1"});
+  };
 
-    opportunitiesToQueue.push_back(secondMostProfitable);
+  // Update all affected opportunities
+  auto affected = _opportunities.equal_range(update->symbol);
+  for (auto it = affected.first; it != affected.second; ++it) {
+    Opportunity &opp = it->second;
+    auto startingAssetBudget = _balance.getBalance(opp.getStartingAsset());
+    opp.update(startingAssetBudget);
   }
 
-  // freeze and queue chosen opportunities for execution
-  for (auto opportunity : opportunitiesToQueue) {
+  // Find the most profitable opportunity
+  Opportunity *best = nullptr;
+  for (auto it = affected.first; it != affected.second; ++it) {
+    Opportunity &opp = it->second;
+    if (opp.getTotalProfit() > PreciseNumber{"0"} &&
+        (!best || opp.getTotalProfit() > best->getTotalProfit()) &&
+        containsOnlyFreeSymbols(opp)) {
+      best = &opp;
+    }
+  }
 
-    Execution execution{*opportunity};
+  delete update;
+  if (!best)
+    return;
 
+  std::vector<Opportunity *> toQueue;
+  toQueue.push_back(best);
+  reserveBudgetAndSymbols(*best);
+
+  // Update opportunities that use the same starting asset
+  auto newBalance = _balance.getBalance(best->getStartingAsset());
+  for (auto it = affected.first; it != affected.second; ++it) {
+    Opportunity &opp = it->second;
+    if (opp.getStartingAsset() == best->getStartingAsset() && &opp != best) {
+      opp.update(newBalance);
+    }
+  }
+
+  // Find the second most profitable
+  Opportunity *secondBest = nullptr;
+  for (auto it = affected.first; it != affected.second; ++it) {
+    Opportunity &opp = it->second;
+    if (opp.getTotalProfit() > PreciseNumber{"0"} &&
+        (!secondBest || opp.getTotalProfit() > secondBest->getTotalProfit()) &&
+        containsOnlyFreeSymbols(opp)) {
+      secondBest = &opp;
+    }
+  }
+
+  if (secondBest) {
+    reserveBudgetAndSymbols(*secondBest);
+    toQueue.push_back(secondBest);
+  }
+
+  // Freeze and queue chosen opportunities for execution
+  for (auto *opp : toQueue) {
+    Execution execution{*opp};
     BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
     _executionQueue.push(std::move(execution));
   }
