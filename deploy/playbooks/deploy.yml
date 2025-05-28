@@ -61,9 +61,6 @@
         mode: '0600' # Stricter permissions as it contains resolved secrets
       notify: Reload systemd and restart app
 
-    - name: Ensure handlers are flushed to apply changes now
-      ansible.builtin.meta: flush_handlers
-
     - name: Final deployment status message
       ansible.builtin.debug:
         msg: |
