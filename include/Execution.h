@@ -3,7 +3,6 @@
 #include "Opportunity.h"
 #include "PreciseNumber.h"
 #include "StaticTrade.h"
-#include "Trade.h"
 #include <queue>
 #include <vector>
 
