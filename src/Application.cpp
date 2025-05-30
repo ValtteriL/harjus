@@ -151,7 +151,7 @@ bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
 
       // Set subscription type (1 = Subscribe)
       marketDataRequest.set(FIX::SubscriptionRequestType(
-          FIX::SubscriptionRequestType_SNAPSHOT_PLUS_UPDATES));
+          FIX::SubscriptionRequestType_SNAPSHOT_AND_UPDATES));
 
       // Set market depth
       marketDataRequest.set(FIX::MarketDepth(1)); // 1 = Top of book
@@ -441,7 +441,7 @@ void onMessage(const FIX::Message &message, const FIX::SessionID &) {
                            message.toString());
 }
 
-void Application::submitOrder(const std::string& id, const std::string& symbol,
+void Application::submitOrder(const std::string &id, const std::string &symbol,
                               PreciseNumber qty, PreciseNumber price,
                               Position position) {
   FIX44::NewOrderSingle newOrder;
