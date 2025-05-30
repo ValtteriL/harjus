@@ -813,8 +813,7 @@ FixConfig::FixConfig(const IConfiguration &config) {
   std::string confString = R"(
   # default settings for sessions
   [DEFAULT]
-  StartTime=00:00:00
-  EndTime=00:00:00
+  NonStopSession=Y
   HeartBtInt=30
   FileStorePath=)" + config.getFixFileStorePath() +
                            R"(
