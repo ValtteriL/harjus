@@ -36,7 +36,8 @@ let
       ];
 
       # enable SSL
-      cmakeFlags = [ "-DHAVE_SSL=ON" "-DQUICKFIX_EXAMPLES=OFF" ];
+      cmakeFlags =
+        [ "-DHAVE_SSL=ON" "-DQUICKFIX_EXAMPLES=OFF" "-DQUICKFIX_TESTS=OFF" ];
 
       nativeBuildInputs = [ cmake ninja ];
       buildInputs = [ openssl ];
@@ -104,6 +105,7 @@ let
       buildInputs =
         [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
+
     };
 
     # docker packaging derivation
