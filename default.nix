@@ -33,6 +33,7 @@ let
             "https://patch-diff.githubusercontent.com/raw/quickfix/quickfix/pull/625.diff";
           hash = "sha256-J4Sw7lPS6gv9gkSn3kAM8RTdoBvpgLeOR4qeXtkjVao=";
         })
+        ./quickfix/00001-fix-build.patch
       ];
 
       # enable SSL
