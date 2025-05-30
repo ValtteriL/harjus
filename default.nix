@@ -107,6 +107,8 @@ let
         [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
 
+      cmakeFlags = [ "-DHARJUS_TESTS=OFF" ];
+
     };
 
     # docker packaging derivation

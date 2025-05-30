@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for clangd
 
+option(HARJUS_TESTS "Build Harjus tests" ON)
+
 # Boost
 if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
@@ -74,160 +76,164 @@ install(TARGETS harjus
 )
 
 # testing related
-include(CTest)
-include(GoogleTest)
 
-add_executable(MainTest tests/MainTest.cpp)
-target_link_libraries(MainTest PRIVATE
-  gtest_main
-  gtest
-)
+if(HARJUS_TESTS)
 
-gtest_discover_tests(MainTest)
+  include(CTest)
+  include(GoogleTest)
 
-add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
-  src/Trade.cpp
-  src/ReservedTrades.cpp
-  src/StaticTrade.cpp
-  src/PreciseNumber.cpp
-)
-target_link_libraries(ReservedTradesTest PRIVATE
-  gtest_main
-  GTest::gmock
-)
+  add_executable(MainTest tests/MainTest.cpp)
+  target_link_libraries(MainTest PRIVATE
+    gtest_main
+    gtest
+  )
 
-gtest_discover_tests(ReservedTradesTest)
+  gtest_discover_tests(MainTest)
 
-add_executable(BalanceTest tests/BalanceTest.cpp
-  src/Balance.cpp
-  src/PreciseNumber.cpp
-)
-target_link_libraries(BalanceTest PRIVATE
-  gtest_main
-  GTest::gmock
-)
+  add_executable(ReservedTradesTest tests/ReservedTradesTest.cpp
+    src/Trade.cpp
+    src/ReservedTrades.cpp
+    src/StaticTrade.cpp
+    src/PreciseNumber.cpp
+  )
+  target_link_libraries(ReservedTradesTest PRIVATE
+    gtest_main
+    GTest::gmock
+  )
 
-gtest_discover_tests(ReservedTradesTest)
+  gtest_discover_tests(ReservedTradesTest)
 
-add_executable(Ed25519Test tests/Ed25519Test.cpp
-  src/Ed25519.cpp
-  src/PreciseNumber.cpp
-)
-target_link_libraries(Ed25519Test PRIVATE
-  gtest_main
-  GTest::gmock
-  ${LIBSODIUM_LIBRARIES}
-)
+  add_executable(BalanceTest tests/BalanceTest.cpp
+    src/Balance.cpp
+    src/PreciseNumber.cpp
+  )
+  target_link_libraries(BalanceTest PRIVATE
+    gtest_main
+    GTest::gmock
+  )
 
-gtest_discover_tests(Ed25519Test)
+  gtest_discover_tests(ReservedTradesTest)
 
+  add_executable(Ed25519Test tests/Ed25519Test.cpp
+    src/Ed25519.cpp
+    src/PreciseNumber.cpp
+  )
+  target_link_libraries(Ed25519Test PRIVATE
+    gtest_main
+    GTest::gmock
+    ${LIBSODIUM_LIBRARIES}
+  )
 
-add_executable(ExchangeTest tests/ExchangeTest.cpp
-  src/Exchange.cpp
-  src/Ed25519.cpp
-  src/Balance.cpp
-  src/PreciseNumber.cpp
-)
-target_link_libraries(ExchangeTest PRIVATE
-  gtest_main
-  GTest::gmock
-  Boost::url
-  ${LIBSODIUM_LIBRARIES}
-  cpr::cpr
-  Boost::json
-)
-
-gtest_discover_tests(ExchangeTest)
+  gtest_discover_tests(Ed25519Test)
 
 
-add_executable(ArbmapperTest tests/ArbmapperTest.cpp
-  src/Arbmapper.cpp
-  src/Trade.cpp
-  src/PreciseNumber.cpp
-)
-target_link_libraries(ArbmapperTest PRIVATE
-  gtest_main
-  GTest::gmock
-  Boost::graph
-)
+  add_executable(ExchangeTest tests/ExchangeTest.cpp
+    src/Exchange.cpp
+    src/Ed25519.cpp
+    src/Balance.cpp
+    src/PreciseNumber.cpp
+  )
+  target_link_libraries(ExchangeTest PRIVATE
+    gtest_main
+    GTest::gmock
+    Boost::url
+    ${LIBSODIUM_LIBRARIES}
+    cpr::cpr
+    Boost::json
+  )
 
-gtest_discover_tests(ArbmapperTest)
-
-
-add_executable(OpportunityTest tests/OpportunityTest.cpp
-  src/Opportunity.cpp
-  src/Trade.cpp
-  src/PreciseNumber.cpp
-)
-target_link_libraries(OpportunityTest PRIVATE
-  gtest_main
-  GTest::gmock
-)
-
-gtest_discover_tests(OpportunityTest)
+  gtest_discover_tests(ExchangeTest)
 
 
-add_executable(EngineTest tests/EngineTest.cpp
-  src/Opportunity.cpp
-  src/Trade.cpp
-  src/Engine.cpp
-  src/ReservedTrades.cpp
-  src/Balance.cpp
-  src/PreciseNumber.cpp
-  src/Execution.cpp
-  src/PriceUpdate.cpp
-  src/StaticTrade.cpp
-)
-target_link_libraries(EngineTest PRIVATE
-  gtest_main
-  GTest::gmock
-  Boost::log
-)
+  add_executable(ArbmapperTest tests/ArbmapperTest.cpp
+    src/Arbmapper.cpp
+    src/Trade.cpp
+    src/PreciseNumber.cpp
+  )
+  target_link_libraries(ArbmapperTest PRIVATE
+    gtest_main
+    GTest::gmock
+    Boost::graph
+  )
 
-gtest_discover_tests(EngineTest)
+  gtest_discover_tests(ArbmapperTest)
 
 
-add_executable(TraderTest tests/TraderTest.cpp
-  src/Trader.cpp
-  src/Opportunity.cpp
-  src/Trade.cpp
-  src/ReservedTrades.cpp
-  src/Balance.cpp
-  src/PreciseNumber.cpp
-  src/Execution.cpp
-  src/ExecutionReport.cpp
-  src/StaticTrade.cpp
-)
-target_link_libraries(TraderTest PRIVATE
-  gtest_main
-  GTest::gmock
-  Boost::log
-)
+  add_executable(OpportunityTest tests/OpportunityTest.cpp
+    src/Opportunity.cpp
+    src/Trade.cpp
+    src/PreciseNumber.cpp
+  )
+  target_link_libraries(OpportunityTest PRIVATE
+    gtest_main
+    GTest::gmock
+  )
 
-gtest_discover_tests(TraderTest)
+  gtest_discover_tests(OpportunityTest)
 
 
-add_executable(ThreadSafeQueueTest tests/ThreadSafeQueueTest.cpp)
-target_link_libraries(ThreadSafeQueueTest PRIVATE
-  gtest_main
-  GTest::gmock
-  Boost::log
-)
+  add_executable(EngineTest tests/EngineTest.cpp
+    src/Opportunity.cpp
+    src/Trade.cpp
+    src/Engine.cpp
+    src/ReservedTrades.cpp
+    src/Balance.cpp
+    src/PreciseNumber.cpp
+    src/Execution.cpp
+    src/PriceUpdate.cpp
+    src/StaticTrade.cpp
+  )
+  target_link_libraries(EngineTest PRIVATE
+    gtest_main
+    GTest::gmock
+    Boost::log
+  )
 
-gtest_discover_tests(ThreadSafeQueueTest)
+  gtest_discover_tests(EngineTest)
 
 
-add_executable(PreciseNumberTest tests/PreciseNumberTest.cpp
-  src/PreciseNumber.cpp
-)
-target_link_libraries(PreciseNumberTest PRIVATE
-  gtest_main
-  GTest::gmock
-  Boost::log
-)
+  add_executable(TraderTest tests/TraderTest.cpp
+    src/Trader.cpp
+    src/Opportunity.cpp
+    src/Trade.cpp
+    src/ReservedTrades.cpp
+    src/Balance.cpp
+    src/PreciseNumber.cpp
+    src/Execution.cpp
+    src/ExecutionReport.cpp
+    src/StaticTrade.cpp
+  )
+  target_link_libraries(TraderTest PRIVATE
+    gtest_main
+    GTest::gmock
+    Boost::log
+  )
 
-gtest_discover_tests(PreciseNumberTest)
+  gtest_discover_tests(TraderTest)
 
+
+  add_executable(ThreadSafeQueueTest tests/ThreadSafeQueueTest.cpp)
+  target_link_libraries(ThreadSafeQueueTest PRIVATE
+    gtest_main
+    GTest::gmock
+    Boost::log
+  )
+
+  gtest_discover_tests(ThreadSafeQueueTest)
+
+
+  add_executable(PreciseNumberTest tests/PreciseNumberTest.cpp
+    src/PreciseNumber.cpp
+  )
+  target_link_libraries(PreciseNumberTest PRIVATE
+    gtest_main
+    GTest::gmock
+    Boost::log
+  )
+
+  gtest_discover_tests(PreciseNumberTest)
+
+endif()
 
 # optimize build time with precompiled headers
 
@@ -327,14 +333,15 @@ target_precompile_headers(harjus PRIVATE
   <quickfix/ThreadedSSLSocketInitiator.h>
 )
 
-target_precompile_headers(MainTest REUSE_FROM harjus)
-target_precompile_headers(ReservedTradesTest REUSE_FROM harjus)
-target_precompile_headers(BalanceTest REUSE_FROM harjus)
-target_precompile_headers(Ed25519Test REUSE_FROM harjus)
-target_precompile_headers(ExchangeTest REUSE_FROM harjus)
-target_precompile_headers(ArbmapperTest REUSE_FROM harjus)
-target_precompile_headers(OpportunityTest REUSE_FROM harjus)
-target_precompile_headers(EngineTest REUSE_FROM harjus)
-target_precompile_headers(TraderTest REUSE_FROM harjus)
-target_precompile_headers(ThreadSafeQueueTest REUSE_FROM harjus)
-
+if(HARJUS_TESTS)
+  target_precompile_headers(MainTest REUSE_FROM harjus)
+  target_precompile_headers(ReservedTradesTest REUSE_FROM harjus)
+  target_precompile_headers(BalanceTest REUSE_FROM harjus)
+  target_precompile_headers(Ed25519Test REUSE_FROM harjus)
+  target_precompile_headers(ExchangeTest REUSE_FROM harjus)
+  target_precompile_headers(ArbmapperTest REUSE_FROM harjus)
+  target_precompile_headers(OpportunityTest REUSE_FROM harjus)
+  target_precompile_headers(EngineTest REUSE_FROM harjus)
+  target_precompile_headers(TraderTest REUSE_FROM harjus)
+  target_precompile_headers(ThreadSafeQueueTest REUSE_FROM harjus)
+endif()
