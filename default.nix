@@ -16,28 +16,29 @@ let
     # build quickfix properly with SSL support
     myQuickfix = stdenv.mkDerivation {
       pname = "quickfix";
-      version = "1.15.1";
+      version = "1.16.0";
 
       src = fetchFromGitHub {
         owner = "quickfix";
         repo = "quickfix";
-        rev = "v${version}";
-        sha256 = "1fgpwgvyw992mbiawgza34427aakn5zrik3sjld0i924a9d17qwg";
+        rev =
+          "92c85ca63fc260d16e24e0ece419ecdec9ffe868"; # 1.16.0 (no release for this commit)
+        hash = "sha256-uw47OvhD25rdJaufdgrefotcjyjn/RxT64WNnm2GHmE=";
       };
 
       patches = [
         # Improved C++17 compatibility
         (fetchpatch {
           url =
-            "https://github.com/quickfix/quickfix/commit/a46708090444826c5f46a5dbf2ba4b069b413c58.diff";
-          sha256 = "1wlk4j0wmck0zm6a70g3nrnq8fz0id7wnyxn81f7w048061ldhyd";
+            "https://patch-diff.githubusercontent.com/raw/quickfix/quickfix/pull/625.diff";
+          hash = "sha256-J4Sw7lPS6gv9gkSn3kAM8RTdoBvpgLeOR4qeXtkjVao=";
         })
         ./quickfix/00001-fix-build.patch
-        ./quickfix/fix_wsl_symlink_error.patch
       ];
 
       # enable SSL
-      cmakeFlags = [ "-DHAVE_SSL=ON" ];
+      cmakeFlags =
+        [ "-DHAVE_SSL=ON" "-DQUICKFIX_EXAMPLES=OFF" "-DQUICKFIX_TESTS=OFF" ];
 
       nativeBuildInputs = [ cmake ninja ];
       buildInputs = [ openssl ];
@@ -105,6 +106,9 @@ let
       buildInputs =
         [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
+
+      cmakeFlags = [ "-DHARJUS_TESTS=OFF" ];
+
     };
 
     # docker packaging derivation
