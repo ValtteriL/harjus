@@ -22,6 +22,6 @@ binance_ed25519_api_key: !vault |
           32636563363336323339
 max_trading_path_length: 3
 blacklisted_start_assets: "BNB"
-blacklisted_assets: "USDC"
+blacklisted_assets: "USDT,FDUSD,TUSD,USDP,DAI,AEUR,UST,USTC,PAXG"
 commission: 0.001
 log_level: 1
