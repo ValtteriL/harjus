@@ -1,6 +1,6 @@
 ---
 binance_rest_api_uri: "https://testnet.binance.vision"
-binance_fix_api_hostname_orerentry: "fix-oe.testnet.binance.vision"
+binance_fix_api_hostname_orderentry: "fix-oe.testnet.binance.vision"
 binance_fix_api_hostname_marketdata: "fix-md.testnet.binance.vision"
 binance_ed25519_seed: !vault |
           $ANSIBLE_VAULT;1.1;AES256
