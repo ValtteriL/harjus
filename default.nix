@@ -101,6 +101,12 @@ let
         quickfix
         scripts
         .vscode
+        default.nix
+        .git
+        .gitignore
+        tests
+        README.md
+        .envrc
       ''] ./.;
 
       buildInputs =
