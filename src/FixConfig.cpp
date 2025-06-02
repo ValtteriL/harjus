@@ -817,6 +817,7 @@ FixConfig::FixConfig(const IConfiguration &config) {
   HeartBtInt=30
   ResetOnLogout=Y
   ResetOnDisconnect=Y
+  ReconnectInterval=1
   FileStorePath=)" + config.getFixFileStorePath() +
                            R"(
   ConnectionType=initiator
