@@ -152,7 +152,7 @@ std::string FixMdSchema() {
   <field number='8' name='BeginString' type='STRING'>
    <value enum='FIX.4.4' description='FIX44'/>
   </field>
-  <field number='9' name='BodyLength' type='LENGTH'/>
+  <field number='9' name='BodyLength' type='ULONG'/>
   <field number='10' name='CheckSum' type='STRING'/>
   <field number='15' name='Currency' type='STRING'/>
   <field number='34' name='MsgSeqNum' type='SEQNUM'/>
@@ -179,7 +179,7 @@ std::string FixMdSchema() {
   <field number='56' name='TargetCompID' type='STRING'/>
   <field number='58' name='Text' type='STRING'/>
   <field number='60' name='TransactTime' type='UTCTIMESTAMP'/>
-  <field number='95' name='RawDataLength' type='LENGTH'/>
+  <field number='95' name='RawDataLength' type='ULONG'/>
   <field number='96' name='RawData' type='DATA'/>
   <field number='98' name='EncryptMethod' type='INT64'>
    <value enum='0' description='NONE'/>
@@ -533,7 +533,7 @@ std::string FixOeSchema() {
   <field number='8' name='BeginString' type='STRING'>
    <value enum='FIX.4.4' description='FIX44'/>
   </field>
-  <field number='9' name='BodyLength' type='LENGTH'/>
+  <field number='9' name='BodyLength' type='ULONG'/>
   <field number='10' name='CheckSum' type='STRING'/>
   <field number='11' name='ClOrdID' type='STRING'/>
   <field number='14' name='CumQty' type='QTY'/>
@@ -604,7 +604,7 @@ std::string FixOeSchema() {
   <field number='66' name='ListID' type='INT64'/>
   <field number='70' name='AllocID' type='INT64'/>
   <field number='73' name='NoOrders' type='NUMINGROUP'/>
-  <field number='95' name='RawDataLength' type='LENGTH'/>
+  <field number='95' name='RawDataLength' type='ULONG'/>
   <field number='96' name='RawData' type='DATA'/>
   <field number='98' name='EncryptMethod' type='INT64'>
    <value enum='0' description='NONE'/>
