@@ -5,6 +5,7 @@ pipeline {
       ECR_REGISTRY = '137068223640.dkr.ecr.ap-northeast-1.amazonaws.com'
       ECR_REPOSITORY = 'harjus'
       AWS_DEFAULT_REGION = 'ap-northeast-1'
+      TAG_PATTERN = '^releases/\\d+\\.\\d+\\.\\d+$' // Regular expression for release tags (releases/x.y.z) where x, y, z are digits
     }
     stages {
         stage('Checkout') {
@@ -26,11 +27,11 @@ pipeline {
             }
         }
         stage('Build') {
-            // Run on the main branch or when a pull request is made to the main branch
             when {
                 anyOf {
-                    branch 'main';
-                    changeRequest target: 'main'
+                    branch 'main'; // Run on main branch
+                    changeRequest target: 'main' // Run on pull requests targeting main
+                    tag pattern: env.TAG_PATTERN, comparator: "REGEXP" // Run on tagged releases
                 }
             }
             steps {
@@ -38,9 +39,11 @@ pipeline {
             }
         }
         stage('Push') {
-            // Run on main
             when {
-                branch 'main'
+                anyOf {
+                    branch 'main'; // Run on main branch
+                    tag pattern: env.TAG_PATTERN, comparator: "REGEXP" // Run on tagged releases
+                }
             }
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
@@ -67,13 +70,8 @@ pipeline {
             }
         }
         stage('Release') {
-            // Run on main when tagged with a version
-            // (theres a tag releases/x.y.z where x.y.v is a semver)
             when {
-              allOf {
-                branch 'main';
-                tag pattern: '^releases/\\d+\\.\\d+\\.\\d+$', comparator: "REGEXP"
-              }
+                tag pattern: env.TAG_PATTERN, comparator: "REGEXP" // Run on tagged releases
             }
             steps {
                 sh '''
