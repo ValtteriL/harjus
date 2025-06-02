@@ -172,7 +172,7 @@ std::string FixMdSchema() {
    <value enum='XLQ' description='LIMIT_QUERY'/>
    <value enum='XLR' description='LIMIT_RESPONSE'/>
   </field>
-  <field number='45' name='RefSeqNum' type='INT'/>
+  <field number='45' name='RefSeqNum' type='INT64'/>
   <field number='49' name='SenderCompID' type='STRING'/>
   <field number='52' name='SendingTime' type='UTCTIMESTAMP'/>
   <field number='55' name='Symbol' type='STRING'/>
@@ -181,10 +181,10 @@ std::string FixMdSchema() {
   <field number='60' name='TransactTime' type='UTCTIMESTAMP'/>
   <field number='95' name='RawDataLength' type='LENGTH'/>
   <field number='96' name='RawData' type='DATA'/>
-  <field number='98' name='EncryptMethod' type='INT'>
+  <field number='98' name='EncryptMethod' type='INT64'>
    <value enum='0' description='NONE'/>
   </field>
-  <field number='108' name='HeartBtInt' type='INT'/>
+  <field number='108' name='HeartBtInt' type='INT64'/>
   <field number='112' name='TestReqID' type='STRING'/>
   <field number='141' name='ResetSeqNumFlag' type='BOOLEAN'>
    <value enum='Y' description='YES'/>
@@ -197,7 +197,7 @@ std::string FixMdSchema() {
    <value enum='1' description='Subscribe'/>
    <value enum='2' description='Unsubscribe'/>
   </field>
-  <field number='264' name='MarketDepth' type='INT'/>
+  <field number='264' name='MarketDepth' type='INT64'/>
   <field number='266' name='AggregatedBook' type='BOOLEAN'>
    <value enum='Y' description='BOOK_ENTRIES_TO_BE_AGGREGATED'/>
   </field>
@@ -220,9 +220,9 @@ std::string FixMdSchema() {
    <value enum='2' description='TOO_MANY_SUBSCRIPTIONS'/>
   </field>
   <field number='320' name='InstrumentReqID' type='STRING'/>
-  <field number='371' name='RefTagID' type='INT'/>
+  <field number='371' name='RefTagID' type='INT64'/>
   <field number='372' name='RefMsgType' type='STRING'/>
-  <field number='373' name='SessionRejectReason' type='INT'>
+  <field number='373' name='SessionRejectReason' type='INT64'>
    <value enum='0' description='INVALID_TAG_NUMBER'/>
    <value enum='1' description='REQUIRED_TAG_MISSING'/>
    <value enum='2' description='TAG_NOT_DEFINED_FOR_THIS_MESSAGE_TYPE'/>
@@ -238,7 +238,7 @@ std::string FixMdSchema() {
    <value enum='99' description='OTHER'/>
   </field>
   <field number='553' name='Username' type='STRING'/>
-  <field number='559' name='InstrumentListRequestType' type='INT'>
+  <field number='559' name='InstrumentListRequestType' type='INT64'>
    <value enum='0' description='SINGLE_INSTRUMENT'/>
    <value enum='4' description='ALL_INSTRUMENTS'/>
   </field>
@@ -248,30 +248,30 @@ std::string FixMdSchema() {
    <value enum='Y' description='LAST_MESSAGE'/>
   </field>
   <field number='969' name='MinPriceIncrement' type='PRICE'/>
-  <field number='1003' name='TradeID' type='INT'/>
+  <field number='1003' name='TradeID' type='INT64'/>
   <field number='1140' name='MaxTradeVol' type='QTY'/>
   <field number='2446' name='AggressorSide' type='CHAR'>
    <value enum='1' description='BUY'/>
    <value enum='2' description='SELL'/>
   </field>
   <field number='6136' name='ReqID' type='STRING'/>
-  <field number='25000' name='RecvWindow' type='INT'/>
+  <field number='25000' name='RecvWindow' type='INT64'/>
   <field number='25003' name='NoLimitIndicators' type='NUMINGROUP'/>
   <field number='25004' name='LimitType' type='CHAR'>
    <value enum='2' description='MESSAGE_LIMIT'/>
    <value enum='3' description='SUBSCRIPTION_LIMIT'/>
   </field>
-  <field number='25005' name='LimitCount' type='INT'/>
-  <field number='25006' name='LimitMax' type='INT'/>
-  <field number='25007' name='LimitResetInterval' type='INT'/>
+  <field number='25005' name='LimitCount' type='INT64'/>
+  <field number='25006' name='LimitMax' type='INT64'/>
+  <field number='25007' name='LimitResetInterval' type='INT64'/>
   <field number='25008' name='LimitResetIntervalResolution' type='CHAR'>
    <value enum='s' description='SECOND'/>
    <value enum='m' description='MINUTE'/>
    <value enum='h' description='HOUR'/>
    <value enum='d' description='DAY'/>
   </field>
-  <field number='25016' name='ErrorCode' type='INT'/>
-  <field number='25035' name='MessageHandling' type='INT'>
+  <field number='25016' name='ErrorCode' type='INT64'/>
+  <field number='25035' name='MessageHandling' type='INT64'>
    <value enum='1' description='UNORDERED'/>
    <value enum='2' description='SEQUENTIAL'/>
   </field>
@@ -280,8 +280,8 @@ std::string FixMdSchema() {
   <field number='25040' name='MarketMinTradeVol' type='QTY'/>
   <field number='25041' name='MarketMaxTradeVol' type='QTY'/>
   <field number='25042' name='MarketMinQtyIncrement' type='QTY'/>
-  <field number='25043' name='FirstBookUpdateID' type='INT'/>
-  <field number='25044' name='LastBookUpdateID' type='INT'/>
+  <field number='25043' name='FirstBookUpdateID' type='INT64'/>
+  <field number='25044' name='LastBookUpdateID' type='INT64'/>
  </fields>
 </fix>
 )";
@@ -537,7 +537,7 @@ std::string FixOeSchema() {
   <field number='10' name='CheckSum' type='STRING'/>
   <field number='11' name='ClOrdID' type='STRING'/>
   <field number='14' name='CumQty' type='QTY'/>
-  <field number='17' name='ExecID' type='INT'/>
+  <field number='17' name='ExecID' type='INT64'/>
   <field number='18' name='ExecInst' type='CHAR'>
    <value enum='6' description='PARTICIPATE_DONT_INITIATE'/>
   </field>
@@ -565,7 +565,7 @@ std::string FixOeSchema() {
    <value enum='XLQ' description='LIMIT_QUERY'/>
    <value enum='XLR' description='LIMIT_RESPONSE'/>
   </field>
-  <field number='37' name='OrderID' type='INT'/>
+  <field number='37' name='OrderID' type='INT64'/>
   <field number='38' name='OrderQty' type='QTY'/>
   <field number='39' name='OrdStatus' type='CHAR'>
    <value enum='0' description='NEW'/>
@@ -585,7 +585,7 @@ std::string FixOeSchema() {
   </field>
   <field number='41' name='OrigClOrdID' type='STRING'/>
   <field number='44' name='Price' type='PRICE'/>
-  <field number='45' name='RefSeqNum' type='INT'/>
+  <field number='45' name='RefSeqNum' type='INT64'/>
   <field number='49' name='SenderCompID' type='STRING'/>
   <field number='52' name='SendingTime' type='UTCTIMESTAMP'/>
   <field number='54' name='Side' type='CHAR'>
@@ -601,24 +601,24 @@ std::string FixOeSchema() {
    <value enum='4' description='FILL_OR_KILL'/>
   </field>
   <field number='60' name='TransactTime' type='UTCTIMESTAMP'/>
-  <field number='66' name='ListID' type='INT'/>
-  <field number='70' name='AllocID' type='INT'/>
+  <field number='66' name='ListID' type='INT64'/>
+  <field number='70' name='AllocID' type='INT64'/>
   <field number='73' name='NoOrders' type='NUMINGROUP'/>
   <field number='95' name='RawDataLength' type='LENGTH'/>
   <field number='96' name='RawData' type='DATA'/>
-  <field number='98' name='EncryptMethod' type='INT'>
+  <field number='98' name='EncryptMethod' type='INT64'>
    <value enum='0' description='NONE'/>
   </field>
-  <field number='103' name='OrdRejReason' type='INT'>
+  <field number='103' name='OrdRejReason' type='INT64'>
    <value enum='99' description='OTHER'/>
   </field>
-  <field number='108' name='HeartBtInt' type='INT'/>
+  <field number='108' name='HeartBtInt' type='INT64'/>
   <field number='111' name='MaxFloor' type='QTY'/>
   <field number='112' name='TestReqID' type='STRING'/>
   <field number='136' name='NoMiscFees' type='NUMINGROUP'/>
   <field number='137' name='MiscFeeAmt' type='QTY'/>
   <field number='138' name='MiscFeeCurr' type='STRING'/>
-  <field number='139' name='MiscFeeType' type='INT'>
+  <field number='139' name='MiscFeeType' type='INT64'>
    <value enum='4' description='EXCHANGE_FEES'/>
   </field>
   <field number='141' name='ResetSeqNumFlag' type='BOOLEAN'>
@@ -636,9 +636,9 @@ std::string FixOeSchema() {
   </field>
   <field number='151' name='LeavesQty' type='QTY'/>
   <field number='152' name='CashOrderQty' type='QTY'/>
-  <field number='371' name='RefTagID' type='INT'/>
+  <field number='371' name='RefTagID' type='INT64'/>
   <field number='372' name='RefMsgType' type='STRING'/>
-  <field number='373' name='SessionRejectReason' type='INT'>
+  <field number='373' name='SessionRejectReason' type='INT64'>
    <value enum='0' description='INVALID_TAG_NUMBER'/>
    <value enum='1' description='REQUIRED_TAG_MISSING'/>
    <value enum='2' description='TAG_NOT_DEFINED_FOR_THIS_MESSAGE_TYPE'/>
@@ -653,13 +653,13 @@ std::string FixOeSchema() {
    <value enum='16' description='INCORRECT_NUMINGROUP_COUNT_FOR_REPEATING_GROUP'/>
    <value enum='99' description='OTHER'/>
   </field>
-  <field number='429' name='ListStatusType' type='INT'>
+  <field number='429' name='ListStatusType' type='INT64'>
    <value enum='2' description='RESPONSE'/>
    <value enum='4' description='EXEC_STARTED'/>
    <value enum='5' description='ALL_DONE'/>
    <value enum='100' description='UPDATED'/>
   </field>
-  <field number='431' name='ListOrderStatus' type='INT'>
+  <field number='431' name='ListOrderStatus' type='INT64'>
    <value enum='3' description='EXECUTING'/>
    <value enum='6' description='ALL_DONE'/>
    <value enum='7' description='REJECT'/>
@@ -674,19 +674,19 @@ std::string FixOeSchema() {
    <value enum='0' description='CANCEL_REQUEST_REJECTED'/>
    <value enum='1' description='CANCEL_SYMBOL_ORDERS'/>
   </field>
-  <field number='532' name='MassCancelRejectReason' type='INT'>
+  <field number='532' name='MassCancelRejectReason' type='INT64'>
    <value enum='99' description='OTHER'/>
   </field>
-  <field number='533' name='TotalAffectedOrders' type='INT'/>
+  <field number='533' name='TotalAffectedOrders' type='INT64'/>
   <field number='553' name='Username' type='STRING'/>
   <field number='574' name='MatchType' type='STRING'>
    <value enum='1' description='ONE_PARTY_TRADE_REPORT'/>
    <value enum='4' description='AUTO_MATCH'/>
   </field>
   <field number='636' name='WorkingIndicator' type='BOOLEAN'/>
-  <field number='811' name='PriceDelta' type='INT'/>
-  <field number='847' name='TargetStrategy' type='INT'/>
-  <field number='1003' name='TradeID' type='INT'/>
+  <field number='811' name='PriceDelta' type='INT64'/>
+  <field number='847' name='TargetStrategy' type='INT64'/>
+  <field number='1003' name='TradeID' type='INT64'/>
   <field number='1057' name='AggressorIndicator' type='BOOLEAN'>
    <value enum='Y' description='ORDER_INITIATOR_IS_AGGRESSOR'/>
    <value enum='N' description='ORDER_INITIATOR_IS_PASSIVE'/>
@@ -707,17 +707,17 @@ std::string FixOeSchema() {
    <value enum='D'
           description='TRIGGER_IF_THE_PRICE_OF_THE_SPECIFIED_TYPE_GOES_DOWN_TO_OR_THROUGH_THE_SPECIFIED_TRIGGER_PRICE'/>
   </field>
-  <field number='1385' name='ContingencyType' type='INT'>
+  <field number='1385' name='ContingencyType' type='INT64'>
    <value enum='1' description='ONE_CANCELS_THE_OTHER'/>
    <value enum='2' description='ONE_TRIGGERS_THE_OTHER'/>
   </field>
-  <field number='1386' name='ListRejectReason' type='INT'>
+  <field number='1386' name='ListRejectReason' type='INT64'>
    <value enum='99' description='OTHER'/>
   </field>
   <field number='6136' name='ReqID' type='STRING'/>
-  <field number='7940' name='StrategyID' type='INT'/>
+  <field number='7940' name='StrategyID' type='INT64'/>
   <field number='9406' name='DropCopyFlag' type='BOOLEAN'/>
-  <field number='25000' name='RecvWindow' type='INT'/>
+  <field number='25000' name='RecvWindow' type='INT64'/>
   <field number='25001' name='SelfTradePreventionMode' type='CHAR'>
    <value enum='1' description='NONE'/>
    <value enum='2' description='EXPIRE_TAKER'/>
@@ -725,7 +725,7 @@ std::string FixOeSchema() {
    <value enum='4' description='EXPIRE_BOTH'/>
    <value enum='5' description='DECREMENT'/>
   </field>
-  <field number='25002' name='CancelRestrictions' type='INT'>
+  <field number='25002' name='CancelRestrictions' type='INT64'>
    <value enum='1' description='ONLY_NEW'/>
    <value enum='2' description='ONLY_PARTIALLY_FILLED'/>
   </field>
@@ -734,63 +734,63 @@ std::string FixOeSchema() {
    <value enum='1' description='ORDER_LIMIT'/>
    <value enum='2' description='MESSAGE_LIMIT'/>
   </field>
-  <field number='25005' name='LimitCount' type='INT'/>
-  <field number='25006' name='LimitMax' type='INT'/>
-  <field number='25007' name='LimitResetInterval' type='INT'/>
+  <field number='25005' name='LimitCount' type='INT64'/>
+  <field number='25006' name='LimitMax' type='INT64'/>
+  <field number='25007' name='LimitResetInterval' type='INT64'/>
   <field number='25008' name='LimitResetIntervalResolution' type='CHAR'>
    <value enum='s' description='SECOND'/>
    <value enum='m' description='MINUTE'/>
    <value enum='h' description='HOUR'/>
    <value enum='d' description='DAY'/>
   </field>
-  <field number='25009' name='TriggerTrailingDeltaBips' type='INT'/>
+  <field number='25009' name='TriggerTrailingDeltaBips' type='INT64'/>
   <field number='25010' name='NoListTriggeringInstructions' type='NUMINGROUP'/>
   <field number='25011' name='ListTriggerType' type='CHAR'>
    <value enum='1' description='ACTIVATED'/>
    <value enum='2' description='PARTIALLY_FILLED'/>
    <value enum='3' description='FILLED'/>
   </field>
-  <field number='25012' name='ListTriggerTriggerIndex' type='INT'/>
+  <field number='25012' name='ListTriggerTriggerIndex' type='INT64'/>
   <field number='25013' name='ListTriggerAction' type='CHAR'>
    <value enum='1' description='RELEASE'/>
    <value enum='2' description='CANCEL'/>
   </field>
   <field number='25014' name='ClListID' type='STRING'/>
   <field number='25015' name='OrigClListID' type='STRING'/>
-  <field number='25016' name='ErrorCode' type='INT'/>
+  <field number='25016' name='ErrorCode' type='INT64'/>
   <field number='25017' name='CumQuoteQty' type='QTY'/>
   <field number='25018' name='OrderCreationTime' type='UTCTIMESTAMP'/>
-  <field number='25021' name='WorkingFloor' type='INT'>
+  <field number='25021' name='WorkingFloor' type='INT64'>
    <value enum='1' description='EXCHANGE'/>
    <value enum='2' description='BROKER'/>
    <value enum='3' description='SOR'/>
   </field>
   <field number='25022' name='TrailingTime' type='UTCTIMESTAMP'/>
   <field number='25023' name='WorkingTime' type='UTCTIMESTAMP'/>
-  <field number='25024' name='PreventedMatchID' type='INT'/>
+  <field number='25024' name='PreventedMatchID' type='INT64'/>
   <field number='25025' name='PreventedExecutionPrice' type='PRICE'/>
   <field number='25026' name='PreventedExecutionQty' type='QTY'/>
-  <field number='25027' name='TradeGroupID' type='INT'/>
+  <field number='25027' name='TradeGroupID' type='INT64'/>
   <field number='25028' name='CounterSymbol' type='STRING'/>
-  <field number='25029' name='CounterOrderID' type='INT'/>
+  <field number='25029' name='CounterOrderID' type='INT64'/>
   <field number='25030' name='PreventedQty' type='QTY'/>
   <field number='25031' name='LastPreventedQty' type='QTY'/>
   <field number='25032' name='SOR' type='BOOLEAN'/>
-  <field number='25033' name='OrderCancelRequestAndNewOrderSingleMode' type='INT'>
+  <field number='25033' name='OrderCancelRequestAndNewOrderSingleMode' type='INT64'>
    <value enum='1' description='STOP_ON_FAILURE'/>
    <value enum='2' description='ALLOW_FAILURE'/>
   </field>
   <field number='25034' name='CancelClOrdID' type='STRING'/>
-  <field number='25035' name='MessageHandling' type='INT'>
+  <field number='25035' name='MessageHandling' type='INT64'>
    <value enum='1' description='UNORDERED'/>
    <value enum='2' description='SEQUENTIAL'/>
   </field>
-  <field number='25036' name='ResponseMode' type='INT'>
+  <field number='25036' name='ResponseMode' type='INT64'>
    <value enum='1' description='EVERYTHING'/>
    <value enum='2' description='ONLY_ACKS'/>
   </field>
   <field number='25037' name='UUID' type='STRING'/>
-  <field number='25038' name='OrderRateLimitExceededMode' type='INT'>
+  <field number='25038' name='OrderRateLimitExceededMode' type='INT64'>
    <value enum='1' description='DO_NOTHING'/>
    <value enum='2' description='CANCEL_ONLY'/>
   </field>
