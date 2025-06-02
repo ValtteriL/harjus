@@ -23,8 +23,7 @@ ctest --test-dir build/
 
 ### Automatic tests
 
-The unit tests are run by CI/CD **Quality Pipeline (Jenkins)** on push.
-On push to main, they are additionallyt run by the **Quality Pipeline (GHA)** before packaging the application.
+The unit tests are run by CI/CD on push to any branch.
 
 ## Build
 
@@ -42,10 +41,11 @@ nix-build -A harjusBuild
 
 ### Automatic builds
 
-Container images are build automatically by CI/CD **Build Pipeline** and pushed to registry. If the quality pipeline succeeds and the push is to the main branch, a build is made and its pushed to registry with git hash tag.
-The image is additionally pushed with release version tag if release tag pushed in git.
+Container images are build automatically by CI/CD and pushed to registry. If the quality stage succeeds and the push is to the `main` branch, a build is made and its pushed to registry with git hash tag and the `latest` tag.
 
-Pushing with release tag:
+When a special release tag (releases/$semver) is pushed to any commit, if the quality stage succeeds, CI/CD builds the container image and pushes it to the registry with the git hash tag and the $semver tag.
+
+## Release
 
 1. Create a Git tag: Create a Git tag that matches the pattern `releases/[1-9]+.[0-9]+.[0-9]+`. For example:
 
@@ -53,6 +53,8 @@ Pushing with release tag:
 git tag releases/1.0.0
 git push origin releases/1.0.0
 ```
+
+2. Trigger the build for the tag manually through Jenkins.
 
 ## Deployment
 
@@ -98,7 +100,7 @@ ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ubuntu@$(terraform 
 ```bash
 sudo systemctl status harjus
 # or
-sudo journalctl -ua harjus.service
+sudo journalctl -au harjus.service
 ```
 
 ### Inspect containers running on runner
