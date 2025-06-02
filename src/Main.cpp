@@ -28,6 +28,7 @@
 #include <vector>
 
 std::atomic<bool> running{true};
+std::atomic<bool> isShuttingDown{false};
 
 void banner() {
   std::cout << R"(
@@ -186,6 +187,7 @@ int main() {
   j_thread_trader.join();
 
   // Stop the application
+  isShuttingDown = true;
   initiator->stop();
 
   BOOST_LOG_TRIVIAL(info) << "Done. Exiting.";

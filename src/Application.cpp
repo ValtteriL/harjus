@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Ed25519.h"
 #include "Position.h"
+#include <atomic>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
@@ -11,6 +12,8 @@
 #include <quickfix/Session.h>
 #include <quickfix/fix44/MarketDataRequestReject.h>
 #include <quickfix/fix44/Reject.h>
+
+extern std::atomic<bool> isShuttingDown;
 
 Application::Application(IConfiguration &conf,
                          boost::lockfree::queue<PriceUpdate *> &queue,
@@ -35,6 +38,10 @@ void Application::onLogon(const FIX::SessionID &sessionID) {
 
 void Application::onLogout(const FIX::SessionID &sessionID) {
   BOOST_LOG_TRIVIAL(debug) << "FIX logout - " << sessionID;
+  if (!isShuttingDown) {
+    throw std::runtime_error("FIX session disconnected abnormally: " +
+                             sessionID.toString());
+  }
 }
 
 void Application::fromAdmin(const FIX::Message &message, const FIX::SessionID &)
