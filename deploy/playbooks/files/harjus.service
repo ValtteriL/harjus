@@ -3,8 +3,10 @@ Description=Harjus
 After=docker.service network-online.target
 Requires=docker.service
 Wants=network-online.target
+StartLimitIntervalSec=30
 
 [Service]
+StartLimitBurst=1
 TimeoutStartSec=0
 # Time to wait for graceful shutdown
 TimeoutStopSec=30
