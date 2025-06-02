@@ -873,6 +873,32 @@ FixConfig::FixConfig(const IConfiguration &config) {
                 R"(
 
   [SESSION]
+  SenderCompID=HARJUSM3
+  SessionQualifier=MARKETDATA
+  DataDictionary=)" +
+                tmpMd +
+                R"(
+  SocketConnectHost=)" +
+                config.getBinanceFIXApiHostnameMarketData() +
+                R"(
+  SocketConnectPort=)" +
+                config.getBinanceFIXApiPortMarketData() +
+                R"(
+
+  [SESSION]
+  SenderCompID=HARJUSM4
+  SessionQualifier=MARKETDATA
+  DataDictionary=)" +
+                tmpMd +
+                R"(
+  SocketConnectHost=)" +
+                config.getBinanceFIXApiHostnameMarketData() +
+                R"(
+  SocketConnectPort=)" +
+                config.getBinanceFIXApiPortMarketData() +
+                R"(
+
+  [SESSION]
   SenderCompID=HARJUSOE
   SessionQualifier=ORDERENTRY
   DataDictionary=)" +
