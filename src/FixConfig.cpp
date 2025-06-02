@@ -190,7 +190,7 @@ std::string FixMdSchema() {
    <value enum='Y' description='YES'/>
    <value enum='N' description='NO'/>
   </field>
-  <field number='146' name='NoRelatedSym' type='NUMINGROUP'/>
+  <field number='146' name='NoRelatedSym' type='ULONG'/>
   <field number='148' name='Headline' type='STRING'/>
   <field number='262' name='MDReqID' type='STRING'/>
   <field number='263' name='SubscriptionRequestType' type='char'>
@@ -201,8 +201,8 @@ std::string FixMdSchema() {
   <field number='266' name='AggregatedBook' type='BOOLEAN'>
    <value enum='Y' description='BOOK_ENTRIES_TO_BE_AGGREGATED'/>
   </field>
-  <field number='267' name='NoMDEntryTypes' type='NUMINGROUP'/>
-  <field number='268' name='NoMDEntries' type='NUMINGROUP'/>
+  <field number='267' name='NoMDEntryTypes' type='ULONG'/>
+  <field number='268' name='NoMDEntries' type='ULONG'/>
   <field number='269' name='MDEntryType' type='CHAR'>>
    <value enum='0' description='BID'/>
    <value enum='1' description='OFFER'/>
@@ -256,7 +256,7 @@ std::string FixMdSchema() {
   </field>
   <field number='6136' name='ReqID' type='STRING'/>
   <field number='25000' name='RecvWindow' type='INT64'/>
-  <field number='25003' name='NoLimitIndicators' type='NUMINGROUP'/>
+  <field number='25003' name='NoLimitIndicators' type='ULONG'/>
   <field number='25004' name='LimitType' type='CHAR'>
    <value enum='2' description='MESSAGE_LIMIT'/>
    <value enum='3' description='SUBSCRIPTION_LIMIT'/>
@@ -603,7 +603,7 @@ std::string FixOeSchema() {
   <field number='60' name='TransactTime' type='UTCTIMESTAMP'/>
   <field number='66' name='ListID' type='INT64'/>
   <field number='70' name='AllocID' type='INT64'/>
-  <field number='73' name='NoOrders' type='NUMINGROUP'/>
+  <field number='73' name='NoOrders' type='ULONG'/>
   <field number='95' name='RawDataLength' type='ULONG'/>
   <field number='96' name='RawData' type='DATA'/>
   <field number='98' name='EncryptMethod' type='INT64'>
@@ -615,7 +615,7 @@ std::string FixOeSchema() {
   <field number='108' name='HeartBtInt' type='INT64'/>
   <field number='111' name='MaxFloor' type='QTY'/>
   <field number='112' name='TestReqID' type='STRING'/>
-  <field number='136' name='NoMiscFees' type='NUMINGROUP'/>
+  <field number='136' name='NoMiscFees' type='ULONG'/>
   <field number='137' name='MiscFeeAmt' type='QTY'/>
   <field number='138' name='MiscFeeCurr' type='STRING'/>
   <field number='139' name='MiscFeeType' type='INT64'>
@@ -729,7 +729,7 @@ std::string FixOeSchema() {
    <value enum='1' description='ONLY_NEW'/>
    <value enum='2' description='ONLY_PARTIALLY_FILLED'/>
   </field>
-  <field number='25003' name='NoLimitIndicators' type='NUMINGROUP'/>
+  <field number='25003' name='NoLimitIndicators' type='ULONG'/>
   <field number='25004' name='LimitType' type='CHAR'>
    <value enum='1' description='ORDER_LIMIT'/>
    <value enum='2' description='MESSAGE_LIMIT'/>
@@ -744,7 +744,7 @@ std::string FixOeSchema() {
    <value enum='d' description='DAY'/>
   </field>
   <field number='25009' name='TriggerTrailingDeltaBips' type='INT64'/>
-  <field number='25010' name='NoListTriggeringInstructions' type='NUMINGROUP'/>
+  <field number='25010' name='NoListTriggeringInstructions' type='ULONG'/>
   <field number='25011' name='ListTriggerType' type='CHAR'>
    <value enum='1' description='ACTIVATED'/>
    <value enum='2' description='PARTIALLY_FILLED'/>
