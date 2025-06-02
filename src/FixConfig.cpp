@@ -155,7 +155,7 @@ std::string FixMdSchema() {
   <field number='9' name='BodyLength' type='ULONG'/>
   <field number='10' name='CheckSum' type='STRING'/>
   <field number='15' name='Currency' type='STRING'/>
-  <field number='34' name='MsgSeqNum' type='SEQNUM'/>
+  <field number='34' name='MsgSeqNum' type='ULONG'/>
   <field number='35' name='MsgType' type='STRING'>
    <value enum='0' description='HEARTBEAT'/>
    <value enum='1' description='TEST_REQUEST'/>
@@ -543,7 +543,7 @@ std::string FixOeSchema() {
   </field>
   <field number='31' name='LastPx' type='PRICE'/>
   <field number='32' name='LastQty' type='QTY'/>
-  <field number='34' name='MsgSeqNum' type='SEQNUM'/>
+  <field number='34' name='MsgSeqNum' type='ULONG'/>
   <field number='35' name='MsgType' type='STRING'>
    <value enum='0' description='HEARTBEAT'/>
    <value enum='1' description='TEST_REQUEST'/>
