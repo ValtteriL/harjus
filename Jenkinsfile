@@ -79,7 +79,7 @@ pipeline {
                 
                 SEMVER_TAG=$(echo ${TAG_NAME} | sed 's/releases\\///')
                 
-                  nix-shell --pure -A devEnv --run "
+                  nix-shell -A devEnv --run "
                     set -e
 
                     docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${SEMVER_TAG}
