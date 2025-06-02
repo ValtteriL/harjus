@@ -77,7 +77,7 @@ pipeline {
                 sh '''
                 set -e
                 
-                SEMVER_TAG=$(echo ${TAG_NAME} | sed 's/releases\\////')
+                SEMVER_TAG=$(echo ${TAG_NAME} | sed 's/releases\\///')
                 
                   nix-shell --pure -A devEnv --run "
                     set -e
