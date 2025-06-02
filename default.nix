@@ -95,19 +95,10 @@ let
     harjusBuild = stdenv.mkDerivation {
       inherit version pname;
 
-      src = nix-gitignore.gitignoreSource [''
-        deploy
-        docs
-        quickfix
-        scripts
-        .vscode
-        default.nix
-        .git
-        .gitignore
-        tests
-        README.md
-        .envrc
-      ''] ./.;
+      src = lib.fileset.toSource {
+        root = ./.;
+        fileset = lib.fileset.unions [ ./src ./CMakeLists.txt ./include ];
+      };
 
       buildInputs =
         [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
