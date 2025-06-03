@@ -38,35 +38,18 @@ bool Engine::containsOnlyFreeSymbols(const Opportunity *opportunity) {
   return !_reservedTrades.isReserved(opportunity->getTrades());
 }
 
+void Engine::reserveBudgetAndSymbols(Opportunity &opp) {
+  _reservedTrades.reserve(opp.getTrades());
+  _balance.updateBalance(opp.getStartingAsset(),
+                         opp.getCapacity() * PreciseNumber{"-1"});
+}
+
 void Engine::processPriceUpdate(const PriceUpdate *update) {
   // Update symbol price
   _symbols.at(update->symbol)->askPrice = update->askPrice;
   _symbols.at(update->symbol)->bidPrice = update->bidPrice;
   _symbols.at(update->symbol)->askQty = update->askQty;
   _symbols.at(update->symbol)->bidQty = update->bidQty;
-
-  // Helper: Reserve all trades and budget for an opportunity
-  auto reserveBudgetAndSymbols = [&](Opportunity &opp) {
-    _reservedTrades.reserve(opp.getTrades());
-    _balance.updateBalance(opp.getStartingAsset(),
-                           opp.getCapacity() * PreciseNumber{"-1"});
-  };
-
-  // Helper: Find the most profitable opportunity, optionally excluding one
-  auto findMostProfitable = [&](auto affected,
-                                Opportunity *exclude) -> Opportunity * {
-    Opportunity *best = nullptr;
-    for (auto it = affected.first; it != affected.second; ++it) {
-      Opportunity *opp = it->second;
-      if ((exclude == nullptr || opp != exclude) &&
-          opp->getTotalProfit() > PreciseNumber{"0"} &&
-          (!best || opp->getTotalProfit() > best->getTotalProfit()) &&
-          containsOnlyFreeSymbols(opp)) {
-        best = opp;
-      }
-    }
-    return best;
-  };
 
   // Update all affected opportunities
   auto affected = _opportunities.equal_range(update->symbol);
@@ -77,7 +60,8 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
   }
 
   // Find the most profitable opportunity
-  Opportunity *best = findMostProfitable(affected, nullptr);
+  Opportunity *best =
+      findMostProfitable(affected.first, affected.second, nullptr);
 
   delete update;
   if (!best)
@@ -97,7 +81,8 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
   }
 
   // Find the second most profitable
-  Opportunity *secondBest = findMostProfitable(affected, best);
+  Opportunity *secondBest =
+      findMostProfitable(affected.first, affected.second, best);
 
   if (secondBest) {
     reserveBudgetAndSymbols(*secondBest);
@@ -110,6 +95,23 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
     BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
     _executionQueue.push(std::move(execution));
   }
+}
+
+Opportunity *Engine::findMostProfitable(
+    std::unordered_multimap<std::string, Opportunity *>::iterator begin,
+    std::unordered_multimap<std::string, Opportunity *>::iterator end,
+    Opportunity *exclude) {
+  Opportunity *best = nullptr;
+  for (auto it = begin; it != end; ++it) {
+    Opportunity *opp = it->second;
+    if ((exclude == nullptr || opp != exclude) &&
+        opp->getTotalProfit() > PreciseNumber{"0"} &&
+        (!best || opp->getTotalProfit() > best->getTotalProfit()) &&
+        containsOnlyFreeSymbols(opp)) {
+      best = opp;
+    }
+  }
+  return best;
 }
 
 void Engine::run(std::stop_token stoken) {
