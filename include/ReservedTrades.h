@@ -51,9 +51,9 @@ public:
   ReservedTrades() = default;
 
   /**
-   *  Reserve a trade.
+   *  Reserve a vector of trades.
    */
-  void reserve(const Trade &trade);
+  void reserve(const std::vector<Trade> &trades);
 
   /**
    *  Release a trade.

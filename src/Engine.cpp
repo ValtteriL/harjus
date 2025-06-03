@@ -47,9 +47,7 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
 
   // Helper: Reserve all trades and budget for an opportunity
   auto reserveBudgetAndSymbols = [&](Opportunity &opp) {
-    for (auto &trade : opp.getTrades()) {
-      _reservedTrades.reserve(trade);
-    }
+    _reservedTrades.reserve(opp.getTrades());
     _balance.updateBalance(opp.getStartingAsset(),
                            opp.getCapacity() * PreciseNumber{"-1"});
   };

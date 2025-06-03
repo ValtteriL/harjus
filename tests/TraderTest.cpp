@@ -220,9 +220,7 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   auto execution = Execution(opportunity);
 
   // Reserve the trades
-  for (auto &trade : opportunity.getTrades()) {
-    reservedTrades.reserve(trade);
-  }
+  reservedTrades.reserve(opportunity.getTrades());
 
   // Process the execution first
   EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(1);

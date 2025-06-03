@@ -43,7 +43,8 @@ protected:
 TEST_F(ReservedTradesTest, checkReserveCheckReleaseCheck) {
   EXPECT_FALSE(reservedTrades.isReserved(trade1));
 
-  reservedTrades.reserve(trade1);
+  std::vector<Trade> trades{trade1};
+  reservedTrades.reserve(trades);
   EXPECT_TRUE(reservedTrades.isReserved(trade1));
 
   reservedTrades.release(trade1);
@@ -51,25 +52,27 @@ TEST_F(ReservedTradesTest, checkReserveCheckReleaseCheck) {
 }
 
 TEST_F(ReservedTradesTest, reserveCheckIdenticalTrade) {
-  reservedTrades.reserve(trade1);
+  std::vector<Trade> trades{trade1};
+  reservedTrades.reserve(trades);
   EXPECT_TRUE(reservedTrades.isReserved(trade2));
 }
 
 TEST_F(ReservedTradesTest, reserveCheckDifferentTrade) {
-  reservedTrades.reserve(trade1);
+  std::vector<Trade> trades{trade1};
+  reservedTrades.reserve(trades);
   EXPECT_FALSE(reservedTrades.isReserved(trade3));
 }
 
 TEST_F(ReservedTradesTest, releaseAll) {
-  reservedTrades.reserve(trade1);
-  reservedTrades.reserve(trade2);
+  std::vector<Trade> trades{trade1, trade2};
+  reservedTrades.reserve(trades);
 
   EXPECT_TRUE(reservedTrades.isReserved(trade1));
   EXPECT_TRUE(reservedTrades.isReserved(trade2));
 
-  std::vector<StaticTrade> trades{trade1, trade2};
+  std::vector<StaticTrade> staticTrades{trade1, trade2};
 
-  reservedTrades.releaseAll(trades);
+  reservedTrades.releaseAll(staticTrades);
 
   EXPECT_FALSE(reservedTrades.isReserved(trade1));
   EXPECT_FALSE(reservedTrades.isReserved(trade2));
@@ -82,7 +85,8 @@ TEST_F(ReservedTradesTest, isReservedWithVector) {
 
   EXPECT_FALSE(reservedTrades.isReserved(trades));
 
-  reservedTrades.reserve(trade1);
+  std::vector<Trade> reserveTrades{trade1};
+  reservedTrades.reserve(reserveTrades);
 
   EXPECT_TRUE(reservedTrades.isReserved(trades));
 }
