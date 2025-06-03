@@ -59,41 +59,33 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
     opp->update(startingAssetBudget);
   }
 
-  // Find the most profitable opportunity
-  Opportunity *best =
-      findMostProfitable(affected.first, affected.second, nullptr);
-
   delete update;
-  if (!best)
-    return;
 
-  std::vector<Opportunity *> toQueue;
-  toQueue.push_back(best);
-  reserveBudgetAndSymbols(*best);
+  // find the 2 most profitable opportunities, reserve budget and symbols, and
+  // queue them for execution
+  for (int i = 0; i < 2; ++i) {
 
-  // Update opportunities that use the same starting asset
-  auto newBalance = _balance.getBalance(best->getStartingAsset());
-  for (auto it = affected.first; it != affected.second; ++it) {
-    Opportunity *opp = it->second;
-    if (opp->getStartingAsset() == best->getStartingAsset() && opp != best) {
-      opp->update(newBalance);
-    }
-  }
+    Opportunity *best = nullptr;
+    best = findMostProfitable(affected.first, affected.second, best);
 
-  // Find the second most profitable
-  Opportunity *secondBest =
-      findMostProfitable(affected.first, affected.second, best);
+    if (!best)
+      return;
 
-  if (secondBest) {
-    reserveBudgetAndSymbols(*secondBest);
-    toQueue.push_back(secondBest);
-  }
+    reserveBudgetAndSymbols(*best);
 
-  // Freeze and queue chosen opportunities for execution
-  for (auto *opp : toQueue) {
-    Execution execution{*opp};
+    // Freeze and queue the best opportunity for execution
+    Execution execution{*best};
     BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
     _executionQueue.push(std::move(execution));
+
+    // Update opportunities that use the same starting asset
+    auto newBalance = _balance.getBalance(best->getStartingAsset());
+    for (auto it = affected.first; it != affected.second; ++it) {
+      Opportunity *opp = it->second;
+      if (opp->getStartingAsset() == best->getStartingAsset() && opp != best) {
+        opp->update(newBalance);
+      }
+    }
   }
 }
 
