@@ -29,13 +29,13 @@ Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
 
     // add opportunity to _opportunities with every trade symbol as the key
     for (auto &trade : *path) {
-      _opportunities.insert({trade.symbol()->symbol, *opportunity});
+      _opportunities.insert({trade.symbol()->symbol, opportunity});
     }
   }
 };
 
-bool Engine::containsOnlyFreeSymbols(Opportunity &opportunity) {
-  return !_reservedTrades.isReserved(opportunity.getTrades());
+bool Engine::containsOnlyFreeSymbols(const Opportunity *opportunity) {
+  return !_reservedTrades.isReserved(opportunity->getTrades());
 }
 
 void Engine::processPriceUpdate(const PriceUpdate *update) {
@@ -57,12 +57,12 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
                                 Opportunity *exclude) -> Opportunity * {
     Opportunity *best = nullptr;
     for (auto it = affected.first; it != affected.second; ++it) {
-      Opportunity &opp = it->second;
-      if ((exclude == nullptr || &opp != exclude) &&
-          opp.getTotalProfit() > PreciseNumber{"0"} &&
-          (!best || opp.getTotalProfit() > best->getTotalProfit()) &&
+      Opportunity *opp = it->second;
+      if ((exclude == nullptr || opp != exclude) &&
+          opp->getTotalProfit() > PreciseNumber{"0"} &&
+          (!best || opp->getTotalProfit() > best->getTotalProfit()) &&
           containsOnlyFreeSymbols(opp)) {
-        best = &opp;
+        best = opp;
       }
     }
     return best;
@@ -71,9 +71,9 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
   // Update all affected opportunities
   auto affected = _opportunities.equal_range(update->symbol);
   for (auto it = affected.first; it != affected.second; ++it) {
-    Opportunity &opp = it->second;
-    auto startingAssetBudget = _balance.getBalance(opp.getStartingAsset());
-    opp.update(startingAssetBudget);
+    Opportunity *opp = it->second;
+    auto startingAssetBudget = _balance.getBalance(opp->getStartingAsset());
+    opp->update(startingAssetBudget);
   }
 
   // Find the most profitable opportunity
@@ -90,9 +90,9 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
   // Update opportunities that use the same starting asset
   auto newBalance = _balance.getBalance(best->getStartingAsset());
   for (auto it = affected.first; it != affected.second; ++it) {
-    Opportunity &opp = it->second;
-    if (opp.getStartingAsset() == best->getStartingAsset() && &opp != best) {
-      opp.update(newBalance);
+    Opportunity *opp = it->second;
+    if (opp->getStartingAsset() == best->getStartingAsset() && opp != best) {
+      opp->update(newBalance);
     }
   }
 

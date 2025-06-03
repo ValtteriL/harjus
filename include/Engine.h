@@ -28,7 +28,7 @@ class Engine {
 
 private:
   std::unordered_map<std::string, Symbol *> &_symbols;
-  std::unordered_multimap<std::string, Opportunity &> _opportunities;
+  std::unordered_multimap<std::string, Opportunity *> _opportunities;
   std::unordered_map<std::string, PreciseNumber> _relativeValues;
   boost::lockfree::queue<PriceUpdate *> &_priceUpdateQueue;
   ThreadSafeQueue<Execution> &_executionQueue;
@@ -40,7 +40,7 @@ private:
    * @param opportunity The opportunity to check
    * @return true if all symbols in the opportunity are free, false otherwise
    */
-  bool containsOnlyFreeSymbols(Opportunity &opportunity);
+  bool containsOnlyFreeSymbols(const Opportunity *opportunity);
 
 protected:
   /**
