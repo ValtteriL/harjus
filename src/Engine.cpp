@@ -27,10 +27,8 @@ Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
     Opportunity *opportunity =
         new Opportunity(*path, _relativeValues[startingAsset], commission);
 
-    // add opportunity to _opportunities with every trade symbol as the key
-    for (auto &trade : *path) {
-      _opportunities.insert({trade.symbol()->symbol, opportunity});
-    }
+    // add opportunity to _opportunities with the first trade symbol as the key
+    _opportunities.insert({path->front().symbol()->symbol, opportunity});
   }
 };
 
@@ -51,7 +49,7 @@ void Engine::processPriceUpdate(const PriceUpdate *update) {
   _symbols.at(update->symbol)->askQty = update->askQty;
   _symbols.at(update->symbol)->bidQty = update->bidQty;
 
-  // Update all affected opportunities
+  // Update all opportunities where this symbol is the first one
   auto affected = _opportunities.equal_range(update->symbol);
   for (auto it = affected.first; it != affected.second; ++it) {
     Opportunity *opp = it->second;
