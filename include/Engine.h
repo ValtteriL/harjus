@@ -28,7 +28,7 @@ class Engine {
 
 private:
   std::unordered_map<std::string, Symbol *> &_symbols;
-  std::unordered_multimap<std::string, Opportunity &> _opportunities;
+  std::unordered_multimap<std::string, Opportunity *> _opportunities;
   std::unordered_map<std::string, PreciseNumber> _relativeValues;
   boost::lockfree::queue<PriceUpdate *> &_priceUpdateQueue;
   ThreadSafeQueue<Execution> &_executionQueue;
@@ -40,7 +40,30 @@ private:
    * @param opportunity The opportunity to check
    * @return true if all symbols in the opportunity are free, false otherwise
    */
-  bool containsOnlyFreeSymbols(Opportunity &opportunity);
+  bool containsOnlyFreeSymbols(const Opportunity *opportunity);
+
+  /**
+   * @brief Find the most profitable opportunity
+   * @param begin Iterator to the beginning of the opportunities range
+   * @param end Iterator to the end of the opportunities range
+   * @param exclude Opportunity to exclude from consideration
+   * @return Pointer to the most profitable opportunity
+   */
+  Opportunity *findMostProfitable(
+      std::unordered_multimap<std::string, Opportunity *>::iterator begin,
+      std::unordered_multimap<std::string, Opportunity *>::iterator end,
+      Opportunity *exclude);
+
+  /**
+   * @brief Reserves the necessary budget and trading symbols for a given opportunity.
+   *
+   * This function allocates the required budget and locks the relevant trading symbols
+   * associated with the provided Opportunity object to ensure resources are available
+   * for executing the opportunity.
+   *
+   * @param opp Reference to the Opportunity object for which budget and symbols are to be reserved.
+   */
+  void reserveBudgetAndSymbols(Opportunity &opp);
 
 protected:
   /**

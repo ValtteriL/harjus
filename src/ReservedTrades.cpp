@@ -4,10 +4,12 @@
 #include <mutex>
 #include <shared_mutex>
 
-void ReservedTrades::reserve(const Trade &trade) {
+void ReservedTrades::reserve(const std::vector<Trade> &trades) {
   std::unique_lock<std::shared_mutex> lock(mtx);
-  _reservedTrades.insert(
-      std::make_pair(trade.symbol()->symbol, trade.position()));
+  for (const auto &trade : trades) {
+    _reservedTrades.insert(
+        std::make_pair(trade.symbol()->symbol, trade.position()));
+  }
 }
 
 void ReservedTrades::release(const Trade &trade) {

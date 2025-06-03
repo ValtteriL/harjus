@@ -69,6 +69,7 @@ let
         libcpr
         pkg-config
         libsodium
+        gmp
         myQuickfix
 
         # deployment
@@ -101,11 +102,14 @@ let
       };
 
       buildInputs =
-        [ gtest boost openssl libcpr pkg-config libsodium myQuickfix ];
+        [ gtest boost openssl libcpr pkg-config libsodium gmp myQuickfix ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
 
       cmakeFlags = [ "-DHARJUS_TESTS=OFF" ];
 
+      # disable performance affecting hardenings
+      hardeningDisable =
+        [ "fortify" "stackprotector" "pic" "pie" "relro" "bindnow" ];
     };
 
     # docker packaging derivation

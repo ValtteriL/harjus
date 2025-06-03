@@ -44,5 +44,5 @@ public:
    * @brief Get the trades associated with the opportunity.
    * @return A vector of trades associated with the opportunity.
    */
-  virtual std::vector<Trade> &getTrades() = 0;
+  virtual std::vector<Trade> &getTrades() const = 0;
 };

@@ -34,5 +34,5 @@ public:
 
   PreciseNumber getCapacity() const override;
 
-  std::vector<Trade> &getTrades() override;
+  std::vector<Trade> &getTrades() const override;
 };

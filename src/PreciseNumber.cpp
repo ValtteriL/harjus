@@ -1,13 +1,11 @@
 #include <PreciseNumber.h>
 #include <boost/multiprecision/cpp_dec_float.hpp>
-#include <cmath>
 #include <iomanip>
 #include <sstream>
 #include <string>
 
 PreciseNumber::PreciseNumber(const std::string &amount)
-    : smallestUnit(
-          bm::checked_int128_t{bm::cpp_dec_float_50{amount} * kPrecision}) {}
+    : smallestUnit(bm::mpz_int{bm::cpp_dec_float_50{amount} * kPrecision}) {}
 
 PreciseNumber PreciseNumber::operator+(const PreciseNumber &other) const {
   PreciseNumber result{};

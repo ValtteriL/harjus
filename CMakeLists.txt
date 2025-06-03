@@ -27,6 +27,9 @@ pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 # cpr https://github.com/libcpr/cpr
 find_package(cpr REQUIRED)
 
+# GMP
+pkg_check_modules(GMP REQUIRED gmp)
+
 # quickfix
 find_package(quickfix REQUIRED)
 
@@ -67,7 +70,7 @@ add_executable(harjus
   src/FixConfig.cpp
   src/PreciseNumber.cpp
 )
-target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} cpr::cpr quickfix)
+target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} ${GMP_LIBRARIES} cpr::cpr quickfix)
 
 include(GNUInstallDirs)
 install(TARGETS harjus
@@ -99,6 +102,7 @@ if(HARJUS_TESTS)
   target_link_libraries(ReservedTradesTest PRIVATE
     gtest_main
     GTest::gmock
+    ${GMP_LIBRARIES}
   )
 
   gtest_discover_tests(ReservedTradesTest)
@@ -110,6 +114,7 @@ if(HARJUS_TESTS)
   target_link_libraries(BalanceTest PRIVATE
     gtest_main
     GTest::gmock
+    ${GMP_LIBRARIES}
   )
 
   gtest_discover_tests(ReservedTradesTest)
@@ -122,6 +127,7 @@ if(HARJUS_TESTS)
     gtest_main
     GTest::gmock
     ${LIBSODIUM_LIBRARIES}
+    ${GMP_LIBRARIES}
   )
 
   gtest_discover_tests(Ed25519Test)
@@ -138,6 +144,7 @@ if(HARJUS_TESTS)
     GTest::gmock
     Boost::url
     ${LIBSODIUM_LIBRARIES}
+    ${GMP_LIBRARIES}
     cpr::cpr
     Boost::json
   )
@@ -154,6 +161,7 @@ if(HARJUS_TESTS)
     gtest_main
     GTest::gmock
     Boost::graph
+    ${GMP_LIBRARIES}
   )
 
   gtest_discover_tests(ArbmapperTest)
@@ -167,6 +175,7 @@ if(HARJUS_TESTS)
   target_link_libraries(OpportunityTest PRIVATE
     gtest_main
     GTest::gmock
+    ${GMP_LIBRARIES}
   )
 
   gtest_discover_tests(OpportunityTest)
@@ -187,6 +196,7 @@ if(HARJUS_TESTS)
     gtest_main
     GTest::gmock
     Boost::log
+    ${GMP_LIBRARIES}
   )
 
   gtest_discover_tests(EngineTest)
@@ -207,6 +217,7 @@ if(HARJUS_TESTS)
     gtest_main
     GTest::gmock
     Boost::log
+    ${GMP_LIBRARIES}
   )
 
   gtest_discover_tests(TraderTest)
@@ -229,6 +240,7 @@ if(HARJUS_TESTS)
     gtest_main
     GTest::gmock
     Boost::log
+    ${GMP_LIBRARIES}
   )
 
   gtest_discover_tests(PreciseNumberTest)
@@ -302,7 +314,8 @@ target_precompile_headers(harjus PRIVATE
   <boost/graph/adjacency_list.hpp>
   <boost/graph/tiernan_all_cycles.hpp>
   <boost/json.hpp>
-  <boost/multiprecision/cpp_int.hpp>
+  <boost/multiprecision/gmp.hpp>
+  <boost/multiprecision/cpp_dec_float.hpp>
 
 
   # Quickfix Engine

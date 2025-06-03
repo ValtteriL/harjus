@@ -6,7 +6,7 @@
  * represents a currency amount in its smallest unit.
  */
 
-#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/gmp.hpp>
 #include <cmath>
 #include <iostream>
 
@@ -14,7 +14,7 @@ namespace bm = boost::multiprecision;
 
 class PreciseNumber {
 private:
-  bm::checked_int128_t smallestUnit = 0;
+  bm::mpz_int smallestUnit = 0;
   static constexpr long long kPrecision = 1e10;
 
 public:
