@@ -107,6 +107,9 @@ let
 
       cmakeFlags = [ "-DHARJUS_TESTS=OFF" ];
 
+      # disable performance affecting hardenings
+      hardeningDisable =
+        [ "fortify" "stackprotector" "pic" "pie" "relro" "bindnow" ];
     };
 
     # docker packaging derivation
