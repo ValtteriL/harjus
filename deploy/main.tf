@@ -92,6 +92,8 @@ resource "aws_instance" "instance" {
 
   user_data_replace_on_change = true
 
+  availability_zone = "ap-northeast-1a"
+
   tags = {
     Name = "harjus-instance"
   }
