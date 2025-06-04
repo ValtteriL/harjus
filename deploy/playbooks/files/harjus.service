@@ -3,14 +3,15 @@ Description=Harjus
 After=docker.service network-online.target
 Requires=docker.service
 Wants=network-online.target
-StartLimitIntervalSec=30
+StartLimitIntervalSec=300
 
 [Service]
-StartLimitBurst=1
+StartLimitBurst=3
 Restart=on-failure
 TimeoutStartSec=0
 # Time to wait for graceful shutdown
 TimeoutStopSec=30
+RestartSec=60
 
 # Pull the latest version of the image (or specific tag if overridden)
 ExecStartPre=-/usr/bin/docker stop harjus
@@ -39,7 +40,4 @@ ExecStart=/usr/bin/docker run --name harjus --pull=always --network host \
 
 # Stop the container gracefully
 ExecStop=/usr/bin/docker stop -t 25 harjus
-
-[Install]
-WantedBy=multi-user.target
 

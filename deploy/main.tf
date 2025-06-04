@@ -81,16 +81,17 @@ resource "aws_iam_instance_profile" "ec2_ecr_profile" {
 
 resource "aws_instance" "instance" {
 
-  # Ubuntu 25.04 (for newer docker)
-  # source: https://cloud-images.ubuntu.com/locator/ec2/
-  ami = "ami-007513f9e994af27d"
+  # Amazon Linux AMI 2023.0.20250523 x86_64 ECS HVM EBS
+  ami = "ami-00ea3690582cf02ee"
 
-  instance_type        = "c5.large"
+  instance_type        = "c5n.large"
   key_name             = aws_key_pair.ec_key.key_name
   security_groups      = [aws_security_group.security.name]
   iam_instance_profile = aws_iam_instance_profile.ec2_ecr_profile.name
 
   user_data_replace_on_change = true
+
+  availability_zone = "ap-northeast-1a"
 
   tags = {
     Name = "harjus-instance"

@@ -9,7 +9,7 @@
   vars:
 
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
-    ansible_user: ubuntu
+    ansible_user: ec2-user
 
     # Mandatory: User must specify 'qa' or 'prod' when running the playbook
     # e.g., ansible-playbook ... -e "env=prod"
@@ -85,5 +85,5 @@
       ansible.builtin.systemd_service:
         name: "{{ service_name }}"
         state: restarted
-        enabled: true
+        enabled: false
       listen: Reload systemd and restart app
