@@ -40,6 +40,3 @@ ExecStart=/usr/bin/docker run --name harjus --pull=always --network host \
 # Stop the container gracefully
 ExecStop=/usr/bin/docker stop -t 25 harjus
 
-[Install]
-WantedBy=multi-user.target
-
