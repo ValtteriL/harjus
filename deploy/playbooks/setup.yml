@@ -14,6 +14,5 @@
           - tmux
           - htop
           - vim
-          - awscli
         state: present
         update_cache: yes
