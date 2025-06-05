@@ -31,9 +31,12 @@ private:
 protected:
   void processExecution(Execution execution);
   void processReport(ExecutionReport *execReport);
-  std::unordered_map<std::string,
-                     entry>
+  std::unordered_map<std::string, entry>
       _executionsMap; // Map of execution ID to execution and delta
+  std::unordered_map<std::string, std::pair<StaticTrade, std::string>>
+      _executionIdMap; // Map of order ID to (StaticTrade, execution ID)
+  std::unordered_map<std::string, int>
+      _pendingOrdersCount; // Map of execution ID to pending orders count
 
 public:
   Trader(ThreadSafeQueue<Execution> &_executionQueue,

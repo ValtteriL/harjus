@@ -12,7 +12,9 @@
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
+#include <chrono>
 #include <random>
+#include <thread>
 
 Trader::Trader(ThreadSafeQueue<Execution> &executionQueue,
                ThreadSafeQueue<ExecutionReport> &executionReportQueue,
@@ -36,36 +38,61 @@ void Trader::processExecution(Execution execution) {
 
   BOOST_LOG_TRIVIAL(debug) << "Processing execution " << execution;
 
-  auto id = generateId();
+  auto executionId = generateId();
   auto delta = std::unordered_map<std::string, PreciseNumber>{
       {execution.getStartingAsset(), execution.getCapacity()}};
 
-  auto pair = std::make_pair(execution, delta);
-
-  // Store the execution and delta in the map
-  _executionsMap.emplace(id, pair);
-
-  // pop the first trade from the execution
-  // and submit the order
   if (execution.getTrades().empty()) {
     // No trades available, handle this case
     throw std::runtime_error("No trades available in the execution object");
   }
 
-  // submit the first trade
-  auto trade = execution.getTrades().front();
+  // Submit all orders in the execution one after another
+  auto trades = execution.getTrades();
+  int orderCount = 0;
+  while (!trades.empty()) {
+    auto trade = trades.front();
+    trades.pop();
 
-  _application.submitOrder(id, trade.symbol(), trade.orderQty(),
-                           trade.orderPrice(), trade.position());
+    auto orderId = generateId();
+
+    // Map order ID to (StaticTrade, execution ID) for lookup in processReport
+    _executionIdMap.emplace(orderId, std::make_pair(trade, executionId));
+
+    // Submit the order
+    _application.submitOrder(orderId, trade.symbol(), trade.orderQty(),
+                             trade.orderPrice(), trade.position());
+
+    // Wait 0.1ms between submissions
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+
+    orderCount++;
+  }
+
+  // Store the execution and delta with execution ID
+  auto pair = std::make_pair(execution, delta);
+  _executionsMap.emplace(executionId, pair);
+
+  // Initialize pending orders count
+  _pendingOrdersCount[executionId] = orderCount;
 }
 
 void Trader::processReport(ExecutionReport *execReport) {
 
   BOOST_LOG_TRIVIAL(debug) << "Processing execution report " << *execReport;
 
-  auto id = execReport->getId();
+  auto orderId = execReport->getId();
 
-  auto pair = _executionsMap.at(id);
+  // Find execution ID from order ID
+  auto executionIdIt = _executionIdMap.find(orderId);
+  if (executionIdIt == _executionIdMap.end()) {
+    BOOST_LOG_TRIVIAL(error)
+        << "Order ID not found in execution map: " << orderId;
+    return;
+  }
+
+  auto [oldTrade, executionId] = executionIdIt->second;
+  auto pair = _executionsMap.at(executionId);
   auto execution = pair.first;
   auto delta = pair.second;
 
@@ -75,6 +102,9 @@ void Trader::processReport(ExecutionReport *execReport) {
 
     BOOST_LOG_TRIVIAL(info) << "Failed execution: " << execution;
 
+    // Remove order ID mapping
+    _executionIdMap.erase(orderId);
+
     // update balance
     _balance.updateBalance(delta);
 
@@ -82,7 +112,8 @@ void Trader::processReport(ExecutionReport *execReport) {
     _reservedTrades.releaseAll(execution.getOriginalTrades());
 
     // remove the execution from the map
-    _executionsMap.erase(id);
+    _executionsMap.erase(executionId);
+    _pendingOrdersCount.erase(executionId);
 
     return;
   }
@@ -96,8 +127,6 @@ void Trader::processReport(ExecutionReport *execReport) {
     delta[currency] += amount;
   }
 
-  auto oldTrade = execution.getTrades().front();
-
   // If the full qty not received, additional ExecutionReports with same id will
   // be received
   auto compareQty = oldTrade.position() == Position::LONG
@@ -108,44 +137,36 @@ void Trader::processReport(ExecutionReport *execReport) {
     return;
   }
 
+  // Decrement pending orders count for this execution
+  _pendingOrdersCount[executionId]--;
+
   // If the full qty received, update delta with the trade
   // assuming the delta is common for all trades in the execution (cumulative)
   delta[oldTrade.usedCurrency()] -= execReport->usedQty();
   delta[oldTrade.recvCurrency()] += execReport->recvQty();
 
-  _executionsMap[id].second = delta;
+  _executionsMap[executionId].second = delta;
 
-  // remove the last order from the execution
-  execution.getTrades().pop();
+  // Update the execution in the map
+  _executionsMap[executionId] = std::make_pair(execution, delta);
 
-  if (execution.getTrades().empty()) {
+  // Remove the current order ID mapping
+  _executionIdMap.erase(orderId);
 
+  // Check if all orders in the execution are completed
+  if (_pendingOrdersCount[executionId] == 0) {
     BOOST_LOG_TRIVIAL(info) << "Successful execution: " << execution;
 
-    // remove the execution from the map
-    _executionsMap.erase(id);
+    // Clean up all maps
+    _executionsMap.erase(executionId);
+    _pendingOrdersCount.erase(executionId);
 
     // update balance
     _balance.updateBalance(delta);
 
     // free symbols
     _reservedTrades.releaseAll(execution.getOriginalTrades());
-
-    return;
   }
-
-  // submit the next order with a new ID
-  BOOST_LOG_TRIVIAL(debug) << "Submitting next order ";
-  auto trade = execution.getTrades().front();
-
-  // Generate a new ID for the next order
-  auto newId = generateId();
-  // Move the execution and delta to the new ID in the map
-  _executionsMap.emplace(newId, std::make_pair(execution, delta));
-  _executionsMap.erase(id);
-
-  _application.submitOrder(newId, trade.symbol(), trade.orderQty(),
-                           trade.orderPrice(), trade.position());
 }
 
 void Trader::run(std::stop_token stoken) {

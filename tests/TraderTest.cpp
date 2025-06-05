@@ -40,15 +40,10 @@ public:
     processReport(execReport);
   }
 
-  // Expose a method to get the ID for a given execution pointer
-  std::string getIdForExecution(const Execution *execution) {
-    for (const auto &pair : _executionsMap) {
-      if (pair.second.first == *execution) {
-        return pair.first;
-      }
-    }
-    return "";
-  }
+  // Access to internal maps for advanced testing if needed
+  const auto &getExecutionsMap() const { return _executionsMap; }
+  const auto &getExecutionIdMap() const { return _executionIdMap; }
+  const auto &getPendingOrdersCount() const { return _pendingOrdersCount; }
 };
 
 /**
@@ -128,17 +123,16 @@ TEST_F(TraderTest, processesExecutions) {
   auto opportunity = createSimpleOpportunity();
   auto execution = Execution(opportunity);
 
-  // Expect a call to submitOrder with the correct parameters
-  EXPECT_CALL(
-      mockApplication,
-      submitOrder(_, "ETHBTC", opportunity.getTrades().front().orderQty(),
-                  opportunity.getTrades().front().orderPrice(), Position::LONG))
-      .Times(1);
+  // Expect calls to submitOrder for both trades in the execution
+  for (const auto &trade : opportunity.getTrades()) {
+    EXPECT_CALL(mockApplication,
+                submitOrder(_, trade.symbol()->symbol, trade.orderQty(),
+                            trade.orderPrice(), trade.position()))
+        .Times(1);
+  }
 
   // Process the execution
   trader.callProcessExecution(execution);
-
-  // Clean up - don't delete execution here, it's stored in the executionsMap
 }
 
 TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
@@ -146,53 +140,46 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   auto opportunity = createSimpleOpportunity();
   auto execution = Execution(opportunity);
 
+  // Expect calls to submitOrder for both trades in the execution upfront
+  for (const auto &trade : opportunity.getTrades()) {
+    EXPECT_CALL(mockApplication,
+                submitOrder(_, trade.symbol()->symbol, trade.orderQty(),
+                            trade.orderPrice(), trade.position()))
+        .Times(1);
+  }
+
   // Process the execution first
-  EXPECT_CALL(
-      mockApplication,
-      submitOrder(_, "ETHBTC", opportunity.getTrades().front().orderQty(),
-                  opportunity.getTrades().front().orderPrice(), Position::LONG))
-      .Times(1);
   trader.callProcessExecution(execution);
 
-  // Now create an execution report for the completed trade
-  std::string id = trader.getIdForExecution(&execution);
   std::unordered_map<std::string, PreciseNumber> feeDelta{
       {"BTC", PreciseNumber{"-0.1"}} // Example fee
   };
 
-  // Insert a partial execution report (not full fill)
-  // using negative values as the test opportunity has zero recvQty & usedQty
-  ExecutionReport partialReport{id, TradeExecutionStatus::FILLED,
-                                PreciseNumber{"-1"}, PreciseNumber{"-1"},
-                                feeDelta};
+  // get all order IDs from the execution ID map as vector
+  // need to do this because the map is modified in the loop
+  std::vector<std::string> orderIds;
+  for (const auto &trade : trader.getExecutionIdMap()) {
+    orderIds.push_back(trade.first);
+  }
 
-  // Should not submit next order yet (still waiting for more reports)
-  // No new submitOrder expected here
-  trader.callProcessReport(&partialReport);
+  for (const auto &orderId : orderIds) {
 
-  // Insert full execution report
-  ExecutionReport executionReport{id, TradeExecutionStatus::FILLED,
-                                  PreciseNumber{"0.1"}, PreciseNumber{"0.2"},
+    // Insert a partial execution report (not full fill)
+    // using negative values as the test opportunity has zero recvQty & usedQty
+    ExecutionReport partialReport{orderId, TradeExecutionStatus::FILLED,
+                                  PreciseNumber{"-1"}, PreciseNumber{"-1"},
                                   feeDelta};
 
-  // Since there is still one more trade in the execution, expect another
-  // submitOrder
-  EXPECT_CALL(
-      mockApplication,
-      submitOrder(_, "ETHUSDT", opportunity.getTrades().back().orderQty(),
-                  opportunity.getTrades().back().orderPrice(), Position::SHORT))
-      .Times(1);
+    trader.callProcessReport(&partialReport);
 
-  // Process the report
-  trader.callProcessReport(&executionReport);
+    // Create a filled execution report for each trade
+    ExecutionReport executionReport{orderId, TradeExecutionStatus::FILLED,
+                                    PreciseNumber{"0.1"}, PreciseNumber{"0.2"},
+                                    feeDelta};
 
-  auto finalId = trader.getIdForExecution(&execution);
-
-  // Process another report to complete the execution
-  ExecutionReport finalReport{finalId, TradeExecutionStatus::FILLED,
-                              PreciseNumber{"0.1"}, PreciseNumber{"0.2"},
-                              feeDelta};
-  trader.callProcessReport(&finalReport);
+    // Process the filled execution report
+    trader.callProcessReport(&executionReport);
+  }
 
   // Verify the balance is updated correctly
   // Initial BTC balance: 1.0
@@ -222,21 +209,18 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   // Reserve the trades
   reservedTrades.reserve(opportunity.getTrades());
 
-  // Process the execution first
-  EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(1);
+  // Process the execution first - expect calls for both trades
+  EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(2);
   trader.callProcessExecution(execution);
 
-  // Retrieve the actual generated ID from the trader's executionsMap using the
-  // public method
-  std::string id = trader.getIdForExecution(&execution);
+  // get any order ID from the map
+  auto orderId = trader.getExecutionIdMap().begin()->first;
 
   std::unordered_map<std::string, PreciseNumber> feeDelta{};
-
-  ExecutionReport executionReport{id, TradeExecutionStatus::EXPIRED,
+  ExecutionReport executionReport{orderId, TradeExecutionStatus::EXPIRED,
                                   PreciseNumber{"0"}, PreciseNumber{"0"},
                                   feeDelta};
 
-  // Process the report
   trader.callProcessReport(&executionReport);
 
   // Verify the balance is unchanged (except maybe for fees)
