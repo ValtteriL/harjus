@@ -2,7 +2,6 @@
 
 #include "Position.h"
 #include "PreciseNumber.h"
-#include "Symbol.h"
 #include "Trade.h"
 #include <string>
 
