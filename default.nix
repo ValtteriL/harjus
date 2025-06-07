@@ -88,6 +88,8 @@ let
       # this is executed when shell entered
       shellHook = ''
         export USE_CCACHE=1
+        export CCACHE_COMPRESS=1
+        export CCACHE_MAXSIZE=10G
         cowsay "Harjus!"
       '';
     };
