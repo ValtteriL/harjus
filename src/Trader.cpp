@@ -47,27 +47,28 @@ void Trader::processExecution(Execution execution) {
     throw std::runtime_error("No trades available in the execution object");
   }
 
-  // Submit all orders in the execution one after another
   auto trades = execution.getTrades();
-  int orderCount = 0;
-  while (!trades.empty()) {
-    auto trade = trades.front();
-    trades.pop();
+  int orderCount = trades.size();
 
-    auto orderId = generateId();
+  // Submit all orders in the execution one after another
+  std::jthread submitThread([this, &trades, &executionId]() {
+    while (!trades.empty()) {
+      auto trade = trades.front();
+      trades.pop();
 
-    // Map order ID to (StaticTrade, execution ID) for lookup in processReport
-    _executionIdMap.emplace(orderId, std::make_pair(trade, executionId));
+      auto orderId = generateId();
 
-    // Submit the order
-    _application.submitOrder(orderId, trade.symbol(), trade.orderQty(),
-                             trade.orderPrice(), trade.position());
+      // Map order ID to (StaticTrade, execution ID) for lookup in processReport
+      _executionIdMap.emplace(orderId, std::make_pair(trade, executionId));
 
-    // Wait 0.1ms between submissions
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
+      // Submit the order
+      _application.submitOrder(orderId, trade.symbol(), trade.orderQty(),
+                               trade.orderPrice(), trade.position());
 
-    orderCount++;
-  }
+      // Wait 0.1ms between submissions
+      std::this_thread::sleep_for(std::chrono::microseconds(100));
+    }
+  });
 
   // Store the execution and delta with execution ID
   auto pair = std::make_pair(execution, delta);
