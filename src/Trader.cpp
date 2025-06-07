@@ -82,6 +82,14 @@ void Trader::processReport(ExecutionReport *execReport) {
   BOOST_LOG_TRIVIAL(debug) << "Processing execution report " << *execReport;
 
   auto orderId = execReport->getId();
+  auto status = execReport->getStatus();
+
+  if (status == TradeExecutionStatus::REJECTED) {
+    // should happen only after expired order - cleanup execution ID map
+    BOOST_LOG_TRIVIAL(error) << "Rejected execution: " << *execReport;
+    _executionIdMap.erase(orderId);
+    return;
+  }
 
   // Find execution ID from order ID
   auto executionIdIt = _executionIdMap.find(orderId);
@@ -95,8 +103,6 @@ void Trader::processReport(ExecutionReport *execReport) {
   auto pair = _executionsMap.at(executionId);
   auto execution = pair.first;
   auto delta = pair.second;
-
-  auto status = execReport->getStatus();
 
   if (status == TradeExecutionStatus::EXPIRED) {
 

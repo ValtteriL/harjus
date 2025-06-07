@@ -219,6 +219,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       status = TradeExecutionStatus::EXPIRED;
       break;
     case FIX::ExecType_REJECTED: {
+      status = TradeExecutionStatus::REJECTED;
       // Extract the human readable error message (Text field)
       FIX::Text textField;
       std::string errorMsg;
@@ -228,7 +229,13 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       } else {
         errorMsg = "Unknown error (Text field not set)";
       }
-      throw std::runtime_error("Order rejected: " + errorMsg);
+
+      // if doesnt contain "insufficient balance"
+      if (errorMsg.find("insufficient balance") == std::string::npos) {
+        throw std::runtime_error("Order rejected for unexpected reason: " +
+                                 errorMsg);
+      }
+      break;
     }
     default:
       // For other cases, just log and return without creating execution report
