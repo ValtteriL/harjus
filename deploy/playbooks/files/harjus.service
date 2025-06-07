@@ -36,6 +36,7 @@ ExecStart=/usr/bin/docker run --name harjus --pull=always --network host \
   -e BLACKLISTED_ASSETS \
   -e COMMISSION \
   -e LOG_LEVEL \
+  -e ORDER_SUBMISSION_SLEEP_MICROSECOND \
   ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
 
 # Stop the container gracefully
