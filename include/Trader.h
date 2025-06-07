@@ -27,6 +27,7 @@ private:
   IApplication &_application;
   Balance &_balance;
   ReservedTrades &_reservedTrades;
+  const int _orderSubmissionSleepMicroseconds;
 
 protected:
   void processExecution(Execution execution);
@@ -42,7 +43,7 @@ public:
   Trader(ThreadSafeQueue<Execution> &_executionQueue,
          ThreadSafeQueue<ExecutionReport> &executionReportQueue,
          IApplication &application, Balance &balance,
-         ReservedTrades &reservedTrades);
+         ReservedTrades &reservedTrades, int orderSubmissionSleepMicroseconds);
 
   /**
    * @brief Run the trader

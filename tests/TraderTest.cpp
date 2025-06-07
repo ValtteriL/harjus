@@ -27,9 +27,10 @@ public:
   TestableTrader(ThreadSafeQueue<Execution> &executionQueue,
                  ThreadSafeQueue<ExecutionReport> &executionReportQueue,
                  IApplication &application, Balance &balance,
-                 ReservedTrades &reservedTrades)
+                 ReservedTrades &reservedTrades,
+                 int orderSubmissionSleepMicroseconds = 500)
       : Trader(executionQueue, executionReportQueue, application, balance,
-               reservedTrades) {}
+               reservedTrades, orderSubmissionSleepMicroseconds) {}
 
   // Expose private methods for testing
   void callProcessExecution(Execution execution) {
@@ -53,7 +54,7 @@ class TraderTest : public testing::Test {
 protected:
   TraderTest()
       : trader(executionQueue, executionReportQueue, mockApplication, balance,
-               reservedTrades) {
+               reservedTrades, 500) {
     // Setup mock application behavior
     EXPECT_CALL(mockApplication, subscribeToSymbols(_))
         .WillRepeatedly(Return(true));

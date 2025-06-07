@@ -19,10 +19,12 @@
 Trader::Trader(ThreadSafeQueue<Execution> &executionQueue,
                ThreadSafeQueue<ExecutionReport> &executionReportQueue,
                IApplication &application, Balance &balance,
-               ReservedTrades &reservedTrades)
+               ReservedTrades &reservedTrades,
+               int orderSubmissionSleepMicroseconds)
     : _executionQueue(executionQueue),
       _executionReportQueue(executionReportQueue), _application(application),
-      _balance(balance), _reservedTrades(reservedTrades) {}
+      _balance(balance), _reservedTrades(reservedTrades),
+      _orderSubmissionSleepMicroseconds(orderSubmissionSleepMicroseconds) {}
 
 /** Generate ID for execution */
 std::string generateId() {
@@ -65,8 +67,9 @@ void Trader::processExecution(Execution execution) {
       _application.submitOrder(orderId, trade.symbol(), trade.orderQty(),
                                trade.orderPrice(), trade.position());
 
-      // Wait 0.1ms between submissions
-      std::this_thread::sleep_for(std::chrono::microseconds(100));
+      // Wait configurable time between submissions
+      std::this_thread::sleep_for(
+          std::chrono::microseconds(_orderSubmissionSleepMicroseconds));
     }
   });
 

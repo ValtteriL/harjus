@@ -24,4 +24,5 @@ public:
   MOCK_METHOD(PreciseNumber, getCommission, (), (const, override));
   MOCK_METHOD(int, getLogLevel, (), (const, override));
   MOCK_METHOD(std::string, getFixFileStorePath, (), (const, override));
+  MOCK_METHOD(int, getOrderSubmissionSleepMicroseconds, (), (const, override));
 };
