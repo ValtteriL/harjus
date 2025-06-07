@@ -20,9 +20,9 @@ pipeline {
                   nix-shell -A devEnv --run "
                     set -e
                     
-                    cmake -B build
-                    cmake --build build --config Debug --target all --
-                    ctest -j8 -C Debug -T test --output-on-failure --test-dir build/
+                    cmake -B build -G Ninja
+                    ninja -C build -j$(nproc)
+                    ctest -j$(nproc) -C Debug -T test --output-on-failure --test-dir build/
                     "
                 '''
             }

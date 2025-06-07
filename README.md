@@ -17,7 +17,8 @@ nix-shell -A devEnv
 Run unit tests
 
 ```bash
-cmake build
+cmake -B build -G Ninja
+ninja -C build -j$(nproc)
 ctest --test-dir build/
 ```
 
