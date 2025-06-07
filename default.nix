@@ -109,6 +109,9 @@ let
 
       cmakeFlags = [ "-DHARJUS_TESTS=OFF" ];
 
+      # enable parallel building
+      enableParallelBuilding = true;
+
       # disable performance affecting hardenings
       hardeningDisable =
         [ "fortify" "stackprotector" "pic" "pie" "relro" "bindnow" ];
