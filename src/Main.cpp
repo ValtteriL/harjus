@@ -119,8 +119,9 @@ int main() {
   FIX::FileStoreFactory storeFactory{settings};
   FIX::ScreenLogFactory logFactory{settings};
 
-  auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::SSLSocketInitiator{
-      application, storeFactory, settings, logFactory});
+  auto initiator =
+      std::unique_ptr<FIX::Initiator>(new FIX::ThreadedSSLSocketInitiator{
+          application, storeFactory, settings, logFactory});
 
   // create a jthread to run the application
   std::jthread j_thread_application([&initiator, &application, symbols]() {
