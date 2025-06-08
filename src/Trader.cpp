@@ -49,11 +49,10 @@ void Trader::processExecution(Execution execution) {
     throw std::runtime_error("No trades available in the execution object");
   }
 
-  auto trades = execution.getTrades();
-  int orderCount = trades.size();
-
   // Submit all orders in the execution one after another
-  std::jthread submitThread([this, &trades, &executionId]() {
+  std::jthread submitThread([this, executionId, execution]() {
+    auto trades = execution.getTrades();
+
     while (!trades.empty()) {
       auto trade = trades.front();
       trades.pop();
@@ -72,13 +71,14 @@ void Trader::processExecution(Execution execution) {
           std::chrono::microseconds(_orderSubmissionSleepMicroseconds));
     }
   });
+  submitThread.detach();
 
   // Store the execution and delta with execution ID
   auto pair = std::make_pair(execution, delta);
   _executionsMap.emplace(executionId, pair);
 
   // Initialize pending orders count
-  _pendingOrdersCount[executionId] = orderCount;
+  _pendingOrdersCount[executionId] = execution.getTrades().size();
 }
 
 void Trader::processReport(ExecutionReport *execReport) {

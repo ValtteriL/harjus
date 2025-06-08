@@ -28,7 +28,7 @@ public:
                  ThreadSafeQueue<ExecutionReport> &executionReportQueue,
                  IApplication &application, Balance &balance,
                  ReservedTrades &reservedTrades,
-                 int orderSubmissionSleepMicroseconds = 500)
+                 int orderSubmissionSleepMicroseconds = 1)
       : Trader(executionQueue, executionReportQueue, application, balance,
                reservedTrades, orderSubmissionSleepMicroseconds) {}
 
@@ -134,6 +134,9 @@ TEST_F(TraderTest, processesExecutions) {
 
   // Process the execution
   trader.callProcessExecution(execution);
+
+  // sleep 2000 us to wait for the orders to be submitted
+  std::this_thread::sleep_for(std::chrono::microseconds(2000));
 }
 
 TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
@@ -151,6 +154,9 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
 
   // Process the execution first
   trader.callProcessExecution(execution);
+
+  // sleep 2000 us to wait for the orders to be submitted
+  std::this_thread::sleep_for(std::chrono::microseconds(2000));
 
   std::unordered_map<std::string, PreciseNumber> feeDelta{
       {"BTC", PreciseNumber{"-0.1"}} // Example fee
@@ -213,6 +219,9 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   // Process the execution first - expect calls for both trades
   EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(2);
   trader.callProcessExecution(execution);
+
+  // sleep 2000 us to wait for the orders to be submitted
+  std::this_thread::sleep_for(std::chrono::microseconds(2000));
 
   // get any order ID from the map
   auto orderId = trader.getExecutionIdMap().begin()->first;
