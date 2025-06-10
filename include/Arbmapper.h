@@ -12,5 +12,5 @@
  * skipSymbols vector.
  */
 std::vector<std::vector<Trade> *>
-getTradingPaths(std::unordered_map<std::string, Symbol *> *symbolMap,
+getTradingPaths(const std::unordered_map<std::string, Symbol *> *symbolMap,
                 const IConfiguration &configuration);

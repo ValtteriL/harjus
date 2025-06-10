@@ -133,7 +133,7 @@ private:
                  const FIX::SessionID &) override;
 
 public:
-  Application(IConfiguration &conf, ThreadSafeQueue<PriceUpdate> &queue,
+  Application(const IConfiguration &conf, ThreadSafeQueue<PriceUpdate> &queue,
               ThreadSafeQueue<ExecutionReport> &reportQueue,
               const std::unordered_map<std::string, Symbol *> &symbolMap);
 

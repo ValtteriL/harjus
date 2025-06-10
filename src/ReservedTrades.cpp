@@ -33,13 +33,13 @@ void ReservedTrades::releaseAll(const std::vector<StaticTrade> &trades) {
                 });
 }
 
-bool ReservedTrades::isReserved(const Trade &trade) {
+bool ReservedTrades::isReserved(const Trade &trade) const {
   std::shared_lock<std::shared_mutex> lock(mtx);
   return _reservedTrades.contains(
       std::make_pair(trade.symbol()->symbol, trade.position()));
 }
 
-bool ReservedTrades::isReserved(const std::vector<Trade> &trades) {
+bool ReservedTrades::isReserved(const std::vector<Trade> &trades) const {
   std::shared_lock<std::shared_mutex> lock(mtx);
   return std::any_of(trades.begin(), trades.end(), [this](const Trade &trade) {
     return _reservedTrades.contains(

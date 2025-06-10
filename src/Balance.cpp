@@ -1,19 +1,23 @@
 #include "Balance.h"
+#include "PreciseNumber.h"
 
-void Balance::updateBalance(const std::string &currency, PreciseNumber amount) {
+void Balance::updateBalance(const std::string &currency,
+                            const PreciseNumber &amount) {
   std::unique_lock<std::shared_mutex> lock(mtx);
   balanceMap[currency] += amount;
 }
 
 void Balance::updateBalance(
-    const std::unordered_map<std::string, PreciseNumber> &assetDelta) {
+    std::unordered_map<std::string, PreciseNumber> &assetDelta) {
   std::unique_lock<std::shared_mutex> lock(mtx);
   std::for_each(assetDelta.begin(), assetDelta.end(), [this](const auto &pair) {
     balanceMap[pair.first] += pair.second;
   });
 }
 
-PreciseNumber Balance::getBalance(const std::string &currency) {
+PreciseNumber Balance::getBalance(const std::string &currency) const {
   std::shared_lock<std::shared_mutex> lock(mtx);
-  return balanceMap[currency];
+  if (balanceMap.contains(currency))
+    return balanceMap.at(currency);
+  return PreciseNumber{"0"};
 }

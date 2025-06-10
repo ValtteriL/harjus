@@ -13,8 +13,8 @@ Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
                Balance &balance, ReservedTrades &reservedTrades,
                ThreadSafeQueue<PriceUpdate> &priceUpdateQueue,
                ThreadSafeQueue<Execution> &executionQueue,
-               std::unordered_map<std::string, PreciseNumber> relativeValues,
-               PreciseNumber commission)
+               std::unordered_map<std::string, PreciseNumber> &relativeValues,
+               const PreciseNumber commission)
     : _symbols(symbols), _relativeValues(relativeValues),
       _priceUpdateQueue(priceUpdateQueue), _executionQueue(executionQueue),
       _reservedTrades(reservedTrades), _balance(balance) {
@@ -38,7 +38,7 @@ bool Engine::containsOnlyFreeSymbols(const Opportunity *opportunity) {
   return !_reservedTrades.isReserved(opportunity->getTrades());
 }
 
-void Engine::reserveBudgetAndSymbols(Opportunity &opp) {
+void Engine::reserveBudgetAndSymbols(const Opportunity &opp) {
   _reservedTrades.reserve(opp.getTrades());
   _balance.updateBalance(opp.getStartingAsset(),
                          opp.getCapacity() * PreciseNumber{"-1"});

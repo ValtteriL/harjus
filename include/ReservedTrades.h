@@ -42,7 +42,7 @@ private:
   /**
    * Mutex for thread safety.
    */
-  std::shared_mutex mtx;
+  mutable std::shared_mutex mtx;
 
 public:
   /**
@@ -74,10 +74,10 @@ public:
   /**
    *  Check if a trade is reserved.
    */
-  bool isReserved(const Trade &trade);
+  bool isReserved(const Trade &trade) const;
 
   /**
    *  Check if a trade is reserved.
    */
-  bool isReserved(const std::vector<Trade> &trades);
+  bool isReserved(const std::vector<Trade> &trades) const;
 };
