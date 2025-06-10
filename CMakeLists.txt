@@ -46,6 +46,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 # add ccache for faster builds
 if(DEFINED ENV{USE_CCACHE})
   set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif()
 
 include_directories(include)
@@ -307,7 +309,6 @@ target_precompile_headers(harjus PRIVATE
   <stdexcept>
 
   # Boost
-  <boost/lockfree/queue.hpp>
   <boost/log/core.hpp>
   <boost/log/expressions.hpp>
   <boost/log/trivial.hpp>

@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "Ed25519.h"
 #include "Position.h"
+#include "PriceUpdate.h"
 #include <atomic>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -15,11 +16,13 @@
 
 extern std::atomic<bool> isShuttingDown;
 
-Application::Application(IConfiguration &conf,
-                         boost::lockfree::queue<PriceUpdate *> &queue,
-                         ThreadSafeQueue<ExecutionReport> &reportQueue)
+Application::Application(
+    IConfiguration &conf, ThreadSafeQueue<PriceUpdate> &queue,
+    ThreadSafeQueue<ExecutionReport> &reportQueue,
+    const std::unordered_map<std::string, Symbol *> &symbolMap)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
-      priceUpdateQueue(queue), executionReportQueue(reportQueue) {}
+      priceUpdateQueue(queue), executionReportQueue(reportQueue),
+      symbolMap(symbolMap) {}
 
 void Application::onCreate(const FIX::SessionID &sessionID) {
   // store markert data session IDs if Qualifier starts with MARKETDATA
@@ -66,7 +69,8 @@ void Application::toAdmin(FIX::Message &message,
     FIX::Header &header = message.getHeader();
 
     // add required fields to the header
-    header.setField(FIX::IntField(25035, 1)); // unordered messages for perf
+    header.setField(
+        FIX::IntField(25035, 2)); // sequential processing of messages
 
     // set username
     header.setField(FIX::Username(username.c_str()));
@@ -219,6 +223,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       status = TradeExecutionStatus::EXPIRED;
       break;
     case FIX::ExecType_REJECTED: {
+      status = TradeExecutionStatus::REJECTED;
       // Extract the human readable error message (Text field)
       FIX::Text textField;
       std::string errorMsg;
@@ -228,7 +233,13 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
       } else {
         errorMsg = "Unknown error (Text field not set)";
       }
-      throw std::runtime_error("Order rejected: " + errorMsg);
+
+      // if doesnt contain "insufficient balance"
+      if (errorMsg.find("insufficient balance") == std::string::npos) {
+        throw std::runtime_error("Order rejected for unexpected reason: " +
+                                 errorMsg);
+      }
+      break;
     }
     default:
       // For other cases, just log and return without creating execution report
@@ -354,14 +365,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
       }
     }
 
-    // Create price update and add to the queue
-    PriceUpdate *update = new PriceUpdate{symbolValue, bidPrice, askPrice,
-                                          bidQuantity, askQuantity};
-
-    // Push to the queue - if queue is full, this may fail but we don't want to
-    // block
-    BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << *update;
-    priceUpdateQueue.push(update);
+    priceUpdateQueue.push(PriceUpdate{symbolMap.at(symbolValue), bidPrice,
+                                      askPrice, bidQuantity, askQuantity});
   } catch (const std::exception &e) {
     throw std::runtime_error("Error processing market data snapshot: " +
                              std::string(e.what()));
@@ -377,7 +382,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
     int numEntries = noMDEntries.getValue();
 
     // We may get updates for multiple symbols in a single message
-    std::map<std::string, PriceUpdate *> updates;
+    std::map<std::string, PriceUpdate> updates;
 
     // symbol may be skipped in which case we need to use the last one
     FIX::Symbol symbol;
@@ -399,8 +404,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       // Check if we already have an update for this symbol
       if (updates.find(symbolValue) == updates.end()) {
         // Create a new update
-        updates[symbolValue] = new PriceUpdate();
-        updates[symbolValue]->symbol = symbolValue;
+        updates[symbolValue].symbol = symbolMap.at(symbolValue);
       }
 
       // Process update based on entry type (bid or ask)
@@ -418,13 +422,13 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
           group.get(entrySize);
 
           if (entryType == FIX::MDEntryType_BID) {
-            updates[symbolValue]->bidPrice =
+            updates[symbolValue].bidPrice =
                 PreciseNumber{entryPrice.getString()};
-            updates[symbolValue]->bidQty = PreciseNumber{entrySize.getString()};
+            updates[symbolValue].bidQty = PreciseNumber{entrySize.getString()};
           } else if (entryType == FIX::MDEntryType_OFFER) {
-            updates[symbolValue]->askPrice =
+            updates[symbolValue].askPrice =
                 PreciseNumber{entryPrice.getString()};
-            updates[symbolValue]->askQty = PreciseNumber{entrySize.getString()};
+            updates[symbolValue].askQty = PreciseNumber{entrySize.getString()};
           }
         }
       }
@@ -432,7 +436,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
     // Add all updates to the queue
     for (const auto &[symbol, update] : updates) {
-      BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << *update;
+      BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << update;
       priceUpdateQueue.push(update);
     }
   } catch (const std::exception &e) {

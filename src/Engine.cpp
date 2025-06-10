@@ -11,7 +11,7 @@
 Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
                std::vector<std::vector<Trade> *> &tradingPaths,
                Balance &balance, ReservedTrades &reservedTrades,
-               boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
+               ThreadSafeQueue<PriceUpdate> &priceUpdateQueue,
                ThreadSafeQueue<Execution> &executionQueue,
                std::unordered_map<std::string, PreciseNumber> relativeValues,
                PreciseNumber commission)
@@ -27,8 +27,10 @@ Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
     Opportunity *opportunity =
         new Opportunity(*path, _relativeValues[startingAsset], commission);
 
-    // add opportunity to _opportunities with the first trade symbol as the key
-    _opportunities.insert({path->front().symbol()->symbol, opportunity});
+    // add opportunity to _opportunities with every trade symbol as the key
+    for (auto &trade : *path) {
+      _opportunities.insert({trade.symbol()->symbol, opportunity});
+    }
   }
 };
 
@@ -42,22 +44,20 @@ void Engine::reserveBudgetAndSymbols(Opportunity &opp) {
                          opp.getCapacity() * PreciseNumber{"-1"});
 }
 
-void Engine::processPriceUpdate(const PriceUpdate *update) {
+void Engine::processPriceUpdate(const PriceUpdate &update) {
   // Update symbol price
-  _symbols.at(update->symbol)->askPrice = update->askPrice;
-  _symbols.at(update->symbol)->bidPrice = update->bidPrice;
-  _symbols.at(update->symbol)->askQty = update->askQty;
-  _symbols.at(update->symbol)->bidQty = update->bidQty;
+  update.symbol->askPrice = update.askPrice;
+  update.symbol->bidPrice = update.bidPrice;
+  update.symbol->askQty = update.askQty;
+  update.symbol->bidQty = update.bidQty;
 
-  // Update all opportunities where this symbol is the first one
-  auto affected = _opportunities.equal_range(update->symbol);
+  // Update all affected opportunities
+  auto affected = _opportunities.equal_range(update.symbol->symbol);
   for (auto it = affected.first; it != affected.second; ++it) {
     Opportunity *opp = it->second;
     auto startingAssetBudget = _balance.getBalance(opp->getStartingAsset());
     opp->update(startingAssetBudget);
   }
-
-  delete update;
 
   // find the 2 most profitable opportunities, reserve budget and symbols, and
   // queue them for execution
@@ -108,11 +108,11 @@ void Engine::run(std::stop_token stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Engine";
 
-  PriceUpdate *update = nullptr;
+  PriceUpdate update{};
 
   while (!stoken.stop_requested()) {
-    if (_priceUpdateQueue.pop(update)) {
-      BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << *update;
+    if (_priceUpdateQueue.try_pop(update)) {
+      BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << update;
       processPriceUpdate(update);
     }
   }

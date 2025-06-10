@@ -10,7 +10,6 @@
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
-#include <boost/lockfree/queue.hpp>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <semaphore>
@@ -23,14 +22,14 @@ public:
   TestableEngine(std::unordered_map<std::string, Symbol *> &symbols,
                  std::vector<std::vector<Trade> *> &tradingPaths,
                  Balance &balance, ReservedTrades &reservedTrades,
-                 boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
+                 ThreadSafeQueue<PriceUpdate> &priceUpdateQueue,
                  ThreadSafeQueue<Execution> &executionQueue,
                  std::unordered_map<std::string, PreciseNumber> relativeValues,
                  PreciseNumber commission)
       : Engine(symbols, tradingPaths, balance, reservedTrades, priceUpdateQueue,
                executionQueue, relativeValues, commission) {}
 
-  void callProcessPriceUpdate(PriceUpdate *update) {
+  void callProcessPriceUpdate(const PriceUpdate &update) {
     // Call the original processPriceUpdate method
     processPriceUpdate(update);
   }
@@ -121,7 +120,8 @@ protected:
 
   std::binary_semaphore semaphore{0};
   ThreadSafeQueue<Execution> executionQueue{semaphore};
-  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue{1000};
+  std::binary_semaphore priceUpdateSemaphore{0};
+  ThreadSafeQueue<PriceUpdate> priceUpdateQueue{priceUpdateSemaphore};
 
   // simple triangular arbitrage
   // BTC -> ETH -> USDT -> BTC
@@ -132,49 +132,23 @@ protected:
   TestableEngine engine;
 };
 
-TEST_F(EngineTest, doesNotDetectOpportunityIfLastUpdateNotFirstSymbol) {
-
-  std::vector<PriceUpdate *> updates;
-  updates.push_back(new PriceUpdate{"ETHBTC", PreciseNumber{"0"},
-                                    PreciseNumber{"1"}, PreciseNumber{"0"},
-                                    PreciseNumber{"100"}}); // BTC -> ETH 1:1
-  updates.push_back(new PriceUpdate{"ETHUSDT", PreciseNumber{"1"},
-                                    PreciseNumber{"0"}, PreciseNumber{"1"},
-                                    PreciseNumber{"0"}}); // ETH -> USDT 1:1
-  updates.push_back(new PriceUpdate{"USDTBTC", PreciseNumber{"10.0"},
-                                    PreciseNumber{"0"}, PreciseNumber{"1.0"},
-                                    PreciseNumber{"0"}}); // USDT -> BTC 1:10
-
-  // Store the initial balance before processing updates
-  PreciseNumber initialBalance = balance.getBalance("BTC");
-
-  for (auto update : updates) {
-    engine.callProcessPriceUpdate(update);
-  }
-
-  // Verify no execution is queued
-  Execution execution;
-  ASSERT_FALSE(executionQueue.try_pop(execution));
-  ASSERT_TRUE(executionQueue.empty());
-}
-
 TEST_F(EngineTest, detectsArbitrageOpportunity) {
 
-  std::vector<PriceUpdate *> updates;
-  updates.push_back(new PriceUpdate{"ETHUSDT", PreciseNumber{"1"},
-                                    PreciseNumber{"0"}, PreciseNumber{"1"},
-                                    PreciseNumber{"0"}}); // ETH -> USDT 1:1
-  updates.push_back(new PriceUpdate{"USDTBTC", PreciseNumber{"10.0"},
-                                    PreciseNumber{"0"}, PreciseNumber{"1.0"},
-                                    PreciseNumber{"0"}}); // USDT -> BTC 1:10
-  updates.push_back(new PriceUpdate{"ETHBTC", PreciseNumber{"0"},
-                                    PreciseNumber{"1"}, PreciseNumber{"0"},
-                                    PreciseNumber{"100"}}); // BTC -> ETH 1:1
+  std::vector<PriceUpdate> updates;
+  updates.push_back(PriceUpdate{symbols.at("ETHBTC"), PreciseNumber{"0"},
+                                PreciseNumber{"1"}, PreciseNumber{"0"},
+                                PreciseNumber{"100"}}); // BTC -> ETH 1:1
+  updates.push_back(PriceUpdate{symbols.at("ETHUSDT"), PreciseNumber{"1"},
+                                PreciseNumber{"0"}, PreciseNumber{"1"},
+                                PreciseNumber{"0"}}); // ETH -> USDT 1:1
+  updates.push_back(PriceUpdate{symbols.at("USDTBTC"), PreciseNumber{"10.0"},
+                                PreciseNumber{"0"}, PreciseNumber{"1.0"},
+                                PreciseNumber{"0"}}); // USDT -> BTC 1:10
 
   // Store the initial balance before processing updates
   PreciseNumber initialBalance = balance.getBalance("BTC");
 
-  for (auto update : updates) {
+  for (auto &update : updates) {
     engine.callProcessPriceUpdate(update);
   }
 
@@ -210,23 +184,23 @@ TEST_F(EngineTest, detectsTwoArbitrageOpportunities) {
                          priceUpdateQueue, executionQueue, relativeValues,
                          commission);
 
-  std::vector<PriceUpdate *> updates;
-  updates.push_back(new PriceUpdate{
-      "ETHUSDT", PreciseNumber{"1"}, PreciseNumber{"1"}, PreciseNumber{"1"},
-      PreciseNumber{"1"}}); // ETH <-> USDT 1:1 both ways
+  std::vector<PriceUpdate> updates;
+  updates.push_back(PriceUpdate{
+      symbols.at("ETHBTC"), PreciseNumber{"1"}, PreciseNumber{"1"},
+      PreciseNumber{"100"}, PreciseNumber{"100"}}); // BTC <-> ETH 1:1 both ways
+  updates.push_back(PriceUpdate{
+      symbols.at("ETHUSDT"), PreciseNumber{"1"}, PreciseNumber{"1"},
+      PreciseNumber{"1"}, PreciseNumber{"1"}}); // ETH <-> USDT 1:1 both ways
   updates.push_back(
-      new PriceUpdate{"USDTBTC", PreciseNumber{"10.0"}, PreciseNumber{"0.1"},
-                      PreciseNumber{"1.0"},
-                      PreciseNumber{"100"}}); // USDT <-> BTC 1:10 both ways
-  updates.push_back(new PriceUpdate{
-      "ETHBTC", PreciseNumber{"1"}, PreciseNumber{"1"}, PreciseNumber{"100"},
-      PreciseNumber{"100"}}); // BTC <-> ETH 1:1 both ways
+      PriceUpdate{symbols.at("USDTBTC"), PreciseNumber{"10.0"},
+                  PreciseNumber{"0.1"}, PreciseNumber{"1.0"},
+                  PreciseNumber{"100"}}); // USDT <-> BTC 1:10 both ways
 
   // Store initial balances
   PreciseNumber initialBTC = balance.getBalance("BTC");
   PreciseNumber initialETH = balance.getBalance("ETH");
 
-  for (auto update : updates) {
+  for (auto &update : updates) {
     engine2.callProcessPriceUpdate(update);
   }
 

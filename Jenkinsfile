@@ -6,6 +6,7 @@ pipeline {
       ECR_REPOSITORY = 'harjus'
       AWS_DEFAULT_REGION = 'ap-northeast-1'
       TAG_PATTERN = '^releases/\\d+\\.\\d+\\.\\d+$' // Regular expression for release tags (releases/x.y.z) where x, y, z are digits
+      CCACHE_BASEDIR = "$WORKSPACE"
     }
     stages {
         stage('Checkout') {
@@ -16,12 +17,12 @@ pipeline {
         stage('Quality') {
             steps {
                 sh '''
-                  nix-shell --pure -A devEnv --run "
+                  nix-shell -A devEnv --run "
                     set -e
                     
-                    cmake -B build
-                    cmake --build build --config Debug --target all --
-                    ctest -j8 -C Debug -T test --output-on-failure --test-dir build/
+                    cmake -B build -G Ninja
+                    ninja -C build -j$(nproc)
+                    ctest -j$(nproc) -C Debug -T test --output-on-failure --test-dir build/
                     "
                 '''
             }

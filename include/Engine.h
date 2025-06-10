@@ -13,7 +13,6 @@
 #include <unordered_map>
 
 #include "PreciseNumber.h"
-#include <boost/lockfree/queue.hpp>
 #include <vector>
 
 /**
@@ -30,7 +29,7 @@ private:
   std::unordered_map<std::string, Symbol *> &_symbols;
   std::unordered_multimap<std::string, Opportunity *> _opportunities;
   std::unordered_map<std::string, PreciseNumber> _relativeValues;
-  boost::lockfree::queue<PriceUpdate *> &_priceUpdateQueue;
+  ThreadSafeQueue<PriceUpdate> &_priceUpdateQueue;
   ThreadSafeQueue<Execution> &_executionQueue;
   ReservedTrades &_reservedTrades;
   Balance &_balance;
@@ -55,13 +54,15 @@ private:
       Opportunity *exclude);
 
   /**
-   * @brief Reserves the necessary budget and trading symbols for a given opportunity.
+   * @brief Reserves the necessary budget and trading symbols for a given
+   * opportunity.
    *
-   * This function allocates the required budget and locks the relevant trading symbols
-   * associated with the provided Opportunity object to ensure resources are available
-   * for executing the opportunity.
+   * This function allocates the required budget and locks the relevant trading
+   * symbols associated with the provided Opportunity object to ensure resources
+   * are available for executing the opportunity.
    *
-   * @param opp Reference to the Opportunity object for which budget and symbols are to be reserved.
+   * @param opp Reference to the Opportunity object for which budget and symbols
+   * are to be reserved.
    */
   void reserveBudgetAndSymbols(Opportunity &opp);
 
@@ -74,7 +75,7 @@ protected:
    * opportunities, reserves symbols and budget for them, and queues them for
    * execution.
    */
-  void processPriceUpdate(const PriceUpdate *update);
+  void processPriceUpdate(const PriceUpdate &update);
 
 public:
   /**
@@ -90,7 +91,7 @@ public:
   Engine(std::unordered_map<std::string, Symbol *> &symbols,
          std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
          ReservedTrades &reservedTrades,
-         boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
+         ThreadSafeQueue<PriceUpdate> &priceUpdateQueue,
          ThreadSafeQueue<Execution> &executionQueue,
          std::unordered_map<std::string, PreciseNumber> relativeValues,
          PreciseNumber commission);

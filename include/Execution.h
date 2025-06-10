@@ -97,7 +97,7 @@ public:
    * @brief Get the trades associated with the execution.
    * @return A queue of trades associated with the execution.
    */
-  std::queue<StaticTrade> &getTrades();
+  std::queue<StaticTrade> getTrades() const;
 
   /**
    * @brief Get the original trades associated with the execution.

@@ -25,3 +25,4 @@ blacklisted_start_assets: "BNB"
 blacklisted_assets: "USDC"
 commission: 0.001
 log_level: 1
+order_submission_sleep_microsecond: 1

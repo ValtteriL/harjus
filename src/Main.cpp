@@ -11,7 +11,6 @@
 #include "ThreadSafeQueue.h"
 #include "Trade.h"
 #include "Trader.h"
-#include <boost/lockfree/queue.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
@@ -96,11 +95,12 @@ int main() {
   std::vector<std::vector<Trade> *> tradingPaths =
       getTradingPaths(&symbolMap, config);
 
-  // Create lockfree queues for price updates & executions
-  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(1000);
-  std::binary_semaphore semaphore(0);
-  ThreadSafeQueue<Execution> executionQueue(semaphore);
-  ThreadSafeQueue<ExecutionReport> reportQueue(semaphore);
+  // Create queues for price updates & executions
+  std::binary_semaphore priceUpdateSemaphore{0};
+  ThreadSafeQueue<PriceUpdate> priceUpdateQueue{priceUpdateSemaphore};
+  std::binary_semaphore semaphore{0};
+  ThreadSafeQueue<Execution> executionQueue{semaphore};
+  ThreadSafeQueue<ExecutionReport> reportQueue{semaphore};
 
   ReservedTrades reservedTrades;
 
@@ -115,12 +115,13 @@ int main() {
   auto fixConfig = FixConfig(config);
   auto settings = fixConfig.sessionSettings();
 
-  Application application{config, priceUpdateQueue, reportQueue};
+  Application application{config, priceUpdateQueue, reportQueue, symbolMap};
   FIX::FileStoreFactory storeFactory{settings};
   FIX::ScreenLogFactory logFactory{settings};
 
-  auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::SSLSocketInitiator{
-      application, storeFactory, settings, logFactory});
+  auto initiator =
+      std::unique_ptr<FIX::Initiator>(new FIX::ThreadedSSLSocketInitiator{
+          application, storeFactory, settings, logFactory});
 
   // create a jthread to run the application
   std::jthread j_thread_application([&initiator, &application, symbols]() {
@@ -153,8 +154,9 @@ int main() {
       [&engine](std::stop_token stoken) { engine.run(stoken); });
 
   // create a trader
-  Trader trader{executionQueue, reportQueue, application, *balance,
-                reservedTrades};
+  Trader trader{executionQueue, reportQueue,
+                application,    *balance,
+                reservedTrades, config.getOrderSubmissionSleepMicroseconds()};
 
   // create a jthread to run trader
   std::jthread j_thread_trader(

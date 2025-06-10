@@ -12,9 +12,9 @@
 #include "IApplication.h"
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
-#include <boost/lockfree/queue.hpp>
 #include <stop_token>
 #include <string>
+#include <unordered_map>
 
 using entry =
     std::pair<Execution, std::unordered_map<std::string, PreciseNumber>>;
@@ -27,19 +27,25 @@ private:
   IApplication &_application;
   Balance &_balance;
   ReservedTrades &_reservedTrades;
+  const int _orderSubmissionSleepMicroseconds;
 
 protected:
   void processExecution(Execution execution);
   void processReport(ExecutionReport *execReport);
-  std::unordered_map<std::string,
-                     entry>
+  std::unordered_map<std::string, entry>
       _executionsMap; // Map of execution ID to execution and delta
+  std::unordered_map<std::string, std::pair<StaticTrade, std::string>>
+      _executionIdMap; // Map of order ID to (StaticTrade, execution ID)
+  std::unordered_map<std::string, int>
+      _pendingOrdersCount; // Map of execution ID to pending orders count
+  std::unordered_set<std::string>
+      _failedExecutions; // Set of failed execution IDs
 
 public:
   Trader(ThreadSafeQueue<Execution> &_executionQueue,
          ThreadSafeQueue<ExecutionReport> &executionReportQueue,
          IApplication &application, Balance &balance,
-         ReservedTrades &reservedTrades);
+         ReservedTrades &reservedTrades, int orderSubmissionSleepMicroseconds);
 
   /**
    * @brief Run the trader

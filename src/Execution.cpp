@@ -20,7 +20,7 @@ Execution::Execution(Opportunity &opportunity)
 PreciseNumber Execution::getTotalProfit() const { return _totalProfit; }
 
 std::string Execution::getStartingAsset() const { return _startingAsset; }
-std::queue<StaticTrade> &Execution::getTrades() { return _trades; }
+std::queue<StaticTrade> Execution::getTrades() const { return _trades; }
 
 PreciseNumber Execution::getCapacity() const { return _capacity; }
 

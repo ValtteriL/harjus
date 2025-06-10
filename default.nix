@@ -88,6 +88,8 @@ let
       # this is executed when shell entered
       shellHook = ''
         export USE_CCACHE=1
+        export CCACHE_COMPRESS=1
+        export CCACHE_MAXSIZE=10G
         cowsay "Harjus!"
       '';
     };
@@ -106,6 +108,9 @@ let
       nativeBuildInputs = [ cmake ninja pkg-config ];
 
       cmakeFlags = [ "-DHARJUS_TESTS=OFF" ];
+
+      # enable parallel building
+      enableParallelBuilding = true;
 
       # disable performance affecting hardenings
       hardeningDisable =

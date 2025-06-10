@@ -28,7 +28,6 @@
 #include <quickfix/fix44/OrderCancelReplaceRequest.h>
 #include <quickfix/fix44/OrderCancelRequest.h>
 
-#include <boost/lockfree/queue.hpp>
 #include <vector>
 
 class Application : public FIX::Application,
@@ -36,12 +35,13 @@ class Application : public FIX::Application,
                     public IApplication {
 
 private:
-  std::string username;
-  std::string privateKeySeed;
-  boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue;
+  const std::string username;
+  const std::string privateKeySeed;
+  ThreadSafeQueue<PriceUpdate> &priceUpdateQueue;
   ThreadSafeQueue<ExecutionReport> &executionReportQueue;
   std::vector<FIX::SessionID> marketDataSessionIDs;
   FIX::SessionID orderEntrySessionID;
+  const std::unordered_map<std::string, Symbol *> &symbolMap;
 
   /**
    * Called when quickfix creates a new session.
@@ -133,9 +133,9 @@ private:
                  const FIX::SessionID &) override;
 
 public:
-  Application(IConfiguration &conf,
-              boost::lockfree::queue<PriceUpdate *> &queue,
-              ThreadSafeQueue<ExecutionReport> &reportQueue);
+  Application(IConfiguration &conf, ThreadSafeQueue<PriceUpdate> &queue,
+              ThreadSafeQueue<ExecutionReport> &reportQueue,
+              const std::unordered_map<std::string, Symbol *> &symbolMap);
 
   void submitOrder(const std::string &id, const std::string &symbol,
                    PreciseNumber qty, PreciseNumber price,
