@@ -108,12 +108,14 @@ void Engine::run(std::stop_token stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Engine";
 
-  PriceUpdate update{};
-
   while (!stoken.stop_requested()) {
-    if (_priceUpdateQueue.try_pop(update)) {
-      BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << update;
-      processPriceUpdate(update);
+
+    if (_priceUpdateQueue.getSemaphore().try_acquire_for(
+            std::chrono::milliseconds{100})) {
+      if (PriceUpdate update; _priceUpdateQueue.try_pop(update)) {
+        BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << update;
+        processPriceUpdate(update);
+      }
     }
   }
 
