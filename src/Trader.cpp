@@ -15,17 +15,14 @@
 #include <chrono>
 #include <random>
 #include <stdexcept>
-#include <thread>
 
 Trader::Trader(ThreadSafeQueue<Execution> &executionQueue,
                ThreadSafeQueue<ExecutionReport> &executionReportQueue,
                IApplication &application, Balance &balance,
-               ReservedTrades &reservedTrades,
-               int orderSubmissionSleepMicroseconds)
+               ReservedTrades &reservedTrades)
     : _executionQueue(executionQueue),
       _executionReportQueue(executionReportQueue), _application(application),
-      _balance(balance), _reservedTrades(reservedTrades),
-      _orderSubmissionSleepMicroseconds(orderSubmissionSleepMicroseconds) {}
+      _balance(balance), _reservedTrades(reservedTrades) {}
 
 /** Generate ID for execution */
 std::string generateId() {
@@ -44,35 +41,22 @@ void Trader::processExecution(Execution execution) {
   auto executionId = generateId();
   auto delta = std::unordered_map<std::string, PreciseNumber>{
       {execution.getStartingAsset(), execution.getCapacity()}};
-
-  if (execution.getTrades().empty()) {
-    // No trades available, handle this case
-    throw std::runtime_error("No trades available in the execution object");
-  }
+  auto trades = execution.getTrades();
 
   // Submit all orders in the execution one after another
-  std::jthread submitThread([this, executionId, execution]() {
-    auto trades = execution.getTrades();
+  while (!trades.empty()) {
+    auto trade = trades.front();
+    trades.pop();
 
-    while (!trades.empty()) {
-      auto trade = trades.front();
-      trades.pop();
+    auto orderId = generateId();
 
-      auto orderId = generateId();
+    // Map order ID to (StaticTrade, execution ID) for lookup in processReport
+    _executionIdMap.emplace(orderId, std::make_pair(trade, executionId));
 
-      // Map order ID to (StaticTrade, execution ID) for lookup in processReport
-      _executionIdMap.emplace(orderId, std::make_pair(trade, executionId));
-
-      // Submit the order
-      _application.submitOrder(orderId, trade.symbol(), trade.orderQty(),
-                               trade.orderPrice(), trade.position());
-
-      // Wait configurable time between submissions
-      std::this_thread::sleep_for(
-          std::chrono::microseconds(_orderSubmissionSleepMicroseconds));
-    }
-  });
-  submitThread.detach();
+    // Submit the order
+    _application.submitOrder(orderId, trade.symbol(), trade.orderQty(),
+                             trade.orderPrice(), trade.position());
+  }
 
   // Store the execution and delta with execution ID
   auto pair = std::make_pair(execution, delta);

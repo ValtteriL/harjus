@@ -19,5 +19,4 @@ public:
   virtual PreciseNumber getCommission() const = 0;
   virtual int getLogLevel() const = 0;
   virtual std::string getFixFileStorePath() const = 0;
-  virtual int getOrderSubmissionSleepMicroseconds() const = 0;
 };

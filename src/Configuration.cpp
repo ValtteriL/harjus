@@ -108,8 +108,3 @@ int Configuration::getLogLevel() const {
 std::string Configuration::getFixFileStorePath() const {
   return dotenv::getenv(FIX_FILE_DIR.c_str(), "./fix-file-dir");
 }
-
-int Configuration::getOrderSubmissionSleepMicroseconds() const {
-  auto sleepTime = dotenv::getenv("ORDER_SUBMISSION_SLEEP_MICROSECOND", "500");
-  return std::stoi(sleepTime);
-}

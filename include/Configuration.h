@@ -91,10 +91,4 @@ public:
    * @return The FIX file directory as a string.
    */
   std::string getFixFileStorePath() const override;
-
-  /**
-   * @brief Get the order submission sleep time in microseconds.
-   * @return The sleep time between order submissions in microseconds.
-   */
-  int getOrderSubmissionSleepMicroseconds() const override;
 };

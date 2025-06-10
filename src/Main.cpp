@@ -154,9 +154,8 @@ int main() {
       [&engine](std::stop_token stoken) { engine.run(stoken); });
 
   // create a trader
-  Trader trader{executionQueue, reportQueue,
-                application,    *balance,
-                reservedTrades, config.getOrderSubmissionSleepMicroseconds()};
+  Trader trader{executionQueue, reportQueue, application, *balance,
+                reservedTrades};
 
   // create a jthread to run trader
   std::jthread j_thread_trader(
