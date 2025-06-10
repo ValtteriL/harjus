@@ -14,6 +14,7 @@
 #include "ThreadSafeQueue.h"
 #include <stop_token>
 #include <string>
+#include <unordered_map>
 
 using entry =
     std::pair<Execution, std::unordered_map<std::string, PreciseNumber>>;
@@ -37,6 +38,8 @@ protected:
       _executionIdMap; // Map of order ID to (StaticTrade, execution ID)
   std::unordered_map<std::string, int>
       _pendingOrdersCount; // Map of execution ID to pending orders count
+  std::unordered_set<std::string>
+      _failedExecutions; // Set of failed execution IDs
 
 public:
   Trader(ThreadSafeQueue<Execution> &_executionQueue,

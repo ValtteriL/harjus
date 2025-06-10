@@ -14,6 +14,7 @@
 #include <boost/log/trivial.hpp>
 #include <chrono>
 #include <random>
+#include <stdexcept>
 #include <thread>
 
 Trader::Trader(ThreadSafeQueue<Execution> &executionQueue,
@@ -88,13 +89,6 @@ void Trader::processReport(ExecutionReport *execReport) {
   auto orderId = execReport->getId();
   auto status = execReport->getStatus();
 
-  if (status == TradeExecutionStatus::REJECTED) {
-    // should happen only after expired order - cleanup execution ID map
-    BOOST_LOG_TRIVIAL(error) << "Rejected execution: " << *execReport;
-    _executionIdMap.erase(orderId);
-    return;
-  }
-
   // Find execution ID from order ID
   auto executionIdIt = _executionIdMap.find(orderId);
   if (executionIdIt == _executionIdMap.end()) {
@@ -108,68 +102,85 @@ void Trader::processReport(ExecutionReport *execReport) {
   auto execution = pair.first;
   auto delta = pair.second;
 
-  if (status == TradeExecutionStatus::EXPIRED) {
+  switch (status) {
+  case TradeExecutionStatus::REJECTED: {
+    // should happen only after expired order - cleanup execution ID map
+    BOOST_LOG_TRIVIAL(debug) << "Trade rejected: " << *execReport;
 
-    BOOST_LOG_TRIVIAL(info) << "Failed execution: " << execution;
+    // Mark execution as failed
+    _failedExecutions.insert(executionId);
 
-    // Remove order ID mapping
-    _executionIdMap.erase(orderId);
-
-    // update balance
-    _balance.updateBalance(delta);
-
-    // free symbols
-    _reservedTrades.releaseAll(execution.getOriginalTrades());
-
-    // remove the execution from the map
-    _executionsMap.erase(executionId);
-    _pendingOrdersCount.erase(executionId);
-
-    return;
+    break;
   }
+  case TradeExecutionStatus::EXPIRED: {
+    BOOST_LOG_TRIVIAL(debug) << "Trade expired: " << execution;
 
-  // update delta with fees
-  // get fees from the execution report
-  // get base, quote delta from the first trade
-  // assuming the fees are unique for all partial executions
-  auto tradeDelta = execReport->getFeeDelta();
-  for (const auto &[currency, amount] : tradeDelta) {
-    delta[currency] += amount;
+    // Mark execution as failed
+    _failedExecutions.insert(executionId);
+
+    break;
   }
+  case TradeExecutionStatus::FILLED: {
 
-  // If the full qty not received, additional ExecutionReports with same id will
-  // be received
-  auto compareQty = oldTrade.position() == Position::LONG
-                        ? execReport->recvQty()
-                        : execReport->usedQty();
-  if (compareQty < oldTrade.orderQty()) {
-    BOOST_LOG_TRIVIAL(debug) << "Partial execution, waiting for more reports";
-    return;
+    BOOST_LOG_TRIVIAL(debug) << "Trade filled: " << *execReport;
+
+    // update delta with fees
+    // get fees from the execution report
+    // get base, quote delta from the first trade
+    // assuming the fees are unique for all partial executions
+    auto tradeDelta = execReport->getFeeDelta();
+    for (const auto &[currency, amount] : tradeDelta) {
+      delta[currency] += amount;
+    }
+
+    // If the full qty not received, additional ExecutionReports with same id
+    // will be received
+    auto compareQty = oldTrade.position() == Position::LONG
+                          ? execReport->recvQty()
+                          : execReport->usedQty();
+    if (compareQty < oldTrade.orderQty()) {
+      BOOST_LOG_TRIVIAL(debug) << "Partial execution, waiting for more reports";
+      return;
+    }
+
+    // If the full qty received, update delta with the trade
+    // assuming the delta is common for all trades in the execution
+    // (cumulative)
+    delta[oldTrade.usedCurrency()] -= execReport->usedQty();
+    delta[oldTrade.recvCurrency()] += execReport->recvQty();
+
+    _executionsMap[executionId].second = delta;
+
+    // Update the execution in the map
+    _executionsMap[executionId] = std::make_pair(execution, delta);
+
+    break;
   }
-
-  // Decrement pending orders count for this execution
-  _pendingOrdersCount[executionId]--;
-
-  // If the full qty received, update delta with the trade
-  // assuming the delta is common for all trades in the execution (cumulative)
-  delta[oldTrade.usedCurrency()] -= execReport->usedQty();
-  delta[oldTrade.recvCurrency()] += execReport->recvQty();
-
-  _executionsMap[executionId].second = delta;
-
-  // Update the execution in the map
-  _executionsMap[executionId] = std::make_pair(execution, delta);
+  default:
+    BOOST_LOG_TRIVIAL(info)
+        << "Unknown ExecutionReport status: " << *execReport;
+    throw std::runtime_error("Unknown ExecutionReport status");
+  }
 
   // Remove the current order ID mapping
   _executionIdMap.erase(orderId);
 
+  // Decrement pending orders count for this execution
+  _pendingOrdersCount[executionId]--;
+
   // Check if all orders in the execution are completed
   if (_pendingOrdersCount[executionId] == 0) {
-    BOOST_LOG_TRIVIAL(info) << "Successful execution: " << execution;
 
-    // Clean up all maps
+    if (!_failedExecutions.contains(executionId)) {
+      BOOST_LOG_TRIVIAL(info) << "Successful execution: " << execution;
+    } else {
+      BOOST_LOG_TRIVIAL(info) << "Failed execution: " << execution;
+    }
+
+    // Clean up all maps and sets
     _executionsMap.erase(executionId);
     _pendingOrdersCount.erase(executionId);
+    _failedExecutions.erase(executionId);
 
     // update balance
     _balance.updateBalance(delta);

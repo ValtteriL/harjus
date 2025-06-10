@@ -232,10 +232,26 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
 
   trader.callProcessReport(&executionReport);
 
-  // Verify the balance is unchanged (except maybe for fees)
+  // Verify the balance is unchanged
   EXPECT_EQ(balance.getBalance("BTC"), PreciseNumber{"1.0"});
 
-  // Verify that trades are released
+  // Verify that trades are not released yet
+  for (auto &trade : opportunity.getTrades()) {
+    EXPECT_TRUE(reservedTrades.isReserved(trade));
+  }
+
+  // process another report
+  auto orderId2 = trader.getExecutionIdMap().begin()++->first;
+  ExecutionReport executionReport2{orderId2, TradeExecutionStatus::EXPIRED,
+                                   PreciseNumber{"0"}, PreciseNumber{"0"},
+                                   feeDelta};
+
+  trader.callProcessReport(&executionReport2);
+
+  // Verify the balance is unchanged
+  EXPECT_EQ(balance.getBalance("BTC"), PreciseNumber{"1.0"});
+
+  // Verify that trades are not released
   for (auto &trade : opportunity.getTrades()) {
     EXPECT_FALSE(reservedTrades.isReserved(trade));
   }
