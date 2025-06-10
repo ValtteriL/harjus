@@ -115,7 +115,7 @@ int main() {
   auto fixConfig = FixConfig(config);
   auto settings = fixConfig.sessionSettings();
 
-  Application application{config, priceUpdateQueue, reportQueue};
+  Application application{config, priceUpdateQueue, reportQueue, symbolMap};
   FIX::FileStoreFactory storeFactory{settings};
   FIX::ScreenLogFactory logFactory{settings};
 

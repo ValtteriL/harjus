@@ -15,11 +15,13 @@
 
 extern std::atomic<bool> isShuttingDown;
 
-Application::Application(IConfiguration &conf,
-                         boost::lockfree::queue<PriceUpdate *> &queue,
-                         ThreadSafeQueue<ExecutionReport> &reportQueue)
+Application::Application(
+    IConfiguration &conf, boost::lockfree::queue<PriceUpdate *> &queue,
+    ThreadSafeQueue<ExecutionReport> &reportQueue,
+    const std::unordered_map<std::string, Symbol *> &symbolMap)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
-      priceUpdateQueue(queue), executionReportQueue(reportQueue) {}
+      priceUpdateQueue(queue), executionReportQueue(reportQueue),
+      symbolMap(symbolMap) {}
 
 void Application::onCreate(const FIX::SessionID &sessionID) {
   // store markert data session IDs if Qualifier starts with MARKETDATA
@@ -362,8 +364,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
     }
 
     // Create price update and add to the queue
-    PriceUpdate *update = new PriceUpdate{symbolValue, bidPrice, askPrice,
-                                          bidQuantity, askQuantity};
+    PriceUpdate *update = new PriceUpdate{symbolMap.at(symbolValue), bidPrice,
+                                          askPrice, bidQuantity, askQuantity};
 
     // Push to the queue - if queue is full, this may fail but we don't want to
     // block
@@ -407,7 +409,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       if (updates.find(symbolValue) == updates.end()) {
         // Create a new update
         updates[symbolValue] = new PriceUpdate();
-        updates[symbolValue]->symbol = symbolValue;
+        updates[symbolValue]->symbol = symbolMap.at(symbolValue);
       }
 
       // Process update based on entry type (bid or ask)

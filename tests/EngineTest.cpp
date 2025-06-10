@@ -135,15 +135,15 @@ protected:
 TEST_F(EngineTest, detectsArbitrageOpportunity) {
 
   std::vector<PriceUpdate *> updates;
-  updates.push_back(new PriceUpdate{"ETHBTC", PreciseNumber{"0"},
+  updates.push_back(new PriceUpdate{symbols.at("ETHBTC"), PreciseNumber{"0"},
                                     PreciseNumber{"1"}, PreciseNumber{"0"},
                                     PreciseNumber{"100"}}); // BTC -> ETH 1:1
-  updates.push_back(new PriceUpdate{"ETHUSDT", PreciseNumber{"1"},
+  updates.push_back(new PriceUpdate{symbols.at("ETHUSDT"), PreciseNumber{"1"},
                                     PreciseNumber{"0"}, PreciseNumber{"1"},
                                     PreciseNumber{"0"}}); // ETH -> USDT 1:1
-  updates.push_back(new PriceUpdate{"USDTBTC", PreciseNumber{"10.0"},
-                                    PreciseNumber{"0"}, PreciseNumber{"1.0"},
-                                    PreciseNumber{"0"}}); // USDT -> BTC 1:10
+  updates.push_back(new PriceUpdate{
+      symbols.at("USDTBTC"), PreciseNumber{"10.0"}, PreciseNumber{"0"},
+      PreciseNumber{"1.0"}, PreciseNumber{"0"}}); // USDT -> BTC 1:10
 
   // Store the initial balance before processing updates
   PreciseNumber initialBalance = balance.getBalance("BTC");
@@ -186,14 +186,14 @@ TEST_F(EngineTest, detectsTwoArbitrageOpportunities) {
 
   std::vector<PriceUpdate *> updates;
   updates.push_back(new PriceUpdate{
-      "ETHBTC", PreciseNumber{"1"}, PreciseNumber{"1"}, PreciseNumber{"100"},
-      PreciseNumber{"100"}}); // BTC <-> ETH 1:1 both ways
+      symbols.at("ETHBTC"), PreciseNumber{"1"}, PreciseNumber{"1"},
+      PreciseNumber{"100"}, PreciseNumber{"100"}}); // BTC <-> ETH 1:1 both ways
   updates.push_back(new PriceUpdate{
-      "ETHUSDT", PreciseNumber{"1"}, PreciseNumber{"1"}, PreciseNumber{"1"},
-      PreciseNumber{"1"}}); // ETH <-> USDT 1:1 both ways
+      symbols.at("ETHUSDT"), PreciseNumber{"1"}, PreciseNumber{"1"},
+      PreciseNumber{"1"}, PreciseNumber{"1"}}); // ETH <-> USDT 1:1 both ways
   updates.push_back(
-      new PriceUpdate{"USDTBTC", PreciseNumber{"10.0"}, PreciseNumber{"0.1"},
-                      PreciseNumber{"1.0"},
+      new PriceUpdate{symbols.at("USDTBTC"), PreciseNumber{"10.0"},
+                      PreciseNumber{"0.1"}, PreciseNumber{"1.0"},
                       PreciseNumber{"100"}}); // USDT <-> BTC 1:10 both ways
 
   // Store initial balances

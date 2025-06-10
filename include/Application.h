@@ -36,12 +36,13 @@ class Application : public FIX::Application,
                     public IApplication {
 
 private:
-  std::string username;
-  std::string privateKeySeed;
+  const std::string username;
+  const std::string privateKeySeed;
   boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue;
   ThreadSafeQueue<ExecutionReport> &executionReportQueue;
   std::vector<FIX::SessionID> marketDataSessionIDs;
   FIX::SessionID orderEntrySessionID;
+  const std::unordered_map<std::string, Symbol *> &symbolMap;
 
   /**
    * Called when quickfix creates a new session.
@@ -135,7 +136,8 @@ private:
 public:
   Application(IConfiguration &conf,
               boost::lockfree::queue<PriceUpdate *> &queue,
-              ThreadSafeQueue<ExecutionReport> &reportQueue);
+              ThreadSafeQueue<ExecutionReport> &reportQueue,
+              const std::unordered_map<std::string, Symbol *> &symbolMap);
 
   void submitOrder(const std::string &id, const std::string &symbol,
                    PreciseNumber qty, PreciseNumber price,

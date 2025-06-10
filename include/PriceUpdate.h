@@ -1,8 +1,8 @@
 #pragma once
 
 #include "PreciseNumber.h"
+#include "Symbol.h"
 #include <ostream>
-#include <string>
 
 /**
  * @file PriceUpdate.h
@@ -11,7 +11,7 @@
  * latest prices and quantities (bid+ask) for a specific symbol.
  */
 struct PriceUpdate {
-  std::string symbol;
+  Symbol *symbol;
   PreciseNumber bidPrice;
   PreciseNumber askPrice;
   PreciseNumber bidQty;

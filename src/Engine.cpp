@@ -46,13 +46,13 @@ void Engine::reserveBudgetAndSymbols(Opportunity &opp) {
 
 void Engine::processPriceUpdate(const PriceUpdate *update) {
   // Update symbol price
-  _symbols.at(update->symbol)->askPrice = update->askPrice;
-  _symbols.at(update->symbol)->bidPrice = update->bidPrice;
-  _symbols.at(update->symbol)->askQty = update->askQty;
-  _symbols.at(update->symbol)->bidQty = update->bidQty;
+  update->symbol->askPrice = update->askPrice;
+  update->symbol->bidPrice = update->bidPrice;
+  update->symbol->askQty = update->askQty;
+  update->symbol->bidQty = update->bidQty;
 
   // Update all affected opportunities
-  auto affected = _opportunities.equal_range(update->symbol);
+  auto affected = _opportunities.equal_range(update->symbol->symbol);
   for (auto it = affected.first; it != affected.second; ++it) {
     Opportunity *opp = it->second;
     auto startingAssetBudget = _balance.getBalance(opp->getStartingAsset());
