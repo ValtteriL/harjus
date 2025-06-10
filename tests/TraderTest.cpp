@@ -13,7 +13,6 @@
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
 #include "TradeExecutionStatus.h"
-#include <boost/lockfree/queue.hpp>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <semaphore>

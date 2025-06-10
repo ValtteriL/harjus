@@ -12,7 +12,6 @@
 #include "IApplication.h"
 #include "ReservedTrades.h"
 #include "ThreadSafeQueue.h"
-#include <boost/lockfree/queue.hpp>
 #include <stop_token>
 #include <string>
 

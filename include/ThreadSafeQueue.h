@@ -10,7 +10,7 @@ template <typename T> class ThreadSafeQueue {
 
 private:
   std::deque<T> _deque;
-  std::mutex _mutex;
+  mutable std::mutex _mutex;
   std::binary_semaphore &_semaphore;
 
 public:
@@ -47,7 +47,7 @@ public:
    * @brief Check if the queue is empty
    * @return True if the queue is empty, false otherwise
    */
-  bool empty() {
+  bool empty() const {
     std::lock_guard<std::mutex> lock(_mutex);
     return _deque.empty();
   }
@@ -56,5 +56,5 @@ public:
    * @brief Get the semaphore
    * @return The semaphore
    */
-  std::binary_semaphore &getSemaphore() { return _semaphore; }
+  std::binary_semaphore &getSemaphore() const { return _semaphore; }
 };

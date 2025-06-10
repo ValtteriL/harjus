@@ -11,7 +11,7 @@
 Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
                std::vector<std::vector<Trade> *> &tradingPaths,
                Balance &balance, ReservedTrades &reservedTrades,
-               boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue,
+               ThreadSafeQueue<PriceUpdate> &priceUpdateQueue,
                ThreadSafeQueue<Execution> &executionQueue,
                std::unordered_map<std::string, PreciseNumber> relativeValues,
                PreciseNumber commission)
@@ -44,22 +44,20 @@ void Engine::reserveBudgetAndSymbols(Opportunity &opp) {
                          opp.getCapacity() * PreciseNumber{"-1"});
 }
 
-void Engine::processPriceUpdate(const PriceUpdate *update) {
+void Engine::processPriceUpdate(const PriceUpdate &update) {
   // Update symbol price
-  update->symbol->askPrice = update->askPrice;
-  update->symbol->bidPrice = update->bidPrice;
-  update->symbol->askQty = update->askQty;
-  update->symbol->bidQty = update->bidQty;
+  update.symbol->askPrice = update.askPrice;
+  update.symbol->bidPrice = update.bidPrice;
+  update.symbol->askQty = update.askQty;
+  update.symbol->bidQty = update.bidQty;
 
   // Update all affected opportunities
-  auto affected = _opportunities.equal_range(update->symbol->symbol);
+  auto affected = _opportunities.equal_range(update.symbol->symbol);
   for (auto it = affected.first; it != affected.second; ++it) {
     Opportunity *opp = it->second;
     auto startingAssetBudget = _balance.getBalance(opp->getStartingAsset());
     opp->update(startingAssetBudget);
   }
-
-  delete update;
 
   // find the 2 most profitable opportunities, reserve budget and symbols, and
   // queue them for execution
@@ -110,11 +108,11 @@ void Engine::run(std::stop_token stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Engine";
 
-  PriceUpdate *update = nullptr;
+  PriceUpdate update{};
 
   while (!stoken.stop_requested()) {
-    if (_priceUpdateQueue.pop(update)) {
-      BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << *update;
+    if (_priceUpdateQueue.try_pop(update)) {
+      BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << update;
       processPriceUpdate(update);
     }
   }

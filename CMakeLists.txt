@@ -309,7 +309,6 @@ target_precompile_headers(harjus PRIVATE
   <stdexcept>
 
   # Boost
-  <boost/lockfree/queue.hpp>
   <boost/log/core.hpp>
   <boost/log/expressions.hpp>
   <boost/log/trivial.hpp>

@@ -28,7 +28,6 @@
 #include <quickfix/fix44/OrderCancelReplaceRequest.h>
 #include <quickfix/fix44/OrderCancelRequest.h>
 
-#include <boost/lockfree/queue.hpp>
 #include <vector>
 
 class Application : public FIX::Application,
@@ -38,7 +37,7 @@ class Application : public FIX::Application,
 private:
   const std::string username;
   const std::string privateKeySeed;
-  boost::lockfree::queue<PriceUpdate *> &priceUpdateQueue;
+  ThreadSafeQueue<PriceUpdate> &priceUpdateQueue;
   ThreadSafeQueue<ExecutionReport> &executionReportQueue;
   std::vector<FIX::SessionID> marketDataSessionIDs;
   FIX::SessionID orderEntrySessionID;
@@ -134,8 +133,7 @@ private:
                  const FIX::SessionID &) override;
 
 public:
-  Application(IConfiguration &conf,
-              boost::lockfree::queue<PriceUpdate *> &queue,
+  Application(IConfiguration &conf, ThreadSafeQueue<PriceUpdate> &queue,
               ThreadSafeQueue<ExecutionReport> &reportQueue,
               const std::unordered_map<std::string, Symbol *> &symbolMap);
 

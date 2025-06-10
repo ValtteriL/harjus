@@ -11,7 +11,6 @@
 #include "ThreadSafeQueue.h"
 #include "Trade.h"
 #include "Trader.h"
-#include <boost/lockfree/queue.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
@@ -96,11 +95,12 @@ int main() {
   std::vector<std::vector<Trade> *> tradingPaths =
       getTradingPaths(&symbolMap, config);
 
-  // Create lockfree queues for price updates & executions
-  boost::lockfree::queue<PriceUpdate *> priceUpdateQueue(1000);
-  std::binary_semaphore semaphore(0);
-  ThreadSafeQueue<Execution> executionQueue(semaphore);
-  ThreadSafeQueue<ExecutionReport> reportQueue(semaphore);
+  // Create queues for price updates & executions
+  std::binary_semaphore priceUpdateSemaphore{0};
+  ThreadSafeQueue<PriceUpdate> priceUpdateQueue{priceUpdateSemaphore};
+  std::binary_semaphore semaphore{0};
+  ThreadSafeQueue<Execution> executionQueue{semaphore};
+  ThreadSafeQueue<ExecutionReport> reportQueue{semaphore};
 
   ReservedTrades reservedTrades;
 
