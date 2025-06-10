@@ -69,7 +69,8 @@ void Application::toAdmin(FIX::Message &message,
     FIX::Header &header = message.getHeader();
 
     // add required fields to the header
-    header.setField(FIX::IntField(25035, 1)); // unordered messages for perf
+    header.setField(
+        FIX::IntField(25035, 2)); // sequential processing of messages
 
     // set username
     header.setField(FIX::Username(username.c_str()));
