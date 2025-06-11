@@ -142,10 +142,10 @@ getSymbols(const IConfiguration &config) {
         }
       }
 
-      symbols[symbolStr] =
-          new Symbol{symbolStr,          baseAsset,           quoteAsset,
-                     baseAssetPrecision, quoteAssetPrecision, minNotional,
-                     baseAssetIncrement, quoteAssetIncrement};
+      symbols[symbolStr] = new Symbol{symbolStr,          baseAsset,
+                                      quoteAsset,         minNotional,
+                                      baseAssetIncrement, quoteAssetIncrement,
+                                      baseAssetPrecision, quoteAssetPrecision};
     }
   } catch (const boost::json::system_error &e) {
     throw std::runtime_error("Failed to parse JSON response: " +

@@ -67,27 +67,27 @@ protected:
     Symbol *ethBtcSymbol = new Symbol{"ETHBTC",
                                       "ETH",
                                       "BTC",
-                                      PreciseNumber{"0.0"},
-                                      PreciseNumber{"0.0"},
-                                      PreciseNumber{"0.0"},
-                                      PreciseNumber{"0.0"},
                                       PreciseNumber{"0.0001"},
                                       PreciseNumber{"0.0001"},
                                       PreciseNumber{"0.0001"},
                                       8,
-                                      8};
+                                      8,
+                                      PreciseNumber{"0.0"},
+                                      PreciseNumber{"0.0"},
+                                      PreciseNumber{"0.0"},
+                                      PreciseNumber{"0.0"}};
     Symbol *ethUsdtSymbol = new Symbol{"ETHUSDT",
                                        "ETH",
                                        "USDT",
-                                       PreciseNumber{"0.0"},
-                                       PreciseNumber{"0.0"},
-                                       PreciseNumber{"0.0"},
-                                       PreciseNumber{"0.0"},
                                        PreciseNumber{"0.0001"},
                                        PreciseNumber{"0.0001"},
                                        PreciseNumber{"0.0001"},
                                        8,
-                                       8};
+                                       8,
+                                       PreciseNumber{"0.0"},
+                                       PreciseNumber{"0.0"},
+                                       PreciseNumber{"0.0"},
+                                       PreciseNumber{"0.0"}};
 
     symbolsMap["ETHBTC"] = ethBtcSymbol;
     symbolsMap["ETHUSDT"] = ethUsdtSymbol;
