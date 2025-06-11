@@ -13,6 +13,7 @@
 #include <unordered_map>
 
 #include "PreciseNumber.h"
+#include <boost/lockfree/spsc_queue.hpp>
 #include <vector>
 
 /**
@@ -29,7 +30,7 @@ private:
   std::unordered_map<std::string, Symbol *> &_symbols;
   std::unordered_multimap<std::string, Opportunity *> _opportunities;
   std::unordered_map<std::string, PreciseNumber> _relativeValues;
-  ThreadSafeQueue<PriceUpdate> &_priceUpdateQueue;
+  boost::lockfree::spsc_queue<PriceUpdate> &_priceUpdateQueue;
   ThreadSafeQueue<Execution> &_executionQueue;
   ReservedTrades &_reservedTrades;
   Balance &_balance;
@@ -91,7 +92,7 @@ public:
   Engine(std::unordered_map<std::string, Symbol *> &symbols,
          std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
          ReservedTrades &reservedTrades,
-         ThreadSafeQueue<PriceUpdate> &priceUpdateQueue,
+         boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
          ThreadSafeQueue<Execution> &executionQueue,
          std::unordered_map<std::string, PreciseNumber> &relativeValues,
          const PreciseNumber commission);

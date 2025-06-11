@@ -11,7 +11,7 @@
 Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
                std::vector<std::vector<Trade> *> &tradingPaths,
                Balance &balance, ReservedTrades &reservedTrades,
-               ThreadSafeQueue<PriceUpdate> &priceUpdateQueue,
+               boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
                ThreadSafeQueue<Execution> &executionQueue,
                std::unordered_map<std::string, PreciseNumber> &relativeValues,
                const PreciseNumber commission)
@@ -110,12 +110,9 @@ void Engine::run(std::stop_token stoken) {
 
   while (!stoken.stop_requested()) {
 
-    if (_priceUpdateQueue.getSemaphore().try_acquire_for(
-            std::chrono::milliseconds{100})) {
-      if (PriceUpdate update; _priceUpdateQueue.try_pop(update)) {
-        BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << update;
-        processPriceUpdate(update);
-      }
+    if (PriceUpdate update; _priceUpdateQueue.pop(update)) {
+      BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << update;
+      processPriceUpdate(update);
     }
   }
 
