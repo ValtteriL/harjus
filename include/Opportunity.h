@@ -11,7 +11,7 @@
 class Opportunity : public IOpportunity {
 private:
   std::vector<Trade> &_trades;
-  std::string _startingAsset;
+  const std::string _startingAsset;
   const PreciseNumber _commission;
   const PreciseNumber _relativeValue;
   PreciseNumber _totalProfit;

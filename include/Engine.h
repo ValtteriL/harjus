@@ -64,7 +64,7 @@ private:
    * @param opp Reference to the Opportunity object for which budget and symbols
    * are to be reserved.
    */
-  void reserveBudgetAndSymbols(Opportunity &opp);
+  void reserveBudgetAndSymbols(const Opportunity &opp);
 
 protected:
   /**
@@ -93,8 +93,8 @@ public:
          ReservedTrades &reservedTrades,
          ThreadSafeQueue<PriceUpdate> &priceUpdateQueue,
          ThreadSafeQueue<Execution> &executionQueue,
-         std::unordered_map<std::string, PreciseNumber> relativeValues,
-         PreciseNumber commission);
+         std::unordered_map<std::string, PreciseNumber> &relativeValues,
+         const PreciseNumber commission);
 
   /**
    * @brief Run the engine

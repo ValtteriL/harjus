@@ -26,15 +26,15 @@ TEST(OpportunityTest, update) {
       "BTCETH",                // symbol;
       "BTC",                   // baseAsset;
       "ETH",                   // quoteAsset;
-      PreciseNumber{"1.0"},    // bidPrice;
-      PreciseNumber{"0.0"},    // askPrice;
-      PreciseNumber{"100.0"},  // bidQty;
-      PreciseNumber{"0.0"},    // askQty;
       PreciseNumber{"0.0001"}, // minNotional;
       PreciseNumber{"0.0001"}, // baseAssetIncrement;
       PreciseNumber{"0.0001"}, // quoteAssetIncrement;
       8,                       // baseAssetPrecision;
-      8                        // quoteAssetPrecision;
+      8,                       // quoteAssetPrecision;
+      PreciseNumber{"1.0"},    // bidPrice;
+      PreciseNumber{"0.0"},    // askPrice;
+      PreciseNumber{"100.0"},  // bidQty;
+      PreciseNumber{"0.0"}     // askQty;
   };
 
   // ETH -> USDT 1:1
@@ -42,15 +42,15 @@ TEST(OpportunityTest, update) {
       "ETHUSDT",               // symbol;
       "ETH",                   // baseAsset;
       "USDT",                  // quoteAsset;
-      PreciseNumber{"1.0"},    // bidPrice;
-      PreciseNumber{"0.0"},    // askPrice;
-      PreciseNumber{"1.0"},    // bidQty;
-      PreciseNumber{"0.0"},    // askQty;
       PreciseNumber{"0.0001"}, // minNotional;
       PreciseNumber{"0.0001"}, // baseAssetIncrement;
       PreciseNumber{"0.0001"}, // quoteAssetIncrement;
       8,                       // baseAssetPrecision;
-      8                        // quoteAssetPrecision;
+      8,                       // quoteAssetPrecision;
+      PreciseNumber{"1.0"},    // bidPrice;
+      PreciseNumber{"0.0"},    // askPrice;
+      PreciseNumber{"1.0"},    // bidQty;
+      PreciseNumber{"0.0"},    // askQty;
   };
 
   // USDT -> BTC 1:10
@@ -58,15 +58,15 @@ TEST(OpportunityTest, update) {
       "BTCUSDT",               // symbol;
       "BTC",                   // baseAsset;
       "USDT",                  // quoteAsset;
-      PreciseNumber{"0.0"},    // bidPrice;
-      PreciseNumber{"0.1"},    // askPrice;
-      PreciseNumber{"0.0"},    // bidQty;
-      PreciseNumber{"100.0"},  // askQty;
       PreciseNumber{"0.0001"}, // minNotional;
       PreciseNumber{"0.0001"}, // baseAssetIncrement;
       PreciseNumber{"0.0001"}, // quoteAssetIncrement;
       8,                       // baseAssetPrecision;
-      8                        // quoteAssetPrecision;
+      8,                       // quoteAssetPrecision;
+      PreciseNumber{"0.0"},    // bidPrice;
+      PreciseNumber{"0.1"},    // askPrice;
+      PreciseNumber{"0.0"},    // bidQty;
+      PreciseNumber{"100.0"}   // askQty;
   };
 
   Trade trade1(&symbol1, Position::SHORT);

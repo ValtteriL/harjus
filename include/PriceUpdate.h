@@ -12,10 +12,10 @@
  */
 struct PriceUpdate {
   Symbol *symbol;
-  PreciseNumber bidPrice;
-  PreciseNumber askPrice;
-  PreciseNumber bidQty;
-  PreciseNumber askQty;
+  PreciseNumber bidPrice{};
+  PreciseNumber askPrice{};
+  PreciseNumber bidQty{};
+  PreciseNumber askQty{};
 };
 
 /**

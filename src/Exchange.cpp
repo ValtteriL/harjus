@@ -1,6 +1,7 @@
 #include "Exchange.h"
 #include "Ed25519.h"
 #include "PreciseNumber.h"
+#include "Symbol.h"
 #include <boost/json.hpp>
 #include <cpr/cpr.h>
 #include <stdexcept>
@@ -10,7 +11,7 @@
  * * @param privateKey The private key to use for signing
  * * @return The base64 encoded signature
  */
-std::string createSignature(const std::string& privateKeySeed) {
+std::string createSignature(const std::string &privateKeySeed) {
   // https://github.com/binance/binance-connector-python/blob/cf2bfbc634bf92a4d1153dd5b900a998fa9d499f/binance/api.py#L88
   // https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#ed25519-keys
 
@@ -31,8 +32,8 @@ std::string createSignature(const std::string& privateKeySeed) {
   return uriSignature;
 }
 
-std::string getBalancesJson(const std::string& uri, const std::string& apiKey,
-                            const std::string& privateKeySeed) {
+std::string getBalancesJson(const std::string &uri, const std::string &apiKey,
+                            const std::string &privateKeySeed) {
   // create signature
   std::string signature = createSignature(privateKeySeed);
 
@@ -87,7 +88,8 @@ std::unique_ptr<Balance> getBalance(const IConfiguration &config) {
   return balance;
 }
 
-std::unordered_map<std::string, Symbol *> getSymbols(const IConfiguration &config) {
+std::unordered_map<std::string, Symbol *>
+getSymbols(const IConfiguration &config) {
   std::unordered_map<std::string, Symbol *> symbols;
 
   // Fetch exchange info from Binance API
@@ -114,30 +116,36 @@ std::unordered_map<std::string, Symbol *> getSymbols(const IConfiguration &confi
         continue;
       }
 
-      Symbol *symbol = new Symbol();
-      symbol->symbol = symbolObj["symbol"].as_string().c_str();
-      symbol->baseAsset = symbolObj["baseAsset"].as_string().c_str();
-      symbol->quoteAsset = symbolObj["quoteAsset"].as_string().c_str();
-      symbol->baseAssetPrecision = symbolObj["baseAssetPrecision"].as_int64();
-      symbol->quoteAssetPrecision = symbolObj["quoteAssetPrecision"].as_int64();
+      auto symbolStr = symbolObj["symbol"].as_string().c_str();
+      auto baseAsset = symbolObj["baseAsset"].as_string().c_str();
+      auto quoteAsset = symbolObj["quoteAsset"].as_string().c_str();
+      int baseAssetPrecision = symbolObj["baseAssetPrecision"].as_int64();
+      int quoteAssetPrecision = symbolObj["quoteAssetPrecision"].as_int64();
+
+      PreciseNumber minNotional;
+      PreciseNumber baseAssetIncrement;
+      PreciseNumber quoteAssetIncrement;
 
       for (const auto &filter : symbolObj["filters"].as_array()) {
         boost::json::object filterObj = filter.as_object();
         std::string filterType = filterObj["filterType"].as_string().c_str();
 
         if (filterType == "NOTIONAL") {
-          symbol->minNotional =
+          minNotional =
               PreciseNumber{filterObj["minNotional"].as_string().c_str()};
         } else if (filterType == "LOT_SIZE") {
-          symbol->baseAssetIncrement =
+          baseAssetIncrement =
               PreciseNumber{filterObj["stepSize"].as_string().c_str()};
         } else if (filterType == "PRICE_FILTER") {
-          symbol->quoteAssetIncrement =
+          quoteAssetIncrement =
               PreciseNumber{filterObj["tickSize"].as_string().c_str()};
         }
       }
 
-      symbols[symbol->symbol] = symbol;
+      symbols[symbolStr] = new Symbol{symbolStr,          baseAsset,
+                                      quoteAsset,         minNotional,
+                                      baseAssetIncrement, quoteAssetIncrement,
+                                      baseAssetPrecision, quoteAssetPrecision};
     }
   } catch (const boost::json::system_error &e) {
     throw std::runtime_error("Failed to parse JSON response: " +

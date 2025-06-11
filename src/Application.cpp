@@ -17,7 +17,7 @@
 extern std::atomic<bool> isShuttingDown;
 
 Application::Application(
-    IConfiguration &conf, ThreadSafeQueue<PriceUpdate> &queue,
+    const IConfiguration &conf, ThreadSafeQueue<PriceUpdate> &queue,
     ThreadSafeQueue<ExecutionReport> &reportQueue,
     const std::unordered_map<std::string, Symbol *> &symbolMap)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),

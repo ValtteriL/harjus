@@ -70,22 +70,34 @@ TEST_F(ExchangeTest,
   // Create a mock input map of symbols
   std::unordered_map<std::string, Symbol *> symbols;
 
-  Symbol *btcSymbol = new Symbol();
-  btcSymbol->symbol = "BTCUSDT";
-  btcSymbol->baseAsset = "BTC";
-  btcSymbol->quoteAsset = "USDT";
+  Symbol *btcSymbol = new Symbol{"BTCUSDT",
+                                 "BTC",
+                                 "USDT",
+                                 PreciseNumber{"0.0001"},
+                                 PreciseNumber{"0.0001"},
+                                 PreciseNumber{"0.0001"},
+                                 8,
+                                 8};
   symbols[btcSymbol->symbol] = btcSymbol;
 
-  Symbol *ethSymbol = new Symbol();
-  ethSymbol->symbol = "ETHBTC";
-  ethSymbol->baseAsset = "ETH";
-  ethSymbol->quoteAsset = "BTC";
+  Symbol *ethSymbol = new Symbol{"ETHBTC",
+                                 "ETH",
+                                 "BTC",
+                                 PreciseNumber{"0.0001"},
+                                 PreciseNumber{"0.0001"},
+                                 PreciseNumber{"0.0001"},
+                                 8,
+                                 8};
   symbols[ethSymbol->symbol] = ethSymbol;
 
-  Symbol *xrpSymbol = new Symbol();
-  xrpSymbol->symbol = "XRPBTC";
-  xrpSymbol->baseAsset = "XRP";
-  xrpSymbol->quoteAsset = "BTC";
+  Symbol *xrpSymbol = new Symbol{"XRPBTC",
+                                 "XRP",
+                                 "BTC",
+                                 PreciseNumber{"0.0001"},
+                                 PreciseNumber{"0.0001"},
+                                 PreciseNumber{"0.0001"},
+                                 8,
+                                 8};
   symbols[xrpSymbol->symbol] = xrpSymbol;
 
   // Call the function under test
