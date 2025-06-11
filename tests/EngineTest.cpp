@@ -22,7 +22,7 @@ public:
   TestableEngine(std::unordered_map<std::string, Symbol *> &symbols,
                  std::vector<std::vector<Trade> *> &tradingPaths,
                  Balance &balance, ReservedTrades &reservedTrades,
-                 ThreadSafeQueue<PriceUpdate> &priceUpdateQueue,
+                 boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
                  ThreadSafeQueue<Execution> &executionQueue,
                  std::unordered_map<std::string, PreciseNumber> relativeValues,
                  PreciseNumber commission)
@@ -121,7 +121,7 @@ protected:
   std::binary_semaphore semaphore{0};
   ThreadSafeQueue<Execution> executionQueue{semaphore};
   std::binary_semaphore priceUpdateSemaphore{0};
-  ThreadSafeQueue<PriceUpdate> priceUpdateQueue{priceUpdateSemaphore};
+  boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{1000};
 
   // simple triangular arbitrage
   // BTC -> ETH -> USDT -> BTC

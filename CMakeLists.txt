@@ -317,6 +317,7 @@ target_precompile_headers(harjus PRIVATE
   <boost/json.hpp>
   <boost/multiprecision/gmp.hpp>
   <boost/multiprecision/cpp_dec_float.hpp>
+  <boost/lockfree/spsc_queue.hpp>
 
 
   # Quickfix Engine
