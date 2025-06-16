@@ -56,35 +56,30 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   // get reserved trades
   auto reservedSymbols = _reservedTrades.getReservedTrades();
 
+  Opportunity *best = nullptr;
+
   // Update all affected opportunities
   auto affected = _opportunities.equal_range(update.symbol->symbol);
   for (auto it = affected.first; it != affected.second; ++it) {
-    Opportunity *opp = it->second;
+
+    auto opp = it->second;
+
+    // Update the opportunity with the new price
     opp->update(balanceMap[opp->getStartingAsset()]);
+
+    if (PreciseNumber{"0"} >= opp->getTotalProfit() ||
+        std::any_of(opp->getTrades().begin(), opp->getTrades().end(),
+                    [&reservedSymbols](const StaticTrade &trade) {
+                      return reservedSymbols.contains(trade.symbol());
+                    }))
+      continue;
+
+    // If the opportunity is profitable and does not contain reserved symbols,
+    // check if it's the best one
+    if (!best || opp->getTotalProfit() > best->getTotalProfit()) {
+      best = opp;
+    }
   }
-
-  // find the most profitable opportunity, reserve budget and symbols, and
-  // queue it for execution
-
-  // filter out opportunities that are not profitable or contain reserved
-  // symbols
-  auto affected_range = std::ranges::subrange(affected.first, affected.second);
-  auto filtered =
-      affected_range |
-      std::ranges::views::filter([&reservedSymbols](const auto &pair) {
-        Opportunity *opp = pair.second;
-        return opp->getTotalProfit() > PreciseNumber{"0"} &&
-               std::none_of(opp->getTrades().begin(), opp->getTrades().end(),
-                            [&reservedSymbols](const StaticTrade &trade) {
-                              return reservedSymbols.contains(trade.symbol());
-                            });
-      });
-
-  auto bestIt = std::max_element(
-      filtered.begin(), filtered.end(), [](const auto &a, const auto &b) {
-        return a.second->getTotalProfit() < b.second->getTotalProfit();
-      });
-  Opportunity *best = (bestIt != filtered.end()) ? bestIt->second : nullptr;
 
   if (!best)
     return;
