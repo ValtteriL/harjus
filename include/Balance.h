@@ -47,10 +47,8 @@ public:
   updateBalance(std::unordered_map<std::string, PreciseNumber> &assetDelta);
 
   /**
-   *  Get the balance for a currency.
-   *  This is used to get the balance for a currency.
-   *  If the currency is not present in the map, it will return 0.
-   *  @param currency The currency to get the balance for.
+   *  Get all balances.
+   *  This is used to get the current balances for all currencies.
    */
-  PreciseNumber getBalance(const std::string &currency) const;
+  std::unordered_map<std::string, PreciseNumber> getBalances() const;
 };

@@ -194,9 +194,9 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
   // 1st trade, no change
   // 2nd trade, receiving: 0.2 USDT
   // Final USDT balance: 0.0 + 0.2 = 0.2
-  EXPECT_EQ(balance.getBalance("BTC"), PreciseNumber{"0.7"});
-  EXPECT_EQ(balance.getBalance("USDT"), PreciseNumber{"0.2"});
-  EXPECT_EQ(balance.getBalance("ETH"), PreciseNumber{"0.1"});
+  EXPECT_EQ(balance.getBalances().at("BTC"), PreciseNumber{"0.7"});
+  EXPECT_EQ(balance.getBalances().at("USDT"), PreciseNumber{"0.2"});
+  EXPECT_EQ(balance.getBalances().at("ETH"), PreciseNumber{"0.1"});
 }
 
 TEST_F(TraderTest, processesExpiredExecutionReport) {
@@ -205,7 +205,7 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   auto execution = Execution(opportunity);
 
   // Reserve the trades
-  reservedTrades.reserve(opportunity.getTrades());
+  reservedTrades.reserveAll(opportunity.getTrades());
 
   // Process the execution first - expect calls for both trades
   EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(2);
@@ -222,11 +222,12 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   trader.callProcessReport(&executionReport);
 
   // Verify the balance is unchanged
-  EXPECT_EQ(balance.getBalance("BTC"), PreciseNumber{"1.0"});
+  EXPECT_EQ(balance.getBalances().at("BTC"), PreciseNumber{"1.0"});
 
   // Verify that trades are not released yet
+  auto reservedTradesSet = reservedTrades.getReservedTrades();
   for (auto &trade : opportunity.getTrades()) {
-    EXPECT_TRUE(reservedTrades.isReserved(trade));
+    EXPECT_TRUE(reservedTradesSet.contains(trade.symbol()->symbol));
   }
 
   // process another report
@@ -238,10 +239,11 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   trader.callProcessReport(&executionReport2);
 
   // Verify the balance is unchanged
-  EXPECT_EQ(balance.getBalance("BTC"), PreciseNumber{"1.0"});
+  EXPECT_EQ(balance.getBalances().at("BTC"), PreciseNumber{"1.0"});
 
-  // Verify that trades are not released
+  // Verify that trades are released
+  auto reservedTradesSetAfter = reservedTrades.getReservedTrades();
   for (auto &trade : opportunity.getTrades()) {
-    EXPECT_FALSE(reservedTrades.isReserved(trade));
+    EXPECT_FALSE(reservedTradesSetAfter.contains(trade.symbol()->symbol));
   }
 }
