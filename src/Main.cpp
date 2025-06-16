@@ -53,22 +53,20 @@ void banner() {
     )" << std::endl;
 }
 
-// Extract symbols from symbol map
-std::vector<std::string>
-getSymbolsFromMap(const std::unordered_map<std::string, Symbol *> &symbolMap) {
-  std::vector<std::string> symbols;
-  symbols.reserve(symbolMap.size());
-
-  for (const auto &[symbol, _] : symbolMap) {
-    symbols.push_back(symbol);
-  }
-
-  return symbols;
-}
-
 void initLogging(int logLevel) {
   boost::log::core::get()->set_filter(boost::log::trivial::severity >=
                                       logLevel);
+}
+
+std::vector<std::string> getUniqueSymbolsForTradingPaths(
+    const std::vector<std::vector<Trade> *> &tradingPaths) {
+  std::unordered_set<std::string> uniqueSymbols;
+  for (const auto &path : tradingPaths) {
+    for (const auto &trade : *path) {
+      uniqueSymbols.insert(trade.symbol()->symbol);
+    }
+  }
+  return std::vector<std::string>(uniqueSymbols.begin(), uniqueSymbols.end());
 }
 
 int main() {
@@ -105,11 +103,21 @@ int main() {
   ReservedTrades reservedTrades;
 
   // Extract the list of symbols for subscription
-  std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
+  std::vector<std::string> symbols =
+      getUniqueSymbolsForTradingPaths(tradingPaths);
 
-  // Log the number of symbols we'll subscribe to
-  BOOST_LOG_TRIVIAL(info) << "There are " << symbols.size()
+  // Log info of interest
+  BOOST_LOG_TRIVIAL(info) << "There are " << symbolMap.size()
                           << " available trading symbols";
+
+  BOOST_LOG_TRIVIAL(info) << "Focusing only on " << config.getAssets().size()
+                          << " assets";
+
+  BOOST_LOG_TRIVIAL(info) << "These form " << tradingPaths.size()
+                          << " trading paths";
+
+  BOOST_LOG_TRIVIAL(info) << "These consist of in total " << symbols.size()
+                          << " trading symbols";
 
   // fix settings
   auto fixConfig = FixConfig(config);

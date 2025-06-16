@@ -62,16 +62,10 @@ public:
   int getMaxTradingPathLength() const override;
 
   /**
-   * @brief Get the blacklisted start assets for trading.
-   * @return A vector of blacklisted start assets as strings.
+   * @brief Get the assets (currencies) to trade.
+   * @return A vector of assets as strings.
    */
-  std::vector<std::string> getBlacklistedStartAssets() const override;
-
-  /**
-   * @brief Get the blacklisted assets for trading.
-   * @return A vector of blacklisted assets as strings.
-   */
-  std::vector<std::string> getBlacklistedAssets() const override;
+  std::vector<std::string> getAssets() const override;
 
   /**
    * @brief Get the commission for trading.
