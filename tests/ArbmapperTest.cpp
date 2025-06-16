@@ -73,10 +73,20 @@ protected:
 };
 
 TEST_F(ArbmapperTest, noPathsWhenDepthIsZero) {
-  std::vector<std::string> skipSymbols{};
+  std::vector<std::string> assets{"BTC", "ETH", "DOGE"};
 
-  EXPECT_CALL(config, getBlacklistedStartAssets())
-      .WillOnce(testing::Return(skipSymbols));
+  EXPECT_CALL(config, getAssets()).WillOnce(testing::Return(assets));
+  EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(0));
+
+  auto opportunities = getTradingPaths(&symbolMap, config);
+
+  EXPECT_TRUE(opportunities.empty());
+}
+
+TEST_F(ArbmapperTest, noPathsWhenNoAssets) {
+  std::vector<std::string> assets{};
+
+  EXPECT_CALL(config, getAssets()).WillOnce(testing::Return(assets));
   EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(0));
 
   auto opportunities = getTradingPaths(&symbolMap, config);
@@ -85,10 +95,9 @@ TEST_F(ArbmapperTest, noPathsWhenDepthIsZero) {
 }
 
 TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
-  std::vector<std::string> skipSymbols{};
+  std::vector<std::string> assets{"BTC", "ETH", "DOGE"};
 
-  EXPECT_CALL(config, getBlacklistedStartAssets())
-      .WillOnce(testing::Return(skipSymbols));
+  EXPECT_CALL(config, getAssets()).WillOnce(testing::Return(assets));
   EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(3));
 
   auto opportunities = getTradingPaths(&symbolMap, config);
@@ -148,64 +157,4 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
     std::string lastRecvCurrency = path->back().recvCurrency();
     EXPECT_EQ(startingAsset, lastRecvCurrency);
   }
-}
-
-TEST_F(ArbmapperTest, excludesBlacklistedAssetsFromPaths) {
-  std::vector<std::string> skipSymbols{};
-  EXPECT_CALL(config, getBlacklistedStartAssets())
-      .WillRepeatedly(testing::Return(skipSymbols));
-  EXPECT_CALL(config, getMaxTradingPathLength())
-      .WillRepeatedly(testing::Return(3));
-
-  // Helper lambda to check that no path contains any blacklisted asset (used or
-  // received)
-  auto pathsDoNotContain = [](const std::vector<std::vector<Trade> *> &paths,
-                              const std::vector<std::string> &blacklist) {
-    for (const auto &path : paths) {
-      for (const auto &trade : *path) {
-        EXPECT_TRUE(std::find(blacklist.begin(), blacklist.end(),
-                              trade.usedCurrency()) == blacklist.end());
-        EXPECT_TRUE(std::find(blacklist.begin(), blacklist.end(),
-                              trade.recvCurrency()) == blacklist.end());
-      }
-    }
-  };
-
-  // No blacklisted assets
-  std::vector<std::string> noBlacklisted{};
-  EXPECT_CALL(config, getBlacklistedAssets())
-      .WillOnce(testing::Return(noBlacklisted));
-  auto opportunities = getTradingPaths(&symbolMap, config);
-  EXPECT_EQ(opportunities.size(), 6);
-  pathsDoNotContain(opportunities, noBlacklisted);
-
-  // Irrelevant blacklisted assets
-  std::vector<std::string> irrelevantBlacklisted{"SOMETHINGELSE"};
-  EXPECT_CALL(config, getBlacklistedAssets())
-      .WillOnce(testing::Return(irrelevantBlacklisted));
-  auto opportunities1 = getTradingPaths(&symbolMap, config);
-  pathsDoNotContain(opportunities1, irrelevantBlacklisted);
-
-  // One blacklisted asset
-  std::vector<std::string> oneBlacklisted{"BTC"};
-  EXPECT_CALL(config, getBlacklistedAssets())
-      .WillOnce(testing::Return(oneBlacklisted));
-  auto opportunities2 = getTradingPaths(&symbolMap, config);
-  pathsDoNotContain(opportunities2, oneBlacklisted);
-  EXPECT_TRUE(opportunities2.empty());
-
-  // Multiple blacklisted assets
-  std::vector<std::string> multiBlacklisted{"BTC", "DOGE"};
-  EXPECT_CALL(config, getBlacklistedAssets())
-      .WillOnce(testing::Return(multiBlacklisted));
-  auto opportunities3 = getTradingPaths(&symbolMap, config);
-  pathsDoNotContain(opportunities3, multiBlacklisted);
-  EXPECT_TRUE(opportunities3.empty());
-
-  // All assets blacklisted (should be zero paths)
-  std::vector<std::string> allBlacklisted{"BTC", "ETH", "DOGE"};
-  EXPECT_CALL(config, getBlacklistedAssets())
-      .WillOnce(testing::Return(allBlacklisted));
-  auto opportunities4 = getTradingPaths(&symbolMap, config);
-  EXPECT_TRUE(opportunities4.empty());
 }

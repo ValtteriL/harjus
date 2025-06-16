@@ -107,9 +107,15 @@ int main() {
   // Extract the list of symbols for subscription
   std::vector<std::string> symbols = getSymbolsFromMap(symbolMap);
 
-  // Log the number of symbols we'll subscribe to
+  // Log info of interest
   BOOST_LOG_TRIVIAL(info) << "There are " << symbols.size()
                           << " available trading symbols";
+
+  BOOST_LOG_TRIVIAL(info) << "Focusing only on " << config.getAssets().size()
+                          << " assets";
+
+  BOOST_LOG_TRIVIAL(info) << "These form " << tradingPaths.size()
+                          << " trading paths";
 
   // fix settings
   auto fixConfig = FixConfig(config);

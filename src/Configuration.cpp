@@ -13,6 +13,7 @@ const std::string BINANCE_FIX_API_HOSTNAME_MARKETDATA =
 const std::string BINANCE_ED25519_SEED = "BINANCE_ED25519_SEED";
 const std::string BINANCE_ED25519_API_KEY = "BINANCE_ED25519_API_KEY";
 const std::string FIX_FILE_DIR = "FIX_FILE_DIR";
+const std::string ASSETS = "ASSETS";
 
 std::vector<std::string> split(const std::string &s, char delimiter) {
   std::vector<std::string> tokens;
@@ -32,10 +33,12 @@ Configuration::Configuration() {
   }
 
   // Check for required environment variables
-  std::vector<std::string> requiredVars = {
-      BINANCE_REST_API_URI, BINANCE_FIX_API_HOSTNAME_ORDERENTRY,
-      BINANCE_FIX_API_HOSTNAME_MARKETDATA, BINANCE_ED25519_SEED,
-      BINANCE_ED25519_API_KEY};
+  std::vector<std::string> requiredVars = {BINANCE_REST_API_URI,
+                                           BINANCE_FIX_API_HOSTNAME_ORDERENTRY,
+                                           BINANCE_FIX_API_HOSTNAME_MARKETDATA,
+                                           BINANCE_ED25519_SEED,
+                                           BINANCE_ED25519_API_KEY,
+                                           ASSETS};
   std::string missingVars;
 
   for (const auto &var : requiredVars) {
@@ -85,13 +88,8 @@ int Configuration::getMaxTradingPathLength() const {
   return std::stoi(maxPathLength);
 }
 
-std::vector<std::string> Configuration::getBlacklistedStartAssets() const {
-  std::string assets = dotenv::getenv("BLACKLISTED_START_ASSETS", "");
-  return split(assets, ',');
-}
-
-std::vector<std::string> Configuration::getBlacklistedAssets() const {
-  std::string assets = dotenv::getenv("BLACKLISTED_ASSETS", "");
+std::vector<std::string> Configuration::getAssets() const {
+  std::string assets = dotenv::getenv(ASSETS.c_str());
   return split(assets, ',');
 }
 

@@ -21,7 +21,6 @@ binance_ed25519_api_key: !vault |
           61386535666661363437333236396531643836323965663364306430626337353364393832306466
           38306436343130303863
 max_trading_path_length: 3
-blacklisted_start_assets: "BNB"
-blacklisted_assets: "USDC"
+assets: "BTC,USDC,TRY,EUR,LAYER,EURI,ETH"
 commission: 0.001
 log_level: 1
