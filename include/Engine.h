@@ -35,25 +35,6 @@ private:
   Balance &_balance;
 
   /**
-   * @brief Check if an opportunity contains only free symbols
-   * @param opportunity The opportunity to check
-   * @return true if all symbols in the opportunity are free, false otherwise
-   */
-  bool containsOnlyFreeSymbols(const Opportunity *opportunity);
-
-  /**
-   * @brief Find the most profitable opportunity
-   * @param begin Iterator to the beginning of the opportunities range
-   * @param end Iterator to the end of the opportunities range
-   * @param exclude Opportunity to exclude from consideration
-   * @return Pointer to the most profitable opportunity
-   */
-  Opportunity *findMostProfitable(
-      std::unordered_multimap<std::string, Opportunity *>::iterator begin,
-      std::unordered_multimap<std::string, Opportunity *>::iterator end,
-      const Opportunity *exclude);
-
-  /**
    * @brief Reserves the necessary budget and trading symbols for a given
    * opportunity.
    *

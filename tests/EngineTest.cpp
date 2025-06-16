@@ -155,9 +155,10 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   ASSERT_TRUE(executionQueue.empty());
 
   // Trades should be reserved
+  auto reservedTradesSet = reservedTrades.getReservedTrades();
   for (const auto &tradeVector : tradingPaths) {
     for (const auto &trade : *tradeVector) {
-      ASSERT_TRUE(reservedTrades.isReserved(trade));
+      ASSERT_TRUE(reservedTradesSet.contains(trade.symbol()->symbol));
     }
   }
 

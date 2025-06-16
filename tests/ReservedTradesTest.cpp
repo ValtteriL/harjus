@@ -5,6 +5,7 @@
 
 #include "ReservedTrades.h"
 #include "StaticTrade.h"
+#include <algorithm>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 using ::testing::Return;
@@ -41,41 +42,47 @@ protected:
 };
 
 TEST_F(ReservedTradesTest, checkReserveCheckReleaseCheck) {
-  EXPECT_FALSE(reservedTrades.isReserved(trade1));
+  EXPECT_TRUE(reservedTrades.getReservedTrades().size() == 0);
 
   std::vector<Trade> trades{trade1};
-  reservedTrades.reserve(trades);
-  EXPECT_TRUE(reservedTrades.isReserved(trade1));
+  reservedTrades.reserveAll(trades);
 
-  reservedTrades.release(trade1);
-  EXPECT_FALSE(reservedTrades.isReserved(trade1));
+  EXPECT_EQ(reservedTrades.getReservedTrades().size(), 1);
 }
 
 TEST_F(ReservedTradesTest, reserveCheckIdenticalTrade) {
   std::vector<Trade> trades{trade1};
-  reservedTrades.reserve(trades);
-  EXPECT_TRUE(reservedTrades.isReserved(trade2));
+  reservedTrades.reserveAll(trades);
+
+  auto reservedTradesSet = reservedTrades.getReservedTrades();
+
+  EXPECT_TRUE(reservedTradesSet.contains(trade1.symbol()->symbol));
+  EXPECT_TRUE(reservedTradesSet.contains(trade2.symbol()->symbol));
 }
 
-TEST_F(ReservedTradesTest, reserveCheckDifferentTrade) {
+TEST_F(ReservedTradesTest, reserveCheckTradeWithSameSymbol) {
   std::vector<Trade> trades{trade1};
-  reservedTrades.reserve(trades);
-  EXPECT_FALSE(reservedTrades.isReserved(trade3));
+  reservedTrades.reserveAll(trades);
+
+  auto reservedTradesSet = reservedTrades.getReservedTrades();
+  EXPECT_TRUE(reservedTradesSet.contains(trade3.symbol()->symbol));
 }
 
 TEST_F(ReservedTradesTest, releaseAll) {
   std::vector<Trade> trades{trade1, trade2};
-  reservedTrades.reserve(trades);
+  reservedTrades.reserveAll(trades);
 
-  EXPECT_TRUE(reservedTrades.isReserved(trade1));
-  EXPECT_TRUE(reservedTrades.isReserved(trade2));
+  auto reservedTradesSet = reservedTrades.getReservedTrades();
+
+  EXPECT_TRUE(reservedTradesSet.contains(trade1.symbol()->symbol));
+  EXPECT_TRUE(reservedTradesSet.contains(trade2.symbol()->symbol));
 
   std::vector<StaticTrade> staticTrades{trade1, trade2};
 
   reservedTrades.releaseAll(staticTrades);
 
-  EXPECT_FALSE(reservedTrades.isReserved(trade1));
-  EXPECT_FALSE(reservedTrades.isReserved(trade2));
+  auto reservedTradesSetAfterRelease = reservedTrades.getReservedTrades();
+  EXPECT_TRUE(reservedTradesSetAfterRelease.empty());
 }
 
 // test isReserved with vector of trades
@@ -83,10 +90,17 @@ TEST_F(ReservedTradesTest, isReservedWithVector) {
 
   std::vector<Trade> trades{trade1, trade2, trade3};
 
-  EXPECT_FALSE(reservedTrades.isReserved(trades));
+  auto reservedTradesSet = reservedTrades.getReservedTrades();
+  EXPECT_TRUE(reservedTradesSet.empty());
 
   std::vector<Trade> reserveTrades{trade1};
-  reservedTrades.reserve(reserveTrades);
+  reservedTrades.reserveAll(reserveTrades);
 
-  EXPECT_TRUE(reservedTrades.isReserved(trades));
+  auto reservedTradesAfterReserve = reservedTrades.getReservedTrades();
+
+  std::all_of(trades.begin(), trades.end(),
+              [&reservedTradesAfterReserve](const Trade &trade) {
+                return reservedTradesAfterReserve.contains(
+                    trade.symbol()->symbol);
+              });
 }

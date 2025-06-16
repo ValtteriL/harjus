@@ -1,9 +1,12 @@
 #include "Engine.h"
 #include "Execution.h"
 #include "Opportunity.h"
+#include "ReservedTrades.h"
+#include <algorithm>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
+#include <ranges>
 #include <stop_token>
 #include <string>
 #include <vector>
@@ -34,12 +37,8 @@ Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
   }
 };
 
-bool Engine::containsOnlyFreeSymbols(const Opportunity *opportunity) {
-  return !_reservedTrades.isReserved(opportunity->getTrades());
-}
-
 void Engine::reserveBudgetAndSymbols(const Opportunity &opp) {
-  _reservedTrades.reserve(opp.getTrades());
+  _reservedTrades.reserveAll(opp.getTrades());
   _balance.updateBalance(opp.getStartingAsset(),
                          opp.getCapacity() * PreciseNumber{"-1"});
 }
@@ -54,6 +53,9 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   // get balances
   auto balanceMap = _balance.getBalances();
 
+  // get reserved trades
+  auto reservedSymbols = _reservedTrades.getReservedTrades();
+
   // Update all affected opportunities
   auto affected = _opportunities.equal_range(update.symbol->symbol);
   for (auto it = affected.first; it != affected.second; ++it) {
@@ -64,8 +66,25 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   // find the most profitable opportunity, reserve budget and symbols, and
   // queue it for execution
 
-  Opportunity *best = nullptr;
-  best = findMostProfitable(affected.first, affected.second, best);
+  // filter out opportunities that are not profitable or contain reserved
+  // symbols
+  auto affected_range = std::ranges::subrange(affected.first, affected.second);
+  auto filtered =
+      affected_range |
+      std::ranges::views::filter([&reservedSymbols](const auto &pair) {
+        Opportunity *opp = pair.second;
+        return opp->getTotalProfit() > PreciseNumber{"0"} &&
+               std::none_of(opp->getTrades().begin(), opp->getTrades().end(),
+                            [&reservedSymbols](const StaticTrade &trade) {
+                              return reservedSymbols.contains(trade.symbol());
+                            });
+      });
+
+  auto bestIt = std::max_element(
+      filtered.begin(), filtered.end(), [](const auto &a, const auto &b) {
+        return a.second->getTotalProfit() < b.second->getTotalProfit();
+      });
+  Opportunity *best = (bestIt != filtered.end()) ? bestIt->second : nullptr;
 
   if (!best)
     return;
@@ -76,23 +95,6 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   Execution execution{*best};
   BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
   _executionQueue.push(std::move(execution));
-}
-
-Opportunity *Engine::findMostProfitable(
-    std::unordered_multimap<std::string, Opportunity *>::iterator begin,
-    std::unordered_multimap<std::string, Opportunity *>::iterator end,
-    const Opportunity *exclude) {
-  Opportunity *best = nullptr;
-  for (auto it = begin; it != end; ++it) {
-    Opportunity *opp = it->second;
-    if ((exclude == nullptr || opp != exclude) &&
-        opp->getTotalProfit() > PreciseNumber{"0"} &&
-        (!best || opp->getTotalProfit() > best->getTotalProfit()) &&
-        containsOnlyFreeSymbols(opp)) {
-      best = opp;
-    }
-  }
-  return best;
 }
 
 void Engine::run(std::stop_token stoken) {

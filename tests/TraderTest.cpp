@@ -205,7 +205,7 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   auto execution = Execution(opportunity);
 
   // Reserve the trades
-  reservedTrades.reserve(opportunity.getTrades());
+  reservedTrades.reserveAll(opportunity.getTrades());
 
   // Process the execution first - expect calls for both trades
   EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(2);
@@ -225,8 +225,9 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   EXPECT_EQ(balance.getBalances().at("BTC"), PreciseNumber{"1.0"});
 
   // Verify that trades are not released yet
+  auto reservedTradesSet = reservedTrades.getReservedTrades();
   for (auto &trade : opportunity.getTrades()) {
-    EXPECT_TRUE(reservedTrades.isReserved(trade));
+    EXPECT_TRUE(reservedTradesSet.contains(trade.symbol()->symbol));
   }
 
   // process another report
@@ -240,8 +241,9 @@ TEST_F(TraderTest, processesExpiredExecutionReport) {
   // Verify the balance is unchanged
   EXPECT_EQ(balance.getBalances().at("BTC"), PreciseNumber{"1.0"});
 
-  // Verify that trades are not released
+  // Verify that trades are released
+  auto reservedTradesSetAfter = reservedTrades.getReservedTrades();
   for (auto &trade : opportunity.getTrades()) {
-    EXPECT_FALSE(reservedTrades.isReserved(trade));
+    EXPECT_FALSE(reservedTradesSetAfter.contains(trade.symbol()->symbol));
   }
 }
