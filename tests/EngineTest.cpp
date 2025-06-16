@@ -56,7 +56,7 @@ protected:
     Execution execCopy = execution;
 
     // Starting asset balance should be reserved
-    EXPECT_EQ(balance.getBalance(asset) + execution.getCapacity(),
+    EXPECT_EQ(balance.getBalances().at(asset) + execution.getCapacity(),
               initialBalance);
 
     EXPECT_EQ(execCopy.getTrades().size(), 3);
@@ -143,7 +143,7 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
                                 PreciseNumber{"0"}}); // USDT -> BTC 1:10
 
   // Store the initial balance before processing updates
-  PreciseNumber initialBalance = balance.getBalance("BTC");
+  PreciseNumber initialBalance = balance.getBalances().at("BTC");
 
   for (auto &update : updates) {
     engine.callProcessPriceUpdate(update);
@@ -163,60 +163,4 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
 
   verifyExecutionProperties(execution, startingAssetBudget,
                             PreciseNumber{"8.997"}, initialBalance, "BTC");
-}
-
-TEST_F(EngineTest, detectsTwoArbitrageOpportunities) {
-  // Add a second arbitrage path: ETH -> USDT -> BTC -> ETH
-  // TODO: must be LONG if the other is SHORT
-  std::vector<Trade> trades2{Trade{symbols["ETHBTC"], Position::SHORT},
-                             Trade{symbols["ETHUSDT"], Position::LONG},
-                             Trade{symbols["USDTBTC"], Position::LONG}};
-  tradingPaths.push_back(&trades2);
-
-  // Reset balance for both starting assets
-  balance.updateBalance("ETH", startingAssetBudget);
-
-  // Create a new engine with both paths
-  TestableEngine engine2(symbols, tradingPaths, balance, reservedTrades,
-                         priceUpdateQueue, executionQueue, relativeValues,
-                         commission);
-
-  std::vector<PriceUpdate> updates;
-  updates.push_back(PriceUpdate{
-      symbols.at("ETHBTC"), PreciseNumber{"1"}, PreciseNumber{"1"},
-      PreciseNumber{"100"}, PreciseNumber{"100"}}); // BTC <-> ETH 1:1 both ways
-  updates.push_back(PriceUpdate{
-      symbols.at("ETHUSDT"), PreciseNumber{"1"}, PreciseNumber{"1"},
-      PreciseNumber{"1"}, PreciseNumber{"1"}}); // ETH <-> USDT 1:1 both ways
-  updates.push_back(
-      PriceUpdate{symbols.at("USDTBTC"), PreciseNumber{"10.0"},
-                  PreciseNumber{"0.1"}, PreciseNumber{"1.0"},
-                  PreciseNumber{"100"}}); // USDT <-> BTC 1:10 both ways
-
-  // Store initial balances
-  PreciseNumber initialBTC = balance.getBalance("BTC");
-  PreciseNumber initialETH = balance.getBalance("ETH");
-
-  for (auto &update : updates) {
-    engine2.callProcessPriceUpdate(update);
-  }
-
-  // Verify two executions are queued
-  Execution execution1, execution2;
-  ASSERT_TRUE(executionQueue.pop(execution1));
-  ASSERT_TRUE(executionQueue.pop(execution2));
-  ASSERT_TRUE(executionQueue.empty());
-
-  // Trades should be reserved
-  for (const auto &tradeVector : tradingPaths) {
-    for (const auto &trade : *tradeVector) {
-      ASSERT_TRUE(reservedTrades.isReserved(trade));
-    }
-  }
-
-  // Check both executions using the helper
-  verifyExecutionProperties(execution1, startingAssetBudget,
-                            PreciseNumber{"8.997"}, initialBTC, "BTC");
-  verifyExecutionProperties(execution2, startingAssetBudget,
-                            PreciseNumber{"8.997"}, initialETH, "ETH");
 }

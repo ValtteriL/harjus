@@ -51,46 +51,37 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   update.symbol->askQty = update.askQty;
   update.symbol->bidQty = update.bidQty;
 
+  // get balances
+  auto balanceMap = _balance.getBalances();
+
   // Update all affected opportunities
   auto affected = _opportunities.equal_range(update.symbol->symbol);
   for (auto it = affected.first; it != affected.second; ++it) {
     Opportunity *opp = it->second;
-    auto startingAssetBudget = _balance.getBalance(opp->getStartingAsset());
-    opp->update(startingAssetBudget);
+    opp->update(balanceMap[opp->getStartingAsset()]);
   }
 
-  // find the 2 most profitable opportunities, reserve budget and symbols, and
-  // queue them for execution
-  for (int i = 0; i < 2; ++i) {
+  // find the most profitable opportunity, reserve budget and symbols, and
+  // queue it for execution
 
-    Opportunity *best = nullptr;
-    best = findMostProfitable(affected.first, affected.second, best);
+  Opportunity *best = nullptr;
+  best = findMostProfitable(affected.first, affected.second, best);
 
-    if (!best)
-      return;
+  if (!best)
+    return;
 
-    reserveBudgetAndSymbols(*best);
+  reserveBudgetAndSymbols(*best);
 
-    // Freeze and queue the best opportunity for execution
-    Execution execution{*best};
-    BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
-    _executionQueue.push(std::move(execution));
-
-    // Update opportunities that use the same starting asset
-    auto newBalance = _balance.getBalance(best->getStartingAsset());
-    for (auto it = affected.first; it != affected.second; ++it) {
-      Opportunity *opp = it->second;
-      if (opp->getStartingAsset() == best->getStartingAsset() && opp != best) {
-        opp->update(newBalance);
-      }
-    }
-  }
+  // Freeze and queue the best opportunity for execution
+  Execution execution{*best};
+  BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
+  _executionQueue.push(std::move(execution));
 }
 
 Opportunity *Engine::findMostProfitable(
     std::unordered_multimap<std::string, Opportunity *>::iterator begin,
     std::unordered_multimap<std::string, Opportunity *>::iterator end,
-    Opportunity *exclude) {
+    const Opportunity *exclude) {
   Opportunity *best = nullptr;
   for (auto it = begin; it != end; ++it) {
     Opportunity *opp = it->second;

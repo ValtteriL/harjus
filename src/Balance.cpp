@@ -15,9 +15,7 @@ void Balance::updateBalance(
   });
 }
 
-PreciseNumber Balance::getBalance(const std::string &currency) const {
+std::unordered_map<std::string, PreciseNumber> Balance::getBalances() const {
   std::shared_lock<std::shared_mutex> lock(mtx);
-  if (balanceMap.contains(currency))
-    return balanceMap.at(currency);
-  return PreciseNumber{"0"};
+  return balanceMap;
 }

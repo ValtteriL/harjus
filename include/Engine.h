@@ -51,7 +51,7 @@ private:
   Opportunity *findMostProfitable(
       std::unordered_multimap<std::string, Opportunity *>::iterator begin,
       std::unordered_multimap<std::string, Opportunity *>::iterator end,
-      Opportunity *exclude);
+      const Opportunity *exclude);
 
   /**
    * @brief Reserves the necessary budget and trading symbols for a given
