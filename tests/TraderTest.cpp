@@ -11,7 +11,6 @@
 #include "Opportunity.h"
 #include "PreciseNumber.h"
 #include "ReservedTrades.h"
-#include "ThreadSafeQueue.h"
 #include "TradeExecutionStatus.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -23,10 +22,11 @@ using ::testing::Return;
 // TestableTrader class to expose private methods for testing
 class TestableTrader : public Trader {
 public:
-  TestableTrader(ThreadSafeQueue<Execution> &executionQueue,
-                 ThreadSafeQueue<ExecutionReport> &executionReportQueue,
-                 IApplication &application, Balance &balance,
-                 ReservedTrades &reservedTrades)
+  TestableTrader(
+      boost::lockfree::spsc_queue<Execution> &executionQueue,
+      boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
+      IApplication &application, Balance &balance,
+      ReservedTrades &reservedTrades)
       : Trader(executionQueue, executionReportQueue, application, balance,
                reservedTrades) {}
 
@@ -100,9 +100,8 @@ protected:
     return Opportunity(*trades, PreciseNumber{"1"}, PreciseNumber{"0.001"});
   }
 
-  std::binary_semaphore semaphore{0};
-  ThreadSafeQueue<Execution> executionQueue{semaphore};
-  ThreadSafeQueue<ExecutionReport> executionReportQueue{semaphore};
+  boost::lockfree::spsc_queue<Execution> executionQueue{1000};
+  boost::lockfree::spsc_queue<ExecutionReport> executionReportQueue{1000};
   MockApplication mockApplication;
   Balance balance;
   ReservedTrades reservedTrades;

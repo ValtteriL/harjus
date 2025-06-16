@@ -6,7 +6,6 @@
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "Symbol.h"
-#include "ThreadSafeQueue.h"
 #include "Trade.h"
 #include <stop_token>
 #include <string>
@@ -31,7 +30,7 @@ private:
   std::unordered_multimap<std::string, Opportunity *> _opportunities;
   std::unordered_map<std::string, PreciseNumber> _relativeValues;
   boost::lockfree::spsc_queue<PriceUpdate> &_priceUpdateQueue;
-  ThreadSafeQueue<Execution> &_executionQueue;
+  boost::lockfree::spsc_queue<Execution> &_executionQueue;
   ReservedTrades &_reservedTrades;
   Balance &_balance;
 
@@ -93,7 +92,7 @@ public:
          std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
          ReservedTrades &reservedTrades,
          boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
-         ThreadSafeQueue<Execution> &executionQueue,
+         boost::lockfree::spsc_queue<Execution> &executionQueue,
          std::unordered_map<std::string, PreciseNumber> &relativeValues,
          const PreciseNumber commission);
 

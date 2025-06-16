@@ -12,7 +12,7 @@ Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
                std::vector<std::vector<Trade> *> &tradingPaths,
                Balance &balance, ReservedTrades &reservedTrades,
                boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
-               ThreadSafeQueue<Execution> &executionQueue,
+               boost::lockfree::spsc_queue<Execution> &executionQueue,
                std::unordered_map<std::string, PreciseNumber> &relativeValues,
                const PreciseNumber commission)
     : _symbols(symbols), _relativeValues(relativeValues),

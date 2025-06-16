@@ -9,7 +9,6 @@
 #include "PreciseNumber.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
-#include "ThreadSafeQueue.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <semaphore>
@@ -23,7 +22,7 @@ public:
                  std::vector<std::vector<Trade> *> &tradingPaths,
                  Balance &balance, ReservedTrades &reservedTrades,
                  boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
-                 ThreadSafeQueue<Execution> &executionQueue,
+                 boost::lockfree::spsc_queue<Execution> &executionQueue,
                  std::unordered_map<std::string, PreciseNumber> relativeValues,
                  PreciseNumber commission)
       : Engine(symbols, tradingPaths, balance, reservedTrades, priceUpdateQueue,
@@ -118,9 +117,7 @@ protected:
       {"USDT", PreciseNumber{"1.0"}}};
   PreciseNumber commission{"0.001"};
 
-  std::binary_semaphore semaphore{0};
-  ThreadSafeQueue<Execution> executionQueue{semaphore};
-  std::binary_semaphore priceUpdateSemaphore{0};
+  boost::lockfree::spsc_queue<Execution> executionQueue{1000};
   boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{1000};
 
   // simple triangular arbitrage
@@ -154,7 +151,7 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
 
   // Verify execution is queued
   Execution execution;
-  ASSERT_TRUE(executionQueue.try_pop(execution));
+  ASSERT_TRUE(executionQueue.pop(execution));
   ASSERT_TRUE(executionQueue.empty());
 
   // Trades should be reserved
@@ -206,8 +203,8 @@ TEST_F(EngineTest, detectsTwoArbitrageOpportunities) {
 
   // Verify two executions are queued
   Execution execution1, execution2;
-  ASSERT_TRUE(executionQueue.try_pop(execution1));
-  ASSERT_TRUE(executionQueue.try_pop(execution2));
+  ASSERT_TRUE(executionQueue.pop(execution1));
+  ASSERT_TRUE(executionQueue.pop(execution2));
   ASSERT_TRUE(executionQueue.empty());
 
   // Trades should be reserved

@@ -6,7 +6,6 @@
 #include "IApplication.h"
 #include "Position.h"
 #include "ReservedTrades.h"
-#include "ThreadSafeQueue.h"
 #include "TradeExecutionStatus.h"
 #include <algorithm>
 #include <boost/log/core.hpp>
@@ -16,10 +15,10 @@
 #include <random>
 #include <stdexcept>
 
-Trader::Trader(ThreadSafeQueue<Execution> &executionQueue,
-               ThreadSafeQueue<ExecutionReport> &executionReportQueue,
-               IApplication &application, Balance &balance,
-               ReservedTrades &reservedTrades)
+Trader::Trader(
+    boost::lockfree::spsc_queue<Execution> &executionQueue,
+    boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
+    IApplication &application, Balance &balance, ReservedTrades &reservedTrades)
     : _executionQueue(executionQueue),
       _executionReportQueue(executionReportQueue), _application(application),
       _balance(balance), _reservedTrades(reservedTrades) {}
@@ -182,19 +181,15 @@ void Trader::run(std::stop_token stoken) {
   // or stop requested
   while (!stoken.stop_requested()) {
 
-    if (_executionQueue.getSemaphore().try_acquire_for(
-            std::chrono::milliseconds(100))) {
+    // Process execution
+    if (Execution execution; _executionQueue.pop(execution)) {
+      processExecution(execution);
+    }
 
-      // Process execution
-      if (Execution execution; _executionQueue.try_pop(execution)) {
-        processExecution(execution);
-      }
-
-      // Process execution report
-      if (ExecutionReport executionReport;
-          _executionReportQueue.try_pop(executionReport)) {
-        processReport(&executionReport);
-      }
+    // Process execution report
+    if (ExecutionReport executionReport;
+        _executionReportQueue.pop(executionReport)) {
+      processReport(&executionReport);
     }
   }
 
@@ -203,10 +198,8 @@ void Trader::run(std::stop_token stoken) {
   // Finish executions that are still in the map
   while (!_executionsMap.empty()) {
 
-    _executionReportQueue.getSemaphore().acquire();
-
     if (ExecutionReport executionReport;
-        _executionReportQueue.try_pop(executionReport)) {
+        _executionReportQueue.pop(executionReport)) {
       processReport(&executionReport);
     }
   }

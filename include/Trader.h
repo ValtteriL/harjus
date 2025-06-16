@@ -11,7 +11,6 @@
 #include "ExecutionReport.h"
 #include "IApplication.h"
 #include "ReservedTrades.h"
-#include "ThreadSafeQueue.h"
 #include <stop_token>
 #include <string>
 #include <unordered_map>
@@ -22,8 +21,8 @@ using entry =
 class Trader {
 
 private:
-  ThreadSafeQueue<Execution> &_executionQueue;
-  ThreadSafeQueue<ExecutionReport> &_executionReportQueue;
+  boost::lockfree::spsc_queue<Execution> &_executionQueue;
+  boost::lockfree::spsc_queue<ExecutionReport> &_executionReportQueue;
   IApplication &_application;
   Balance &_balance;
   ReservedTrades &_reservedTrades;
@@ -41,8 +40,8 @@ protected:
       _failedExecutions; // Set of failed execution IDs
 
 public:
-  Trader(ThreadSafeQueue<Execution> &_executionQueue,
-         ThreadSafeQueue<ExecutionReport> &executionReportQueue,
+  Trader(boost::lockfree::spsc_queue<Execution> &_executionQueue,
+         boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
          IApplication &application, Balance &balance,
          ReservedTrades &reservedTrades);
 
