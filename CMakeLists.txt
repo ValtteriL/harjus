@@ -224,17 +224,6 @@ if(HARJUS_TESTS)
 
   gtest_discover_tests(TraderTest)
 
-
-  add_executable(ThreadSafeQueueTest tests/ThreadSafeQueueTest.cpp)
-  target_link_libraries(ThreadSafeQueueTest PRIVATE
-    gtest_main
-    GTest::gmock
-    Boost::log
-  )
-
-  gtest_discover_tests(ThreadSafeQueueTest)
-
-
   add_executable(PreciseNumberTest tests/PreciseNumberTest.cpp
     src/PreciseNumber.cpp
   )
@@ -358,5 +347,4 @@ if(HARJUS_TESTS)
   target_precompile_headers(OpportunityTest REUSE_FROM harjus)
   target_precompile_headers(EngineTest REUSE_FROM harjus)
   target_precompile_headers(TraderTest REUSE_FROM harjus)
-  target_precompile_headers(ThreadSafeQueueTest REUSE_FROM harjus)
 endif()

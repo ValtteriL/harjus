@@ -3,12 +3,9 @@
 #include "Configuration.h"
 #include "Engine.h"
 #include "Exchange.h"
-#include "Execution.h"
-#include "ExecutionReport.h"
 #include "FixConfig.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
-#include "ThreadSafeQueue.h"
 #include "Trade.h"
 #include "Trader.h"
 #include <boost/lockfree/spsc_queue.hpp>
@@ -96,9 +93,8 @@ int main() {
 
   // Create queues for price updates & executions
   boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{1000};
-  std::binary_semaphore semaphore{0};
-  ThreadSafeQueue<Execution> executionQueue{semaphore};
-  ThreadSafeQueue<ExecutionReport> reportQueue{semaphore};
+  boost::lockfree::spsc_queue<Execution> executionQueue{1000};
+  boost::lockfree::spsc_queue<ExecutionReport> reportQueue{1000};
 
   ReservedTrades reservedTrades;
 

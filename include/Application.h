@@ -11,7 +11,6 @@
 #include "IApplication.h"
 #include "IConfiguration.h"
 #include "PriceUpdate.h"
-#include "ThreadSafeQueue.h"
 
 #include <quickfix/Application.h>
 #include <quickfix/MessageCracker.h>
@@ -40,7 +39,7 @@ private:
   const std::string username;
   const std::string privateKeySeed;
   boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue;
-  ThreadSafeQueue<ExecutionReport> &executionReportQueue;
+  boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue;
   std::vector<FIX::SessionID> marketDataSessionIDs;
   FIX::SessionID orderEntrySessionID;
   const std::unordered_map<std::string, Symbol *> &symbolMap;
@@ -137,7 +136,7 @@ private:
 public:
   Application(const IConfiguration &conf,
               boost::lockfree::spsc_queue<PriceUpdate> &queue,
-              ThreadSafeQueue<ExecutionReport> &reportQueue,
+              boost::lockfree::spsc_queue<ExecutionReport> &reportQueue,
               const std::unordered_map<std::string, Symbol *> &symbolMap);
 
   void submitOrder(const std::string &id, const std::string &symbol,
