@@ -11,6 +11,12 @@ let
   version = "1.0.0";
   pname = "harjus";
 
+  enableParallelBuilding = true;
+
+  # disable performance affecting hardenings
+  hardeningDisable =
+    [ "fortify" "stackprotector" "pic" "pie" "relro" "bindnow" ];
+
   packages = rec {
 
     # build quickfix properly with SSL support
@@ -42,7 +48,9 @@ let
 
       nativeBuildInputs = [ cmake ninja ];
       buildInputs = [ openssl ];
-      enableParallelBuilding = true;
+
+      inherit enableParallelBuilding;
+      inherit hardeningDisable;
     };
 
     # The shell of our experiment runtime environment
@@ -109,12 +117,8 @@ let
 
       cmakeFlags = [ "-DHARJUS_TESTS=OFF" ];
 
-      # enable parallel building
-      enableParallelBuilding = true;
-
-      # disable performance affecting hardenings
-      hardeningDisable =
-        [ "fortify" "stackprotector" "pic" "pie" "relro" "bindnow" ];
+      inherit enableParallelBuilding;
+      inherit hardeningDisable;
     };
 
     # docker packaging derivation
