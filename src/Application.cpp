@@ -198,9 +198,6 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
                             const FIX::SessionID &) {
   try {
 
-    BOOST_LOG_TRIVIAL(debug)
-        << "Received ExecutionReport: " << message.toString();
-
     // Extract the ClOrdID
     FIX::ClOrdID clOrdID;
     message.get(clOrdID);
@@ -300,9 +297,8 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     }
 
     // Create execution report & push to the queue
-    ExecutionReport report{id, status, usedQty, recvQty, feeDelta};
-    BOOST_LOG_TRIVIAL(debug) << "Pushing execution report to queue: " << report;
-    executionReportQueue.push(std::move(report));
+    executionReportQueue.push(
+        ExecutionReport{id, status, usedQty, recvQty, feeDelta});
 
   } catch (const std::exception &e) {
 
@@ -436,7 +432,6 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
     // Add all updates to the queue
     for (const auto &[symbol, update] : updates) {
-      BOOST_LOG_TRIVIAL(trace) << "Pushing price update to queue: " << update;
       priceUpdateQueue.push(update);
     }
   } catch (const std::exception &e) {
@@ -467,9 +462,6 @@ void Application::submitOrder(const std::string &id, const std::string &symbol,
   newOrder.setField(FIX::FIELD::Price, price.toString());
 
   newOrder.set(FIX::TimeInForce(FIX::TimeInForce_FILL_OR_KILL));
-
-  BOOST_LOG_TRIVIAL(debug) << "Submitting order: " << newOrder.toString()
-                           << " to session " << orderEntrySessionID;
 
   // Send the order to the order entry session
   FIX::Session::sendToTarget(newOrder, orderEntrySessionID);

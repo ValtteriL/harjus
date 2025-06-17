@@ -6,7 +6,6 @@
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include <ranges>
 #include <stop_token>
 #include <string>
 #include <vector>
@@ -99,7 +98,6 @@ void Engine::run(std::stop_token stoken) {
   while (!stoken.stop_requested()) {
 
     if (PriceUpdate update; _priceUpdateQueue.pop(update)) {
-      BOOST_LOG_TRIVIAL(trace) << "Ingesting price update: " << update;
       processPriceUpdate(update);
     }
   }
