@@ -88,9 +88,9 @@ std::unique_ptr<Balance> getBalance(const IConfiguration &config) {
   return balance;
 }
 
-std::unordered_map<std::string, Symbol *>
+std::unordered_map<std::string, Symbol>
 getSymbols(const IConfiguration &config) {
-  std::unordered_map<std::string, Symbol *> symbols;
+  std::unordered_map<std::string, Symbol> symbols;
 
   // Fetch exchange info from Binance API
   std::string uri = config.getBinanceRESTApiUri() + "/api/v3/exchangeInfo";
@@ -142,10 +142,10 @@ getSymbols(const IConfiguration &config) {
         }
       }
 
-      symbols[symbolStr] = new Symbol{symbolStr,          baseAsset,
-                                      quoteAsset,         minNotional,
-                                      baseAssetIncrement, quoteAssetIncrement,
-                                      baseAssetPrecision, quoteAssetPrecision};
+      symbols.insert(
+          {symbolStr, Symbol{symbolStr, baseAsset, quoteAsset, minNotional,
+                             baseAssetIncrement, quoteAssetIncrement,
+                             baseAssetPrecision, quoteAssetPrecision}});
     }
   } catch (const boost::json::system_error &e) {
     throw std::runtime_error("Failed to parse JSON response: " +
@@ -157,7 +157,7 @@ getSymbols(const IConfiguration &config) {
 
 std::unordered_map<std::string, PreciseNumber>
 getRelativeValues(const IConfiguration &config,
-                  const std::unordered_map<std::string, Symbol *> &symbols) {
+                  const std::unordered_map<std::string, Symbol> &symbols) {
   std::unordered_map<std::string, PreciseNumber> relativeValues;
 
   // Fetch symbol prices from Binance API
@@ -190,25 +190,25 @@ getRelativeValues(const IConfiguration &config,
   // Calculate relative values in Bitcoin
   PreciseNumber lowestValue = std::numeric_limits<PreciseNumber>::max();
   for (const auto &[symbolName, symbol] : symbols) {
-    if (symbol->quoteAsset == "BTC") {
+    if (symbol.quoteAsset == "BTC") {
       // price already in BTC (shorting gets btc)
-      relativeValues[symbol->baseAsset] = symbolPrices[symbolName];
+      relativeValues[symbol.baseAsset] = symbolPrices[symbolName];
       lowestValue = PreciseNumber::min(lowestValue, symbolPrices[symbolName]);
-    } else if (symbol->baseAsset == "BTC") {
+    } else if (symbol.baseAsset == "BTC") {
       // price in 1 / BTC (longing gets btc)
       PreciseNumber value = PreciseNumber{"1"} / symbolPrices[symbolName];
-      relativeValues[symbol->quoteAsset] = value;
+      relativeValues[symbol.quoteAsset] = value;
       lowestValue = PreciseNumber::min(lowestValue, value);
     }
   }
 
   // Assign lowest value to currencies not tradable to Bitcoin
   for (const auto &[symbolName, symbol] : symbols) {
-    if (relativeValues.find(symbol->baseAsset) == relativeValues.end()) {
-      relativeValues[symbol->baseAsset] = lowestValue;
+    if (relativeValues.find(symbol.baseAsset) == relativeValues.end()) {
+      relativeValues[symbol.baseAsset] = lowestValue;
     }
-    if (relativeValues.find(symbol->quoteAsset) == relativeValues.end()) {
-      relativeValues[symbol->quoteAsset] = lowestValue;
+    if (relativeValues.find(symbol.quoteAsset) == relativeValues.end()) {
+      relativeValues[symbol.quoteAsset] = lowestValue;
     }
   }
 

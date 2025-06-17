@@ -53,14 +53,14 @@ TEST_F(ExchangeTest,
   EXPECT_TRUE(symbols.find("ETHBTC") != symbols.end());
 
   // Verify individual symbol details
-  const auto &btcEthSymbol = symbols["ETHBTC"];
-  EXPECT_EQ(btcEthSymbol->baseAsset, "ETH");
-  EXPECT_EQ(btcEthSymbol->quoteAsset, "BTC");
-  EXPECT_EQ(btcEthSymbol->baseAssetPrecision, 8);
-  EXPECT_EQ(btcEthSymbol->quoteAssetPrecision, 8);
-  EXPECT_EQ(btcEthSymbol->minNotional, PreciseNumber{"0.0001"});
-  EXPECT_EQ(btcEthSymbol->baseAssetIncrement, PreciseNumber{"0.0001"});
-  EXPECT_EQ(btcEthSymbol->quoteAssetIncrement, PreciseNumber{"0.00001"});
+  const auto &btcEthSymbol = symbols.at("ETHBTC");
+  EXPECT_EQ(btcEthSymbol.baseAsset, "ETH");
+  EXPECT_EQ(btcEthSymbol.quoteAsset, "BTC");
+  EXPECT_EQ(btcEthSymbol.baseAssetPrecision, 8);
+  EXPECT_EQ(btcEthSymbol.quoteAssetPrecision, 8);
+  EXPECT_EQ(btcEthSymbol.minNotional, PreciseNumber{"0.0001"});
+  EXPECT_EQ(btcEthSymbol.baseAssetIncrement, PreciseNumber{"0.0001"});
+  EXPECT_EQ(btcEthSymbol.quoteAssetIncrement, PreciseNumber{"0.00001"});
 }
 
 TEST_F(ExchangeTest,
@@ -68,37 +68,16 @@ TEST_F(ExchangeTest,
                                                   // gtest skip this by default
 {
   // Create a mock input map of symbols
-  std::unordered_map<std::string, Symbol *> symbols;
-
-  Symbol *btcSymbol = new Symbol{"BTCUSDT",
-                                 "BTC",
-                                 "USDT",
-                                 PreciseNumber{"0.0001"},
-                                 PreciseNumber{"0.0001"},
-                                 PreciseNumber{"0.0001"},
-                                 8,
-                                 8};
-  symbols[btcSymbol->symbol] = btcSymbol;
-
-  Symbol *ethSymbol = new Symbol{"ETHBTC",
-                                 "ETH",
-                                 "BTC",
-                                 PreciseNumber{"0.0001"},
-                                 PreciseNumber{"0.0001"},
-                                 PreciseNumber{"0.0001"},
-                                 8,
-                                 8};
-  symbols[ethSymbol->symbol] = ethSymbol;
-
-  Symbol *xrpSymbol = new Symbol{"XRPBTC",
-                                 "XRP",
-                                 "BTC",
-                                 PreciseNumber{"0.0001"},
-                                 PreciseNumber{"0.0001"},
-                                 PreciseNumber{"0.0001"},
-                                 8,
-                                 8};
-  symbols[xrpSymbol->symbol] = xrpSymbol;
+  std::unordered_map<std::string, Symbol> symbols{
+      {"BTCUSDT",
+       Symbol{"BTCUSDT", "BTC", "USDT", PreciseNumber{"0.0001"},
+              PreciseNumber{"0.0001"}, PreciseNumber{"0.0001"}, 8, 8}},
+      {"ETHBTC",
+       Symbol{"ETHBTC", "ETH", "BTC", PreciseNumber{"0.0001"},
+              PreciseNumber{"0.0001"}, PreciseNumber{"0.0001"}, 8, 8}},
+      {"XRPBTC",
+       Symbol{"XRPBTC", "XRP", "BTC", PreciseNumber{"0.0001"},
+              PreciseNumber{"0.0001"}, PreciseNumber{"0.0001"}, 8, 8}}};
 
   // Call the function under test
   auto relativeValues = getRelativeValues(config, symbols);
@@ -115,8 +94,8 @@ TEST_F(ExchangeTest,
   // the symbols map
   std::unordered_set<std::string> uniqueAssets;
   for (const auto &[symbolName, symbol] : symbols) {
-    uniqueAssets.insert(symbol->baseAsset);
-    uniqueAssets.insert(symbol->quoteAsset);
+    uniqueAssets.insert(symbol.baseAsset);
+    uniqueAssets.insert(symbol.quoteAsset);
   }
   EXPECT_EQ(relativeValues.size(), uniqueAssets.size());
 
@@ -124,9 +103,9 @@ TEST_F(ExchangeTest,
   // lowest value
   PreciseNumber lowestValue = std::numeric_limits<PreciseNumber>::max();
   for (const auto &[symbolName, symbol] : symbols) {
-    if (symbol->quoteAsset == "BTC") {
+    if (symbol.quoteAsset == "BTC") {
       lowestValue =
-          PreciseNumber::min(lowestValue, relativeValues[symbol->baseAsset]);
+          PreciseNumber::min(lowestValue, relativeValues[symbol.baseAsset]);
     }
   }
 
@@ -134,8 +113,8 @@ TEST_F(ExchangeTest,
     bool isRelatedToBTC = false;
     for (const auto &[symbolName, symbol] : symbols) {
       if (asset == "BTC" ||
-          (symbol->baseAsset == asset && symbol->quoteAsset == "BTC") ||
-          (symbol->quoteAsset == asset && symbol->baseAsset == "BTC")) {
+          (symbol.baseAsset == asset && symbol.quoteAsset == "BTC") ||
+          (symbol.quoteAsset == asset && symbol.baseAsset == "BTC")) {
         isRelatedToBTC = true;
         break;
       }

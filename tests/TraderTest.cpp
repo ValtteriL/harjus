@@ -14,7 +14,6 @@
 #include "TradeExecutionStatus.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <semaphore>
 
 using ::testing::_;
 using ::testing::Return;
@@ -63,39 +62,23 @@ protected:
 
   // Helper method to create a simple opportunity
   Opportunity createSimpleOpportunity() {
-    // Create and store symbols properly
-    Symbol *ethBtcSymbol = new Symbol{"ETHBTC",
-                                      "ETH",
-                                      "BTC",
-                                      PreciseNumber{"0.0001"},
-                                      PreciseNumber{"0.0001"},
-                                      PreciseNumber{"0.0001"},
-                                      8,
-                                      8,
-                                      PreciseNumber{"0.0"},
-                                      PreciseNumber{"0.0"},
-                                      PreciseNumber{"0.0"},
-                                      PreciseNumber{"0.0"}};
-    Symbol *ethUsdtSymbol = new Symbol{"ETHUSDT",
-                                       "ETH",
-                                       "USDT",
-                                       PreciseNumber{"0.0001"},
-                                       PreciseNumber{"0.0001"},
-                                       PreciseNumber{"0.0001"},
-                                       8,
-                                       8,
-                                       PreciseNumber{"0.0"},
-                                       PreciseNumber{"0.0"},
-                                       PreciseNumber{"0.0"},
-                                       PreciseNumber{"0.0"}};
 
-    symbolsMap["ETHBTC"] = ethBtcSymbol;
-    symbolsMap["ETHUSDT"] = ethUsdtSymbol;
+    // Create and store symbols properly
+    symbolsMap.insert(
+        {"ETHBTC", Symbol{"ETHBTC", "ETH", "BTC", PreciseNumber{"0.0001"},
+                          PreciseNumber{"0.0001"}, PreciseNumber{"0.0001"}, 8,
+                          8, PreciseNumber{"0.0"}, PreciseNumber{"0.0"},
+                          PreciseNumber{"0.0"}, PreciseNumber{"0.0"}}});
+    symbolsMap.insert(
+        {"ETHUSDT", Symbol{"ETHUSDT", "ETH", "USDT", PreciseNumber{"0.0001"},
+                           PreciseNumber{"0.0001"}, PreciseNumber{"0.0001"}, 8,
+                           8, PreciseNumber{"0.0"}, PreciseNumber{"0.0"},
+                           PreciseNumber{"0.0"}, PreciseNumber{"0.0"}}});
 
     // Setup trades using the stored symbols
-    std::vector<Trade> *trades =
-        new std::vector<Trade>{Trade{symbolsMap["ETHBTC"], Position::LONG},
-                               Trade{symbolsMap["ETHUSDT"], Position::SHORT}};
+    std::vector<Trade> *trades = new std::vector<Trade>{
+        Trade{&symbolsMap.at("ETHBTC"), Position::LONG},
+        Trade{&symbolsMap.at("ETHUSDT"), Position::SHORT}};
 
     return Opportunity(*trades, PreciseNumber{"1"}, PreciseNumber{"0.001"});
   }
@@ -105,15 +88,8 @@ protected:
   MockApplication mockApplication;
   Balance balance;
   ReservedTrades reservedTrades;
-  std::unordered_map<std::string, Symbol *> symbolsMap;
+  std::unordered_map<std::string, Symbol> symbolsMap;
   TestableTrader trader;
-
-  // Add destructor to clean up symbol pointers
-  ~TraderTest() {
-    for (auto &pair : symbolsMap) {
-      delete pair.second;
-    }
-  }
 };
 
 TEST_F(TraderTest, processesExecutions) {

@@ -11,14 +11,13 @@
 #include "ReservedTrades.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <semaphore>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 class TestableEngine : public Engine {
 public:
-  TestableEngine(std::unordered_map<std::string, Symbol *> &symbols,
+  TestableEngine(std::unordered_map<std::string, Symbol> &symbols,
                  std::vector<std::vector<Trade> *> &tradingPaths,
                  Balance &balance, ReservedTrades &reservedTrades,
                  boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
@@ -67,47 +66,46 @@ protected:
 
   PreciseNumber startingAssetBudget{"1.0"};
 
-  // Allocate symbols manually
-  Symbol *ethBtcSymbol = new Symbol{"ETHBTC",
-                                    "ETH",
-                                    "BTC",
-                                    PreciseNumber{"0.0001"},
-                                    PreciseNumber{"0.0001"},
-                                    PreciseNumber{"0.0001"},
-                                    8,
-                                    8,
-                                    PreciseNumber{"0.0"},
-                                    PreciseNumber{"0.0"},
-                                    PreciseNumber{"0.0"},
-                                    PreciseNumber{"0.0"}};
-  Symbol *ethUsdtSymbol = new Symbol{"ETHUSDT",
-                                     "ETH",
-                                     "USDT",
-                                     PreciseNumber{"0.0001"},
-                                     PreciseNumber{"0.0001"},
-                                     PreciseNumber{"0.0001"},
-                                     8,
-                                     8,
-                                     PreciseNumber{"0.0"},
-                                     PreciseNumber{"0.0"},
-                                     PreciseNumber{"0.0"},
-                                     PreciseNumber{"0.0"}};
-  Symbol *usdtBtcSymbol = new Symbol{"USDTBTC",
-                                     "USDT",
-                                     "BTC",
-                                     PreciseNumber{"0.0001"},
-                                     PreciseNumber{"0.0001"},
-                                     PreciseNumber{"0.0001"},
-                                     8,
-                                     8,
-                                     PreciseNumber{"0.0"},
-                                     PreciseNumber{"0.0"},
-                                     PreciseNumber{"0.0"},
-                                     PreciseNumber{"0.0"}};
+  Symbol ethBtcSymbol{"ETHBTC",
+                      "ETH",
+                      "BTC",
+                      PreciseNumber{"0.0001"},
+                      PreciseNumber{"0.0001"},
+                      PreciseNumber{"0.0001"},
+                      8,
+                      8,
+                      PreciseNumber{"0.0"},
+                      PreciseNumber{"0.0"},
+                      PreciseNumber{"0.0"},
+                      PreciseNumber{"0.0"}};
+  Symbol ethUsdtSymbol{"ETHUSDT",
+                       "ETH",
+                       "USDT",
+                       PreciseNumber{"0.0001"},
+                       PreciseNumber{"0.0001"},
+                       PreciseNumber{"0.0001"},
+                       8,
+                       8,
+                       PreciseNumber{"0.0"},
+                       PreciseNumber{"0.0"},
+                       PreciseNumber{"0.0"},
+                       PreciseNumber{"0.0"}};
+  Symbol usdtBtcSymbol{"USDTBTC",
+                       "USDT",
+                       "BTC",
+                       PreciseNumber{"0.0001"},
+                       PreciseNumber{"0.0001"},
+                       PreciseNumber{"0.0001"},
+                       8,
+                       8,
+                       PreciseNumber{"0.0"},
+                       PreciseNumber{"0.0"},
+                       PreciseNumber{"0.0"},
+                       PreciseNumber{"0.0"}};
 
-  std::unordered_map<std::string, Symbol *> symbols{{"ETHBTC", ethBtcSymbol},
-                                                    {"ETHUSDT", ethUsdtSymbol},
-                                                    {"USDTBTC", usdtBtcSymbol}};
+  std::unordered_map<std::string, Symbol> symbols{{"ETHBTC", ethBtcSymbol},
+                                                  {"ETHUSDT", ethUsdtSymbol},
+                                                  {"USDTBTC", usdtBtcSymbol}};
   std::vector<std::vector<Trade> *> tradingPaths;
   Balance balance;
   ReservedTrades reservedTrades;
@@ -122,9 +120,9 @@ protected:
 
   // simple triangular arbitrage
   // BTC -> ETH -> USDT -> BTC
-  std::vector<Trade> trades{Trade{symbols["ETHBTC"], Position::LONG},
-                            Trade{symbols["ETHUSDT"], Position::SHORT},
-                            Trade{symbols["USDTBTC"], Position::SHORT}};
+  std::vector<Trade> trades{Trade{&symbols.at("ETHBTC"), Position::LONG},
+                            Trade{&symbols.at("ETHUSDT"), Position::SHORT},
+                            Trade{&symbols.at("USDTBTC"), Position::SHORT}};
 
   TestableEngine engine;
 };
@@ -132,13 +130,13 @@ protected:
 TEST_F(EngineTest, detectsArbitrageOpportunity) {
 
   std::vector<PriceUpdate> updates;
-  updates.push_back(PriceUpdate{symbols.at("ETHBTC"), PreciseNumber{"0"},
+  updates.push_back(PriceUpdate{&symbols.at("ETHBTC"), PreciseNumber{"0"},
                                 PreciseNumber{"1"}, PreciseNumber{"0"},
                                 PreciseNumber{"100"}}); // BTC -> ETH 1:1
-  updates.push_back(PriceUpdate{symbols.at("ETHUSDT"), PreciseNumber{"1"},
+  updates.push_back(PriceUpdate{&symbols.at("ETHUSDT"), PreciseNumber{"1"},
                                 PreciseNumber{"0"}, PreciseNumber{"1"},
                                 PreciseNumber{"0"}}); // ETH -> USDT 1:1
-  updates.push_back(PriceUpdate{symbols.at("USDTBTC"), PreciseNumber{"10.0"},
+  updates.push_back(PriceUpdate{&symbols.at("USDTBTC"), PreciseNumber{"10.0"},
                                 PreciseNumber{"0"}, PreciseNumber{"1.0"},
                                 PreciseNumber{"0"}}); // USDT -> BTC 1:10
 

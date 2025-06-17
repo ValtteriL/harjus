@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-Engine::Engine(std::unordered_map<std::string, Symbol *> &symbols,
+Engine::Engine(std::unordered_map<std::string, Symbol> &symbols,
                std::vector<std::vector<Trade> *> &tradingPaths,
                Balance &balance, ReservedTrades &reservedTrades,
                boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,

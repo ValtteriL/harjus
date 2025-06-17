@@ -42,7 +42,7 @@ private:
   boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue;
   std::vector<FIX::SessionID> marketDataSessionIDs;
   FIX::SessionID orderEntrySessionID;
-  const std::unordered_map<std::string, Symbol *> &symbolMap;
+  std::unordered_map<std::string, Symbol> &symbolMap;
 
   /**
    * Called when quickfix creates a new session.
@@ -137,7 +137,7 @@ public:
   Application(const IConfiguration &conf,
               boost::lockfree::spsc_queue<PriceUpdate> &queue,
               boost::lockfree::spsc_queue<ExecutionReport> &reportQueue,
-              const std::unordered_map<std::string, Symbol *> &symbolMap);
+              std::unordered_map<std::string, Symbol> &symbolMap);
 
   void submitOrder(const std::string &id, const std::string &symbol,
                    PreciseNumber qty, PreciseNumber price,
