@@ -11,6 +11,9 @@ let
   version = "1.0.0";
   pname = "harjus";
 
+  gccFlags =
+    "-O3 -march=skylake-avx512 -mtune=skylake-avx512 -flto -funroll-loops -fomit-frame-pointer";
+
   enableParallelBuilding = true;
 
   # disable performance affecting hardenings
@@ -51,6 +54,8 @@ let
 
       inherit enableParallelBuilding;
       inherit hardeningDisable;
+
+      NIX_CFLAGS_COMPILE = gccFlags;
     };
 
     # The shell of our experiment runtime environment
@@ -119,6 +124,8 @@ let
 
       inherit enableParallelBuilding;
       inherit hardeningDisable;
+
+      NIX_CFLAGS_COMPILE = gccFlags;
     };
 
     # docker packaging derivation
