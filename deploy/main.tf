@@ -84,7 +84,7 @@ resource "aws_instance" "instance" {
   # Amazon Linux AMI 2023.0.20250523 x86_64 ECS HVM EBS
   ami = "ami-00ea3690582cf02ee"
 
-  instance_type        = "c6in.2xlarge"
+  instance_type        = "c6in.xlarge"
   key_name             = aws_key_pair.ec_key.key_name
   security_groups      = [aws_security_group.security.name]
   iam_instance_profile = aws_iam_instance_profile.ec2_ecr_profile.name
