@@ -12,7 +12,7 @@ let
   pname = "harjus";
 
   gccFlags =
-    "-O3 -march=skylake-avx512 -mtune=skylake-avx512 -flto -funroll-loops -fomit-frame-pointer";
+    "-O3 -march=icelake-server -mtune=icelake-server -flto -funroll-loops -fomit-frame-pointer";
 
   enableParallelBuilding = true;
 
