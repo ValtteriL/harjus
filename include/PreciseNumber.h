@@ -43,6 +43,18 @@ public:
   PreciseNumber(int) = delete;
 
   /**
+   * @brief Copy assignment
+   * @param other The other PreciseNumber object to copy from.
+   */
+  PreciseNumber &operator=(const PreciseNumber &other);
+
+  /**
+   * @brief Copy constructor for PreciseNumber.
+   * @param other The PreciseNumber object to copy from.
+   */
+  PreciseNumber(const PreciseNumber &other);
+
+  /**
    * @brief Adds two PreciseNumber objects.
    * @param other The other PreciseNumber object to add.
    * @return The sum as a new PreciseNumber object.

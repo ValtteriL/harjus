@@ -19,7 +19,7 @@ extern std::atomic<bool> isShuttingDown;
 Application::Application(
     const IConfiguration &conf, boost::lockfree::spsc_queue<PriceUpdate> &queue,
     boost::lockfree::spsc_queue<ExecutionReport> &reportQueue,
-    const std::unordered_map<std::string, Symbol *> &symbolMap)
+    std::unordered_map<std::string, Symbol> &symbolMap)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
       priceUpdateQueue(queue), executionReportQueue(reportQueue),
       symbolMap(symbolMap) {}
@@ -365,7 +365,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
       }
     }
 
-    priceUpdateQueue.push(PriceUpdate{symbolMap.at(symbolValue), bidPrice,
+    priceUpdateQueue.push(PriceUpdate{&symbolMap.at(symbolValue), bidPrice,
                                       askPrice, bidQuantity, askQuantity});
   } catch (const std::exception &e) {
     throw std::runtime_error("Error processing market data snapshot: " +
@@ -404,7 +404,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       // Check if we already have an update for this symbol
       if (updates.find(symbolValue) == updates.end()) {
         // Create a new update
-        updates[symbolValue].symbol = symbolMap.at(symbolValue);
+        updates[symbolValue].symbol = &symbolMap.at(symbolValue);
       }
 
       // Process update based on entry type (bid or ask)

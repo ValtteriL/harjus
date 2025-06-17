@@ -17,59 +17,52 @@
 
 class ArbmapperTest : public testing::Test {
 protected:
-  ArbmapperTest() {
-    btcEthSymbol = new Symbol{"BTCETH",
-                              "BTC",
-                              "ETH",
-                              PreciseNumber{"10"},
-                              PreciseNumber{"0.0001"},
-                              PreciseNumber{"0.01"},
-                              8,
-                              2,
-                              PreciseNumber{"30000"},
-                              PreciseNumber{"30010"},
-                              PreciseNumber{"1"},
-                              PreciseNumber{"1"}};
-    ethDogeSymbol = new Symbol{"ETHDOGE",
-                               "ETH",
-                               "DOGE",
-                               PreciseNumber{"10"},
-                               PreciseNumber{"0.0001"},
-                               PreciseNumber{"0.01"},
-                               8,
-                               8,
-                               PreciseNumber{"0.07"},
-                               PreciseNumber{"0.071"},
-                               PreciseNumber{"1"},
-                               PreciseNumber{"1"}};
-    dogeBtcSymbol = new Symbol{"DOGEBTC",
-                               "DOGE",
-                               "BTC",
-                               PreciseNumber{"10"},
-                               PreciseNumber{"0.0001"},
-                               PreciseNumber{"0.01"},
-                               8,
-                               8,
-                               PreciseNumber{"1400"},
-                               PreciseNumber{"1410"},
-                               PreciseNumber{"1"},
-                               PreciseNumber{"1"}};
-    symbolMap["BTCETH"] = btcEthSymbol;
-    symbolMap["ETHDOGE"] = ethDogeSymbol;
-    symbolMap["DOGEBTC"] = dogeBtcSymbol;
-  }
-
-  ~ArbmapperTest() override {
-    delete btcEthSymbol;
-    delete ethDogeSymbol;
-    delete dogeBtcSymbol;
-  }
+  ArbmapperTest() {}
 
   MockConfiguration config;
-  Symbol *btcEthSymbol;
-  Symbol *ethDogeSymbol;
-  Symbol *dogeBtcSymbol;
-  std::unordered_map<std::string, Symbol *> symbolMap;
+  Symbol btcEthSymbol{"BTCETH",
+                      "BTC",
+                      "ETH",
+                      PreciseNumber{"10"},
+                      PreciseNumber{"0.0001"},
+                      PreciseNumber{"0.01"},
+                      8,
+                      2,
+                      PreciseNumber{"30000"},
+                      PreciseNumber{"30010"},
+                      PreciseNumber{"1"},
+                      PreciseNumber{"1"}};
+
+  Symbol ethDogeSymbol{"ETHDOGE",
+                       "ETH",
+                       "DOGE",
+                       PreciseNumber{"10"},
+                       PreciseNumber{"0.0001"},
+                       PreciseNumber{"0.01"},
+                       8,
+                       8,
+                       PreciseNumber{"0.07"},
+                       PreciseNumber{"0.071"},
+                       PreciseNumber{"1"},
+                       PreciseNumber{"1"}};
+
+  Symbol dogeBtcSymbol{"DOGEBTC",
+                       "DOGE",
+                       "BTC",
+                       PreciseNumber{"10"},
+                       PreciseNumber{"0.0001"},
+                       PreciseNumber{"0.01"},
+                       8,
+                       8,
+                       PreciseNumber{"1400"},
+                       PreciseNumber{"1410"},
+                       PreciseNumber{"1"},
+                       PreciseNumber{"1"}};
+  std::unordered_map<std::string, Symbol> symbolMap{{"BTCETH", btcEthSymbol},
+                                                    {"ETHDOGE", ethDogeSymbol},
+                                                    {"DOGEBTC", dogeBtcSymbol}
+
+  };
 };
 
 TEST_F(ArbmapperTest, noPathsWhenDepthIsZero) {
@@ -78,7 +71,7 @@ TEST_F(ArbmapperTest, noPathsWhenDepthIsZero) {
   EXPECT_CALL(config, getAssets()).WillOnce(testing::Return(assets));
   EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(0));
 
-  auto opportunities = getTradingPaths(&symbolMap, config);
+  auto opportunities = getTradingPaths(symbolMap, config);
 
   EXPECT_TRUE(opportunities.empty());
 }
@@ -89,7 +82,7 @@ TEST_F(ArbmapperTest, noPathsWhenNoAssets) {
   EXPECT_CALL(config, getAssets()).WillOnce(testing::Return(assets));
   EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(0));
 
-  auto opportunities = getTradingPaths(&symbolMap, config);
+  auto opportunities = getTradingPaths(symbolMap, config);
 
   EXPECT_TRUE(opportunities.empty());
 }
@@ -100,7 +93,7 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
   EXPECT_CALL(config, getAssets()).WillOnce(testing::Return(assets));
   EXPECT_CALL(config, getMaxTradingPathLength()).WillOnce(testing::Return(3));
 
-  auto opportunities = getTradingPaths(&symbolMap, config);
+  auto opportunities = getTradingPaths(symbolMap, config);
 
   // Print out the detected opportunities with symbols and positions
   for (const auto &path : opportunities) {

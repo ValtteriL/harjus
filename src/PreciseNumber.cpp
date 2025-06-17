@@ -7,6 +7,16 @@
 PreciseNumber::PreciseNumber(const std::string &amount)
     : smallestUnit(bm::mpz_int{bm::cpp_dec_float_50{amount} * kPrecision}) {}
 
+PreciseNumber::PreciseNumber(const PreciseNumber &other)
+    : smallestUnit(other.smallestUnit) {}
+
+PreciseNumber &PreciseNumber::operator=(const PreciseNumber &other) {
+  if (this != &other) {
+    this->smallestUnit = other.smallestUnit;
+  }
+  return *this;
+}
+
 PreciseNumber PreciseNumber::operator+(const PreciseNumber &other) const {
   PreciseNumber result{};
   result.smallestUnit = this->smallestUnit + other.smallestUnit;

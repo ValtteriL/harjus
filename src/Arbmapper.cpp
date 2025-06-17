@@ -21,17 +21,17 @@ void renumber_vertex_indices(Graph const &) {}
 
 // Function to build the graph
 void buildGraph(Graph &graph,
-                const std::unordered_map<std::string, Symbol *> *symbolMap) {
+                const std::unordered_map<std::string, Symbol> &symbolMap) {
 
   // Create a map to store vertexes by asset
   std::unordered_map<std::string, std::size_t> vertexMap;
 
   // get unique asset names
   std::unordered_set<std::string> uniqueAssets;
-  for (const auto &pair : *symbolMap) {
+  for (const auto &pair : symbolMap) {
     const auto &symbol = pair.second;
-    uniqueAssets.insert(symbol->baseAsset);
-    uniqueAssets.insert(symbol->quoteAsset);
+    uniqueAssets.insert(symbol.baseAsset);
+    uniqueAssets.insert(symbol.quoteAsset);
   }
 
   // Add vertices to the graph
@@ -43,22 +43,22 @@ void buildGraph(Graph &graph,
   }
 
   // Add edges to the graph
-  for (const auto &pair : *symbolMap) {
+  for (const auto &pair : symbolMap) {
     const auto &symbol = pair.second;
 
-    auto base = vertexMap[symbol->baseAsset];
-    auto quote = vertexMap[symbol->quoteAsset];
+    auto base = vertexMap[symbol.baseAsset];
+    auto quote = vertexMap[symbol.quoteAsset];
 
     // long
     boost::add_edge(quote, base,
                     EdgeProperties{std::shared_ptr<Trade>{
-                        new Trade{symbol, Position::LONG}}},
+                        new Trade{&symbol, Position::LONG}}},
                     graph);
 
     // short
     boost::add_edge(base, quote,
                     EdgeProperties{std::shared_ptr<Trade>{
-                        new Trade{symbol, Position::SHORT}}},
+                        new Trade{&symbol, Position::SHORT}}},
                     graph);
   }
 }
@@ -136,7 +136,7 @@ std::vector<std::vector<Trade> *> findCycles(const Graph &graph,
 }
 
 std::vector<std::vector<Trade> *>
-getTradingPaths(const std::unordered_map<std::string, Symbol *> *symbolMap,
+getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
                 const IConfiguration &configuration) {
   // Create a graph
   Graph graph;

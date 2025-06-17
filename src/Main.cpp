@@ -80,16 +80,14 @@ int main() {
   auto balance = getBalance(config);
 
   BOOST_LOG_TRIVIAL(debug) << "Getting symbols";
-  std::unordered_map<std::string, Symbol *> symbolMap = getSymbols(config);
+  auto symbolMap = getSymbols(config);
 
   BOOST_LOG_TRIVIAL(debug) << "Calculating relative values";
-  std::unordered_map<std::string, PreciseNumber> relativeValueMap =
-      getRelativeValues(config, symbolMap);
+  auto relativeValueMap = getRelativeValues(config, symbolMap);
 
   // calculate trading paths
   BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
-  std::vector<std::vector<Trade> *> tradingPaths =
-      getTradingPaths(&symbolMap, config);
+  auto tradingPaths = getTradingPaths(symbolMap, config);
 
   // Create queues for price updates & executions
   boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{1000};
@@ -99,8 +97,7 @@ int main() {
   ReservedTrades reservedTrades;
 
   // Extract the list of symbols for subscription
-  std::vector<std::string> symbols =
-      getUniqueSymbolsForTradingPaths(tradingPaths);
+  auto symbols = getUniqueSymbolsForTradingPaths(tradingPaths);
 
   // Log info of interest
   BOOST_LOG_TRIVIAL(info) << "There are " << symbolMap.size()
