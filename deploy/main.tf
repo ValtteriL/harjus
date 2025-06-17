@@ -53,8 +53,8 @@ resource "local_sensitive_file" "ec_key_file" {
 
 resource "aws_instance" "instance" {
 
-  # Amazon Linux AMI 2023.0.20250523 x86_64 ECS HVM EBS
-  ami = "ami-00ea3690582cf02ee"
+  # Amazon Linux 2023 AMI 2023.7.20250609.0 x86_64 HVM kernel-6.1
+  ami = "ami-07460a3f37dd24dc0"
 
   instance_type   = "c6in.xlarge"
   key_name        = aws_key_pair.ec_key.key_name
