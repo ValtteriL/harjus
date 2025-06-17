@@ -9,10 +9,6 @@ terraform {
   }
 }
 
-resource "aws_ecr_repository" "ecr_repository" {
-  name = "harjus"
-}
-
 # resources required to SSH into the EC2 instance(s)
 
 # allow ingress traffic to port 22
@@ -55,39 +51,14 @@ resource "local_sensitive_file" "ec_key_file" {
 
 # end ssh resources
 
-resource "aws_iam_role" "ec2_ecr_role" {
-  name = "harjus-ec2-ecr-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      }
-      Action = "sts:AssumeRole"
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "ecr_access" {
-  role       = aws_iam_role.ec2_ecr_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-}
-
-resource "aws_iam_instance_profile" "ec2_ecr_profile" {
-  name = "harjus-ec2-ecr-profile"
-  role = aws_iam_role.ec2_ecr_role.name
-}
-
 resource "aws_instance" "instance" {
 
   # Amazon Linux AMI 2023.0.20250523 x86_64 ECS HVM EBS
   ami = "ami-00ea3690582cf02ee"
 
-  instance_type        = "c6in.xlarge"
-  key_name             = aws_key_pair.ec_key.key_name
-  security_groups      = [aws_security_group.security.name]
-  iam_instance_profile = aws_iam_instance_profile.ec2_ecr_profile.name
+  instance_type   = "c6in.xlarge"
+  key_name        = aws_key_pair.ec_key.key_name
+  security_groups = [aws_security_group.security.name]
 
   user_data_replace_on_change = true
 
