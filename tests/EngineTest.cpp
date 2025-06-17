@@ -66,7 +66,6 @@ protected:
 
   PreciseNumber startingAssetBudget{"1.0"};
 
-  // Allocate symbols manually
   Symbol ethBtcSymbol{"ETHBTC",
                       "ETH",
                       "BTC",

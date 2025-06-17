@@ -26,9 +26,8 @@ const Symbol *Trade::symbol() const { return _symbol; }
 
 void Trade::recalculateOrderQty(PreciseNumber budget) {
 
-  PreciseNumber budgetOrderQty = _position == Position::LONG
-                                      ? budget / orderPrice()
-                                      : budget;
+  PreciseNumber budgetOrderQty =
+      _position == Position::LONG ? budget / orderPrice() : budget;
 
   // ensure Qty is multiple of baseAssetIncrement (step size)
   budgetOrderQty =

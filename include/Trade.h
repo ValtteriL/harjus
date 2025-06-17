@@ -11,13 +11,19 @@
 class Trade {
 
 private:
-  const Symbol *_symbol;
-  const Position _position;
-  PreciseNumber _orderQty;
-  const std::string _recvCurrency;
-  const std::string _usedCurrency;
+  const Symbol *_symbol = nullptr;
+  const Position _position = Position::LONG;
+  PreciseNumber _orderQty{"0"};
+  const std::string _recvCurrency = "PLACEHOLDER";
+  const std::string _usedCurrency = "PLACEHOLDER";
 
 public:
+  /**
+   * Default constructor for the Trade class.
+   * @details This constructor is used to create a trade with default values.
+   */
+  Trade() = default;
+
   /**
    * Constructor for the Trade class.
    * @param symbol The symbol of the trade.

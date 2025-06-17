@@ -8,7 +8,7 @@ struct VertexProperties {
 };
 
 struct EdgeProperties {
-  std::shared_ptr<Trade> tradePtr;
+  Trade trade; // Trade object representing the edge
 };
 
 // Define the graph structure
@@ -50,16 +50,12 @@ void buildGraph(Graph &graph,
     auto quote = vertexMap[symbol.quoteAsset];
 
     // long
-    boost::add_edge(quote, base,
-                    EdgeProperties{std::shared_ptr<Trade>{
-                        new Trade{&symbol, Position::LONG}}},
+    boost::add_edge(quote, base, EdgeProperties{Trade{&symbol, Position::LONG}},
                     graph);
 
     // short
     boost::add_edge(base, quote,
-                    EdgeProperties{std::shared_ptr<Trade>{
-                        new Trade{&symbol, Position::SHORT}}},
-                    graph);
+                    EdgeProperties{Trade{&symbol, Position::SHORT}}, graph);
   }
 }
 
@@ -101,7 +97,7 @@ struct CycleVisitor {
 
       auto edge = boost::edge(u, v, g);
       if (edge.second) {
-        tradePath.push_back(*g[edge.first].tradePtr);
+        tradePath.push_back(g[edge.first].trade);
       }
     }
 
