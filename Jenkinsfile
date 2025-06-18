@@ -36,38 +36,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'nix-build'
-            }
-        }
-        stage('Push') {
-            when {
-                anyOf {
-                    branch 'main'; // Run on main branch
-                    tag pattern: env.TAG_PATTERN, comparator: "REGEXP" // Run on tagged releases
-                }
-            }
-            steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-                                  credentialsId: 'aws-credentials']]) {
-                  sh '''
-                    set -e
-                    IMAGE=$(docker image load -q < result-2 | awk '{print $3}')
-                    
-                    nix-shell -A devEnv --run "
-                    set -e
-
-                    # Login to ECR
-                    aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REGISTRY}
-
-                    # Tag and push with commit hash and latest
-                    docker tag ${IMAGE} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT}
-                    docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT}
-                            
-                    docker tag ${IMAGE} ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
-                    docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
-                    "
-                  '''
-                }
+                sh 'nix-build -A harjus'
             }
         }
         stage('Release') {
@@ -79,13 +48,7 @@ pipeline {
                 set -e
                 
                 SEMVER_TAG=$(echo ${TAG_NAME} | sed 's/releases\\///')
-                
-                  nix-shell -A devEnv --run "
-                    set -e
-
-                    docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${SEMVER_TAG}
-                    docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${SEMVER_TAG}
-                    "
+                nix-build -A harjus --argstr version "${SEMVER_TAG}"
                 '''
             }
         }

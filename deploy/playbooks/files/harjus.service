@@ -1,7 +1,7 @@
 [Unit]
 Description=Harjus
-After=docker.service network-online.target
-Requires=docker.service
+After=network-online.target
+Requires=network-online.target
 Wants=network-online.target
 StartLimitIntervalSec=300
 
@@ -13,30 +13,6 @@ TimeoutStartSec=0
 TimeoutStopSec=30
 RestartSec=60
 
-# Pull the latest version of the image (or specific tag if overridden)
-ExecStartPre=-/usr/bin/docker stop harjus
-ExecStartPre=-/usr/bin/docker rm harjus
-ExecStartPre=/bin/sh -c 'for i in {1..10}; do ! /usr/bin/docker ps -a --format "{{.Names}}" | grep -w harjus && break; sleep 1; done'
-ExecStartPre=/bin/sh -c '/usr/bin/aws ecr get-login-password | /usr/bin/docker login --username AWS --password-stdin ${ECR_REGISTRY}'
-
-# Start the container
-# Note the -e VAR_NAME syntax for variables to be passed from systemd's environment
-ExecStart=/usr/bin/docker run --name harjus --pull=always --network host \
-  # == Add environment variables to be passed to the container below ==
-  -e BINANCE_REST_API_URI \
-  -e BINANCE_FIX_API_HOSTNAME_ORDERENTRY \
-  -e BINANCE_FIX_API_HOSTNAME_MARKETDATA \
-  -e BINANCE_ED25519_SEED \
-  -e BINANCE_ED25519_API_KEY \
-  -e FIX_FILE_DIR \
-  -e BINANCE_FIX_API_PORT_ORDERENTRY \
-  -e BINANCE_FIX_API_PORT_MARKETDATA \
-  -e MAX_TRADING_PATH_LENGTH \
-  -e ASSETS \
-  -e COMMISSION \
-  -e LOG_LEVEL \
-  ${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
-
-# Stop the container gracefully
-ExecStop=/usr/bin/docker stop -t 25 harjus
+# Start the app
+ExecStart=/usr/bin/harjus
 

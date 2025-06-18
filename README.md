@@ -44,7 +44,7 @@ nix-build -A harjusBuild
 
 Container images are build automatically by CI/CD and pushed to registry. If the quality stage succeeds and the push is to the `main` branch, a build is made and its pushed to registry with git hash tag and the `latest` tag.
 
-When a special release tag (releases/$semver) is pushed to any commit, if the quality stage succeeds, CI/CD builds the container image and pushes it to the registry with the git hash tag and the $semver tag.
+When a special release tag (releases/$semver) is pushed to any commit, if the quality stage succeeds, CI/CD builds a package with the $semver as the version string.
 
 ## Release
 
@@ -81,8 +81,8 @@ terraform -chdir=deploy apply
 
 ```bash
 # QA (testnet)
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa") # defaults to latest tag
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "image_tag=your-git-hash-for-qa")
+(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa") # defaults to 'latest' version
+(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "version=your-semver-here")
 
 # Prod
 (cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod")
@@ -102,22 +102,4 @@ ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ec2-user@$(terrafor
 sudo systemctl status harjus
 # or
 sudo journalctl -au harjus.service
-```
-
-### Inspect containers running on runner
-
-```bash
-docker ps
-
-# top processes in container
-docker top <id>
-
-# get cpu, memory usage for containers
-docker stats
-
-# get detailed configuration and status for container
-docker inspect <id>
-
-# get envs of container
-docker inspect -f '{{range $index, $value := .Config.Env}}{{$value}} {{end}}' <id>
 ```

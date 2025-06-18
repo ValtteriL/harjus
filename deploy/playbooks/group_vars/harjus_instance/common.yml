@@ -1,4 +1,3 @@
-ecr_registry: "137068223640.dkr.ecr.ap-northeast-1.amazonaws.com"
 image_name: "harjus"
-image_tag: "latest"
+version: "latest"
 service_name: "harjus"
