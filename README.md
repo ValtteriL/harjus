@@ -38,7 +38,7 @@ nix-build -A harjus
 
 ### Automatic builds
 
-Container images are build automatically by CI/CD and pushed to registry. If the quality stage succeeds and the push is to the `main` branch, a build is made and its pushed to registry with git hash tag and the `latest` tag.
+Harjus packages are build automatically by CI/CD and pushed to S3. If the quality stage succeeds and the push is to the `main` branch, a build is made and its pushed with git hash tag and the `latest` tag.
 
 When a special release tag (releases/$semver) is pushed to any commit, if the quality stage succeeds, CI/CD builds a package with the $semver as the version string.
 
@@ -98,4 +98,10 @@ ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ec2-user@$(terrafor
 sudo systemctl status harjus
 # or
 sudo journalctl -au harjus.service
+```
+
+### List build artifacts
+
+```bash
+aws s3 ls $(terraform -chdir=deploy output artifact_bucket_name)
 ```
