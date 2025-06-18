@@ -105,7 +105,7 @@ let
     };
 
     # build derivation
-    harjusBuild = stdenv.mkDerivation {
+    harjus = stdenv.mkDerivation {
       inherit version pname;
 
       src = lib.fileset.toSource {
