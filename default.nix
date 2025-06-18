@@ -105,8 +105,10 @@ let
     };
 
     # build derivation
-    harjus = stdenv.mkDerivation {
-      inherit version pname;
+    # this is the main build derivation that will be used to build harjus
+    harjusbuild = stdenv.mkDerivation {
+      pname = "harjusbuild";
+      version = "rolling";
 
       src = lib.fileset.toSource {
         root = ./.;
@@ -123,6 +125,20 @@ let
       inherit hardeningDisable;
 
       NIX_CFLAGS_COMPILE = gccFlags;
+    };
+
+    # harjus wrapper
+    # this is the main package that will be used by users
+    # it will depend on harjusbuild and provide the executable
+    harjus = stdenv.mkDerivation {
+      inherit version pname;
+      src = harjusbuild.src;
+      buildInputs = [ harjusbuild ];
+      installPhase = ''
+        mkdir -p $out/bin
+        ln -s ${harjusbuild}/bin/harjus $out/bin/harjus
+        echo "Harjus version ${version} installed successfully!" > $out/version.txt
+      '';
     };
   };
 in packages
