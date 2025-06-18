@@ -10,6 +10,7 @@
 
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
     ansible_user: ec2-user
+    harjus_dir: /opt/harjus
 
     # Mandatory: User must specify 'qa' or 'prod' when running the playbook
     # e.g., ansible-playbook ... -e "env=prod"
@@ -53,19 +54,38 @@
         mode: '0600' # Stricter permissions as it contains resolved secrets
       notify: Reload systemd and restart app
 
+    - name: Create opt directory for harjus
+      ansible.builtin.file:
+        path: "{{ harjus_dir }}"
+        state: directory
+        mode: '0755'  
+
+    - name: Download release from s3
+      amazon.aws.s3_object:
+        bucket: "{{ s3_bucket_name }}"
+        object: /harjus-{{ version }}.nar.gz
+        dest: "{{ harjus_dir }}/harjus-{{ version }}.nar.gz"
+        mode: get
+
+    - name: Import to nix store
+      ansible.builtin.shell:
+        cmd: "zcat {{ harjus_dir }}/harjus-{{ version }}.nar.gz | nix-store --import"
+      register: import_result
+
+    - name: Link build artifact to /usr/bin
+      ansible.builtin.file:
+        src: "/nix/store/{{ import_result.stdout | regex_search('^/nix/store/(.{32}-harjus-[^ ]*') }}"
+        dest: "/usr/bin/{{ service_name }}"
+        state: link
+        force: yes
+      notify: Reload systemd and restart app
+
     - name: Final deployment status message
       ansible.builtin.debug:
         msg: |
           Deployment of '{{ service_name }}' for '{{ env_name | default(env) }}' with version '{{ version }}' has been triggered.
           To check status: sudo systemctl status {{ service_name }}
           To tail logs: sudo journalctl -fu {{ service_name }}.service
-
-    # Trigger the handlers to ensure systemd is reloaded and the service is restarted
-    # This ensures that if 'latest' is already being run, the newer 'latest' is pulled and the service is restarted
-    # Thus this will always cause at least restart
-    - name: Force reload systemd and restart app
-      ansible.builtin.command: /bin/true
-      notify:  Reload systemd and restart app
 
   handlers:
     - name: Reload systemd daemon

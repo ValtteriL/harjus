@@ -1,3 +1,4 @@
 image_name: "harjus"
 version: "latest"
 service_name: "harjus"
+s3_bucket_name: "harjus-artifacts-b38813ae"
