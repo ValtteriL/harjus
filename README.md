@@ -28,16 +28,12 @@ The unit tests are run by CI/CD on push to any branch.
 
 ## Build
 
-Build harjus and package into a container
+Build harjus
 
 ```bash
-nix-build
-
-# container then available at ./result-2
-# harjus executable available at ./result-3/bin/harjus
-
-# build individual packages (built result available then at `result`):
 nix-build -A harjus
+
+# harjus executable available at ./result/bin/harjus
 ```
 
 ### Automatic builds
@@ -90,7 +86,7 @@ terraform -chdir=deploy apply
 
 ## Debugging
 
-### Access container runner
+### Access prod server
 
 ```bash
 ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ec2-user@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
