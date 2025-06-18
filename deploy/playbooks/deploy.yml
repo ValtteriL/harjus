@@ -74,7 +74,7 @@
 
     - name: Link build artifact to /usr/bin
       ansible.builtin.file:
-        src: "/nix/store/{{ import_result.stdout | regex_search('^/nix/store/(.{32}-harjus-[^ ]*') }}"
+        src: "/nix/store/{{ import_result.stdout | regex_search('^/nix/store/(.{32}-harjus-[^ ]*') }}/bin/{{ service_name }}"
         dest: "/usr/bin/{{ service_name }}"
         state: link
         force: yes
