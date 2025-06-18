@@ -2,7 +2,7 @@
 pipeline {
     agent any
     environment {
-      ECR_REGISTRY = '137068223640.dkr.ecr.ap-northeast-1.amazonaws.com'
+      S3_BUCKET = 'harjus-artifacts-b38813ae'
       ECR_REPOSITORY = 'harjus'
       AWS_DEFAULT_REGION = 'ap-northeast-1'
       TAG_PATTERN = '^releases/\\d+\\.\\d+\\.\\d+$' // Regular expression for release tags (releases/x.y.z) where x, y, z are digits
@@ -39,17 +39,46 @@ pipeline {
                 sh 'nix-build -A harjus'
             }
         }
+        stage('Push') {
+            when {
+                anyOf {
+                    branch 'main'; // Run on main branch
+                    tag pattern: env.TAG_PATTERN, comparator: "REGEXP" // Run on tagged releases
+                }
+            }
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                  credentialsId: 'aws-credentials']]) {
+                  sh '''
+                    nix-shell -A devEnv --run "
+                        set -e
+
+                        # Tag and push with commit hash and latest
+                        nix-store --export $(nix-store --query --requisites ./result) | grip > "harjus.nar.gzip"
+
+                        aws s3 cp "harjus.nar.gzip" "s3://${S3_BUCKET}/harjus-${GIT_COMMIT}.nar.gzip"
+                        aws s3 cp "harjus.nar.gzip" "s3://${S3_BUCKET}/harjus-latest.nar.gzip"
+                    "
+                  '''
+                }
+            }
+        }
         stage('Release') {
             when {
                 tag pattern: env.TAG_PATTERN, comparator: "REGEXP" // Run on tagged releases
             }
             steps {
-                sh '''
-                set -e
-                
-                SEMVER_TAG=$(echo ${TAG_NAME} | sed 's/releases\\///')
-                nix-build -A harjus --argstr version "${SEMVER_TAG}"
-                '''
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                  credentialsId: 'aws-credentials']]) {
+                  sh '''
+                    nix-shell -A devEnv --run "
+                        set -e
+
+                        SEMVER_TAG=$(echo ${TAG_NAME} | sed 's/releases\\///')
+                        aws s3 cp "harjus.nar.gzip" "s3://${S3_BUCKET}/harjus-${SEMVER_TAG}.nar.gzip"
+                    "
+                  '''
+                }
             }
         }
     }
