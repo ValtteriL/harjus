@@ -37,7 +37,7 @@ nix-build
 # harjus executable available at ./result-3/bin/harjus
 
 # build individual packages (built result available then at `result`):
-nix-build -A harjusBuild
+nix-build -A harjus
 ```
 
 ### Automatic builds
