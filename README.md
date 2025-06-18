@@ -78,7 +78,7 @@ terraform -chdir=deploy apply
 ```bash
 # QA (testnet)
 (cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa") # defaults to 'latest' version
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "version=your-semver-here")
+(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "version=your-semver-or-git-hash-or-latest")
 
 # Prod
 (cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod")
