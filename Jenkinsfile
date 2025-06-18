@@ -3,7 +3,6 @@ pipeline {
     agent any
     environment {
       S3_BUCKET = 'harjus-artifacts-b38813ae'
-      ECR_REPOSITORY = 'harjus'
       AWS_DEFAULT_REGION = 'ap-northeast-1'
       TAG_PATTERN = '^releases/\\d+\\.\\d+\\.\\d+$' // Regular expression for release tags (releases/x.y.z) where x, y, z are digits
       CCACHE_BASEDIR = "$WORKSPACE"
