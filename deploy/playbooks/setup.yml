@@ -14,5 +14,34 @@
           - tmux
           - htop
           - vim
+          - nix-bin
+          - nix-setup-systemd
         state: present
         update_cache: yes
+
+    - name: Grant user nix permissions
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        groups: nix-users
+        append: true
+
+    - name: Set default nix channels
+      ansible.builtin.shell:
+        cmd: nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs && nix-channel --update
+        creates: /home/{{ ansible_user }}/.nix-defexpr/channels/nixpkgs
+
+    - name: allow unsigned nix packages
+      ansible.builtin.lineinfile:
+        path: /etc/nix/nix.conf
+        line: require-sigs = false
+        state: present
+      notify: Reload nix-daemon
+
+  handlers:
+    - name: Reload nix-daemon
+      ansible.builtin.systemd:
+        name: nix-daemon
+        state: started
+        daemon_reload: yes
+        enabled: yes
+        reload: yes
