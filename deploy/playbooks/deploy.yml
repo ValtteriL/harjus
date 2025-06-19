@@ -68,13 +68,12 @@
         mode: get
 
     - name: Import to nix store
-      ansible.builtin.shell:
-        cmd: "zcat {{ harjus_dir }}/harjus-{{ version }}.nar.gzip | nix-store --import"
+      ansible.builtin.shell: "bash -lc 'zcat {{ harjus_dir }}/harjus-{{ version }}.nar.gzip | nix-store --import|grep -e \"-harjus-\"'"
       register: import_result
 
     - name: Link build artifact to /usr/bin
       ansible.builtin.file:
-        src: "/nix/store/{{ import_result.stdout | regex_search('^/nix/store/(.{32}-harjus-[^ ]*') }}/bin/{{ service_name }}"
+        src: "{{ import_result.stdout }}/bin/{{ service_name }}"
         dest: "/usr/bin/{{ service_name }}"
         state: link
         force: yes
