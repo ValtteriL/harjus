@@ -14,8 +14,18 @@
           - tmux
           - htop
           - vim
+          - python3
+          - python3-pip
         state: present
         update_cache: yes
+
+    - name: Install pip packages for s3 operations
+      ansible.builtin.pip:
+        name:
+          - boto3
+          - botocore
+          - packaging
+        executable: pip3
 
     - name: Install Nix package manager
       ansible.builtin.shell:
