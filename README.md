@@ -105,3 +105,10 @@ sudo journalctl -au harjus.service
 ```bash
 aws s3 ls $(terraform -chdir=deploy output artifact_bucket_name)
 ```
+
+### check deployed version
+
+```bash
+# on prod server
+cat $(readlink $(which harjus) | sed 's/\/bin\/harjus//g')/version.txt
+```
