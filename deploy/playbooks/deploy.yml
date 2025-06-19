@@ -63,13 +63,13 @@
     - name: Download release from s3
       amazon.aws.s3_object:
         bucket: "{{ s3_bucket_name }}"
-        object: /harjus-{{ version }}.nar.gz
-        dest: "{{ harjus_dir }}/harjus-{{ version }}.nar.gz"
+        object: harjus-{{ version }}.nar.gzip
+        dest: "{{ harjus_dir }}/harjus-{{ version }}.nar.gzip"
         mode: get
 
     - name: Import to nix store
       ansible.builtin.shell:
-        cmd: "zcat {{ harjus_dir }}/harjus-{{ version }}.nar.gz | nix-store --import"
+        cmd: "zcat {{ harjus_dir }}/harjus-{{ version }}.nar.gzip | nix-store --import"
       register: import_result
 
     - name: Link build artifact to /usr/bin
