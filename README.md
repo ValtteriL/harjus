@@ -28,23 +28,19 @@ The unit tests are run by CI/CD on push to any branch.
 
 ## Build
 
-Build harjus and package into a container
+Build harjus
 
 ```bash
-nix-build
+nix-build -A harjus
 
-# container then available at ./result-2
-# harjus executable available at ./result-3/bin/harjus
-
-# build individual packages (built result available then at `result`):
-nix-build -A harjusBuild
+# harjus executable available at ./result/bin/harjus
 ```
 
 ### Automatic builds
 
-Container images are build automatically by CI/CD and pushed to registry. If the quality stage succeeds and the push is to the `main` branch, a build is made and its pushed to registry with git hash tag and the `latest` tag.
+Harjus packages are build automatically by CI/CD and pushed to S3. If the quality stage succeeds and the push is to the `main` branch, a build is made and its pushed with git hash tag and the `latest` tag.
 
-When a special release tag (releases/$semver) is pushed to any commit, if the quality stage succeeds, CI/CD builds the container image and pushes it to the registry with the git hash tag and the $semver tag.
+When a special release tag (releases/$semver) is pushed to any commit, if the quality stage succeeds, CI/CD builds a package with the $semver as the version string.
 
 ## Release
 
@@ -81,8 +77,8 @@ terraform -chdir=deploy apply
 
 ```bash
 # QA (testnet)
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa") # defaults to latest tag
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "image_tag=your-git-hash-for-qa")
+(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa") # defaults to 'latest' version
+(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "version=your-semver-or-git-hash-or-latest")
 
 # Prod
 (cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod")
@@ -90,7 +86,7 @@ terraform -chdir=deploy apply
 
 ## Debugging
 
-### Access container runner
+### Access prod server
 
 ```bash
 ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ec2-user@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
@@ -104,20 +100,15 @@ sudo systemctl status harjus
 sudo journalctl -au harjus.service
 ```
 
-### Inspect containers running on runner
+### List build artifacts
 
 ```bash
-docker ps
+aws s3 ls $(terraform -chdir=deploy output artifact_bucket_name)
+```
 
-# top processes in container
-docker top <id>
+### check deployed version
 
-# get cpu, memory usage for containers
-docker stats
-
-# get detailed configuration and status for container
-docker inspect <id>
-
-# get envs of container
-docker inspect -f '{{range $index, $value := .Config.Env}}{{$value}} {{end}}' <id>
+```bash
+# on prod server
+cat $(readlink $(which harjus) | sed 's/\/bin\/harjus//g')/version.txt
 ```

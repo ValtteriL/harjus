@@ -2,14 +2,20 @@
   url =
     "https://github.com/NixOS/nixpkgs/archive/3f0a8ac25fb674611b98089ca3a5dd6480175751.tar.gz";
   sha256 = "sha256:10i7fllqjzq171afzhdf2d9r1pk9irvmq5n55h92rc47vlaabvr4";
-}) { config.allowUnfree = true; } }:
+}) { config.allowUnfree = true; }, pname ? "harjus", version ? "latest" }:
 
 with pkgs;
 
 let
 
-  version = "1.0.0";
-  pname = "harjus";
+  gccFlags =
+    "-O3 -march=icelake-server -mtune=icelake-server -pipe -fsemantic-interposition";
+
+  enableParallelBuilding = true;
+
+  # disable performance affecting hardenings
+  hardeningDisable =
+    [ "fortify" "stackprotector" "pic" "pie" "relro" "bindnow" ];
 
   packages = rec {
 
@@ -42,7 +48,11 @@ let
 
       nativeBuildInputs = [ cmake ninja ];
       buildInputs = [ openssl ];
-      enableParallelBuilding = true;
+
+      inherit enableParallelBuilding;
+      inherit hardeningDisable;
+
+      NIX_CFLAGS_COMPILE = gccFlags;
     };
 
     # The shell of our experiment runtime environment
@@ -95,8 +105,10 @@ let
     };
 
     # build derivation
-    harjusBuild = stdenv.mkDerivation {
-      inherit version pname;
+    # this is the main build derivation that will be used to build harjus
+    harjusbuild = stdenv.mkDerivation {
+      pname = "harjusbuild";
+      version = "rolling";
 
       src = lib.fileset.toSource {
         root = ./.;
@@ -109,34 +121,24 @@ let
 
       cmakeFlags = [ "-DHARJUS_TESTS=OFF" ];
 
-      # enable parallel building
-      enableParallelBuilding = true;
+      inherit enableParallelBuilding;
+      inherit hardeningDisable;
 
-      # disable performance affecting hardenings
-      hardeningDisable =
-        [ "fortify" "stackprotector" "pic" "pie" "relro" "bindnow" ];
+      NIX_CFLAGS_COMPILE = gccFlags;
     };
 
-    # docker packaging derivation
-    docker = pkgs.dockerTools.buildLayeredImage {
-      name = "harjus";
-      fromImage = pkgs.dockerTools.pullImage {
-        imageName = "library/alpine";
-        imageDigest =
-          "sha256:1c4eef651f65e2f7daee7ee785882ac164b02b78fb74503052a26dc061c90474";
-        finalImageName = "alpine";
-        finalImageTag = "3.21.3";
-        sha256 = "sha256-BLd0y9w1FIBJO5o4Nu5Wuv9dtGhgvh+gysULwnR9lOo=";
-      };
-      created = "now";
-      config = {
-        Cmd = [ "harjus" ];
-        Env = [ "SSL_CERT_FILE=${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt" ];
-      };
-
-      # Minimize the size by using only runtime dependencies
-      contents = [ glibcLocales harjusBuild cacert ];
+    # harjus wrapper
+    # this is the main package that will be used by users
+    # it will depend on harjusbuild and provide the executable
+    harjus = stdenv.mkDerivation {
+      inherit version pname;
+      src = harjusbuild.src;
+      buildInputs = [ harjusbuild ];
+      installPhase = ''
+        mkdir -p $out/bin
+        ln -s ${harjusbuild}/bin/harjus $out/bin/harjus
+        echo "Harjus version ${version} installed successfully!" > $out/version.txt
+      '';
     };
-
   };
 in packages

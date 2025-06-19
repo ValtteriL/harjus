@@ -2,8 +2,7 @@
 pipeline {
     agent any
     environment {
-      ECR_REGISTRY = '137068223640.dkr.ecr.ap-northeast-1.amazonaws.com'
-      ECR_REPOSITORY = 'harjus'
+      S3_BUCKET = 'harjus-artifacts-b38813ae'
       AWS_DEFAULT_REGION = 'ap-northeast-1'
       TAG_PATTERN = '^releases/\\d+\\.\\d+\\.\\d+$' // Regular expression for release tags (releases/x.y.z) where x, y, z are digits
       CCACHE_BASEDIR = "$WORKSPACE"
@@ -36,7 +35,7 @@ pipeline {
                 }
             }
             steps {
-                sh 'nix-build'
+                sh 'nix-build -A harjus'
             }
         }
         stage('Push') {
@@ -50,22 +49,17 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
                                   credentialsId: 'aws-credentials']]) {
                   sh '''
-                    set -e
-                    IMAGE=$(docker image load -q < result-2 | awk '{print $3}')
-                    
-                    nix-shell -A devEnv --run "
-                    set -e
+                    nix-shell -A devEnv --run '
+                        set -e
 
-                    # Login to ECR
-                    aws ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REGISTRY}
+                        # Tag and push with commit hash and latest
+                        nix-store --export $(nix-store --query --requisites ./result) | gzip > harjus-latest.nar.gzip
+                        aws s3 cp harjus-latest.nar.gzip s3://${S3_BUCKET}/ --quiet
 
-                    # Tag and push with commit hash and latest
-                    docker tag ${IMAGE} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT}
-                    docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT}
-                            
-                    docker tag ${IMAGE} ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
-                    docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:latest
-                    "
+                        nix-build -A harjus --argstr version ${GIT_COMMIT}
+                        nix-store --export $(nix-store --query --requisites ./result) | gzip > harjus-${GIT_COMMIT}.nar.gzip
+                        aws s3 cp harjus-${GIT_COMMIT}.nar.gzip s3://${S3_BUCKET}/ --quiet
+                    '
                   '''
                 }
             }
@@ -75,18 +69,19 @@ pipeline {
                 tag pattern: env.TAG_PATTERN, comparator: "REGEXP" // Run on tagged releases
             }
             steps {
-                sh '''
-                set -e
-                
-                SEMVER_TAG=$(echo ${TAG_NAME} | sed 's/releases\\///')
-                
-                  nix-shell -A devEnv --run "
-                    set -e
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
+                                  credentialsId: 'aws-credentials']]) {
+                  sh '''
+                    nix-shell -A devEnv --run '
+                        set -e
 
-                    docker tag ${ECR_REGISTRY}/${ECR_REPOSITORY}:${GIT_COMMIT} ${ECR_REGISTRY}/${ECR_REPOSITORY}:${SEMVER_TAG}
-                    docker push ${ECR_REGISTRY}/${ECR_REPOSITORY}:${SEMVER_TAG}
-                    "
-                '''
+                        SEMVER_TAG=$(echo ${TAG_NAME} | sed \'s/releases\\///\')
+                        nix-build -A harjus --argstr version ${SEMVER_TAG}
+                        nix-store --export $(nix-store --query --requisites ./result) | gzip > harjus-${SEMVER_TAG}.nar.gzip
+                        aws s3 cp harjus-${SEMVER_TAG}.nar.gzip s3://${S3_BUCKET}/ --quiet
+                    '
+                  '''
+                }
             }
         }
     }

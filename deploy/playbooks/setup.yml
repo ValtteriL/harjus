@@ -14,5 +14,39 @@
           - tmux
           - htop
           - vim
+          - python3
+          - python3-pip
         state: present
         update_cache: yes
+
+    - name: Install pip packages for s3 operations
+      ansible.builtin.pip:
+        name:
+          - boto3
+          - botocore
+          - packaging
+        executable: pip3
+
+    - name: Install Nix package manager
+      ansible.builtin.shell:
+        cmd: curl -L https://nixos.org/nix/install | sh -s -- --daemon
+        creates: /etc/nix/nix.conf
+
+    - name: Set default nix channels
+      ansible.builtin.shell:
+        cmd: nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs && nix-channel --update
+        creates: /home/{{ ansible_user }}/.nix-defexpr/channels/nixpkgs
+
+    - name: allow unsigned nix packages
+      ansible.builtin.lineinfile:
+        path: /etc/nix/nix.conf
+        line: require-sigs = false
+        state: present
+      notify: Restart nix-daemon
+
+  handlers:
+    - name: Restart nix-daemon
+      ansible.builtin.systemd_service:
+        name: nix-daemon
+        state: restarted
+        daemon_reload: yes

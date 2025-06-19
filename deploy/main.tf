@@ -7,10 +7,13 @@ terraform {
     region         = "eu-north-1"
     dynamodb_table = "terraform-lock"
   }
-}
 
-resource "aws_ecr_repository" "ecr_repository" {
-  name = "harjus"
+  required_providers {
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.0.0"
+    }
+  }
 }
 
 # resources required to SSH into the EC2 instance(s)
@@ -55,39 +58,61 @@ resource "local_sensitive_file" "ec_key_file" {
 
 # end ssh resources
 
-resource "aws_iam_role" "ec2_ecr_role" {
-  name = "harjus-ec2-ecr-role"
+resource "aws_s3_bucket" "artifact_bucket" {
+  bucket = "harjus-artifacts-${random_id.suffix.hex}"
+}
+
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
+resource "aws_iam_role" "instance_role" {
+  name = "harjus-instance-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
+      Action = "sts:AssumeRole"
       Effect = "Allow"
       Principal = {
         Service = "ec2.amazonaws.com"
       }
-      Action = "sts:AssumeRole"
     }]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ecr_access" {
-  role       = aws_iam_role.ec2_ecr_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+resource "aws_iam_role_policy" "s3_read_policy" {
+  name = "harjus-instance-s3-read"
+  role = aws_iam_role.instance_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ]
+      Resource = [
+        aws_s3_bucket.artifact_bucket.arn,
+        "${aws_s3_bucket.artifact_bucket.arn}/*"
+      ]
+    }]
+  })
 }
 
-resource "aws_iam_instance_profile" "ec2_ecr_profile" {
-  name = "harjus-ec2-ecr-profile"
-  role = aws_iam_role.ec2_ecr_role.name
+resource "aws_iam_instance_profile" "instance_profile" {
+  name = "harjus-instance-profile"
+  role = aws_iam_role.instance_role.name
 }
 
 resource "aws_instance" "instance" {
 
-  # Amazon Linux AMI 2023.0.20250523 x86_64 ECS HVM EBS
-  ami = "ami-00ea3690582cf02ee"
+  # Amazon Linux 2023 AMI 2023.7.20250609.0 x86_64 HVM kernel-6.1
+  ami = "ami-07460a3f37dd24dc0"
 
-  instance_type        = "c6in.2xlarge"
+  instance_type        = "c6in.xlarge"
   key_name             = aws_key_pair.ec_key.key_name
   security_groups      = [aws_security_group.security.name]
-  iam_instance_profile = aws_iam_instance_profile.ec2_ecr_profile.name
+  iam_instance_profile = aws_iam_instance_profile.instance_profile.name
 
   user_data_replace_on_change = true
 
