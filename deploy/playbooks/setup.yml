@@ -14,16 +14,13 @@
           - tmux
           - htop
           - vim
-          - nix-bin
-          - nix-setup-systemd
         state: present
         update_cache: yes
 
-    - name: Grant user nix permissions
-      ansible.builtin.user:
-        name: "{{ ansible_user }}"
-        groups: nix-users
-        append: true
+    - name: Install Nix package manager
+      ansible.builtin.shell:
+        cmd: curl -L https://nixos.org/nix/install | sh -s -- --daemon
+        creates: /etc/nix/nix.conf
 
     - name: Set default nix channels
       ansible.builtin.shell:
@@ -35,13 +32,11 @@
         path: /etc/nix/nix.conf
         line: require-sigs = false
         state: present
-      notify: Reload nix-daemon
+      notify: Restart nix-daemon
 
   handlers:
-    - name: Reload nix-daemon
-      ansible.builtin.systemd:
+    - name: Restart nix-daemon
+      ansible.builtin.systemd_service:
         name: nix-daemon
-        state: started
+        state: restarted
         daemon_reload: yes
-        enabled: yes
-        reload: yes
