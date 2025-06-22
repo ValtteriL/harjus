@@ -80,6 +80,18 @@ install(TARGETS harjus
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+# static analysis with clang-tidy
+find_program(CLANG_TIDY_EXE NAMES clang-tidy)
+if(CLANG_TIDY_EXE)
+  file(GLOB SRCS "${CMAKE_SOURCE_DIR}/src/*.cpp")
+  add_custom_target(
+    clang-tidy-harjus
+    COMMAND ${CLANG_TIDY_EXE} --fix -p ${CMAKE_BINARY_DIR} ${SRCS}
+    COMMENT "Running clang-tidy on harjus sources"
+    VERBATIM
+  )
+endif()
+
 # testing related
 
 if(HARJUS_TESTS)

@@ -1,4 +1,12 @@
 {
   "version": "2.0.0",
-  "tasks": []
+  "tasks": [
+    {
+      "label": "clang-tidy-harjus",
+      "type": "shell",
+      "command": "cmake --build build --target clang-tidy-harjus",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
 }
