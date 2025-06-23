@@ -55,6 +55,24 @@ let
       NIX_CFLAGS_COMPILE = gccFlags;
     };
 
+    # build quickfix properly with SSL support
+    runClangTidy = stdenv.mkDerivation {
+      pname = "runClangTidy";
+      version = "20.1.17";
+
+      buildInputs = [ python3 ];
+      inherit enableParallelBuilding;
+
+      src = fetchurl {
+        url =
+          "https://raw.githubusercontent.com/llvm/llvm-project/refs/tags/llvmorg-20.1.7/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py";
+        hash = "sha256-Kyus9SXaulqxg/mP29DyHfi7Qh4V2TiyJFGAlEGG/HM=";
+      };
+
+      dontUnpack = true;
+      installPhase = "install -D -m 0755 $src $out/bin/run-clang-tidy";
+    };
+
     # The shell of our experiment runtime environment
     devEnv = mkShell rec {
       name = "devEnv";
@@ -81,6 +99,7 @@ let
         libsodium
         gmp
         myQuickfix
+        runClangTidy
 
         # deployment
         terraform
