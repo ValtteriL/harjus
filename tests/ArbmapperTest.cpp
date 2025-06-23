@@ -17,7 +17,7 @@
 
 class ArbmapperTest : public testing::Test {
 protected:
-  ArbmapperTest() {}
+  ArbmapperTest() = default;
 
   MockConfiguration config;
   Symbol btcEthSymbol{"BTCETH",
@@ -118,7 +118,7 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
   for (const auto &path : opportunities) {
     totalTrades += path->size();
   }
-  std::unordered_set<std::string> uniqueTradeAddresses;
+  std::unordered_set<std::string> uniqueTradeAddresses{};
   for (const auto &path : opportunities) {
     for (const auto &trade : *path) {
       uniqueTradeAddresses.insert(
@@ -129,7 +129,7 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
 
   // Verify that the returned trading paths contain at least one path
   // with each of the following as the first usedCurrency: BTC, ETH, DOGE
-  std::unordered_set<std::string> firstUsedCurrencies;
+  std::unordered_set<std::string> firstUsedCurrencies{};
   for (const auto &path : opportunities) {
     firstUsedCurrencies.insert(std::string{path->front().usedCurrency()});
   }

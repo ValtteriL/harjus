@@ -8,7 +8,8 @@
 #include <vector>
 
 Opportunity::Opportunity(std::vector<Trade> &trades,
-                         PreciseNumber relativeValue, PreciseNumber commission)
+                         const PreciseNumber &relativeValue,
+                         const PreciseNumber &commission)
     : _trades(trades), _startingAsset(trades.front().usedCurrency()),
       _commission(commission), _relativeValue(relativeValue) {}
 
@@ -19,9 +20,10 @@ Opportunity::Opportunity(std::vector<Trade> &trades,
  * @return The maximum quantity of the starting asset after all trades in the
  * opportunity.
  */
-PreciseNumber calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
-                                         PreciseNumber startingAssetBudget) {
-  auto acc = startingAssetBudget;
+auto calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
+                                const PreciseNumber &startingAssetBudget)
+    -> PreciseNumber {
+  PreciseNumber acc{startingAssetBudget};
 
   for (auto &trade : trades) {
 
@@ -44,9 +46,9 @@ PreciseNumber calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
   return acc;
 }
 
-PreciseNumber
-calculateStartingAssetQty(std::vector<Trade> &trades,
-                          PreciseNumber startingAssetQtyAfterTrades) {
+auto calculateStartingAssetQty(std::vector<Trade> &trades,
+                               const PreciseNumber &startingAssetQtyAfterTrades)
+    -> PreciseNumber {
 
   PreciseNumber acc{startingAssetQtyAfterTrades};
 
@@ -94,11 +96,15 @@ void Opportunity::update(PreciseNumber startingAssetBudget) {
       (_trades.back().recvQty() - _trades.front().usedQty() - totalCommission) *
       _relativeValue;
 }
-PreciseNumber Opportunity::getTotalProfit() const { return _totalProfit; }
+auto Opportunity::getTotalProfit() const -> PreciseNumber {
+  return _totalProfit;
+}
 
-std::string Opportunity::getStartingAsset() const { return _startingAsset; }
+auto Opportunity::getStartingAsset() const -> std::string {
+  return _startingAsset;
+}
 
-PreciseNumber Opportunity::getCapacity() const {
+auto Opportunity::getCapacity() const -> PreciseNumber {
   return _trades.front().usedQty();
 }
 

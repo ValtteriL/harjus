@@ -17,14 +17,14 @@ Execution::Execution(Opportunity &opportunity)
   }
 }
 
-PreciseNumber Execution::getTotalProfit() const { return _totalProfit; }
+auto Execution::getTotalProfit() const -> PreciseNumber { return _totalProfit; }
 
-std::string Execution::getStartingAsset() const { return _startingAsset; }
+auto Execution::getStartingAsset() const -> std::string { return _startingAsset; }
 std::queue<StaticTrade> Execution::getTrades() const { return _trades; }
 
-PreciseNumber Execution::getCapacity() const { return _capacity; }
+auto Execution::getCapacity() const -> PreciseNumber { return _capacity; }
 
-void Execution::update(PreciseNumber) {}
+void Execution::update(const PreciseNumber&) {}
 
 /**
  * @brief Stream operator overload for Execution
@@ -32,7 +32,7 @@ void Execution::update(PreciseNumber) {}
  * @param execution Execution object to print
  * @return Reference to the output stream
  */
-std::ostream &operator<<(std::ostream &os, const Execution &execution) {
+auto operator<<(std::ostream &os, const Execution &execution) -> std::ostream & {
   os << "Execution{"
      << "startingAsset='" << execution._startingAsset << "', "
      << "totalProfit=" << execution._totalProfit << " BTC, "

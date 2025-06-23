@@ -40,8 +40,8 @@ private:
   const std::string privateKeySeed;
   boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue;
   boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue;
-  std::vector<FIX::SessionID> marketDataSessionIDs;
-  FIX::SessionID orderEntrySessionID;
+  std::vector<FIX::SessionID> marketDataSessionIDs{};
+  FIX::SessionID orderEntrySessionID{};
   std::unordered_map<std::string, Symbol> &symbolMap;
 
   /**

@@ -24,7 +24,7 @@ Trader::Trader(
       _balance(balance), _reservedTrades(reservedTrades) {}
 
 /** Generate ID for execution */
-std::string generateId() {
+auto generateId() -> std::string {
   static const char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
   static thread_local std::mt19937 rng(std::random_device{}());
   static std::uniform_int_distribution<> dist(0, sizeof(charset) - 2);
@@ -33,7 +33,7 @@ std::string generateId() {
   return id;
 }
 
-void Trader::processExecution(Execution execution) {
+void Trader::processExecution(const Execution& execution) {
 
   BOOST_LOG_TRIVIAL(debug) << "Processing execution " << execution;
 
@@ -173,7 +173,7 @@ void Trader::processReport(ExecutionReport *execReport) {
   }
 }
 
-void Trader::run(std::stop_token stoken) {
+void Trader::run(const std::stop_token& stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Trader";
 

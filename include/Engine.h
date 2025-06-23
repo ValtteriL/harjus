@@ -27,8 +27,8 @@ class Engine {
 
 private:
   std::unordered_map<std::string, Symbol> &_symbols;
-  std::unordered_multimap<std::string, Opportunity *> _opportunities;
-  std::unordered_map<std::string, PreciseNumber> _relativeValues;
+  std::unordered_multimap<std::string, Opportunity *> _opportunities{};
+  std::unordered_map<std::string, PreciseNumber> _relativeValues{};
   boost::lockfree::spsc_queue<PriceUpdate> &_priceUpdateQueue;
   boost::lockfree::spsc_queue<Execution> &_executionQueue;
   ReservedTrades &_reservedTrades;
@@ -75,11 +75,11 @@ public:
          boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
          boost::lockfree::spsc_queue<Execution> &executionQueue,
          std::unordered_map<std::string, PreciseNumber> &relativeValues,
-         const PreciseNumber commission);
+         const PreciseNumber &commission);
 
   /**
    * @brief Run the engine
    * @details This function is the main loop of the engine.
    */
-  void run(std::stop_token stoken);
+  void run(const std::stop_token &stoken);
 };

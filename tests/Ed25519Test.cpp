@@ -33,9 +33,9 @@ TEST(Ed25519Test, signatureIsValid) {
 
   ASSERT_TRUE(seedBytes.size() == crypto_sign_SEEDBYTES);
 
-  unsigned char seed[crypto_sign_SEEDBYTES];
-  unsigned char publicKey[crypto_sign_PUBLICKEYBYTES];
-  unsigned char privateKey[crypto_sign_SECRETKEYBYTES];
+  unsigned char seed[crypto_sign_SEEDBYTES] = {0};
+  unsigned char publicKey[crypto_sign_PUBLICKEYBYTES] = {0};
+  unsigned char privateKey[crypto_sign_SECRETKEYBYTES] = {0};
 
   // Load the seed (32 bytes) from your extracted seed file
   memcpy(seed, seedBytes.data(), crypto_sign_SEEDBYTES);

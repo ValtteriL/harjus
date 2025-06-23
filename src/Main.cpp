@@ -22,6 +22,7 @@
 #include <quickfix/ThreadedSSLSocketInitiator.h>
 #include <string>
 #include <thread>
+#include <utility>
 #include <vector>
 
 std::atomic<bool> running{true};
@@ -57,7 +58,7 @@ void initLogging(int logLevel) {
 
 std::vector<std::string> getUniqueSymbolsForTradingPaths(
     const std::vector<std::vector<Trade> *> &tradingPaths) {
-  std::unordered_set<std::string> uniqueSymbols;
+  std::unordered_set<std::string> uniqueSymbols{};
   for (const auto &path : tradingPaths) {
     for (const auto &trade : *path) {
       uniqueSymbols.insert(trade.symbol()->symbol);
@@ -66,7 +67,7 @@ std::vector<std::string> getUniqueSymbolsForTradingPaths(
   return std::vector<std::string>(uniqueSymbols.begin(), uniqueSymbols.end());
 }
 
-int main() {
+auto main() -> int {
   banner();
   Configuration config;
 
@@ -151,7 +152,7 @@ int main() {
 
   // create a jthread to run engine
   std::jthread j_thread_engine(
-      [&engine](std::stop_token stoken) { engine.run(stoken); });
+      [&engine](std::stop_token stoken) { engine.run(std::move(stoken)); });
 
   // create a trader
   Trader trader{executionQueue, reportQueue, application, *balance,
@@ -159,7 +160,7 @@ int main() {
 
   // create a jthread to run trader
   std::jthread j_thread_trader(
-      [&trader](std::stop_token stoken) { trader.run(stoken); });
+      [&trader](std::stop_token stoken) { trader.run(std::move(stoken)); });
 
   // Start processing execiutions
   BOOST_LOG_TRIVIAL(info) << "Worker threads started. Press Ctrl+C to exit.";

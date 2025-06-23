@@ -6,19 +6,19 @@ StaticTrade::StaticTrade(const Trade &trade)
       _recvCurrency(trade.recvCurrency()),
       _usedCurrency(trade.usedCurrency()) {};
 
-const std::string StaticTrade::symbol() const { return _symbol; }
+auto StaticTrade::symbol() const -> const std::string { return _symbol; }
 
-enum Position StaticTrade::position() const { return _position; }
+auto StaticTrade::position() const -> enum Position { return _position; }
 
-PreciseNumber StaticTrade::orderQty() const { return _orderQty; }
+auto StaticTrade::orderQty() const -> PreciseNumber { return _orderQty; }
 
-PreciseNumber StaticTrade::orderPrice() const { return _orderPrice; }
+auto StaticTrade::orderPrice() const -> PreciseNumber { return _orderPrice; }
 
-std::string StaticTrade::recvCurrency() const { return _recvCurrency; }
+auto StaticTrade::recvCurrency() const -> std::string { return _recvCurrency; }
 
-std::string StaticTrade::usedCurrency() const { return _usedCurrency; }
+auto StaticTrade::usedCurrency() const -> std::string { return _usedCurrency; }
 
-bool StaticTrade::operator==(const StaticTrade &other) const {
+auto StaticTrade::operator==(const StaticTrade &other) const -> bool {
   return _symbol == other._symbol && _position == other._position &&
          _orderQty == other._orderQty && _orderPrice == other._orderPrice &&
          _recvCurrency == other._recvCurrency &&

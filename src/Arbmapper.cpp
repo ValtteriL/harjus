@@ -24,10 +24,10 @@ void buildGraph(Graph &graph,
                 const std::unordered_map<std::string, Symbol> &symbolMap) {
 
   // Create a map to store vertexes by asset
-  std::unordered_map<std::string, std::size_t> vertexMap;
+  std::unordered_map<std::string, std::size_t> vertexMap{};
 
   // get unique asset names
-  std::unordered_set<std::string> uniqueAssets;
+  std::unordered_set<std::string> uniqueAssets{};
   for (const auto &pair : symbolMap) {
     const auto &symbol = pair.second;
     uniqueAssets.insert(symbol.baseAsset);
@@ -64,7 +64,7 @@ std::vector<typename std::iterator_traits<ForwardIt>::value_type>
 rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
                                   ForwardIt last) {
   using ValueType = typename std::iterator_traits<ForwardIt>::value_type;
-  std::vector<ValueType> result;
+  std::vector<ValueType> result{};
 
   // Copy the second part (from middle to last)
   for (auto it = middle; it != last; ++it) {
@@ -88,7 +88,7 @@ struct CycleVisitor {
 
   // This function is called for each cycle found
   void cycle(auto const &path, Graph const &g) {
-    std::vector<Trade> tradePath;
+    std::vector<Trade> tradePath{};
 
     // get th edges (trades) in the tradePath
     for (size_t i = 0; i < path.size(); ++i) {
@@ -123,7 +123,7 @@ std::vector<std::vector<Trade> *> findCycles(const Graph &graph,
   // Create a visitor to process the cycles
   // the cycles need to be stored here, as the visitor is destroyed after the
   // function returns and visitor must be passed by value
-  std::vector<std::vector<Trade> *> cycles;
+  std::vector<std::vector<Trade> *> cycles{};
   CycleVisitor visitor{cycles};
 
   boost::tiernan_all_cycles(graph, visitor, 3, maxDepth);
@@ -135,7 +135,7 @@ std::vector<std::vector<Trade> *>
 getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
                 const IConfiguration &configuration) {
   // Create a graph
-  Graph graph;
+  Graph graph = 0;
 
   // Build the graph with the given symbols
   buildGraph(graph, symbolMap);

@@ -16,7 +16,7 @@ Engine::Engine(std::unordered_map<std::string, Symbol> &symbols,
                boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
                boost::lockfree::spsc_queue<Execution> &executionQueue,
                std::unordered_map<std::string, PreciseNumber> &relativeValues,
-               const PreciseNumber commission)
+               const PreciseNumber& commission)
     : _symbols(symbols), _relativeValues(relativeValues),
       _priceUpdateQueue(priceUpdateQueue), _executionQueue(executionQueue),
       _reservedTrades(reservedTrades), _balance(balance) {
@@ -91,7 +91,7 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   _executionQueue.push(std::move(execution));
 }
 
-void Engine::run(std::stop_token stoken) {
+void Engine::run(const std::stop_token& stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Engine";
 

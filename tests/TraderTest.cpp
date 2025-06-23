@@ -30,7 +30,7 @@ public:
                reservedTrades) {}
 
   // Expose private methods for testing
-  void callProcessExecution(Execution execution) {
+  void callProcessExecution(const Execution &execution) {
     processExecution(execution);
   }
 
@@ -39,9 +39,15 @@ public:
   }
 
   // Access to internal maps for advanced testing if needed
-  const auto &getExecutionsMap() const { return _executionsMap; }
-  const auto &getExecutionIdMap() const { return _executionIdMap; }
-  const auto &getPendingOrdersCount() const { return _pendingOrdersCount; }
+  [[nodiscard]] auto getExecutionsMap() const -> const auto & {
+    return _executionsMap;
+  }
+  [[nodiscard]] auto getExecutionIdMap() const -> const auto & {
+    return _executionIdMap;
+  }
+  [[nodiscard]] auto getPendingOrdersCount() const -> const auto & {
+    return _pendingOrdersCount;
+  }
 };
 
 /**
@@ -61,7 +67,7 @@ protected:
   }
 
   // Helper method to create a simple opportunity
-  Opportunity createSimpleOpportunity() {
+  auto createSimpleOpportunity() -> Opportunity {
 
     // Create and store symbols properly
     symbolsMap.insert(
@@ -88,7 +94,7 @@ protected:
   MockApplication mockApplication;
   Balance balance;
   ReservedTrades reservedTrades;
-  std::unordered_map<std::string, Symbol> symbolsMap;
+  std::unordered_map<std::string, Symbol> symbolsMap{};
   TestableTrader trader;
 };
 
@@ -131,7 +137,7 @@ TEST_F(TraderTest, processesFilledExecutionReportCompleted) {
 
   // get all order IDs from the execution ID map as vector
   // need to do this because the map is modified in the loop
-  std::vector<std::string> orderIds;
+  std::vector<std::string> orderIds{};
   for (const auto &trade : trader.getExecutionIdMap()) {
     orderIds.push_back(trade.first);
   }

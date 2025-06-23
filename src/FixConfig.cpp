@@ -16,14 +16,14 @@ void prepareFixFileStore(const std::string &dir) {
   }
 }
 
-std::string writeSchemaToTemp(const std::string &xml, const std::string &name) {
+auto writeSchemaToTemp(const std::string &xml, const std::string &name) -> std::string {
   auto tmp = std::filesystem::temp_directory_path() / name;
   std::ofstream ofs(tmp);
   ofs << xml;
   return tmp.string();
 }
 
-std::string FixMdSchema() {
+auto FixMdSchema() -> std::string {
   return R"(<fix major='4' type='FIX' servicepack='0' minor='4'>
  <header>
   <field name='BeginString' required='Y'/>
@@ -287,7 +287,7 @@ std::string FixMdSchema() {
 )";
 }
 
-std::string FixOeSchema() {
+auto FixOeSchema() -> std::string {
   return R"(<fix major='4' type='FIX' servicepack='0' minor='4'>
  <header>
   <field name='BeginString' required='Y'/>

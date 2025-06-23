@@ -23,8 +23,8 @@ public:
    * @param commission Commission percentage per trade.
    * @param relativeValue The relative value of the starting asset.
    */
-  Opportunity(std::vector<Trade> &trades, const PreciseNumber relativeValue,
-              const PreciseNumber commission);
+  Opportunity(std::vector<Trade> &trades, const PreciseNumber &relativeValue,
+              const PreciseNumber &commission);
 
   void update(const PreciseNumber startingAssetBudget) override;
 

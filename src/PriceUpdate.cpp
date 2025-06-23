@@ -6,7 +6,7 @@
  * @param update PriceUpdate to print
  * @return Reference to the output stream
  */
-std::ostream &operator<<(std::ostream &os, const PriceUpdate &update) {
+auto operator<<(std::ostream &os, const PriceUpdate &update) -> std::ostream & {
   os << "PriceUpdate{"
      << "symbol='" << update.symbol << "', "
      << "bid=" << update.bidPrice << "@" << update.bidQty << ", "

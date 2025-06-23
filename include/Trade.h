@@ -77,7 +77,7 @@ public:
    * quantity is set to 0.
    * @param budget The budget (in used asset) for the trade.
    */
-  void recalculateOrderQty(const PreciseNumber budget);
+  void recalculateOrderQty(const PreciseNumber& budget);
 
   /**
    * Get the quantity of the asset to be received.

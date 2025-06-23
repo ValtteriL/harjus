@@ -23,7 +23,7 @@ public:
                  boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
                  boost::lockfree::spsc_queue<Execution> &executionQueue,
                  std::unordered_map<std::string, PreciseNumber> relativeValues,
-                 PreciseNumber commission)
+                 const PreciseNumber &commission)
       : Engine(symbols, tradingPaths, balance, reservedTrades, priceUpdateQueue,
                executionQueue, relativeValues, commission) {}
 
@@ -48,9 +48,9 @@ protected:
   }
 
   void verifyExecutionProperties(const Execution &execution,
-                                 PreciseNumber startingAssetBudget,
-                                 PreciseNumber profit,
-                                 PreciseNumber initialBalance,
+                                 const PreciseNumber &startingAssetBudget,
+                                 const PreciseNumber &profit,
+                                 const PreciseNumber &initialBalance,
                                  const std::string &asset) {
     Execution execCopy = execution;
 
@@ -106,7 +106,7 @@ protected:
   std::unordered_map<std::string, Symbol> symbols{{"ETHBTC", ethBtcSymbol},
                                                   {"ETHUSDT", ethUsdtSymbol},
                                                   {"USDTBTC", usdtBtcSymbol}};
-  std::vector<std::vector<Trade> *> tradingPaths;
+  std::vector<std::vector<Trade> *> tradingPaths{};
   Balance balance;
   ReservedTrades reservedTrades;
   std::unordered_map<std::string, PreciseNumber> relativeValues{
@@ -129,7 +129,7 @@ protected:
 
 TEST_F(EngineTest, detectsArbitrageOpportunity) {
 
-  std::vector<PriceUpdate> updates;
+  std::vector<PriceUpdate> updates{};
   updates.push_back(PriceUpdate{&symbols.at("ETHBTC"), PreciseNumber{"0"},
                                 PreciseNumber{"1"}, PreciseNumber{"0"},
                                 PreciseNumber{"100"}}); // BTC -> ETH 1:1
