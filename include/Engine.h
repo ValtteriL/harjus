@@ -26,13 +26,13 @@
 class Engine {
 
 private:
-  std::unordered_map<std::string, Symbol> &_symbols;
+  std::unordered_map<std::string, Symbol> *_symbols;
   std::unordered_multimap<std::string, Opportunity *> _opportunities{};
   std::unordered_map<std::string, PreciseNumber> _relativeValues{};
-  boost::lockfree::spsc_queue<PriceUpdate> &_priceUpdateQueue;
-  boost::lockfree::spsc_queue<Execution> &_executionQueue;
-  ReservedTrades &_reservedTrades;
-  Balance &_balance;
+  boost::lockfree::spsc_queue<PriceUpdate> *_priceUpdateQueue;
+  boost::lockfree::spsc_queue<Execution> *_executionQueue;
+  ReservedTrades *_reservedTrades;
+  Balance *_balance;
 
   /**
    * @brief Reserves the necessary budget and trading symbols for a given

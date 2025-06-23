@@ -21,14 +21,14 @@ using entry =
 class Trader {
 
 private:
-  boost::lockfree::spsc_queue<Execution> &_executionQueue;
-  boost::lockfree::spsc_queue<ExecutionReport> &_executionReportQueue;
-  IApplication &_application;
-  Balance &_balance;
-  ReservedTrades &_reservedTrades;
+  boost::lockfree::spsc_queue<Execution> *_executionQueue;
+  boost::lockfree::spsc_queue<ExecutionReport> *_executionReportQueue;
+  IApplication *_application;
+  Balance *_balance;
+  ReservedTrades *_reservedTrades;
 
 protected:
-  void processExecution(const Execution& execution);
+  void processExecution(const Execution &execution);
   void processReport(ExecutionReport *execReport);
   std::unordered_map<std::string, entry>
       _executionsMap{}; // Map of execution ID to execution and delta
@@ -51,5 +51,5 @@ public:
    * @details This function runs the trader in a loop, processing executions and
    * execution reports.
    */
-  void run(const std::stop_token& stoken);
+  void run(const std::stop_token &stoken);
 };

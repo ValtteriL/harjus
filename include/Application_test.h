@@ -5,6 +5,7 @@
 
 class MockApplication : public IApplication {
 public:
+  virtual ~MockApplication() = default;
   MOCK_METHOD(bool, subscribeToSymbols,
               (const std::vector<std::string> &symbols), (override));
   MOCK_METHOD(void, submitOrder,

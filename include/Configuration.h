@@ -11,78 +11,83 @@
 
 class Configuration : public IConfiguration {
 public:
+  virtual ~Configuration() = default;
   Configuration();
 
   /**
    * @brief Get the Binance REST API URI.
    * @return The Binance REST API URI as a string.
    */
-  std::string getBinanceRESTApiUri() const override;
+  [[nodiscard]] auto getBinanceRESTApiUri() const -> std::string override;
 
   /**
    * @brief Get the Binance FIX API hostname for Order Entry sessions.
    * @return The Binance FIX API hostname as a string.
    */
-  std::string getBinanceFIXApiHostnameOrderEntry() const override;
+  [[nodiscard]] auto
+  getBinanceFIXApiHostnameOrderEntry() const -> std::string override;
 
   /**
    * @brief Get the Binance FIX API port for Order Entry hostname.
    * @return The Binance FIX API port as a string.
    */
-  std::string getBinanceFIXApiPortOrderEntry() const override;
+  [[nodiscard]] auto
+  getBinanceFIXApiPortOrderEntry() const -> std::string override;
 
   /**
    * @brief Get the Binance FIX API hostname for Market Data sessions.
    * @return The Binance FIX API hostname as a string.
    */
-  std::string getBinanceFIXApiHostnameMarketData() const override;
+  [[nodiscard]] auto
+  getBinanceFIXApiHostnameMarketData() const -> std::string override;
 
   /**
    * @brief Get the Binance FIX API port for Market Data hostname.
    * @return The Binance FIX API port as a string.
    */
-  std::string getBinanceFIXApiPortMarketData() const override;
+  [[nodiscard]] auto
+  getBinanceFIXApiPortMarketData() const -> std::string override;
 
   /**
    * @brief Get the Ed25519 seed.
    * @return The Ed25519 seed as a string.
    */
-  std::string getEd25519Seed() const override;
+  [[nodiscard]] auto getEd25519Seed() const -> std::string override;
 
   /**
    * @brief Get the Ed25519 API key.
    * @return The Ed25519 API key as a string.
    */
-  std::string getEd25519ApiKey() const override;
+  [[nodiscard]] auto getEd25519ApiKey() const -> std::string override;
 
   /**
    * @brief Get the maximum trading path length.
    * @return The maximum trading path length as an integer.
    */
-  int getMaxTradingPathLength() const override;
+  [[nodiscard]] auto getMaxTradingPathLength() const -> int override;
 
   /**
    * @brief Get the assets (currencies) to trade.
    * @return A vector of assets as strings.
    */
-  std::vector<std::string> getAssets() const override;
+  [[nodiscard]] auto getAssets() const -> std::vector<std::string> override;
 
   /**
    * @brief Get the commission for trading.
    * @return The commission as a PreciseNumber.
    */
-  PreciseNumber getCommission() const override;
+  [[nodiscard]] auto getCommission() const -> PreciseNumber override;
 
   /**
    * @brief Get the Logging level
    * @return The minimum verbosity level messages to be logged.
    * @details 0 = trace, 1 = debug, 2 = info, 3 = warning, 4 = error, 5 = fatal
    */
-  int getLogLevel() const override;
+  [[nodiscard]] auto getLogLevel() const -> int override;
 
   /**
    * @brief Get the FIX file directory.
    * @return The FIX file directory as a string.
    */
-  std::string getFixFileStorePath() const override;
+  [[nodiscard]] auto getFixFileStorePath() const -> std::string override;
 };

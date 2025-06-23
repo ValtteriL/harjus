@@ -10,13 +10,14 @@
 
 class Opportunity : public IOpportunity {
 private:
-  std::vector<Trade> &_trades;
-  const std::string _startingAsset;
-  const PreciseNumber _commission;
-  const PreciseNumber _relativeValue;
+  std::vector<Trade> *_trades;
+  std::string _startingAsset;
+  PreciseNumber _commission;
+  PreciseNumber _relativeValue;
   PreciseNumber _totalProfit;
 
 public:
+  virtual ~Opportunity() = default;
   /**
    * @brief Constructor for Opportunity class.
    * @param trades A vector of trades associated with the execution.
@@ -28,11 +29,11 @@ public:
 
   void update(const PreciseNumber startingAssetBudget) override;
 
-  PreciseNumber getTotalProfit() const override;
+  [[nodiscard]] auto getTotalProfit() const -> PreciseNumber override;
 
-  std::string getStartingAsset() const override;
+  [[nodiscard]] auto getStartingAsset() const -> std::string override;
 
-  PreciseNumber getCapacity() const override;
+  [[nodiscard]] auto getCapacity() const -> PreciseNumber override;
 
-  std::vector<Trade> &getTrades() const override;
+  [[nodiscard]] auto getTrades() const -> std::vector<Trade> & override;
 };

@@ -10,7 +10,7 @@
 Opportunity::Opportunity(std::vector<Trade> &trades,
                          const PreciseNumber &relativeValue,
                          const PreciseNumber &commission)
-    : _trades(trades), _startingAsset(trades.front().usedCurrency()),
+    : _trades(&trades), _startingAsset(trades->front().usedCurrency()),
       _commission(commission), _relativeValue(relativeValue) {}
 
 /**
@@ -90,11 +90,11 @@ void Opportunity::update(PreciseNumber startingAssetBudget) {
 
   // update profit
   PreciseNumber totalCommission =
-      _trades.front().usedQty() * _commission * std::to_string(_trades.size());
+      _trades->front().usedQty() * _commission * std::to_string(_trades.size());
 
-  _totalProfit =
-      (_trades.back().recvQty() - _trades.front().usedQty() - totalCommission) *
-      _relativeValue;
+  _totalProfit = (_trades->back().recvQty() - _trades.front().usedQty() -
+                  totalCommission) *
+                 _relativeValue;
 }
 auto Opportunity::getTotalProfit() const -> PreciseNumber {
   return _totalProfit;
@@ -105,7 +105,7 @@ auto Opportunity::getStartingAsset() const -> std::string {
 }
 
 auto Opportunity::getCapacity() const -> PreciseNumber {
-  return _trades.front().usedQty();
+  return _trades->front().usedQty();
 }
 
 std::vector<Trade> &Opportunity::getTrades() const { return _trades; }

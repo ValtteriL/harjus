@@ -113,8 +113,9 @@ auto PreciseNumber::toString() const -> std::string {
   value /= kPrecision;
 
   // Always output in fixed-point decimal notation (no exponent)
+  constexpr int kToStringPrecision = 10;
   std::ostringstream oss{};
-  oss << std::fixed << std::setprecision(10) << value;
+  oss << std::fixed << std::setprecision(kToStringPrecision) << value;
   std::string str = oss.str();
   // Strip trailing zeros and possibly the decimal point
   str.erase(str.find_last_not_of('0') + 1, std::string::npos);

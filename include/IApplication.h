@@ -12,13 +12,15 @@
 
 class IApplication {
 public:
+  virtual ~IApplication() = default;
   /**
    * @brief Subscribe to market data for a list of symbols
    * @param symbols Vector of trading symbols to subscribe to
    * @return true if subscription request was sent successfully, false
    * otherwise
    */
-  virtual bool subscribeToSymbols(const std::vector<std::string> &symbols) = 0;
+  virtual auto
+  subscribeToSymbols(const std::vector<std::string> &symbols) -> bool = 0;
 
   /**
    * @brief Submit new Market order.

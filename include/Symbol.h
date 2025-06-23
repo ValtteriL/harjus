@@ -5,14 +5,14 @@
 
 class Symbol {
 public:
-  const std::string symbol{};
-  const std::string baseAsset{};
-  const std::string quoteAsset{};
-  const PreciseNumber minNotional{};
-  const PreciseNumber baseAssetIncrement{};
-  const PreciseNumber quoteAssetIncrement{};
-  const int baseAssetPrecision;
-  const int quoteAssetPrecision;
+  std::string symbol{};
+  std::string baseAsset{};
+  std::string quoteAsset{};
+  PreciseNumber minNotional{};
+  PreciseNumber baseAssetIncrement{};
+  PreciseNumber quoteAssetIncrement{};
+  int baseAssetPrecision;
+  int quoteAssetPrecision;
   PreciseNumber bidPrice{};
   PreciseNumber askPrice{};
   PreciseNumber bidQty{};

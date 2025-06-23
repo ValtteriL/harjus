@@ -19,9 +19,9 @@ Trader::Trader(
     boost::lockfree::spsc_queue<Execution> &executionQueue,
     boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
     IApplication &application, Balance &balance, ReservedTrades &reservedTrades)
-    : _executionQueue(executionQueue),
-      _executionReportQueue(executionReportQueue), _application(application),
-      _balance(balance), _reservedTrades(reservedTrades) {}
+    : _executionQueue(&executionQueue),
+      _executionReportQueue(&executionReportQueue), _application(&application),
+      _balance(&balance), _reservedTrades(&reservedTrades) {}
 
 /** Generate ID for execution */
 auto generateId() -> std::string {
@@ -33,7 +33,7 @@ auto generateId() -> std::string {
   return id;
 }
 
-void Trader::processExecution(const Execution& execution) {
+void Trader::processExecution(const Execution &execution) {
 
   BOOST_LOG_TRIVIAL(debug) << "Processing execution " << execution;
 
@@ -53,8 +53,8 @@ void Trader::processExecution(const Execution& execution) {
     _executionIdMap.emplace(orderId, std::make_pair(trade, executionId));
 
     // Submit the order
-    _application.submitOrder(orderId, trade.symbol(), trade.orderQty(),
-                             trade.orderPrice(), trade.position());
+    _application->submitOrder(orderId, trade.symbol(), trade.orderQty(),
+                              trade.orderPrice(), trade.position());
   }
 
   // Store the execution and delta with execution ID
@@ -166,14 +166,14 @@ void Trader::processReport(ExecutionReport *execReport) {
     _failedExecutions.erase(executionId);
 
     // update balance
-    _balance.updateBalance(delta);
+    _balance->updateBalance(delta);
 
     // free symbols
-    _reservedTrades.releaseAll(execution.getOriginalTrades());
+    _reservedTrades->releaseAll(execution.getOriginalTrades());
   }
 }
 
-void Trader::run(const std::stop_token& stoken) {
+void Trader::run(const std::stop_token &stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Trader";
 
@@ -182,13 +182,13 @@ void Trader::run(const std::stop_token& stoken) {
   while (!stoken.stop_requested()) {
 
     // Process execution
-    if (Execution execution; _executionQueue.pop(execution)) {
+    if (Execution execution; _executionQueue->pop(execution)) {
       processExecution(execution);
     }
 
     // Process execution report
     if (ExecutionReport executionReport;
-        _executionReportQueue.pop(executionReport)) {
+        _executionReportQueue->pop(executionReport)) {
       processReport(&executionReport);
     }
   }
@@ -199,7 +199,7 @@ void Trader::run(const std::stop_token& stoken) {
   while (!_executionsMap.empty()) {
 
     if (ExecutionReport executionReport;
-        _executionReportQueue.pop(executionReport)) {
+        _executionReportQueue->pop(executionReport)) {
       processReport(&executionReport);
     }
   }
