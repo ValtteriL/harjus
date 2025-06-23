@@ -118,8 +118,8 @@ struct CycleVisitor {
  * Each Trade is a copy of the original Trade object in the graph, so the
  * original graph is not modified.
  */
-std::vector<std::vector<Trade> *> findCycles(const Graph &graph,
-                                             const int maxDepth) {
+auto findCycles(const Graph &graph,
+                const int maxDepth) -> std::vector<std::vector<Trade> *> {
   // Create a visitor to process the cycles
   // the cycles need to be stored here, as the visitor is destroyed after the
   // function returns and visitor must be passed by value
@@ -131,9 +131,9 @@ std::vector<std::vector<Trade> *> findCycles(const Graph &graph,
   return visitor.cycles;
 }
 
-std::vector<std::vector<Trade> *>
-getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
-                const IConfiguration &configuration) {
+auto getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
+                     const IConfiguration &configuration)
+    -> std::vector<std::vector<Trade> *> {
   // Create a graph
   Graph graph = 0;
 
