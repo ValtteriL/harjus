@@ -33,15 +33,15 @@ TEST(Ed25519Test, signatureIsValid) {
 
   ASSERT_TRUE(seedBytes.size() == crypto_sign_SEEDBYTES);
 
-  unsigned char seed[crypto_sign_SEEDBYTES] = {0};
-  unsigned char publicKey[crypto_sign_PUBLICKEYBYTES] = {0};
-  unsigned char privateKey[crypto_sign_SECRETKEYBYTES] = {0};
+  std::array<unsigned char, crypto_sign_SEEDBYTES> seed = {0};
+  std::array<unsigned char, crypto_sign_PUBLICKEYBYTES> publicKey = {0};
+  std::array<unsigned char, crypto_sign_SECRETKEYBYTES> privateKey = {0};
 
   // Load the seed (32 bytes) from your extracted seed file
-  memcpy(seed, seedBytes.data(), crypto_sign_SEEDBYTES);
+  memcpy(seed.data(), seedBytes.data(), crypto_sign_SEEDBYTES);
 
   // Generate the Libsodium keypair
-  crypto_sign_seed_keypair(publicKey, privateKey, seed);
+  crypto_sign_seed_keypair(publicKey.data(), privateKey.data(), seed.data());
 
   if (sodium_init() < 0) {
     throw std::runtime_error("Failed to initialize libsodium");
@@ -58,6 +58,6 @@ TEST(Ed25519Test, signatureIsValid) {
   const int verifStatus = crypto_sign_verify_detached(
       reinterpret_cast<const unsigned char *>(b64SignatureDecoded.data()),
       reinterpret_cast<const unsigned char *>(payload.data()), payload.size(),
-      publicKey);
+      publicKey.data());
   ASSERT_EQ(verifStatus, 0);
 }
