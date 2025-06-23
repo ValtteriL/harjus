@@ -4,7 +4,7 @@
     {
       "label": "clang-tidy-harjus",
       "type": "shell",
-      "command": "run-clang-tidy -p build -quiet -fix -j$(nproc)",
+      "command": "run-clang-tidy -clang-tidy-binary clang-tidy-14 -p build -quiet -fix -j$(nproc)",
       "group": "test",
       "problemMatcher": []
     }
