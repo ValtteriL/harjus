@@ -4,7 +4,7 @@
     {
       "label": "clang-tidy-harjus",
       "type": "shell",
-      "command": "cmake --build build --target clang-tidy-harjus",
+      "command": "run-clang-tidy -p build -quiet -fix -j$(nproc)",
       "group": "test",
       "problemMatcher": []
     }
