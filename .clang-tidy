@@ -1,3 +1,2 @@
 ---
 Checks: '-*,cppcoreguidelines-*,modernize-*,boost-*,performance-*'
-HeaderFilterRegex: '.*/harjus/include/.*'
