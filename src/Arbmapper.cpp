@@ -43,8 +43,8 @@ void buildGraph(Graph &graph,
   }
 
   // Add edges to the graph
-  for (const auto &pair : symbolMap) {
-    const auto &symbol = pair.second;
+  for (auto &pair : symbolMap) {
+    auto &symbol = pair.second;
 
     auto base = vertexMap[symbol.baseAsset];
     auto quote = vertexMap[symbol.quoteAsset];
@@ -60,9 +60,9 @@ void buildGraph(Graph &graph,
 }
 
 template <typename ForwardIt>
-std::vector<typename std::iterator_traits<ForwardIt>::value_type>
-rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
-                                  ForwardIt last) {
+auto rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
+                                       ForwardIt last)
+    -> std::vector<typename std::iterator_traits<ForwardIt>::value_type> {
   using ValueType = typename std::iterator_traits<ForwardIt>::value_type;
   std::vector<ValueType> result{};
 

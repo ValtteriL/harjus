@@ -35,5 +35,5 @@ public:
 
   [[nodiscard]] auto getCapacity() const -> PreciseNumber override;
 
-  [[nodiscard]] auto getTrades() const -> std::vector<Trade> & override;
+  [[nodiscard]] auto getTrades() const -> std::vector<Trade> override;
 };

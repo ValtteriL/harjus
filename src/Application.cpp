@@ -297,7 +297,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     }
 
     // Create execution report & push to the queue
-    executionReportQueue.push(
+    executionReportQueue->push(
         ExecutionReport{id, status, usedQty, recvQty, feeDelta});
 
   } catch (const std::exception &e) {
@@ -361,8 +361,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
       }
     }
 
-    priceUpdateQueue.push(PriceUpdate{&symbolMap->at(symbolValue), bidPrice,
-                                      askPrice, bidQuantity, askQuantity});
+    priceUpdateQueue->push(PriceUpdate{&symbolMap->at(symbolValue), bidPrice,
+                                       askPrice, bidQuantity, askQuantity});
   } catch (const std::exception &e) {
     throw std::runtime_error("Error processing market data snapshot: " +
                              std::string(e.what()));

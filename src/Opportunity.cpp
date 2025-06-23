@@ -10,7 +10,7 @@
 Opportunity::Opportunity(std::vector<Trade> &trades,
                          const PreciseNumber &relativeValue,
                          const PreciseNumber &commission)
-    : _trades(&trades), _startingAsset(trades->front().usedCurrency()),
+    : _trades(&trades), _startingAsset(trades.front().usedCurrency()),
       _commission(commission), _relativeValue(relativeValue) {}
 
 /**
@@ -20,12 +20,12 @@ Opportunity::Opportunity(std::vector<Trade> &trades,
  * @return The maximum quantity of the starting asset after all trades in the
  * opportunity.
  */
-auto calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
+auto calculateMaxQtyAfterTrades(std::vector<Trade> *trades,
                                 const PreciseNumber &startingAssetBudget)
     -> PreciseNumber {
   PreciseNumber acc{startingAssetBudget};
 
-  for (auto &trade : trades) {
+  for (auto &trade : *trades) {
 
     // reset order qty to the offer qty
     // this is needed to avoid capping to outdated order qty
@@ -46,14 +46,14 @@ auto calculateMaxQtyAfterTrades(std::vector<Trade> &trades,
   return acc;
 }
 
-auto calculateStartingAssetQty(std::vector<Trade> &trades,
-                               const PreciseNumber &startingAssetQtyAfterTrades)
+auto calculateStartingAssetQty(std::vector<Trade> *trades,
+                               PreciseNumber const &startingAssetQtyAfterTrades)
     -> PreciseNumber {
 
   PreciseNumber acc{startingAssetQtyAfterTrades};
 
   // backtrack the trades to calculate the starting asset qty
-  for (auto it = trades.rbegin(); it != trades.rend(); ++it) {
+  for (auto it = trades->rbegin(); it != trades->rend(); ++it) {
     const auto &trade = *it;
 
     if (trade.position() == Position::LONG) {
@@ -83,16 +83,16 @@ void Opportunity::update(PreciseNumber startingAssetBudget) {
 
   // update trades with quantities
   auto acc = startingAssetQty;
-  for (auto &trade : _trades) {
+  for (auto &trade : *_trades) {
     trade.recalculateOrderQty(acc);
     acc = trade.recvQty();
   }
 
   // update profit
-  PreciseNumber totalCommission =
-      _trades->front().usedQty() * _commission * std::to_string(_trades.size());
+  PreciseNumber totalCommission = _trades->front().usedQty() * _commission *
+                                  std::to_string(_trades->size());
 
-  _totalProfit = (_trades->back().recvQty() - _trades.front().usedQty() -
+  _totalProfit = (_trades->back().recvQty() - _trades->front().usedQty() -
                   totalCommission) *
                  _relativeValue;
 }
@@ -108,4 +108,4 @@ auto Opportunity::getCapacity() const -> PreciseNumber {
   return _trades->front().usedQty();
 }
 
-std::vector<Trade> &Opportunity::getTrades() const { return _trades; }
+auto Opportunity::getTrades() const -> std::vector<Trade> { return *_trades; }

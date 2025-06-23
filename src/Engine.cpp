@@ -17,7 +17,7 @@ Engine::Engine(std::unordered_map<std::string, Symbol> &symbols,
                boost::lockfree::spsc_queue<Execution> &executionQueue,
                std::unordered_map<std::string, PreciseNumber> &relativeValues,
                const PreciseNumber &commission)
-    : _symbols(&symbols), _relativeValues(&relativeValues),
+    : _symbols(&symbols), _relativeValues(relativeValues),
       _priceUpdateQueue(&priceUpdateQueue), _executionQueue(&executionQueue),
       _reservedTrades(&reservedTrades), _balance(&balance) {
 
@@ -26,7 +26,7 @@ Engine::Engine(std::unordered_map<std::string, Symbol> &symbols,
 
     // create an opportunity
     std::string startingAsset = path->front().usedCurrency();
-    Opportunity *opportunity =
+    auto *opportunity =
         new Opportunity(*path, _relativeValues[startingAsset], commission);
 
     // add opportunity to _opportunities with every trade symbol as the key
@@ -37,9 +37,9 @@ Engine::Engine(std::unordered_map<std::string, Symbol> &symbols,
 };
 
 void Engine::reserveBudgetAndSymbols(const Opportunity &opp) {
-  _reservedTrades.reserveAll(opp.getTrades());
-  _balance.updateBalance(opp.getStartingAsset(),
-                         opp.getCapacity() * PreciseNumber{"-1"});
+  _reservedTrades->reserveAll(opp.getTrades());
+  _balance->updateBalance(opp.getStartingAsset(),
+                          opp.getCapacity() * PreciseNumber{"-1"});
 }
 
 void Engine::processPriceUpdate(const PriceUpdate &update) {
@@ -50,10 +50,10 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   update.symbol->bidQty = update.bidQty;
 
   // get balances
-  auto balanceMap = _balance.getBalances();
+  auto balanceMap = _balance->getBalances();
 
   // get reserved trades
-  auto reservedSymbols = _reservedTrades.getReservedTrades();
+  auto reservedSymbols = _reservedTrades->getReservedTrades();
 
   Opportunity *best = nullptr;
 
@@ -88,7 +88,7 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   // Freeze and queue the best opportunity for execution
   Execution execution{*best};
   BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
-  _executionQueue.push(std::move(execution));
+  _executionQueue->push(std::move(execution));
 }
 
 void Engine::run(const std::stop_token &stoken) {
@@ -97,7 +97,7 @@ void Engine::run(const std::stop_token &stoken) {
 
   while (!stoken.stop_requested()) {
 
-    if (PriceUpdate update; _priceUpdateQueue.pop(update)) {
+    if (PriceUpdate update; _priceUpdateQueue->pop(update)) {
       processPriceUpdate(update);
     }
   }

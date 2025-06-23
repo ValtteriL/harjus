@@ -11,7 +11,7 @@
 class Trade {
 
 private:
-  Symbol *_symbol = nullptr;
+  Symbol const *_symbol = nullptr;
   Position _position = Position::LONG;
   PreciseNumber _orderQty{"0"};
   std::string _recvCurrency = "PLACEHOLDER";

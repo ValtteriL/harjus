@@ -24,7 +24,7 @@ auto Trade::offerQty() const -> PreciseNumber {
 
 auto Trade::symbol() const -> const Symbol * { return _symbol; }
 
-void Trade::recalculateOrderQty(const PreciseNumber& budget) {
+void Trade::recalculateOrderQty(const PreciseNumber &budget) {
 
   PreciseNumber budgetOrderQty =
       _position == Position::LONG ? budget / orderPrice() : budget;
