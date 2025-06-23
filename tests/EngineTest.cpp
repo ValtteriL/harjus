@@ -115,8 +115,9 @@ protected:
       {"USDT", PreciseNumber{"1.0"}}};
   PreciseNumber commission{"0.001"};
 
-  boost::lockfree::spsc_queue<Execution> executionQueue{1000};
-  boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{1000};
+  static constexpr size_t kQueueSize = 1000;
+  boost::lockfree::spsc_queue<Execution> executionQueue{kQueueSize};
+  boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{kQueueSize};
 
   // simple triangular arbitrage
   // BTC -> ETH -> USDT -> BTC

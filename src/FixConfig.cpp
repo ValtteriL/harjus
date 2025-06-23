@@ -16,7 +16,8 @@ void prepareFixFileStore(const std::string &dir) {
   }
 }
 
-auto writeSchemaToTemp(const std::string &xml, const std::string &name) -> std::string {
+auto writeSchemaToTemp(const std::string &xml,
+                       const std::string &name) -> std::string {
   auto tmp = std::filesystem::temp_directory_path() / name;
   std::ofstream ofs(tmp);
   ofs << xml;
@@ -879,7 +880,7 @@ FixConfig::FixConfig(const IConfiguration &config) {
   _configString = confString;
 }
 
-FIX::SessionSettings FixConfig::sessionSettings() const {
+auto FixConfig::sessionSettings() const -> FIX::SessionSettings {
   std::istringstream fixConfigStream{_configString};
   return FIX::SessionSettings{fixConfigStream};
 }

@@ -11,7 +11,6 @@
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include <chrono>
 #include <random>
 #include <stdexcept>
 
@@ -25,11 +24,15 @@ Trader::Trader(
 
 /** Generate ID for execution */
 auto generateId() -> std::string {
-  static const char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+  static constexpr std::array<char, 36> charset = {
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+      'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+      'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  static constexpr std::size_t ID_LENGTH = 8;
   static thread_local std::mt19937 rng(std::random_device{}());
-  static std::uniform_int_distribution<> dist(0, sizeof(charset) - 2);
-  std::string id(8, '\0');
-  std::generate_n(id.begin(), 8, [&]() { return charset[dist(rng)]; });
+  static std::uniform_int_distribution<> dist(0, charset.size() - 1);
+  std::string id(ID_LENGTH, '\0');
+  std::generate_n(id.begin(), ID_LENGTH, [&]() { return charset.at(dist(rng)); });
   return id;
 }
 

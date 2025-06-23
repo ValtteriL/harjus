@@ -52,7 +52,7 @@ auto getBalancesJson(const std::string &uri, const std::string &apiKey,
   return r.text;
 }
 
-std::unique_ptr<Balance> getBalance(const IConfiguration &config) {
+auto getBalance(const IConfiguration &config) -> std::unique_ptr<Balance> {
   auto balance = std::make_unique<Balance>();
 
   // Fetch balance from exchange API
@@ -88,8 +88,8 @@ std::unique_ptr<Balance> getBalance(const IConfiguration &config) {
   return balance;
 }
 
-std::unordered_map<std::string, Symbol>
-getSymbols(const IConfiguration &config) {
+auto getSymbols(const IConfiguration &config)
+    -> std::unordered_map<std::string, Symbol> {
   std::unordered_map<std::string, Symbol> symbols{};
 
   // Fetch exchange info from Binance API
@@ -155,9 +155,9 @@ getSymbols(const IConfiguration &config) {
   return symbols;
 }
 
-std::unordered_map<std::string, PreciseNumber>
-getRelativeValues(const IConfiguration &config,
-                  const std::unordered_map<std::string, Symbol> &symbols) {
+auto getRelativeValues(const IConfiguration &config,
+                       const std::unordered_map<std::string, Symbol> &symbols)
+    -> std::unordered_map<std::string, PreciseNumber> {
   std::unordered_map<std::string, PreciseNumber> relativeValues{};
 
   // Fetch symbol prices from Binance API

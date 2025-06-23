@@ -66,8 +66,10 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
     // Update the opportunity with the new price
     opp->update(balanceMap[opp->getStartingAsset()]);
 
+    auto trades = opp->getTrades();
+
     if (PreciseNumber{"0"} >= opp->getTotalProfit() ||
-        std::any_of(opp->getTrades().begin(), opp->getTrades().end(),
+        std::any_of(trades.begin(), trades.end(),
                     [&reservedSymbols](const StaticTrade &trade) {
                       return reservedSymbols.contains(trade.symbol());
                     }))
@@ -88,7 +90,7 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   // Freeze and queue the best opportunity for execution
   Execution execution{*best};
   BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
-  _executionQueue->push(std::move(execution));
+  _executionQueue->push(execution);
 }
 
 void Engine::run(const std::stop_token &stoken) {

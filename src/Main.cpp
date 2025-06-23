@@ -22,7 +22,6 @@
 #include <quickfix/ThreadedSSLSocketInitiator.h>
 #include <string>
 #include <thread>
-#include <utility>
 #include <vector>
 
 std::atomic<bool> running{true};
@@ -56,8 +55,9 @@ void initLogging(int logLevel) {
                                       logLevel);
 }
 
-std::vector<std::string> getUniqueSymbolsForTradingPaths(
-    const std::vector<std::vector<Trade> *> &tradingPaths) {
+auto getUniqueSymbolsForTradingPaths(
+    const std::vector<std::vector<Trade> *> &tradingPaths)
+    -> std::vector<std::string> {
   std::unordered_set<std::string> uniqueSymbols{};
   for (const auto &path : tradingPaths) {
     for (const auto &trade : *path) {
@@ -90,10 +90,13 @@ auto main() -> int {
   BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
   auto tradingPaths = getTradingPaths(symbolMap, config);
 
+  // Define a named constant for the queue size
+  constexpr std::size_t QUEUE_SIZE = 1000;
+
   // Create queues for price updates & executions
-  boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{1000};
-  boost::lockfree::spsc_queue<Execution> executionQueue{1000};
-  boost::lockfree::spsc_queue<ExecutionReport> reportQueue{1000};
+  boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{QUEUE_SIZE};
+  boost::lockfree::spsc_queue<Execution> executionQueue{QUEUE_SIZE};
+  boost::lockfree::spsc_queue<ExecutionReport> reportQueue{QUEUE_SIZE};
 
   ReservedTrades reservedTrades;
 
@@ -131,8 +134,10 @@ auto main() -> int {
     initiator->start();
 
     // Wait for the session to be established
+    constexpr int SESSION_ESTABLISH_WAIT_MS = 100;
     while (!initiator->isLoggedOn()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(SESSION_ESTABLISH_WAIT_MS));
     }
 
     // Subscribe to market data for all symbols
@@ -152,7 +157,7 @@ auto main() -> int {
 
   // create a jthread to run engine
   std::jthread j_thread_engine(
-      [&engine](std::stop_token stoken) { engine.run(std::move(stoken)); });
+      [&engine](const std::stop_token &stoken) { engine.run(stoken); });
 
   // create a trader
   Trader trader{executionQueue, reportQueue, application, *balance,
@@ -160,7 +165,7 @@ auto main() -> int {
 
   // create a jthread to run trader
   std::jthread j_thread_trader(
-      [&trader](std::stop_token stoken) { trader.run(std::move(stoken)); });
+      [&trader](const std::stop_token &stoken) { trader.run(stoken); });
 
   // Start processing execiutions
   BOOST_LOG_TRIVIAL(info) << "Worker threads started. Press Ctrl+C to exit.";
@@ -171,8 +176,9 @@ auto main() -> int {
   signal(SIGINT, [](int) { running = false; });
   signal(SIGTERM, [](int) { running = false; });
 
+  constexpr int MAIN_LOOP_SLEEP_MS = 100;
   while (running) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MAIN_LOOP_SLEEP_MS));
   }
 
   // remove signal handler for SIGINT
