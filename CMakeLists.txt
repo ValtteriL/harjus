@@ -34,7 +34,7 @@ pkg_check_modules(GMP REQUIRED gmp)
 find_package(quickfix REQUIRED)
 
 # Enable all warnings
-add_compile_options(-Wall -Wextra -Wpedantic)
+add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
 # Optimize debug builds for speed
 set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
