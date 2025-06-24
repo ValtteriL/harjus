@@ -33,7 +33,7 @@ auto Ed25519::base64_decode(const std::string &encoded) -> std::string {
     throw std::runtime_error("Failed to decode base64 string");
   }
 
-  return std::string(decoded.begin(), decoded.begin() + decoded_length);
+  return {decoded.begin(), decoded.begin() + decoded_length};
 }
 
 auto Ed25519::sign(const std::string &extracted_seed,

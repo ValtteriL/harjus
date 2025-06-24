@@ -64,7 +64,7 @@ auto getUniqueSymbolsForTradingPaths(
       uniqueSymbols.insert(trade.symbol()->symbol);
     }
   }
-  return std::vector<std::string>(uniqueSymbols.begin(), uniqueSymbols.end());
+  return {uniqueSymbols.begin(), uniqueSymbols.end()};
 }
 
 auto main() -> int {
@@ -151,9 +151,9 @@ auto main() -> int {
   });
 
   // Create the engine
-  Engine engine{tradingPaths,          *balance,
-                reservedTrades,   priceUpdateQueue,      executionQueue,
-                relativeValueMap, config.getCommission()};
+  Engine engine{tradingPaths,          *balance,       reservedTrades,
+                priceUpdateQueue,      executionQueue, relativeValueMap,
+                config.getCommission()};
 
   // create a jthread to run engine
   std::jthread j_thread_engine(
