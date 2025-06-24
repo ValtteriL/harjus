@@ -82,11 +82,10 @@ protected:
                            PreciseNumber{"0.0"}, PreciseNumber{"0.0"}}});
 
     // Setup trades using the stored symbols
-    auto *trades = new std::vector<Trade>{
-        Trade{&symbolsMap.at("ETHBTC"), Position::LONG},
-        Trade{&symbolsMap.at("ETHUSDT"), Position::SHORT}};
+    trades.emplace_back(&symbolsMap.at("ETHBTC"), Position::LONG);
+    trades.emplace_back(&symbolsMap.at("ETHUSDT"), Position::SHORT);
 
-    return Opportunity(*trades, PreciseNumber{"1"}, PreciseNumber{"0.001"});
+    return {trades, PreciseNumber{"1"}, PreciseNumber{"0.001"}};
   }
 
   boost::lockfree::spsc_queue<Execution> executionQueue{1000};
@@ -96,6 +95,7 @@ protected:
   ReservedTrades reservedTrades;
   std::unordered_map<std::string, Symbol> symbolsMap{};
   TestableTrader trader;
+  std::vector<Trade> trades;
 };
 
 TEST_F(TraderTest, processesExecutions) {
