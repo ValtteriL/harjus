@@ -68,7 +68,7 @@ public:
    * @param executionQueue A reference to a thread safe queue for executions.
    * @param relativeValues A map of relative values for symbols.
    */
-  Engine(std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
+  Engine(std::vector<std::vector<Trade>> &tradingPaths, Balance &balance,
          ReservedTrades &reservedTrades,
          boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
          boost::lockfree::spsc_queue<Execution> &executionQueue,

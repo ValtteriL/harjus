@@ -82,9 +82,9 @@ auto rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
 struct CycleVisitor {
   // This struct is used to visit each cycle found by tiernan_all_cycles
 
-  std::vector<std::vector<Trade> *> &cycles;
+  std::vector<std::vector<Trade>> *cycles;
 
-  CycleVisitor(std::vector<std::vector<Trade> *> &cycles) : cycles(cycles) {}
+  CycleVisitor(std::vector<std::vector<Trade>> &cycles) : cycles(&cycles) {}
 
   // This function is called for each cycle found
   void cycle(auto const &path, Graph const &g) {
@@ -106,7 +106,7 @@ struct CycleVisitor {
     for (size_t i = 0; i < tradePath.size(); ++i) {
       auto copy = rotate_copy_with_copy_constructor(
           tradePath.begin(), tradePath.begin() + i, tradePath.end());
-      cycles.push_back(new std::vector<Trade>(copy));
+      cycles->emplace_back(copy);
     }
   }
 };
@@ -119,21 +119,21 @@ struct CycleVisitor {
  * original graph is not modified.
  */
 auto findCycles(const Graph &graph,
-                const int maxDepth) -> std::vector<std::vector<Trade> *> {
+                const int maxDepth) -> std::vector<std::vector<Trade>> {
   // Create a visitor to process the cycles
   // the cycles need to be stored here, as the visitor is destroyed after the
   // function returns and visitor must be passed by value
-  std::vector<std::vector<Trade> *> cycles{};
+  std::vector<std::vector<Trade>> cycles{};
   CycleVisitor visitor{cycles};
 
   boost::tiernan_all_cycles(graph, visitor, 3, maxDepth);
 
-  return visitor.cycles;
+  return cycles;
 }
 
 auto getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
                      const IConfiguration &configuration)
-    -> std::vector<std::vector<Trade> *> {
+    -> std::vector<std::vector<Trade>> {
   // Create a graph
   Graph graph = 0;
 
@@ -147,7 +147,7 @@ auto getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
   // reject cycles with symbols that are not in the assets list
   auto assets = configuration.getAssets();
   std::erase_if(cycles, [&assets](const auto &cycle) {
-    for (const auto &trade : *cycle) {
+    for (const auto &trade : cycle) {
       if (std::find(assets.begin(), assets.end(), trade.usedCurrency()) ==
               assets.end() ||
           std::find(assets.begin(), assets.end(), trade.recvCurrency()) ==

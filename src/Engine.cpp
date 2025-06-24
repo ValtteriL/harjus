@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-Engine::Engine(std::vector<std::vector<Trade> *> &tradingPaths,
-               Balance &balance, ReservedTrades &reservedTrades,
+Engine::Engine(std::vector<std::vector<Trade>> &tradingPaths, Balance &balance,
+               ReservedTrades &reservedTrades,
                boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
                boost::lockfree::spsc_queue<Execution> &executionQueue,
                std::unordered_map<std::string, PreciseNumber> &relativeValues,
@@ -24,12 +24,12 @@ Engine::Engine(std::vector<std::vector<Trade> *> &tradingPaths,
   for (auto &path : tradingPaths) {
 
     // create an opportunity
-    std::string startingAsset = path->front().usedCurrency();
+    std::string startingAsset = path.front().usedCurrency();
     auto *opportunity =
-        new Opportunity(*path, _relativeValues[startingAsset], commission);
+        new Opportunity(path, _relativeValues[startingAsset], commission);
 
     // add opportunity to _opportunities with every trade symbol as the key
-    for (auto &trade : *path) {
+    for (auto &trade : path) {
       _opportunities.insert({trade.symbol()->symbol, opportunity});
     }
   }

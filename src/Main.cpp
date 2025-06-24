@@ -56,11 +56,11 @@ void initLogging(int logLevel) {
 }
 
 auto getUniqueSymbolsForTradingPaths(
-    const std::vector<std::vector<Trade> *> &tradingPaths)
+    const std::vector<std::vector<Trade>> &tradingPaths)
     -> std::vector<std::string> {
   std::unordered_set<std::string> uniqueSymbols{};
   for (const auto &path : tradingPaths) {
-    for (const auto &trade : *path) {
+    for (const auto &trade : path) {
       uniqueSymbols.insert(trade.symbol()->symbol);
     }
   }

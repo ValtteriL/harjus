@@ -17,7 +17,7 @@
 
 class TestableEngine : public Engine {
 public:
-  TestableEngine(std::vector<std::vector<Trade> *> &tradingPaths,
+  TestableEngine(std::vector<std::vector<Trade>> &tradingPaths,
                  Balance &balance, ReservedTrades &reservedTrades,
                  boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
                  boost::lockfree::spsc_queue<Execution> &executionQueue,
@@ -38,33 +38,6 @@ public:
 
 class EngineTest : public testing::Test {
 protected:
-  EngineTest()
-      : tradingPaths({&trades}),
-        engine(tradingPaths, balance, reservedTrades, priceUpdateQueue,
-               executionQueue, relativeValues, commission) {
-
-    balance.updateBalance("BTC", startingAssetBudget);
-  }
-
-  void verifyExecutionProperties(const Execution &execution,
-                                 const PreciseNumber &startingAssetBudget,
-                                 const PreciseNumber &profit,
-                                 const PreciseNumber &initialBalance,
-                                 const std::string &asset) {
-    Execution execCopy = execution;
-
-    // Starting asset balance should be reserved
-    EXPECT_EQ(balance.getBalances().at(asset) + execution.getCapacity(),
-              initialBalance);
-
-    EXPECT_EQ(execCopy.getTrades().size(), 3);
-    EXPECT_EQ(execution.getTotalProfit(), profit);
-    EXPECT_EQ(execution.getCapacity(), startingAssetBudget);
-    EXPECT_EQ(execution.getStartingAsset(), asset);
-  }
-
-  PreciseNumber startingAssetBudget{"1.0"};
-
   Symbol ethBtcSymbol{"ETHBTC",
                       "ETH",
                       "BTC",
@@ -105,7 +78,43 @@ protected:
   std::unordered_map<std::string, Symbol> symbols{{"ETHBTC", ethBtcSymbol},
                                                   {"ETHUSDT", ethUsdtSymbol},
                                                   {"USDTBTC", usdtBtcSymbol}};
-  std::vector<std::vector<Trade> *> tradingPaths{};
+
+  // simple triangular arbitrage
+  // BTC -> ETH -> USDT -> BTC
+  std::vector<Trade> trades{Trade{&symbols.at("ETHBTC"), Position::LONG},
+                            Trade{&symbols.at("ETHUSDT"), Position::SHORT},
+                            Trade{&symbols.at("USDTBTC"), Position::SHORT}};
+
+  EngineTest()
+      // simple triangular arbitrage
+      // BTC -> ETH -> USDT -> BTC
+      : tradingPaths({trades}),
+        engine(tradingPaths, balance, reservedTrades, priceUpdateQueue,
+               executionQueue, relativeValues, commission) {
+
+    balance.updateBalance("BTC", startingAssetBudget);
+  }
+
+  void verifyExecutionProperties(const Execution &execution,
+                                 const PreciseNumber &startingAssetBudget,
+                                 const PreciseNumber &profit,
+                                 const PreciseNumber &initialBalance,
+                                 const std::string &asset) {
+    Execution execCopy = execution;
+
+    // Starting asset balance should be reserved
+    EXPECT_EQ(balance.getBalances().at(asset) + execution.getCapacity(),
+              initialBalance);
+
+    EXPECT_EQ(execCopy.getTrades().size(), 3);
+    EXPECT_EQ(execution.getTotalProfit(), profit);
+    EXPECT_EQ(execution.getCapacity(), startingAssetBudget);
+    EXPECT_EQ(execution.getStartingAsset(), asset);
+  }
+
+  PreciseNumber startingAssetBudget{"1.0"};
+
+  std::vector<std::vector<Trade>> tradingPaths{};
   Balance balance;
   ReservedTrades reservedTrades;
   std::unordered_map<std::string, PreciseNumber> relativeValues{
@@ -117,12 +126,6 @@ protected:
   static constexpr size_t kQueueSize = 1000;
   boost::lockfree::spsc_queue<Execution> executionQueue{kQueueSize};
   boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{kQueueSize};
-
-  // simple triangular arbitrage
-  // BTC -> ETH -> USDT -> BTC
-  std::vector<Trade> trades{Trade{&symbols.at("ETHBTC"), Position::LONG},
-                            Trade{&symbols.at("ETHUSDT"), Position::SHORT},
-                            Trade{&symbols.at("USDTBTC"), Position::SHORT}};
 
   TestableEngine engine;
 };
@@ -155,7 +158,7 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   // Trades should be reserved
   auto reservedTradesSet = reservedTrades.getReservedTrades();
   for (const auto &tradeVector : tradingPaths) {
-    for (const auto &trade : *tradeVector) {
+    for (const auto &trade : tradeVector) {
       ASSERT_TRUE(reservedTradesSet.contains(trade.symbol()->symbol));
     }
   }

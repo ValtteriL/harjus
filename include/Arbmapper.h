@@ -13,4 +13,4 @@
  */
 auto getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
                      const IConfiguration &configuration)
-    -> std::vector<std::vector<Trade> *>;
+    -> std::vector<std::vector<Trade>>;
