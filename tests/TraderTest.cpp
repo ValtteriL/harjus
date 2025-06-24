@@ -82,7 +82,7 @@ protected:
                            PreciseNumber{"0.0"}, PreciseNumber{"0.0"}}});
 
     // Setup trades using the stored symbols
-    std::vector<Trade> *trades = new std::vector<Trade>{
+    auto *trades = new std::vector<Trade>{
         Trade{&symbolsMap.at("ETHBTC"), Position::LONG},
         Trade{&symbolsMap.at("ETHUSDT"), Position::SHORT}};
 
