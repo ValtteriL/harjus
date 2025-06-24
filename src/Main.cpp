@@ -55,18 +55,19 @@ void initLogging(int logLevel) {
                                       logLevel);
 }
 
-std::vector<std::string> getUniqueSymbolsForTradingPaths(
-    const std::vector<std::vector<Trade> *> &tradingPaths) {
-  std::unordered_set<std::string> uniqueSymbols;
+auto getUniqueSymbolsForTradingPaths(
+    const std::vector<std::vector<Trade>> &tradingPaths)
+    -> std::vector<std::string> {
+  std::unordered_set<std::string> uniqueSymbols{};
   for (const auto &path : tradingPaths) {
-    for (const auto &trade : *path) {
+    for (const auto &trade : path) {
       uniqueSymbols.insert(trade.symbol()->symbol);
     }
   }
-  return std::vector<std::string>(uniqueSymbols.begin(), uniqueSymbols.end());
+  return {uniqueSymbols.begin(), uniqueSymbols.end()};
 }
 
-int main() {
+auto main() -> int {
   banner();
   Configuration config;
 
@@ -89,10 +90,13 @@ int main() {
   BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
   auto tradingPaths = getTradingPaths(symbolMap, config);
 
+  // Define a named constant for the queue size
+  constexpr std::size_t QUEUE_SIZE = 1000;
+
   // Create queues for price updates & executions
-  boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{1000};
-  boost::lockfree::spsc_queue<Execution> executionQueue{1000};
-  boost::lockfree::spsc_queue<ExecutionReport> reportQueue{1000};
+  boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{QUEUE_SIZE};
+  boost::lockfree::spsc_queue<Execution> executionQueue{QUEUE_SIZE};
+  boost::lockfree::spsc_queue<ExecutionReport> reportQueue{QUEUE_SIZE};
 
   ReservedTrades reservedTrades;
 
@@ -120,18 +124,20 @@ int main() {
   FIX::FileStoreFactory storeFactory{settings};
   FIX::ScreenLogFactory logFactory{settings};
 
-  auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::SSLSocketInitiator{
-      application, storeFactory, settings, logFactory});
+  auto initiator =
+      FIX::SSLSocketInitiator{application, storeFactory, settings, logFactory};
 
   // create a jthread to run the application
   std::jthread j_thread_application([&initiator, &application, symbols]() {
     BOOST_LOG_TRIVIAL(debug) << "Starting QuickFIX initiator";
 
-    initiator->start();
+    initiator.start();
 
     // Wait for the session to be established
-    while (!initiator->isLoggedOn()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    constexpr int SESSION_ESTABLISH_WAIT_MS = 100;
+    while (!initiator.isLoggedOn()) {
+      std::this_thread::sleep_for(
+          std::chrono::milliseconds(SESSION_ESTABLISH_WAIT_MS));
     }
 
     // Subscribe to market data for all symbols
@@ -145,13 +151,13 @@ int main() {
   });
 
   // Create the engine
-  Engine engine{symbolMap,        tradingPaths,          *balance,
-                reservedTrades,   priceUpdateQueue,      executionQueue,
-                relativeValueMap, config.getCommission()};
+  Engine engine{tradingPaths,          *balance,       reservedTrades,
+                priceUpdateQueue,      executionQueue, relativeValueMap,
+                config.getCommission()};
 
   // create a jthread to run engine
   std::jthread j_thread_engine(
-      [&engine](std::stop_token stoken) { engine.run(stoken); });
+      [&engine](const std::stop_token &stoken) { engine.run(stoken); });
 
   // create a trader
   Trader trader{executionQueue, reportQueue, application, *balance,
@@ -159,7 +165,7 @@ int main() {
 
   // create a jthread to run trader
   std::jthread j_thread_trader(
-      [&trader](std::stop_token stoken) { trader.run(stoken); });
+      [&trader](const std::stop_token &stoken) { trader.run(stoken); });
 
   // Start processing execiutions
   BOOST_LOG_TRIVIAL(info) << "Worker threads started. Press Ctrl+C to exit.";
@@ -170,8 +176,9 @@ int main() {
   signal(SIGINT, [](int) { running = false; });
   signal(SIGTERM, [](int) { running = false; });
 
+  constexpr int MAIN_LOOP_SLEEP_MS = 100;
   while (running) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MAIN_LOOP_SLEEP_MS));
   }
 
   // remove signal handler for SIGINT
@@ -189,7 +196,7 @@ int main() {
 
   // Stop the application
   isShuttingDown = true;
-  initiator->stop();
+  initiator.stop();
 
   BOOST_LOG_TRIVIAL(info) << "Done. Exiting.";
 

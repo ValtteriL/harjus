@@ -24,13 +24,13 @@ public:
    * @brief Get the total profit
    * @return The total profit of the opportunity in relative value.
    */
-  virtual PreciseNumber getTotalProfit() const = 0;
+  [[nodiscard]] virtual auto getTotalProfit() const -> PreciseNumber = 0;
 
   /**
    * @brief Get the starting asset.
    * @return Get the asset symbol that is used to start the series of trades.
    */
-  virtual std::string getStartingAsset() const = 0;
+  [[nodiscard]] virtual auto getStartingAsset() const -> std::string = 0;
 
   /**
    * @brief Get the capacity of the opportunity.
@@ -38,11 +38,11 @@ public:
    * that can be used in the opportunity.
    * @return The capacity of the opportunity in the starting asset.
    */
-  virtual PreciseNumber getCapacity() const = 0;
+  [[nodiscard]] virtual auto getCapacity() const -> PreciseNumber = 0;
 
   /**
    * @brief Get the trades associated with the opportunity.
    * @return A vector of trades associated with the opportunity.
    */
-  virtual std::vector<Trade> &getTrades() const = 0;
+  [[nodiscard]] virtual auto getTrades() const -> std::vector<Trade> = 0;
 };

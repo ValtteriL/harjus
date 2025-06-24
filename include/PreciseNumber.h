@@ -46,7 +46,7 @@ public:
    * @brief Copy assignment
    * @param other The other PreciseNumber object to copy from.
    */
-  PreciseNumber &operator=(const PreciseNumber &other);
+  auto operator=(const PreciseNumber &other) -> PreciseNumber &;
 
   /**
    * @brief Copy constructor for PreciseNumber.
@@ -59,56 +59,56 @@ public:
    * @param other The other PreciseNumber object to add.
    * @return The sum as a new PreciseNumber object.
    */
-  PreciseNumber operator+(const PreciseNumber &other) const;
+  auto operator+(const PreciseNumber &other) const -> PreciseNumber;
 
   /**
    * @brief Adds another PreciseNumber to this one (in-place).
    * @param other The other PreciseNumber object to add.
    * @return Reference to this object after addition.
    */
-  PreciseNumber &operator+=(const PreciseNumber &other);
+  auto operator+=(const PreciseNumber &other) -> PreciseNumber &;
 
   /**
    * @brief Subtracts one PreciseNumber object from another.
    * @param other The other PreciseNumber object to subtract.
    * @return The difference as a new PreciseNumber object.
    */
-  PreciseNumber operator-(const PreciseNumber &other) const;
+  auto operator-(const PreciseNumber &other) const -> PreciseNumber;
 
   /**
    * @brief Subtracts another PreciseNumber from this one (in-place).
    * @param other The other PreciseNumber object to subtract.
    * @return Reference to this object after subtraction.
    */
-  PreciseNumber &operator-=(const PreciseNumber &other);
+  auto operator-=(const PreciseNumber &other) -> PreciseNumber &;
 
   /**
    * @brief Multiplies two PreciseNumber amounts.
    * @param other The other PreciseNumber object to multiply by.
    * @return The result as a new PreciseNumber object.
    */
-  PreciseNumber operator*(const PreciseNumber &other) const;
+  auto operator*(const PreciseNumber &other) const -> PreciseNumber;
 
   /**
    * @brief Multiplies this PreciseNumber by another (in-place).
    * @param other The other PreciseNumber object to multiply by.
    * @return Reference to this object after multiplication.
    */
-  PreciseNumber &operator*=(const PreciseNumber &other);
+  auto operator*=(const PreciseNumber &other) -> PreciseNumber &;
 
   /**
    * @brief Divides this PreciseNumber by another.
    * @param other The divisor PreciseNumber object.
    * @return The quotient as a new PreciseNumber object.
    */
-  PreciseNumber operator/(const PreciseNumber &other) const;
+  auto operator/(const PreciseNumber &other) const -> PreciseNumber;
 
   /**
    * @brief Divides this PreciseNumber by another (in-place).
    * @param other The divisor PreciseNumber object.
    * @return Reference to this object after division.
    */
-  PreciseNumber &operator/=(const PreciseNumber &other);
+  auto operator/=(const PreciseNumber &other) -> PreciseNumber &;
 
   /**
    * @brief Computes the floating-point remainder of division (modulo) with
@@ -117,28 +117,29 @@ public:
    * @param b The divisor PreciseNumber object.
    * @return The remainder as a new PreciseNumber object.
    */
-  static PreciseNumber fmod(const PreciseNumber &a, const PreciseNumber &b);
+  static auto fmod(const PreciseNumber &a,
+                   const PreciseNumber &b) -> PreciseNumber;
 
   /**
    * @brief Checks if two PreciseNumber objects are equal.
    * @param other The other PreciseNumber object to compare.
    * @return True if equal, false otherwise.
    */
-  bool operator==(const PreciseNumber &other) const;
+  auto operator==(const PreciseNumber &other) const -> bool;
 
   /**
    * @brief Checks if this PreciseNumber object is less than another.
    * @param other The other PreciseNumber object to compare.
    * @return True if this is less, false otherwise.
    */
-  bool operator<(const PreciseNumber &other) const;
+  auto operator<(const PreciseNumber &other) const -> bool;
 
   /**
    * @brief Checks if this PreciseNumber object is greater than another.
    * @param other The other PreciseNumber object to compare.
    * @return True if this is greater, false otherwise.
    */
-  bool operator>(const PreciseNumber &other) const;
+  auto operator>(const PreciseNumber &other) const -> bool;
 
   /**
    * @brief Checks if this PreciseNumber object is greater than or equal to
@@ -146,13 +147,13 @@ public:
    * @param other The other PreciseNumber object to compare.
    * @return True if this is greater or equal, false otherwise.
    */
-  bool operator>=(const PreciseNumber &other) const;
+  auto operator>=(const PreciseNumber &other) const -> bool;
 
   /**
    * @brief Returns the string representation of the PreciseNumber.
    * @return The amount as a string in the original unit.
    */
-  std::string toString() const;
+  [[nodiscard]] auto toString() const -> std::string;
 
   /**
    * @brief Returns the smaller of two PreciseNumbers.
@@ -160,8 +161,10 @@ public:
    * @param b The second PreciseNumber object to compare.
    * @return The minimum PreciseNumber.
    */
-  static PreciseNumber min(const PreciseNumber &a, const PreciseNumber &b);
+  static auto min(const PreciseNumber &a,
+                  const PreciseNumber &b) -> PreciseNumber;
 
   // Friend function for output stream
-  friend std::ostream &operator<<(std::ostream &os, const PreciseNumber &c);
+  friend auto operator<<(std::ostream &os,
+                         const PreciseNumber &c) -> std::ostream &;
 };

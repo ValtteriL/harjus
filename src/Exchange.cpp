@@ -11,7 +11,7 @@
  * * @param privateKey The private key to use for signing
  * * @return The base64 encoded signature
  */
-std::string createSignature(const std::string &privateKeySeed) {
+auto createSignature(const std::string &privateKeySeed) -> std::string {
   // https://github.com/binance/binance-connector-python/blob/cf2bfbc634bf92a4d1153dd5b900a998fa9d499f/binance/api.py#L88
   // https://github.com/binance/binance-spot-api-docs/blob/master/rest-api.md#ed25519-keys
 
@@ -32,8 +32,8 @@ std::string createSignature(const std::string &privateKeySeed) {
   return uriSignature;
 }
 
-std::string getBalancesJson(const std::string &uri, const std::string &apiKey,
-                            const std::string &privateKeySeed) {
+auto getBalancesJson(const std::string &uri, const std::string &apiKey,
+                     const std::string &privateKeySeed) -> std::string {
   // create signature
   std::string signature = createSignature(privateKeySeed);
 
@@ -52,7 +52,7 @@ std::string getBalancesJson(const std::string &uri, const std::string &apiKey,
   return r.text;
 }
 
-std::unique_ptr<Balance> getBalance(const IConfiguration &config) {
+auto getBalance(const IConfiguration &config) -> std::unique_ptr<Balance> {
   auto balance = std::make_unique<Balance>();
 
   // Fetch balance from exchange API
@@ -88,9 +88,9 @@ std::unique_ptr<Balance> getBalance(const IConfiguration &config) {
   return balance;
 }
 
-std::unordered_map<std::string, Symbol>
-getSymbols(const IConfiguration &config) {
-  std::unordered_map<std::string, Symbol> symbols;
+auto getSymbols(const IConfiguration &config)
+    -> std::unordered_map<std::string, Symbol> {
+  std::unordered_map<std::string, Symbol> symbols{};
 
   // Fetch exchange info from Binance API
   std::string uri = config.getBinanceRESTApiUri() + "/api/v3/exchangeInfo";
@@ -155,10 +155,10 @@ getSymbols(const IConfiguration &config) {
   return symbols;
 }
 
-std::unordered_map<std::string, PreciseNumber>
-getRelativeValues(const IConfiguration &config,
-                  const std::unordered_map<std::string, Symbol> &symbols) {
-  std::unordered_map<std::string, PreciseNumber> relativeValues;
+auto getRelativeValues(const IConfiguration &config,
+                       const std::unordered_map<std::string, Symbol> &symbols)
+    -> std::unordered_map<std::string, PreciseNumber> {
+  std::unordered_map<std::string, PreciseNumber> relativeValues{};
 
   // Fetch symbol prices from Binance API
   std::string uri = config.getBinanceRESTApiUri() + "/api/v3/ticker/price";
@@ -173,7 +173,7 @@ getRelativeValues(const IConfiguration &config,
   }
 
   // Parse JSON response
-  std::unordered_map<std::string, PreciseNumber> symbolPrices;
+  std::unordered_map<std::string, PreciseNumber> symbolPrices{};
   try {
     boost::json::value json = boost::json::parse(r.text);
     for (const auto &item : json.as_array()) {

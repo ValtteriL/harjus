@@ -10,48 +10,52 @@ PreciseNumber::PreciseNumber(const std::string &amount)
 PreciseNumber::PreciseNumber(const PreciseNumber &other)
     : smallestUnit(other.smallestUnit) {}
 
-PreciseNumber &PreciseNumber::operator=(const PreciseNumber &other) {
+auto PreciseNumber::operator=(const PreciseNumber &other) -> PreciseNumber & {
   if (this != &other) {
     this->smallestUnit = other.smallestUnit;
   }
   return *this;
 }
 
-PreciseNumber PreciseNumber::operator+(const PreciseNumber &other) const {
+auto PreciseNumber::operator+(const PreciseNumber &other) const
+    -> PreciseNumber {
   PreciseNumber result{};
   result.smallestUnit = this->smallestUnit + other.smallestUnit;
   return result;
 }
 
-PreciseNumber PreciseNumber::operator-(const PreciseNumber &other) const {
+auto PreciseNumber::operator-(const PreciseNumber &other) const
+    -> PreciseNumber {
   PreciseNumber result{};
   result.smallestUnit = this->smallestUnit - other.smallestUnit;
   return result;
 }
 
-PreciseNumber &PreciseNumber::operator-=(const PreciseNumber &other) {
+auto PreciseNumber::operator-=(const PreciseNumber &other) -> PreciseNumber & {
   this->smallestUnit -= other.smallestUnit;
   return *this;
 }
 
-PreciseNumber &PreciseNumber::operator+=(const PreciseNumber &other) {
+auto PreciseNumber::operator+=(const PreciseNumber &other) -> PreciseNumber & {
   this->smallestUnit += other.smallestUnit;
   return *this;
 }
 
-PreciseNumber PreciseNumber::operator*(const PreciseNumber &other) const {
+auto PreciseNumber::operator*(const PreciseNumber &other) const
+    -> PreciseNumber {
   // Multiply smallest units and scale back to original unit
   PreciseNumber result{};
   result.smallestUnit = this->smallestUnit * other.smallestUnit / kPrecision;
   return result;
 }
 
-PreciseNumber &PreciseNumber::operator*=(const PreciseNumber &other) {
+auto PreciseNumber::operator*=(const PreciseNumber &other) -> PreciseNumber & {
   this->smallestUnit = this->smallestUnit * other.smallestUnit / kPrecision;
   return *this;
 }
 
-PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
+auto PreciseNumber::operator/(const PreciseNumber &other) const
+    -> PreciseNumber {
   PreciseNumber result{};
   if (other.smallestUnit == 0) {
     return result; // Handle division by zero
@@ -61,7 +65,7 @@ PreciseNumber PreciseNumber::operator/(const PreciseNumber &other) const {
   return result;
 }
 
-PreciseNumber &PreciseNumber::operator/=(const PreciseNumber &other) {
+auto PreciseNumber::operator/=(const PreciseNumber &other) -> PreciseNumber & {
   if (other.smallestUnit == 0) {
     return *this; // Handle division by zero
   }
@@ -71,8 +75,8 @@ PreciseNumber &PreciseNumber::operator/=(const PreciseNumber &other) {
   return *this;
 }
 
-PreciseNumber PreciseNumber::fmod(const PreciseNumber &a,
-                                  const PreciseNumber &b) {
+auto PreciseNumber::fmod(const PreciseNumber &a,
+                         const PreciseNumber &b) -> PreciseNumber {
   PreciseNumber result{};
   if (b.smallestUnit == 0) {
     return result; // Handle division by zero
@@ -81,27 +85,27 @@ PreciseNumber PreciseNumber::fmod(const PreciseNumber &a,
   return result;
 }
 
-bool PreciseNumber::operator==(const PreciseNumber &other) const {
+auto PreciseNumber::operator==(const PreciseNumber &other) const -> bool {
   return this->smallestUnit == other.smallestUnit;
 }
-bool PreciseNumber::operator<(const PreciseNumber &other) const {
+auto PreciseNumber::operator<(const PreciseNumber &other) const -> bool {
   return this->smallestUnit < other.smallestUnit;
 }
 
-bool PreciseNumber::operator>(const PreciseNumber &other) const {
+auto PreciseNumber::operator>(const PreciseNumber &other) const -> bool {
   return this->smallestUnit > other.smallestUnit;
 }
 
-bool PreciseNumber::operator>=(const PreciseNumber &other) const {
+auto PreciseNumber::operator>=(const PreciseNumber &other) const -> bool {
   return this->smallestUnit >= other.smallestUnit;
 }
 
-PreciseNumber PreciseNumber::min(const PreciseNumber &a,
-                                 const PreciseNumber &b) {
+auto PreciseNumber::min(const PreciseNumber &a,
+                        const PreciseNumber &b) -> PreciseNumber {
   return (a.smallestUnit < b.smallestUnit) ? a : b;
 }
 
-std::string PreciseNumber::toString() const {
+auto PreciseNumber::toString() const -> std::string {
   // Convert smallestUnit to string with appropriate precision
   bm::cpp_dec_float_50 value{smallestUnit.str()};
 
@@ -109,8 +113,9 @@ std::string PreciseNumber::toString() const {
   value /= kPrecision;
 
   // Always output in fixed-point decimal notation (no exponent)
-  std::ostringstream oss;
-  oss << std::fixed << std::setprecision(10) << value;
+  constexpr int kToStringPrecision = 10;
+  std::ostringstream oss{};
+  oss << std::fixed << std::setprecision(kToStringPrecision) << value;
   std::string str = oss.str();
   // Strip trailing zeros and possibly the decimal point
   str.erase(str.find_last_not_of('0') + 1, std::string::npos);
@@ -122,7 +127,7 @@ std::string PreciseNumber::toString() const {
 }
 
 // Friend function for output stream
-std::ostream &operator<<(std::ostream &os, const PreciseNumber &c) {
+auto operator<<(std::ostream &os, const PreciseNumber &c) -> std::ostream & {
   os << c.toString();
   return os;
 }

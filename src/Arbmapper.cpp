@@ -24,10 +24,10 @@ void buildGraph(Graph &graph,
                 const std::unordered_map<std::string, Symbol> &symbolMap) {
 
   // Create a map to store vertexes by asset
-  std::unordered_map<std::string, std::size_t> vertexMap;
+  std::unordered_map<std::string, std::size_t> vertexMap{};
 
   // get unique asset names
-  std::unordered_set<std::string> uniqueAssets;
+  std::unordered_set<std::string> uniqueAssets{};
   for (const auto &pair : symbolMap) {
     const auto &symbol = pair.second;
     uniqueAssets.insert(symbol.baseAsset);
@@ -43,8 +43,8 @@ void buildGraph(Graph &graph,
   }
 
   // Add edges to the graph
-  for (const auto &pair : symbolMap) {
-    const auto &symbol = pair.second;
+  for (auto &pair : symbolMap) {
+    auto &symbol = pair.second;
 
     auto base = vertexMap[symbol.baseAsset];
     auto quote = vertexMap[symbol.quoteAsset];
@@ -60,11 +60,11 @@ void buildGraph(Graph &graph,
 }
 
 template <typename ForwardIt>
-std::vector<typename std::iterator_traits<ForwardIt>::value_type>
-rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
-                                  ForwardIt last) {
+auto rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
+                                       ForwardIt last)
+    -> std::vector<typename std::iterator_traits<ForwardIt>::value_type> {
   using ValueType = typename std::iterator_traits<ForwardIt>::value_type;
-  std::vector<ValueType> result;
+  std::vector<ValueType> result{};
 
   // Copy the second part (from middle to last)
   for (auto it = middle; it != last; ++it) {
@@ -82,13 +82,13 @@ rotate_copy_with_copy_constructor(ForwardIt first, ForwardIt middle,
 struct CycleVisitor {
   // This struct is used to visit each cycle found by tiernan_all_cycles
 
-  std::vector<std::vector<Trade> *> &cycles;
+  std::vector<std::vector<Trade>> *cycles;
 
-  CycleVisitor(std::vector<std::vector<Trade> *> &cycles) : cycles(cycles) {}
+  CycleVisitor(std::vector<std::vector<Trade>> &cycles) : cycles(&cycles) {}
 
   // This function is called for each cycle found
   void cycle(auto const &path, Graph const &g) {
-    std::vector<Trade> tradePath;
+    std::vector<Trade> tradePath{};
 
     // get th edges (trades) in the tradePath
     for (size_t i = 0; i < path.size(); ++i) {
@@ -106,7 +106,7 @@ struct CycleVisitor {
     for (size_t i = 0; i < tradePath.size(); ++i) {
       auto copy = rotate_copy_with_copy_constructor(
           tradePath.begin(), tradePath.begin() + i, tradePath.end());
-      cycles.push_back(new std::vector<Trade>(copy));
+      cycles->emplace_back(copy);
     }
   }
 };
@@ -118,24 +118,24 @@ struct CycleVisitor {
  * Each Trade is a copy of the original Trade object in the graph, so the
  * original graph is not modified.
  */
-std::vector<std::vector<Trade> *> findCycles(const Graph &graph,
-                                             const int maxDepth) {
+auto findCycles(const Graph &graph,
+                const int maxDepth) -> std::vector<std::vector<Trade>> {
   // Create a visitor to process the cycles
   // the cycles need to be stored here, as the visitor is destroyed after the
   // function returns and visitor must be passed by value
-  std::vector<std::vector<Trade> *> cycles;
+  std::vector<std::vector<Trade>> cycles{};
   CycleVisitor visitor{cycles};
 
   boost::tiernan_all_cycles(graph, visitor, 3, maxDepth);
 
-  return visitor.cycles;
+  return cycles;
 }
 
-std::vector<std::vector<Trade> *>
-getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
-                const IConfiguration &configuration) {
+auto getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
+                     const IConfiguration &configuration)
+    -> std::vector<std::vector<Trade>> {
   // Create a graph
-  Graph graph;
+  Graph graph = 0;
 
   // Build the graph with the given symbols
   buildGraph(graph, symbolMap);
@@ -147,7 +147,7 @@ getTradingPaths(const std::unordered_map<std::string, Symbol> &symbolMap,
   // reject cycles with symbols that are not in the assets list
   auto assets = configuration.getAssets();
   std::erase_if(cycles, [&assets](const auto &cycle) {
-    for (const auto &trade : *cycle) {
+    for (const auto &trade : cycle) {
       if (std::find(assets.begin(), assets.end(), trade.usedCurrency()) ==
               assets.end() ||
           std::find(assets.begin(), assets.end(), trade.recvCurrency()) ==

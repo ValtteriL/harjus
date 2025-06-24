@@ -24,8 +24,8 @@ public:
    * @param feeDelta The fee delta of the execution report
    */
   ExecutionReport(
-      const std::string &id, const TradeExecutionStatus status, const PreciseNumber usedQty,
-      const PreciseNumber recvQty,
+      std::string id, TradeExecutionStatus status, const PreciseNumber &usedQty,
+      const PreciseNumber &recvQty,
       const std::unordered_map<std::string, PreciseNumber> &feeDelta);
 
   /**
@@ -42,13 +42,13 @@ public:
    * @brief Get the ID of the execution report
    * @return The ID of the execution report
    */
-  std::string getId() const;
+  auto getId() const -> std::string;
 
   /**
    * @brief Get the status of the execution report
    * @return The status of the execution report
    */
-  TradeExecutionStatus getStatus() const;
+  auto getStatus() const -> TradeExecutionStatus;
 
   /**
    * @brief Get the fee delta of the execution report
@@ -56,19 +56,19 @@ public:
    * This does not include the changes to base and quote assets. Those need to
    * be fetched from the Execution object.
    */
-  std::unordered_map<std::string, PreciseNumber> getFeeDelta() const;
+  auto getFeeDelta() const -> std::unordered_map<std::string, PreciseNumber>;
 
   /**
    * @brief Get the used quantity of the execution report
    * @return The used quantity of the execution report
    */
-  PreciseNumber usedQty();
+  auto usedQty() -> PreciseNumber;
 
   /**
    * @brief Get the received quantity of the execution report
    * @return The received quantity of the execution report
    */
-  PreciseNumber recvQty();
+  auto recvQty() -> PreciseNumber;
 
   /**
    * @brief Stream operator overload for ExecutionReport
@@ -76,6 +76,6 @@ public:
    * @param report ExecutionReport object to print
    * @return Reference to the output stream
    */
-  friend std::ostream &operator<<(std::ostream &os,
-                                  const ExecutionReport &report);
+  friend auto operator<<(std::ostream &os,
+                                  const ExecutionReport &report) -> std::ostream &;
 };

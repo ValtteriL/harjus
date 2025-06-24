@@ -21,8 +21,8 @@ Application::Application(
     boost::lockfree::spsc_queue<ExecutionReport> &reportQueue,
     std::unordered_map<std::string, Symbol> &symbolMap)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
-      priceUpdateQueue(queue), executionReportQueue(reportQueue),
-      symbolMap(symbolMap) {}
+      priceUpdateQueue(&queue), executionReportQueue(&reportQueue),
+      symbolMap(&symbolMap) {}
 
 void Application::onCreate(const FIX::SessionID &sessionID) {
   // store markert data session IDs if Qualifier starts with MARKETDATA
@@ -54,7 +54,7 @@ void Application::fromAdmin(const FIX::Message &message, const FIX::SessionID &)
   FIX::MsgType msgType;
   message.getHeader().getField(msgType);
 
-  if (msgType == FIX::MsgType_Reject) {
+  if (msgType.getValue() == FIX::MsgType_Reject) {
     throw std::runtime_error("Received Reject message: " + message.toString());
   }
 }
@@ -118,7 +118,8 @@ void Application::toApp(FIX::Message &message, const FIX::SessionID &)
   }
 }
 
-bool Application::subscribeToSymbols(const std::vector<std::string> &symbols) {
+auto Application::subscribeToSymbols(const std::vector<std::string> &symbols)
+    -> bool {
   if (marketDataSessionIDs.empty()) {
     throw std::runtime_error(
         "No market data sessions available for subscription");
@@ -209,7 +210,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     char execTypeValue = execType.getValue();
 
     // Determine the execution status based on ExecType
-    TradeExecutionStatus status;
+    TradeExecutionStatus status{};
     switch (execTypeValue) {
     case FIX::ExecType_NEW:
       return; // Ignore notification of new order
@@ -297,7 +298,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
     }
 
     // Create execution report & push to the queue
-    executionReportQueue.push(
+    executionReportQueue->push(
         ExecutionReport{id, status, usedQty, recvQty, feeDelta});
 
   } catch (const std::exception &e) {
@@ -361,8 +362,8 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
       }
     }
 
-    priceUpdateQueue.push(PriceUpdate{&symbolMap.at(symbolValue), bidPrice,
-                                      askPrice, bidQuantity, askQuantity});
+    priceUpdateQueue->push(PriceUpdate{&symbolMap->at(symbolValue), bidPrice,
+                                       askPrice, bidQuantity, askQuantity});
   } catch (const std::exception &e) {
     throw std::runtime_error("Error processing market data snapshot: " +
                              std::string(e.what()));
@@ -400,7 +401,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
       // Check if we already have an update for this symbol
       if (updates.find(symbolValue) == updates.end()) {
         // Create a new update
-        updates[symbolValue].symbol = &symbolMap.at(symbolValue);
+        updates[symbolValue].symbol = &symbolMap->at(symbolValue);
       }
 
       // Process update based on entry type (bid or ask)
@@ -432,7 +433,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
 
     // Add all updates to the queue
     for (const auto &[symbol, update] : updates) {
-      priceUpdateQueue.push(update);
+      priceUpdateQueue->push(update);
     }
   } catch (const std::exception &e) {
     throw std::runtime_error("Error processing incremental refresh: " +

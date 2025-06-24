@@ -10,36 +10,35 @@
 #include <string>
 #include <vector>
 
-Engine::Engine(std::unordered_map<std::string, Symbol> &symbols,
-               std::vector<std::vector<Trade> *> &tradingPaths,
-               Balance &balance, ReservedTrades &reservedTrades,
+Engine::Engine(std::vector<std::vector<Trade>> &tradingPaths, Balance &balance,
+               ReservedTrades &reservedTrades,
                boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
                boost::lockfree::spsc_queue<Execution> &executionQueue,
                std::unordered_map<std::string, PreciseNumber> &relativeValues,
-               const PreciseNumber commission)
-    : _symbols(symbols), _relativeValues(relativeValues),
-      _priceUpdateQueue(priceUpdateQueue), _executionQueue(executionQueue),
-      _reservedTrades(reservedTrades), _balance(balance) {
+               const PreciseNumber &commission)
+    : _relativeValues(relativeValues), _priceUpdateQueue(&priceUpdateQueue),
+      _executionQueue(&executionQueue), _reservedTrades(&reservedTrades),
+      _balance(&balance) {
 
   // Initialize _opportunities with the trading paths
   for (auto &path : tradingPaths) {
 
     // create an opportunity
-    std::string startingAsset = path->front().usedCurrency();
-    Opportunity *opportunity =
-        new Opportunity(*path, _relativeValues[startingAsset], commission);
+    std::string startingAsset = path.front().usedCurrency();
+    auto &opportunity = _opportunityList.emplace_back(
+        path, _relativeValues[startingAsset], commission);
 
     // add opportunity to _opportunities with every trade symbol as the key
-    for (auto &trade : *path) {
+    for (auto &trade : path) {
       _opportunities.insert({trade.symbol()->symbol, opportunity});
     }
   }
 };
 
 void Engine::reserveBudgetAndSymbols(const Opportunity &opp) {
-  _reservedTrades.reserveAll(opp.getTrades());
-  _balance.updateBalance(opp.getStartingAsset(),
-                         opp.getCapacity() * PreciseNumber{"-1"});
+  _reservedTrades->reserveAll(opp.getTrades());
+  _balance->updateBalance(opp.getStartingAsset(),
+                          opp.getCapacity() * PreciseNumber{"-1"});
 }
 
 void Engine::processPriceUpdate(const PriceUpdate &update) {
@@ -50,24 +49,26 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   update.symbol->bidQty = update.bidQty;
 
   // get balances
-  auto balanceMap = _balance.getBalances();
+  auto balanceMap = _balance->getBalances();
 
   // get reserved trades
-  auto reservedSymbols = _reservedTrades.getReservedTrades();
+  auto reservedSymbols = _reservedTrades->getReservedTrades();
 
   Opportunity *best = nullptr;
 
   // Update all affected opportunities
   auto affected = _opportunities.equal_range(update.symbol->symbol);
-  for (auto it = affected.first; it != affected.second; ++it) {
+  for (auto &it = affected.first; it != affected.second; ++it) {
 
-    auto opp = it->second;
+    auto &opp = it->second;
 
     // Update the opportunity with the new price
-    opp->update(balanceMap[opp->getStartingAsset()]);
+    opp.update(balanceMap[opp.getStartingAsset()]);
 
-    if (PreciseNumber{"0"} >= opp->getTotalProfit() ||
-        std::any_of(opp->getTrades().begin(), opp->getTrades().end(),
+    auto trades = opp.getTrades();
+
+    if (PreciseNumber{"0"} >= opp.getTotalProfit() ||
+        std::any_of(trades.begin(), trades.end(),
                     [&reservedSymbols](const StaticTrade &trade) {
                       return reservedSymbols.contains(trade.symbol());
                     }))
@@ -75,8 +76,8 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
 
     // If the opportunity is profitable and does not contain reserved symbols,
     // check if it's the best one
-    if (!best || opp->getTotalProfit() > best->getTotalProfit()) {
-      best = opp;
+    if (!best || opp.getTotalProfit() > best->getTotalProfit()) {
+      best = &opp;
     }
   }
 
@@ -88,16 +89,16 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   // Freeze and queue the best opportunity for execution
   Execution execution{*best};
   BOOST_LOG_TRIVIAL(debug) << "Queuing execution for trader: " << execution;
-  _executionQueue.push(std::move(execution));
+  _executionQueue->push(execution);
 }
 
-void Engine::run(std::stop_token stoken) {
+void Engine::run(const std::stop_token &stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Engine";
 
   while (!stoken.stop_requested()) {
 
-    if (PriceUpdate update; _priceUpdateQueue.pop(update)) {
+    if (PriceUpdate update; _priceUpdateQueue->pop(update)) {
       processPriceUpdate(update);
     }
   }

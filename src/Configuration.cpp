@@ -16,9 +16,9 @@ const std::string FIX_FILE_DIR = "FIX_FILE_DIR";
 const std::string ASSETS = "ASSETS";
 
 std::vector<std::string> split(const std::string &s, char delimiter) {
-  std::vector<std::string> tokens;
-  std::stringstream ss(s);
-  std::string token;
+  std::vector<std::string> tokens{};
+  std::stringstream ss{s};
+  std::string token{};
   while (std::getline(ss, token, delimiter)) {
     tokens.push_back(token);
   }
@@ -55,35 +55,35 @@ Configuration::Configuration() {
   }
 }
 
-std::string Configuration::getBinanceRESTApiUri() const {
+auto Configuration::getBinanceRESTApiUri() const -> std::string {
   return dotenv::getenv(BINANCE_REST_API_URI.c_str());
 }
 
-std::string Configuration::getBinanceFIXApiHostnameOrderEntry() const {
+auto Configuration::getBinanceFIXApiHostnameOrderEntry() const -> std::string {
   return dotenv::getenv(BINANCE_FIX_API_HOSTNAME_ORDERENTRY.c_str());
 }
 
-std::string Configuration::getBinanceFIXApiPortOrderEntry() const {
+auto Configuration::getBinanceFIXApiPortOrderEntry() const -> std::string {
   return dotenv::getenv("BINANCE_FIX_API_PORT_ORDERENTRY", "9000");
 }
 
-std::string Configuration::getBinanceFIXApiHostnameMarketData() const {
+auto Configuration::getBinanceFIXApiHostnameMarketData() const -> std::string {
   return dotenv::getenv(BINANCE_FIX_API_HOSTNAME_MARKETDATA.c_str());
 }
 
-std::string Configuration::getBinanceFIXApiPortMarketData() const {
+auto Configuration::getBinanceFIXApiPortMarketData() const -> std::string {
   return dotenv::getenv("BINANCE_FIX_API_PORT_MARKETDATA", "9000");
 }
 
-std::string Configuration::getEd25519Seed() const {
+auto Configuration::getEd25519Seed() const -> std::string {
   return dotenv::getenv(BINANCE_ED25519_SEED.c_str());
 }
 
-std::string Configuration::getEd25519ApiKey() const {
+auto Configuration::getEd25519ApiKey() const -> std::string {
   return dotenv::getenv(BINANCE_ED25519_API_KEY.c_str());
 }
 
-int Configuration::getMaxTradingPathLength() const {
+auto Configuration::getMaxTradingPathLength() const -> int {
   auto maxPathLength = dotenv::getenv("MAX_TRADING_PATH_LENGTH", "3");
   return std::stoi(maxPathLength);
 }
@@ -93,16 +93,16 @@ std::vector<std::string> Configuration::getAssets() const {
   return split(assets, ',');
 }
 
-PreciseNumber Configuration::getCommission() const {
+auto Configuration::getCommission() const -> PreciseNumber {
   auto commission = dotenv::getenv("COMMISSION", "0.001");
   return PreciseNumber{commission.c_str()};
 }
 
-int Configuration::getLogLevel() const {
+auto Configuration::getLogLevel() const -> int {
   auto logLevel = dotenv::getenv("LOG_LEVEL", "1");
   return std::stoi(logLevel);
 }
 
-std::string Configuration::getFixFileStorePath() const {
+auto Configuration::getFixFileStorePath() const -> std::string {
   return dotenv::getenv(FIX_FILE_DIR.c_str(), "./fix-file-dir");
 }

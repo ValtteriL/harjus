@@ -41,7 +41,7 @@ public:
    * @param other The Execution object to copy from.
    * @return A reference to this Execution object.
    */
-  Execution &operator=(const Execution &other) {
+  auto operator=(const Execution &other) -> Execution & {
     if (this != &other) {
       _trades = other._trades;
       _tradesVector = other._tradesVector;
@@ -60,7 +60,7 @@ public:
   /**
    * @brief equality operator for Execution
    */
-  bool operator==(const Execution &other) const {
+  auto operator==(const Execution &other) const -> bool {
     return this->_tradesVector == other._tradesVector;
   }
 
@@ -70,13 +70,13 @@ public:
    * @details This method should be called after a price update that affects
    * this opportunity to update the total profit.
    */
-  void update(const PreciseNumber startingAssetBudget);
+  void update(const PreciseNumber &startingAssetBudget);
 
   /**
    * @brief Get the total profit
    * @return The total profit of the opportunity in relative value.
    */
-  PreciseNumber getTotalProfit() const;
+  [[nodiscard]] auto getTotalProfit() const -> PreciseNumber;
 
   /**
    * @brief Get the capacity of the opportunity.
@@ -85,26 +85,28 @@ public:
    * @return The capacity of the opportunity in the starting asset.
    */
 
-  PreciseNumber getCapacity() const;
+  [[nodiscard]] auto getCapacity() const -> PreciseNumber;
 
   /**
    * @brief Get the starting asset.
    * @return Get the asset symbol that is used to start the series of trades.
    */
-  std::string getStartingAsset() const;
+  [[nodiscard]] auto getStartingAsset() const -> std::string;
 
   /**
    * @brief Get the trades associated with the execution.
    * @return A queue of trades associated with the execution.
    */
-  std::queue<StaticTrade> getTrades() const;
+  [[nodiscard]] auto getTrades() const -> std::queue<StaticTrade>;
 
   /**
    * @brief Get the original trades associated with the execution.
    * @return A vector of trades associated with the execution since
    * construction.
    */
-  std::vector<StaticTrade> &getOriginalTrades() { return _tradesVector; }
+  auto getOriginalTrades() -> std::vector<StaticTrade> & {
+    return _tradesVector;
+  }
 
   /**
    * @brief Stream operator overload for Execution
@@ -112,5 +114,6 @@ public:
    * @param execution Execution object to print
    * @return Reference to the output stream
    */
-  friend std::ostream &operator<<(std::ostream &os, const Execution &execution);
+  friend auto operator<<(std::ostream &os,
+                         const Execution &execution) -> std::ostream &;
 };

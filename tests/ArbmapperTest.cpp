@@ -17,7 +17,7 @@
 
 class ArbmapperTest : public testing::Test {
 protected:
-  ArbmapperTest() {}
+  ArbmapperTest() = default;
 
   MockConfiguration config;
   Symbol btcEthSymbol{"BTCETH",
@@ -98,7 +98,7 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
   // Print out the detected opportunities with symbols and positions
   for (const auto &path : opportunities) {
     std::cout << "Path: ";
-    for (const auto &trade : *path) {
+    for (const auto &trade : path) {
       auto position = trade.position() == Position::LONG ? "LONG" : "SHORT";
       std::cout << trade.symbol()->symbol << " (" << position << ") ";
     }
@@ -110,17 +110,17 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
 
   // Verify that all paths are of length 3
   for (const auto &path : opportunities) {
-    EXPECT_EQ(path->size(), 3);
+    EXPECT_EQ(path.size(), 3);
   }
 
   // Verify that no trades are the same object (their addresses are different)
   int totalTrades = 0;
   for (const auto &path : opportunities) {
-    totalTrades += path->size();
+    totalTrades += path.size();
   }
-  std::unordered_set<std::string> uniqueTradeAddresses;
+  std::unordered_set<std::string> uniqueTradeAddresses{};
   for (const auto &path : opportunities) {
-    for (const auto &trade : *path) {
+    for (const auto &trade : path) {
       uniqueTradeAddresses.insert(
           std::to_string(reinterpret_cast<std::uintptr_t>(&trade)));
     }
@@ -129,9 +129,9 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
 
   // Verify that the returned trading paths contain at least one path
   // with each of the following as the first usedCurrency: BTC, ETH, DOGE
-  std::unordered_set<std::string> firstUsedCurrencies;
+  std::unordered_set<std::string> firstUsedCurrencies{};
   for (const auto &path : opportunities) {
-    firstUsedCurrencies.insert(std::string{path->front().usedCurrency()});
+    firstUsedCurrencies.insert(std::string{path.front().usedCurrency()});
   }
   EXPECT_TRUE(firstUsedCurrencies.count("BTC"));
   EXPECT_TRUE(firstUsedCurrencies.count("ETH"));
@@ -141,13 +141,13 @@ TEST_F(ArbmapperTest, detectsAllTradingOpportunities) {
   for (const auto &path : opportunities) {
     // 1. For every trade except the first, usedCurrency == previous trade's
     // recvCurrency
-    for (size_t i = 1; i < path->size(); ++i) {
-      EXPECT_EQ(path->at(i).usedCurrency(), path->at(i - 1).recvCurrency());
+    for (size_t i = 1; i < path.size(); ++i) {
+      EXPECT_EQ(path.at(i).usedCurrency(), path.at(i - 1).recvCurrency());
     }
 
     // 3. Starting asset is the same as recvCurrency of the last trade
-    std::string startingAsset = path->front().usedCurrency();
-    std::string lastRecvCurrency = path->back().recvCurrency();
+    std::string startingAsset = path.front().usedCurrency();
+    std::string lastRecvCurrency = path.back().recvCurrency();
     EXPECT_EQ(startingAsset, lastRecvCurrency);
   }
 }

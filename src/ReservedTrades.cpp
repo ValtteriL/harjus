@@ -19,7 +19,8 @@ void ReservedTrades::releaseAll(const std::vector<StaticTrade> &trades) {
                 });
 }
 
-std::unordered_set<std::string> ReservedTrades::getReservedTrades() const {
+auto ReservedTrades::getReservedTrades() const
+    -> std::unordered_set<std::string> {
   std::shared_lock<std::shared_mutex> lock(mtx);
   return _reservedTrades;
 }

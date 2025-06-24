@@ -11,11 +11,11 @@
 class Trade {
 
 private:
-  const Symbol *_symbol = nullptr;
-  const Position _position = Position::LONG;
+  Symbol const *_symbol = nullptr;
+  Position _position = Position::LONG;
   PreciseNumber _orderQty{"0"};
-  const std::string _recvCurrency = "PLACEHOLDER";
-  const std::string _usedCurrency = "PLACEHOLDER";
+  std::string _recvCurrency = "PLACEHOLDER";
+  std::string _usedCurrency = "PLACEHOLDER";
 
 public:
   /**
@@ -35,13 +35,13 @@ public:
    * Get the position of the trade.
    * @return The position of the trade.
    */
-  enum Position position() const;
+  [[nodiscard]] auto position() const -> enum Position;
 
   /**
    * Get the order quantity of the trade.
    * @return The quantity of the base asset to be traded.
    */
-  PreciseNumber orderQty() const;
+  [[nodiscard]] auto orderQty() const -> PreciseNumber;
 
   /**
    * Reset the order quantity of the trade.
@@ -54,19 +54,19 @@ public:
    * Get the offer quantity of the trade.
    * @return The quantity of the base asset available for trading.
    */
-  PreciseNumber offerQty() const;
+  [[nodiscard]] auto offerQty() const -> PreciseNumber;
 
   /**
    * Get the order price of the trade.
    * @return The price per unit of base asset.
    */
-  PreciseNumber orderPrice() const;
+  [[nodiscard]] auto orderPrice() const -> PreciseNumber;
 
   /**
    * Get the symbol of the trade.
    * @return The symbol of the trade.
    */
-  const Symbol *symbol() const;
+  [[nodiscard]] auto symbol() const -> const Symbol *;
 
   /**
    * @brief Set the budget for the trade. Updates the order to the maximum
@@ -77,38 +77,38 @@ public:
    * quantity is set to 0.
    * @param budget The budget (in used asset) for the trade.
    */
-  void recalculateOrderQty(const PreciseNumber budget);
+  void recalculateOrderQty(const PreciseNumber &budget);
 
   /**
    * Get the quantity of the asset to be received.
    * @return The quantity of the asset to be received.
    */
-  PreciseNumber recvQty() const;
+  [[nodiscard]] auto recvQty() const -> PreciseNumber;
 
   /**
    * Get the quantity of the asset to be used.
    * @return The quantity of the asset to be used.
    */
-  PreciseNumber usedQty() const;
+  [[nodiscard]] auto usedQty() const -> PreciseNumber;
 
   /**
    * Get the currency of the asset to be received.
    * @return The currency of the asset to be received.
    */
-  std::string recvCurrency() const;
+  [[nodiscard]] auto recvCurrency() const -> std::string;
 
   /**
    * Get the currency of the asset to be used.
    * @return The currency of the asset to be used.
    */
-  std::string usedCurrency() const;
+  [[nodiscard]] auto usedCurrency() const -> std::string;
 
   /**
    * Compare two trades for equality. This is used to check if a trade is
    * already reserved. This ensures that trades with the same symbol and
    * position are treated as the same.
    */
-  bool operator==(const Trade &other) const;
+  auto operator==(const Trade &other) const -> bool;
 
   /**
    * @brief Copy constructor for Trade class.

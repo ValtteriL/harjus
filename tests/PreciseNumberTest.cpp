@@ -125,22 +125,22 @@ TEST(PreciseNumberTest, AddAssignOperator) {
 
 TEST(PreciseNumberTest, OutputStreamOperator) {
   PreciseNumber c{"1.2345"};
-  std::ostringstream oss;
+  std::ostringstream oss{};
   oss << c;
   EXPECT_EQ(oss.str(), "1.2345");
   PreciseNumber c2{"-0.5678"};
-  std::ostringstream oss2;
+  std::ostringstream oss2{};
   oss2 << c2;
   EXPECT_EQ(oss2.str(), "-0.5678");
   // Test very small number is printed in decimal, not exponential form
   PreciseNumber c3{"1.48e-6"};
-  std::ostringstream oss3;
+  std::ostringstream oss3{};
   oss3 << c3;
   EXPECT_EQ(oss3.str(), "0.00000148");
   // Test number without decimals is printed without decimal point or trailing
   // zeros
   PreciseNumber c4{"5.000"};
-  std::ostringstream oss4;
+  std::ostringstream oss4{};
   oss4 << c4;
   EXPECT_EQ(oss4.str(), "5");
 }

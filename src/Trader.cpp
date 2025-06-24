@@ -11,7 +11,6 @@
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include <chrono>
 #include <random>
 #include <stdexcept>
 
@@ -19,21 +18,25 @@ Trader::Trader(
     boost::lockfree::spsc_queue<Execution> &executionQueue,
     boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
     IApplication &application, Balance &balance, ReservedTrades &reservedTrades)
-    : _executionQueue(executionQueue),
-      _executionReportQueue(executionReportQueue), _application(application),
-      _balance(balance), _reservedTrades(reservedTrades) {}
+    : _executionQueue(&executionQueue),
+      _executionReportQueue(&executionReportQueue), _application(&application),
+      _balance(&balance), _reservedTrades(&reservedTrades) {}
 
 /** Generate ID for execution */
-std::string generateId() {
-  static const char charset[] = "abcdefghijklmnopqrstuvwxyz0123456789";
+auto generateId() -> std::string {
+  static constexpr std::array<char, 36> charset = {
+      'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+      'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+      'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+  static constexpr std::size_t ID_LENGTH = 8;
   static thread_local std::mt19937 rng(std::random_device{}());
-  static std::uniform_int_distribution<> dist(0, sizeof(charset) - 2);
-  std::string id(8, '\0');
-  std::generate_n(id.begin(), 8, [&]() { return charset[dist(rng)]; });
+  static std::uniform_int_distribution<> dist(0, charset.size() - 1);
+  std::string id(ID_LENGTH, '\0');
+  std::generate_n(id.begin(), ID_LENGTH, [&]() { return charset.at(dist(rng)); });
   return id;
 }
 
-void Trader::processExecution(Execution execution) {
+void Trader::processExecution(const Execution &execution) {
 
   BOOST_LOG_TRIVIAL(debug) << "Processing execution " << execution;
 
@@ -53,8 +56,8 @@ void Trader::processExecution(Execution execution) {
     _executionIdMap.emplace(orderId, std::make_pair(trade, executionId));
 
     // Submit the order
-    _application.submitOrder(orderId, trade.symbol(), trade.orderQty(),
-                             trade.orderPrice(), trade.position());
+    _application->submitOrder(orderId, trade.symbol(), trade.orderQty(),
+                              trade.orderPrice(), trade.position());
   }
 
   // Store the execution and delta with execution ID
@@ -166,14 +169,14 @@ void Trader::processReport(ExecutionReport *execReport) {
     _failedExecutions.erase(executionId);
 
     // update balance
-    _balance.updateBalance(delta);
+    _balance->updateBalance(delta);
 
     // free symbols
-    _reservedTrades.releaseAll(execution.getOriginalTrades());
+    _reservedTrades->releaseAll(execution.getOriginalTrades());
   }
 }
 
-void Trader::run(std::stop_token stoken) {
+void Trader::run(const std::stop_token &stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Trader";
 
@@ -182,13 +185,13 @@ void Trader::run(std::stop_token stoken) {
   while (!stoken.stop_requested()) {
 
     // Process execution
-    if (Execution execution; _executionQueue.pop(execution)) {
+    if (Execution execution; _executionQueue->pop(execution)) {
       processExecution(execution);
     }
 
     // Process execution report
     if (ExecutionReport executionReport;
-        _executionReportQueue.pop(executionReport)) {
+        _executionReportQueue->pop(executionReport)) {
       processReport(&executionReport);
     }
   }
@@ -199,7 +202,7 @@ void Trader::run(std::stop_token stoken) {
   while (!_executionsMap.empty()) {
 
     if (ExecutionReport executionReport;
-        _executionReportQueue.pop(executionReport)) {
+        _executionReportQueue->pop(executionReport)) {
       processReport(&executionReport);
     }
   }

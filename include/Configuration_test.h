@@ -5,6 +5,7 @@
 
 class MockConfiguration : public IConfiguration {
 public:
+  virtual ~MockConfiguration() = default;
   MOCK_METHOD(std::string, getBinanceRESTApiUri, (), (const, override));
   MOCK_METHOD(std::string, getBinanceFIXApiHostnameOrderEntry, (),
               (const, override));

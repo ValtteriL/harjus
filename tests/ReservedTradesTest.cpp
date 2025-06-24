@@ -17,7 +17,7 @@ using ::testing::ReturnRef;
 
 class ReservedTradesTest : public testing::Test {
 protected:
-  ReservedTradesTest() {}
+  ReservedTradesTest() = default;
 
   // trade1 and trade2 are identical trades
   // trade3 is a different (different position)

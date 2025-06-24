@@ -8,23 +8,23 @@ Trade::Trade(const Symbol *symbol, Position position)
       _usedCurrency(position == Position::LONG ? symbol->quoteAsset
                                                : symbol->baseAsset) {}
 
-enum Position Trade::position() const { return _position; }
+auto Trade::position() const -> enum Position { return _position; }
 
-PreciseNumber Trade::orderQty() const { return _orderQty; }
+auto Trade::orderQty() const -> PreciseNumber { return _orderQty; }
 
 void Trade::resetOrderQty() { _orderQty = offerQty(); }
 
-PreciseNumber Trade::orderPrice() const {
+auto Trade::orderPrice() const -> PreciseNumber {
   return _position == Position::LONG ? _symbol->askPrice : _symbol->bidPrice;
 }
 
-PreciseNumber Trade::offerQty() const {
+auto Trade::offerQty() const -> PreciseNumber {
   return _position == Position::LONG ? _symbol->askQty : _symbol->bidQty;
 }
 
-const Symbol *Trade::symbol() const { return _symbol; }
+auto Trade::symbol() const -> const Symbol * { return _symbol; }
 
-void Trade::recalculateOrderQty(PreciseNumber budget) {
+void Trade::recalculateOrderQty(const PreciseNumber &budget) {
 
   PreciseNumber budgetOrderQty =
       _position == Position::LONG ? budget / orderPrice() : budget;
@@ -44,7 +44,7 @@ void Trade::recalculateOrderQty(PreciseNumber budget) {
   }
 }
 
-PreciseNumber Trade::recvQty() const {
+auto Trade::recvQty() const -> PreciseNumber {
   if (_position == Position::LONG) {
     return _orderQty;
   } else {
@@ -52,7 +52,7 @@ PreciseNumber Trade::recvQty() const {
   }
 }
 
-PreciseNumber Trade::usedQty() const {
+auto Trade::usedQty() const -> PreciseNumber {
   if (_position == Position::LONG) {
     return _orderQty * orderPrice();
   } else {
@@ -60,11 +60,11 @@ PreciseNumber Trade::usedQty() const {
   }
 }
 
-std::string Trade::recvCurrency() const { return _recvCurrency; }
+auto Trade::recvCurrency() const -> std::string { return _recvCurrency; }
 
-std::string Trade::usedCurrency() const { return _usedCurrency; }
+auto Trade::usedCurrency() const -> std::string { return _usedCurrency; }
 
-bool Trade::operator==(const Trade &other) const {
+auto Trade::operator==(const Trade &other) const -> bool {
   return symbol()->symbol == other.symbol()->symbol &&
          position() == other.position() && orderQty() == other.orderQty();
 }

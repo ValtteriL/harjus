@@ -1,4 +1,12 @@
 {
   "version": "2.0.0",
-  "tasks": []
+  "tasks": [
+    {
+      "label": "clang-tidy-harjus",
+      "type": "shell",
+      "command": "run-clang-tidy -clang-tidy-binary clang-tidy-14 -p build -use-color -quiet -fix -j$(nproc)",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
 }

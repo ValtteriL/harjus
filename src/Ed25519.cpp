@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 
-std::string Ed25519::base64_encode(const unsigned char *data, size_t length) {
+auto Ed25519::base64_encode(const unsigned char *data,
+                            size_t length) -> std::string {
   // construct a buffer to hold the base64 encoded string
   const size_t b64Length =
       sodium_base64_encoded_len(length, sodium_base64_VARIANT_ORIGINAL);
@@ -22,9 +23,9 @@ std::string Ed25519::base64_encode(const unsigned char *data, size_t length) {
   return b64String;
 }
 
-std::string Ed25519::base64_decode(const std::string &encoded) {
+auto Ed25519::base64_decode(const std::string &encoded) -> std::string {
   std::vector<unsigned char> decoded(encoded.size());
-  size_t decoded_length;
+  size_t decoded_length = 0;
 
   if (sodium_base642bin(decoded.data(), decoded.size(), encoded.c_str(),
                         encoded.size(), nullptr, &decoded_length, nullptr,
@@ -32,11 +33,11 @@ std::string Ed25519::base64_decode(const std::string &encoded) {
     throw std::runtime_error("Failed to decode base64 string");
   }
 
-  return std::string(decoded.begin(), decoded.begin() + decoded_length);
+  return {decoded.begin(), decoded.begin() + decoded_length};
 }
 
-std::string Ed25519::sign(const std::string &extracted_seed,
-                          const std::string &payload) {
+auto Ed25519::sign(const std::string &extracted_seed,
+                   const std::string &payload) -> std::string {
   if (sodium_init() < 0) {
     throw std::runtime_error("Failed to initialize libsodium");
   }
@@ -63,7 +64,7 @@ std::string Ed25519::sign(const std::string &extracted_seed,
   crypto_sign_seed_keypair(publicKey, privateKey, seed);
 
   std::vector<unsigned char> signature(crypto_sign_BYTES);
-  unsigned long long signatureLength;
+  unsigned long long signatureLength = 0;
 
   // Generate detached signature
   if (crypto_sign_detached(

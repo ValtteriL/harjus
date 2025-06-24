@@ -5,7 +5,6 @@
 #include "Opportunity.h"
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
-#include "Symbol.h"
 #include "Trade.h"
 #include <stop_token>
 #include <string>
@@ -26,13 +25,13 @@
 class Engine {
 
 private:
-  std::unordered_map<std::string, Symbol> &_symbols;
-  std::unordered_multimap<std::string, Opportunity *> _opportunities;
-  std::unordered_map<std::string, PreciseNumber> _relativeValues;
-  boost::lockfree::spsc_queue<PriceUpdate> &_priceUpdateQueue;
-  boost::lockfree::spsc_queue<Execution> &_executionQueue;
-  ReservedTrades &_reservedTrades;
-  Balance &_balance;
+  std::unordered_multimap<std::string, Opportunity &> _opportunities{};
+  std::vector<Opportunity> _opportunityList{};
+  std::unordered_map<std::string, PreciseNumber> _relativeValues{};
+  boost::lockfree::spsc_queue<PriceUpdate> *_priceUpdateQueue;
+  boost::lockfree::spsc_queue<Execution> *_executionQueue;
+  ReservedTrades *_reservedTrades;
+  Balance *_balance;
 
   /**
    * @brief Reserves the necessary budget and trading symbols for a given
@@ -69,17 +68,16 @@ public:
    * @param executionQueue A reference to a thread safe queue for executions.
    * @param relativeValues A map of relative values for symbols.
    */
-  Engine(std::unordered_map<std::string, Symbol> &symbols,
-         std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
+  Engine(std::vector<std::vector<Trade>> &tradingPaths, Balance &balance,
          ReservedTrades &reservedTrades,
          boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
          boost::lockfree::spsc_queue<Execution> &executionQueue,
          std::unordered_map<std::string, PreciseNumber> &relativeValues,
-         const PreciseNumber commission);
+         const PreciseNumber &commission);
 
   /**
    * @brief Run the engine
    * @details This function is the main loop of the engine.
    */
-  void run(std::stop_token stoken);
+  void run(const std::stop_token &stoken);
 };

@@ -92,7 +92,7 @@ TEST_F(ExchangeTest,
 
   // Verify the size of relativeValues equals the number of different assets in
   // the symbols map
-  std::unordered_set<std::string> uniqueAssets;
+  std::unordered_set<std::string> uniqueAssets{};
   for (const auto &[symbolName, symbol] : symbols) {
     uniqueAssets.insert(symbol.baseAsset);
     uniqueAssets.insert(symbol.quoteAsset);

@@ -1,26 +1,28 @@
 #include "ExecutionReport.h"
 
+#include <utility>
+
 ExecutionReport::ExecutionReport(
-    const std::string &id, TradeExecutionStatus status, PreciseNumber usedQty,
-    PreciseNumber recvQty,
+    std::string id, TradeExecutionStatus status, const PreciseNumber& usedQty,
+    const PreciseNumber& recvQty,
     const std::unordered_map<std::string, PreciseNumber> &feeDelta)
-    : _id(id), _status(status), _usedQty(usedQty), _recvQty(recvQty),
+    : _id(std::move(id)), _status(status), _usedQty(usedQty), _recvQty(recvQty),
       _feeDelta(feeDelta) {};
 
-std::string ExecutionReport::getId() const { return _id; }
+auto ExecutionReport::getId() const -> std::string { return _id; }
 
-TradeExecutionStatus ExecutionReport::getStatus() const { return _status; }
+auto ExecutionReport::getStatus() const -> TradeExecutionStatus { return _status; }
 
 std::unordered_map<std::string, PreciseNumber>
 ExecutionReport::getFeeDelta() const {
   return _feeDelta;
 }
 
-PreciseNumber ExecutionReport::usedQty() { return _usedQty; }
+auto ExecutionReport::usedQty() -> PreciseNumber { return _usedQty; }
 
-PreciseNumber ExecutionReport::recvQty() { return _recvQty; }
+auto ExecutionReport::recvQty() -> PreciseNumber { return _recvQty; }
 
-std::ostream &operator<<(std::ostream &os, const ExecutionReport &report) {
+auto operator<<(std::ostream &os, const ExecutionReport &report) -> std::ostream & {
   os << "ExecutionReport{"
      << "id='" << report.getId() << "', "
      << "status=";
