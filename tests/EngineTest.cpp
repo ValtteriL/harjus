@@ -17,14 +17,13 @@
 
 class TestableEngine : public Engine {
 public:
-  TestableEngine(std::unordered_map<std::string, Symbol> &symbols,
-                 std::vector<std::vector<Trade> *> &tradingPaths,
+  TestableEngine(std::vector<std::vector<Trade> *> &tradingPaths,
                  Balance &balance, ReservedTrades &reservedTrades,
                  boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
                  boost::lockfree::spsc_queue<Execution> &executionQueue,
                  std::unordered_map<std::string, PreciseNumber> relativeValues,
                  const PreciseNumber &commission)
-      : Engine(symbols, tradingPaths, balance, reservedTrades, priceUpdateQueue,
+      : Engine(tradingPaths, balance, reservedTrades, priceUpdateQueue,
                executionQueue, relativeValues, commission) {}
 
   void callProcessPriceUpdate(const PriceUpdate &update) {
@@ -41,7 +40,7 @@ class EngineTest : public testing::Test {
 protected:
   EngineTest()
       : tradingPaths({&trades}),
-        engine(symbols, tradingPaths, balance, reservedTrades, priceUpdateQueue,
+        engine(tradingPaths, balance, reservedTrades, priceUpdateQueue,
                executionQueue, relativeValues, commission) {
 
     balance.updateBalance("BTC", startingAssetBudget);

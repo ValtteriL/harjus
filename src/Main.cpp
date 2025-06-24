@@ -151,7 +151,7 @@ auto main() -> int {
   });
 
   // Create the engine
-  Engine engine{symbolMap,        tradingPaths,          *balance,
+  Engine engine{tradingPaths,          *balance,
                 reservedTrades,   priceUpdateQueue,      executionQueue,
                 relativeValueMap, config.getCommission()};
 

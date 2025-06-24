@@ -10,16 +10,15 @@
 #include <string>
 #include <vector>
 
-Engine::Engine(std::unordered_map<std::string, Symbol> &symbols,
-               std::vector<std::vector<Trade> *> &tradingPaths,
+Engine::Engine(std::vector<std::vector<Trade> *> &tradingPaths,
                Balance &balance, ReservedTrades &reservedTrades,
                boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
                boost::lockfree::spsc_queue<Execution> &executionQueue,
                std::unordered_map<std::string, PreciseNumber> &relativeValues,
                const PreciseNumber &commission)
-    : _symbols(&symbols), _relativeValues(relativeValues),
-      _priceUpdateQueue(&priceUpdateQueue), _executionQueue(&executionQueue),
-      _reservedTrades(&reservedTrades), _balance(&balance) {
+    : _relativeValues(relativeValues), _priceUpdateQueue(&priceUpdateQueue),
+      _executionQueue(&executionQueue), _reservedTrades(&reservedTrades),
+      _balance(&balance) {
 
   // Initialize _opportunities with the trading paths
   for (auto &path : tradingPaths) {

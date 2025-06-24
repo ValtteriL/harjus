@@ -26,7 +26,6 @@
 class Engine {
 
 private:
-  std::unordered_map<std::string, Symbol> *_symbols;
   std::unordered_multimap<std::string, Opportunity *> _opportunities{};
   std::unordered_map<std::string, PreciseNumber> _relativeValues{};
   boost::lockfree::spsc_queue<PriceUpdate> *_priceUpdateQueue;
@@ -69,8 +68,7 @@ public:
    * @param executionQueue A reference to a thread safe queue for executions.
    * @param relativeValues A map of relative values for symbols.
    */
-  Engine(std::unordered_map<std::string, Symbol> &symbols,
-         std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
+  Engine(std::vector<std::vector<Trade> *> &tradingPaths, Balance &balance,
          ReservedTrades &reservedTrades,
          boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
          boost::lockfree::spsc_queue<Execution> &executionQueue,
