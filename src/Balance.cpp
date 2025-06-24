@@ -16,7 +16,7 @@ void Balance::updateBalance(
 }
 
 auto Balance::getBalances() const
-    -> std::unordered_map<std::string, PreciseNumber> {
+    -> const std::unordered_map<std::string, PreciseNumber> {
   std::shared_lock<std::shared_mutex> lock(mtx);
   return balanceMap;
 }

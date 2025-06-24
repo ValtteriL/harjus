@@ -1,6 +1,7 @@
 #include "Engine.h"
 #include "Execution.h"
 #include "Opportunity.h"
+#include "PreciseNumber.h"
 #include "ReservedTrades.h"
 #include <algorithm>
 #include <boost/log/core.hpp>
@@ -51,7 +52,7 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   update.symbol->bidQty = update.bidQty;
 
   // get balances
-  auto balanceMap = _balance->getBalances();
+  const auto balanceMap = _balance->getBalances();
 
   // get reserved trades
   auto reservedSymbols = _reservedTrades->getReservedTrades();
@@ -64,16 +65,14 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
 
     auto &opp = _opportunityList.at(it->second);
 
-    auto balance = balanceMap.find(opp.getStartingAsset()) != balanceMap.end()
-                       ? balanceMap[opp.getStartingAsset()]
-                       : PreciseNumber{"0"};
-
-    // If the balance is zero, skip this opportunity
-    if (PreciseNumber{"0"} >= balance)
+    // Check if starting asset is available and has positive balance
+    auto search = balanceMap.find(opp.getStartingAsset());
+    if (search == balanceMap.end() || PreciseNumber{"0"} >= search->second) {
       continue;
+    }
 
-    // Update the opportunity with the new price
-    opp.update(balance);
+    // Update the opportunity with the new price and balance
+    opp.update(search->second);
 
     auto trades = opp.getTrades();
 
