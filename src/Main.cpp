@@ -124,18 +124,18 @@ auto main() -> int {
   FIX::FileStoreFactory storeFactory{settings};
   FIX::ScreenLogFactory logFactory{settings};
 
-  auto initiator = std::unique_ptr<FIX::Initiator>(new FIX::SSLSocketInitiator{
-      application, storeFactory, settings, logFactory});
+  auto initiator =
+      FIX::SSLSocketInitiator{application, storeFactory, settings, logFactory};
 
   // create a jthread to run the application
   std::jthread j_thread_application([&initiator, &application, symbols]() {
     BOOST_LOG_TRIVIAL(debug) << "Starting QuickFIX initiator";
 
-    initiator->start();
+    initiator.start();
 
     // Wait for the session to be established
     constexpr int SESSION_ESTABLISH_WAIT_MS = 100;
-    while (!initiator->isLoggedOn()) {
+    while (!initiator.isLoggedOn()) {
       std::this_thread::sleep_for(
           std::chrono::milliseconds(SESSION_ESTABLISH_WAIT_MS));
     }
@@ -196,7 +196,7 @@ auto main() -> int {
 
   // Stop the application
   isShuttingDown = true;
-  initiator->stop();
+  initiator.stop();
 
   BOOST_LOG_TRIVIAL(info) << "Done. Exiting.";
 
