@@ -25,8 +25,8 @@ Engine::Engine(std::vector<std::vector<Trade>> &tradingPaths, Balance &balance,
 
     // create an opportunity
     std::string startingAsset = path.front().usedCurrency();
-    auto *opportunity =
-        new Opportunity(path, _relativeValues[startingAsset], commission);
+    auto &opportunity = _opportunityList.emplace_back(
+        path, _relativeValues[startingAsset], commission);
 
     // add opportunity to _opportunities with every trade symbol as the key
     for (auto &trade : path) {
@@ -58,16 +58,16 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
 
   // Update all affected opportunities
   auto affected = _opportunities.equal_range(update.symbol->symbol);
-  for (auto it = affected.first; it != affected.second; ++it) {
+  for (auto &it = affected.first; it != affected.second; ++it) {
 
-    auto opp = it->second;
+    auto &opp = it->second;
 
     // Update the opportunity with the new price
-    opp->update(balanceMap[opp->getStartingAsset()]);
+    opp.update(balanceMap[opp.getStartingAsset()]);
 
-    auto trades = opp->getTrades();
+    auto trades = opp.getTrades();
 
-    if (PreciseNumber{"0"} >= opp->getTotalProfit() ||
+    if (PreciseNumber{"0"} >= opp.getTotalProfit() ||
         std::any_of(trades.begin(), trades.end(),
                     [&reservedSymbols](const StaticTrade &trade) {
                       return reservedSymbols.contains(trade.symbol());
@@ -76,8 +76,8 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
 
     // If the opportunity is profitable and does not contain reserved symbols,
     // check if it's the best one
-    if (!best || opp->getTotalProfit() > best->getTotalProfit()) {
-      best = opp;
+    if (!best || opp.getTotalProfit() > best->getTotalProfit()) {
+      best = &opp;
     }
   }
 
