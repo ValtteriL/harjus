@@ -6,6 +6,7 @@
 #include "PriceUpdate.h"
 #include "ReservedTrades.h"
 #include "Trade.h"
+#include <cstddef>
 #include <stop_token>
 #include <string>
 #include <unordered_map>
@@ -25,7 +26,7 @@
 class Engine {
 
 private:
-  std::unordered_multimap<std::string, Opportunity &> _opportunities{};
+  std::unordered_multimap<std::string, size_t> _opportunities{};
   std::vector<Opportunity> _opportunityList{};
   std::unordered_map<std::string, PreciseNumber> _relativeValues{};
   boost::lockfree::spsc_queue<PriceUpdate> *_priceUpdateQueue;

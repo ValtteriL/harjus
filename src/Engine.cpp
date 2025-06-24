@@ -25,12 +25,14 @@ Engine::Engine(std::vector<std::vector<Trade>> &tradingPaths, Balance &balance,
 
     // create an opportunity
     std::string startingAsset = path.front().usedCurrency();
-    auto &opportunity = _opportunityList.emplace_back(
-        path, _relativeValues[startingAsset], commission);
+    _opportunityList.emplace_back(path, _relativeValues[startingAsset],
+                                  commission);
+
+    auto index = _opportunityList.size() - 1;
 
     // add opportunity to _opportunities with every trade symbol as the key
     for (auto &trade : path) {
-      _opportunities.insert({trade.symbol()->symbol, opportunity});
+      _opportunities.insert({trade.symbol()->symbol, index});
     }
   }
 };
@@ -60,10 +62,14 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
   auto affected = _opportunities.equal_range(update.symbol->symbol);
   for (auto &it = affected.first; it != affected.second; ++it) {
 
-    auto &opp = it->second;
+    auto &opp = _opportunityList.at(it->second);
+
+    auto balance = balanceMap.find(opp.getStartingAsset()) != balanceMap.end()
+                       ? balanceMap[opp.getStartingAsset()]
+                       : PreciseNumber{"0"};
 
     // Update the opportunity with the new price
-    opp.update(balanceMap[opp.getStartingAsset()]);
+    opp.update(balance);
 
     auto trades = opp.getTrades();
 
