@@ -51,9 +51,12 @@ let
 
       inherit enableParallelBuilding;
       inherit hardeningDisable;
-
-      NIX_CFLAGS_COMPILE = gccFlags;
     };
+
+    myQuickfixOptimized = myQuickfix.overrideAttrs (finalAttrs: {
+      # override compile flags to optimize for performance
+      NIX_CFLAGS_COMPILE = gccFlags;
+    });
 
     # build quickfix properly with SSL support
     runClangTidy = stdenv.mkDerivation {
@@ -134,8 +137,16 @@ let
         fileset = lib.fileset.unions [ ./src ./CMakeLists.txt ./include ];
       };
 
-      buildInputs =
-        [ gtest boost openssl libcpr pkg-config libsodium gmp myQuickfix ];
+      buildInputs = [
+        gtest
+        boost
+        openssl
+        libcpr
+        pkg-config
+        libsodium
+        gmp
+        myQuickfixOptimized
+      ];
       nativeBuildInputs = [ cmake ninja pkg-config ];
 
       cmakeFlags = [ "-DHARJUS_TESTS=OFF" ];
