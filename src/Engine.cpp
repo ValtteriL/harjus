@@ -68,6 +68,10 @@ void Engine::processPriceUpdate(const PriceUpdate &update) {
                        ? balanceMap[opp.getStartingAsset()]
                        : PreciseNumber{"0"};
 
+    // If the balance is zero, skip this opportunity
+    if (PreciseNumber{"0"} >= balance)
+      continue;
+
     // Update the opportunity with the new price
     opp.update(balance);
 
