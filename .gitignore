@@ -143,3 +143,4 @@ fix-file-dir/
 build/.cmake/
 
 .ansible_vault_password
+exchangeinfo.json
