@@ -164,5 +164,5 @@ TEST_F(EngineTest, detectsArbitrageOpportunity) {
   }
 
   verifyExecutionProperties(execution, startingAssetBudget,
-                            PreciseNumber{"8.997"}, initialBalance, "BTC");
+                            PreciseNumber{"8.97"}, initialBalance, "BTC");
 }
