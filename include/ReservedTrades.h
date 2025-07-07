@@ -20,11 +20,6 @@ private:
    */
   std::unordered_set<std::string> _reservedTrades;
 
-  /**
-   * Mutex for thread safety.
-   */
-  mutable std::shared_mutex mtx;
-
 public:
   /**
    *  Constructor. Create a new reserved trades object.

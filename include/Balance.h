@@ -16,11 +16,6 @@ private:
    */
   std::unordered_map<std::string, PreciseNumber> balanceMap;
 
-  /**
-   * Mutex for thread safety.
-   */
-  mutable std::shared_mutex mtx;
-
 public:
   /**
    *  Add a currency to the balance.

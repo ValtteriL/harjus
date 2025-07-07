@@ -1,4 +1,4 @@
-#include "Trader.h"
+#include "Worker.h"
 
 #include "Balance.h"
 #include "Execution.h"
@@ -14,13 +14,39 @@
 #include <random>
 #include <stdexcept>
 
-Trader::Trader(
-    boost::lockfree::spsc_queue<Execution> &executionQueue,
+Worker::Worker(
+    std::vector<std::vector<Trade>> &tradingPaths,
+    boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
     boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
-    IApplication &application, Balance &balance, ReservedTrades &reservedTrades)
-    : _executionQueue(&executionQueue),
+    IApplication &application, Balance &balance,
+    std::unordered_map<std::string, PreciseNumber> &relativeValues,
+    const PreciseNumber &commission)
+    : _priceUpdateQueue(&priceUpdateQueue),
       _executionReportQueue(&executionReportQueue), _application(&application),
-      _balance(&balance), _reservedTrades(&reservedTrades) {}
+      _balance(balance), _relativeValues(relativeValues) {
+
+  // Initialize _opportunities with the trading paths
+  for (auto &path : tradingPaths) {
+
+    // create an opportunity
+    std::string startingAsset = path.front().usedCurrency();
+    _opportunityList.emplace_back(path, _relativeValues[startingAsset],
+                                  commission);
+
+    auto index = _opportunityList.size() - 1;
+
+    // add opportunity to _opportunities with every trade symbol as the key
+    for (auto &trade : path) {
+      _opportunities.insert({trade.symbol()->symbol, index});
+    }
+  }
+}
+
+void Worker::reserveBudgetAndSymbols(const Opportunity &opp) {
+  _reservedTrades.reserveAll(opp.getTrades());
+  _balance.updateBalance(opp.getStartingAsset(),
+                         opp.getCapacity() * PreciseNumber{"-1"});
+}
 
 /** Generate ID for execution */
 auto generateId() -> std::string {
@@ -32,11 +58,64 @@ auto generateId() -> std::string {
   static thread_local std::mt19937 rng(std::random_device{}());
   static std::uniform_int_distribution<> dist(0, charset.size() - 1);
   std::string id(ID_LENGTH, '\0');
-  std::generate_n(id.begin(), ID_LENGTH, [&]() { return charset.at(dist(rng)); });
+  std::generate_n(id.begin(), ID_LENGTH,
+                  [&]() { return charset.at(dist(rng)); });
   return id;
 }
 
-void Trader::processExecution(const Execution &execution) {
+void Worker::processPriceUpdate(const PriceUpdate &update) {
+  // Update symbol price
+  update.symbol->askPrice = update.askPrice;
+  update.symbol->bidPrice = update.bidPrice;
+  update.symbol->askQty = update.askQty;
+  update.symbol->bidQty = update.bidQty;
+
+  // get balances
+  const auto balanceMap = _balance.getBalances();
+
+  // get reserved trades
+  auto reservedSymbols = _reservedTrades.getReservedTrades();
+
+  Opportunity *best = nullptr;
+
+  // Update all affected opportunities
+  auto affected = _opportunities.equal_range(update.symbol->symbol);
+  for (auto &it = affected.first; it != affected.second; ++it) {
+
+    auto &opp = _opportunityList.at(it->second);
+
+    // Check if starting asset is available and has positive balance
+    auto search = balanceMap.find(opp.getStartingAsset());
+    if (search == balanceMap.end() || PreciseNumber{"0"} >= search->second) {
+      continue;
+    }
+
+    // Update the opportunity with the new price and balance
+    opp.update(search->second);
+
+    auto trades = opp.getTrades();
+
+    if (PreciseNumber{"0"} >= opp.getTotalProfit() ||
+        std::any_of(trades.begin(), trades.end(),
+                    [&reservedSymbols](const StaticTrade &trade) {
+                      return reservedSymbols.contains(trade.symbol());
+                    }))
+      continue;
+
+    // If the opportunity is profitable and does not contain reserved symbols,
+    // check if it's the best one
+    if (!best || opp.getTotalProfit() > best->getTotalProfit()) {
+      best = &opp;
+    }
+  }
+
+  if (!best)
+    return;
+
+  reserveBudgetAndSymbols(*best);
+
+  // Freeze and queue the best opportunity for execution
+  Execution execution{*best};
 
   BOOST_LOG_TRIVIAL(debug) << "Processing execution " << execution;
 
@@ -68,7 +147,7 @@ void Trader::processExecution(const Execution &execution) {
   _pendingOrdersCount[executionId] = execution.getTrades().size();
 }
 
-void Trader::processReport(ExecutionReport *execReport) {
+void Worker::processReport(ExecutionReport *execReport) {
 
   BOOST_LOG_TRIVIAL(debug) << "Processing execution report " << *execReport;
 
@@ -169,14 +248,14 @@ void Trader::processReport(ExecutionReport *execReport) {
     _failedExecutions.erase(executionId);
 
     // update balance
-    _balance->updateBalance(delta);
+    _balance.updateBalance(delta);
 
     // free symbols
-    _reservedTrades->releaseAll(execution.getOriginalTrades());
+    _reservedTrades.releaseAll(execution.getOriginalTrades());
   }
 }
 
-void Trader::run(const std::stop_token &stoken) {
+void Worker::run(const std::stop_token &stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Trader";
 
@@ -184,9 +263,9 @@ void Trader::run(const std::stop_token &stoken) {
   // or stop requested
   while (!stoken.stop_requested()) {
 
-    // Process execution
-    if (Execution execution; _executionQueue->pop(execution)) {
-      processExecution(execution);
+    // Process price update
+    if (PriceUpdate update; _priceUpdateQueue->pop(update)) {
+      processPriceUpdate(update);
     }
 
     // Process execution report

@@ -1,5 +1,21 @@
 #pragma once
 
+/**
+ * @brief Worker class
+ * @details Trader is responsible for reacting to messages coming from Quickfix
+ * application. It discovers arbitrage opportunities and makes trades while
+ * keeping track of balance and reserved symbols.
+ */
+
+#include "Balance.h"
+#include "Execution.h"
+#include "ExecutionReport.h"
+#include "IApplication.h"
+#include "ReservedTrades.h"
+#include <stop_token>
+#include <string>
+#include <unordered_map>
+
 #include "Balance.h"
 #include "Execution.h"
 #include "Opportunity.h"
@@ -15,25 +31,20 @@
 #include <boost/lockfree/spsc_queue.hpp>
 #include <vector>
 
-/**
- * @brief The Engine class is responsible for spotting profitable arbitrage
- * opportunities and queuing them for Trader
- * @details Engine subscribes to priceUpdateQueue. As price updates are
- * received, it checks affected opportunitys for arbitrage opportunities. If
- * opportunities are found, the best 2 non-overlapping are queued to the
- * executionQueue.
- */
-class Engine {
+using entry =
+    std::pair<Execution, std::unordered_map<std::string, PreciseNumber>>;
+
+class Worker {
 
 private:
+  boost::lockfree::spsc_queue<PriceUpdate> *_priceUpdateQueue;
+  boost::lockfree::spsc_queue<ExecutionReport> *_executionReportQueue;
+  IApplication *_application;
+  Balance _balance;
+  ReservedTrades _reservedTrades{};
   std::unordered_multimap<std::string, size_t> _opportunities{};
   std::vector<Opportunity> _opportunityList{};
   std::unordered_map<std::string, PreciseNumber> _relativeValues{};
-  boost::lockfree::spsc_queue<PriceUpdate> *_priceUpdateQueue;
-  boost::lockfree::spsc_queue<Execution> *_executionQueue;
-  ReservedTrades *_reservedTrades;
-  Balance *_balance;
-
   /**
    * @brief Reserves the necessary budget and trading symbols for a given
    * opportunity.
@@ -48,6 +59,16 @@ private:
   void reserveBudgetAndSymbols(const Opportunity &opp);
 
 protected:
+  void processReport(ExecutionReport *execReport);
+  std::unordered_map<std::string, entry>
+      _executionsMap{}; // Map of execution ID to execution and delta
+  std::unordered_map<std::string, std::pair<StaticTrade, std::string>>
+      _executionIdMap{}; // Map of order ID to (StaticTrade, execution ID)
+  std::unordered_map<std::string, int>
+      _pendingOrdersCount{}; // Map of execution ID to pending orders count
+  std::unordered_set<std::string>
+      _failedExecutions{}; // Set of failed execution IDs
+
   /**
    * Process a price update
    * @param update The price update to process
@@ -60,6 +81,14 @@ protected:
 
 public:
   /**
+   * @brief Run the worker
+   * @param stoken The stop token to stop the thread
+   * @details This function runs the worker in a loop, processing price updates
+   * and trades.
+   */
+  void run(const std::stop_token &stoken);
+
+  /**
    * @brief Constructor for the Engine class.
    * @param symbols A reference to a map of symbols.
    * @param tradingPaths A reference to a vector of trading paths.
@@ -69,16 +98,10 @@ public:
    * @param executionQueue A reference to a thread safe queue for executions.
    * @param relativeValues A map of relative values for symbols.
    */
-  Engine(std::vector<std::vector<Trade>> &tradingPaths, Balance &balance,
-         ReservedTrades &reservedTrades,
+  Worker(std::vector<std::vector<Trade>> &tradingPaths,
          boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
-         boost::lockfree::spsc_queue<Execution> &executionQueue,
+         boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
+         IApplication &application, Balance &balance,
          std::unordered_map<std::string, PreciseNumber> &relativeValues,
          const PreciseNumber &commission);
-
-  /**
-   * @brief Run the engine
-   * @details This function is the main loop of the engine.
-   */
-  void run(const std::stop_token &stoken);
 };
