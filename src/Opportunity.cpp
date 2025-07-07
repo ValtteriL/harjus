@@ -89,12 +89,14 @@ void Opportunity::update(PreciseNumber startingAssetBudget) {
   }
 
   // update profit
-  PreciseNumber totalCommission = _trades->front().usedQty() * _commission *
-                                  std::to_string(_trades->size());
-
-  _totalProfit = (_trades->back().recvQty() - _trades->front().usedQty() -
-                  totalCommission) *
-                 _relativeValue;
+  auto recvQty = _trades->back().recvQty();
+  auto usedQty = _trades->front().usedQty();
+  _totalProfit =
+      (recvQty *
+           (PreciseNumber{"1"} -
+            _commission * PreciseNumber{std::to_string(_trades->size())}) -
+       usedQty) *
+      _relativeValue;
 }
 auto Opportunity::getTotalProfit() const -> PreciseNumber {
   return _totalProfit;

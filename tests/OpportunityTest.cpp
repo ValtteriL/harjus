@@ -76,7 +76,7 @@ TEST(OpportunityTest, update) {
   std::vector<Trade> trades{trade1, trade2, trade3};
   PreciseNumber startingAssetBudget{"1"};
   PreciseNumber relativeValue{"1"};
-  PreciseNumber commission{"0.001"};
+  PreciseNumber commission{"0.00075"};
 
   Opportunity opportunity{trades, relativeValue, commission};
 
@@ -90,7 +90,7 @@ TEST(OpportunityTest, update) {
   opportunity.update(startingAssetBudget);
 
   // Check if the total profit is calculated correctly
-  EXPECT_EQ(opportunity.getTotalProfit(), PreciseNumber{"8.997"});
+  EXPECT_EQ(opportunity.getTotalProfit(), PreciseNumber{"8.9775"});
   // Check if the capacity is calculated correctly
   EXPECT_EQ(opportunity.getCapacity(), startingAssetBudget);
   // Check if the starting asset is correct
