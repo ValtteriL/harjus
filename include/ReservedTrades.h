@@ -40,5 +40,5 @@ public:
    *  Get all reserved trades.
    *  @return Vector of reserved trades.
    */
-  std::unordered_set<std::string> getReservedTrades() const;
+  auto getReservedTrades() const -> const std::unordered_set<std::string> &;
 };

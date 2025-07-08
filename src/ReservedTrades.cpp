@@ -1,8 +1,6 @@
 #include "ReservedTrades.h"
 #include "StaticTrade.h"
 #include <algorithm>
-#include <mutex>
-#include <shared_mutex>
 
 void ReservedTrades::reserveAll(const std::vector<Trade> &trades) {
   for (const auto &trade : trades) {
@@ -18,6 +16,6 @@ void ReservedTrades::releaseAll(const std::vector<StaticTrade> &trades) {
 }
 
 auto ReservedTrades::getReservedTrades() const
-    -> std::unordered_set<std::string> {
+    -> const std::unordered_set<std::string> & {
   return _reservedTrades;
 }

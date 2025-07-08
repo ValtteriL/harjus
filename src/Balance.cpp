@@ -14,6 +14,6 @@ void Balance::updateBalance(
 }
 
 auto Balance::getBalances() const
-    -> const std::unordered_map<std::string, PreciseNumber> {
+    -> const std::unordered_map<std::string, PreciseNumber> & {
   return balanceMap;
 }

@@ -60,5 +60,5 @@ public:
    *  This is used to get the current balances for all currencies.
    */
   auto
-  getBalances() const -> const std::unordered_map<std::string, PreciseNumber>;
+  getBalances() const -> const std::unordered_map<std::string, PreciseNumber> &;
 };
