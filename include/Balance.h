@@ -1,7 +1,6 @@
 #pragma once
 
 #include "PreciseNumber.h"
-#include <shared_mutex>
 #include <unordered_map>
 
 /**
@@ -17,6 +16,21 @@ private:
   std::unordered_map<std::string, PreciseNumber> balanceMap;
 
 public:
+  /**
+   *  Default constructor for Balance class.
+   *  Initializes the balance map to an empty state.
+   */
+  Balance() = default;
+
+  /**
+   *  Constructor for Balance class.
+   *  Initializes the balance map with a given map of currencies and amounts.
+   *  @param initialBalance The initial balance map to set.
+   */
+  explicit Balance(
+      const std::unordered_map<std::string, PreciseNumber> &initialBalance)
+      : balanceMap(initialBalance) {}
+
   /**
    *  Add a currency to the balance.
    *  This is used to increment and decrement the balance for a currency.

@@ -148,7 +148,7 @@ auto main() -> int {
   // Create the worker
 
   Worker worker{tradingPaths,          priceUpdateQueue, reportQueue,
-                application,           *balance,         relativeValueMap,
+                application,           relativeValueMap, *balance,
                 config.getCommission()};
 
   // create a jthread to run worker

@@ -192,6 +192,7 @@ if(HARJUS_TESTS)
     src/ExecutionReport.cpp
     src/PriceUpdate.cpp
     src/StaticTrade.cpp
+    src/Worker.cpp
   )
   target_link_libraries(WorkerTest PRIVATE
     gtest_main

@@ -11,10 +11,10 @@
 #include "Position.h"
 #include "PreciseNumber.h"
 #include "PriceUpdate.h"
-#include "ReservedTrades.h"
 #include "TradeExecutionStatus.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -35,7 +35,7 @@ public:
       std::unordered_map<std::string, PreciseNumber> relativeValues,
       const PreciseNumber &commission)
       : Worker(tradingPaths, priceUpdateQueue, executionReportQueue,
-               application, balance, relativeValues, commission) {}
+               application, relativeValues, balance, commission) {}
 
   // Expose private methods for testing
   void callProcessPriceUpdate(const PriceUpdate &update) {
@@ -57,6 +57,13 @@ public:
   [[nodiscard]] auto getPendingOrdersCount() const -> const auto & {
     return _pendingOrdersCount;
   }
+  [[nodiscard]] auto getFailedExecutions() const -> const auto & {
+    return _failedExecutions;
+  }
+  [[nodiscard]] auto getReservedTrades() const -> const auto & {
+    return _reservedTrades;
+  }
+  [[nodiscard]] auto getBalance() const -> const Balance & { return *_balance; }
 };
 
 /**
@@ -65,57 +72,33 @@ public:
 
 class WorkerTest : public testing::Test {
 
+  constexpr static auto precision = 8;
+  const PreciseNumber dummySmall{"0.0001"};
+
 protected:
+  const PreciseNumber zero{"0.0"};
   static constexpr size_t kQueueSize = 1000;
   boost::lockfree::spsc_queue<ExecutionReport> executionReportQueue{kQueueSize};
   boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{kQueueSize};
   MockApplication mockApplication;
-  Balance balance;
-  ReservedTrades reservedTrades;
-  std::unordered_map<std::string, Symbol> symbolsMap{};
   PreciseNumber startingAssetBudget{"1.0"};
+  Balance balance;
+  std::unordered_map<std::string, Symbol> symbolsMap{};
   std::unordered_map<std::string, PreciseNumber> relativeValues{
       {"BTC", PreciseNumber{"1.0"}},
       {"ETH", PreciseNumber{"1.0"}},
       {"USDT", PreciseNumber{"1.0"}}};
   PreciseNumber commission{"0.001"};
 
-  Symbol ethBtcSymbol{"ETHBTC",
-                      "ETH",
-                      "BTC",
-                      PreciseNumber{"0.0001"},
-                      PreciseNumber{"0.0001"},
-                      PreciseNumber{"0.0001"},
-                      8,
-                      8,
-                      PreciseNumber{"0.0"},
-                      PreciseNumber{"0.0"},
-                      PreciseNumber{"0.0"},
-                      PreciseNumber{"0.0"}};
-  Symbol ethUsdtSymbol{"ETHUSDT",
-                       "ETH",
-                       "USDT",
-                       PreciseNumber{"0.0001"},
-                       PreciseNumber{"0.0001"},
-                       PreciseNumber{"0.0001"},
-                       8,
-                       8,
-                       PreciseNumber{"0.0"},
-                       PreciseNumber{"0.0"},
-                       PreciseNumber{"0.0"},
-                       PreciseNumber{"0.0"}};
-  Symbol usdtBtcSymbol{"USDTBTC",
-                       "USDT",
-                       "BTC",
-                       PreciseNumber{"0.0001"},
-                       PreciseNumber{"0.0001"},
-                       PreciseNumber{"0.0001"},
-                       8,
-                       8,
-                       PreciseNumber{"0.0"},
-                       PreciseNumber{"0.0"},
-                       PreciseNumber{"0.0"},
-                       PreciseNumber{"0.0"}};
+  Symbol ethBtcSymbol{"ETHBTC",   "ETH",      "BTC",     dummySmall,
+                      dummySmall, dummySmall, precision, precision,
+                      zero,       zero,       zero,      zero};
+  Symbol ethUsdtSymbol{"ETHUSDT",  "ETH",      "USDT",    dummySmall,
+                       dummySmall, dummySmall, precision, precision,
+                       zero,       zero,       zero,      zero};
+  Symbol usdtBtcSymbol{"USDTBTC",  "USDT",     "BTC",     dummySmall,
+                       dummySmall, dummySmall, precision, precision,
+                       zero,       zero,       zero,      zero};
 
   std::unordered_map<std::string, Symbol> symbols{{"ETHBTC", ethBtcSymbol},
                                                   {"ETHUSDT", ethUsdtSymbol},
@@ -130,37 +113,29 @@ protected:
   TestableWorker worker;
 
   WorkerTest()
-      : tradingPaths({trades}),
+      : balance({{"BTC", startingAssetBudget}}), tradingPaths({trades}),
         worker(tradingPaths, priceUpdateQueue, executionReportQueue,
                mockApplication, balance, relativeValues, commission) {
     // Setup mock application behavior
     EXPECT_CALL(mockApplication, subscribeToSymbols(_))
         .WillRepeatedly(Return(true));
-
-    // Setup initial balance
-    balance.updateBalance("BTC", startingAssetBudget);
   }
 
   // Helper method to create a simple opportunity
-  auto createSimpleOpportunity() -> Opportunity {
+  auto createSimpleOpportunity() -> std::vector<PriceUpdate> {
 
-    // Create and store symbols properly
-    symbolsMap.insert(
-        {"ETHBTC", Symbol{"ETHBTC", "ETH", "BTC", PreciseNumber{"0.0001"},
-                          PreciseNumber{"0.0001"}, PreciseNumber{"0.0001"}, 8,
-                          8, PreciseNumber{"0.0"}, PreciseNumber{"0.0"},
-                          PreciseNumber{"0.0"}, PreciseNumber{"0.0"}}});
-    symbolsMap.insert(
-        {"ETHUSDT", Symbol{"ETHUSDT", "ETH", "USDT", PreciseNumber{"0.0001"},
-                           PreciseNumber{"0.0001"}, PreciseNumber{"0.0001"}, 8,
-                           8, PreciseNumber{"0.0"}, PreciseNumber{"0.0"},
-                           PreciseNumber{"0.0"}, PreciseNumber{"0.0"}}});
+    std::vector<PriceUpdate> updates{};
+    updates.push_back(PriceUpdate{&symbols.at("ETHBTC"), zero,
+                                  PreciseNumber{"1"}, zero,
+                                  PreciseNumber{"100"}}); // BTC -> ETH 1:1
+    updates.push_back(PriceUpdate{&symbols.at("ETHUSDT"), PreciseNumber{"1"},
+                                  zero, PreciseNumber{"1"},
+                                  zero}); // ETH -> USDT 1:1
+    updates.push_back(PriceUpdate{&symbols.at("USDTBTC"), PreciseNumber{"10.0"},
+                                  zero, PreciseNumber{"1.0"},
+                                  zero}); // USDT -> BTC 1:10
 
-    // Setup trades using the stored symbols
-    trades.emplace_back(&symbolsMap.at("ETHBTC"), Position::LONG);
-    trades.emplace_back(&symbolsMap.at("ETHUSDT"), Position::SHORT);
-
-    return {trades, PreciseNumber{"1"}, PreciseNumber{"0.001"}};
+    return updates;
   }
 
   void verifyExecutionProperties(const Execution &execution,
@@ -183,31 +158,7 @@ protected:
 
 TEST_F(WorkerTest, detectsArbitrageOpportunity) {
 
-  std::vector<PriceUpdate> updates{};
-  updates.push_back(PriceUpdate{&symbols.at("ETHBTC"), PreciseNumber{"0"},
-                                PreciseNumber{"1"}, PreciseNumber{"0"},
-                                PreciseNumber{"100"}}); // BTC -> ETH 1:1
-  updates.push_back(PriceUpdate{&symbols.at("ETHUSDT"), PreciseNumber{"1"},
-                                PreciseNumber{"0"}, PreciseNumber{"1"},
-                                PreciseNumber{"0"}}); // ETH -> USDT 1:1
-  updates.push_back(PriceUpdate{&symbols.at("USDTBTC"), PreciseNumber{"10.0"},
-                                PreciseNumber{"0"}, PreciseNumber{"1.0"},
-                                PreciseNumber{"0"}}); // USDT -> BTC 1:10
-
-  // Store the initial balance before processing updates
-  PreciseNumber initialBalance = balance.getBalances().at("BTC");
-
-  for (auto &update : updates) {
-    worker.callProcessPriceUpdate(update);
-  }
-
-  // Trades should be reserved
-  auto reservedTradesSet = reservedTrades.getReservedTrades();
-  for (const auto &tradeVector : tradingPaths) {
-    for (const auto &trade : tradeVector) {
-      ASSERT_TRUE(reservedTradesSet.contains(trade.symbol()->symbol));
-    }
-  }
+  auto updates = createSimpleOpportunity();
 
   // Expect calls to submitOrder for both trades in the execution
   EXPECT_CALL(mockApplication, submitOrder(_, "ETHBTC", PreciseNumber{"1"},
@@ -220,23 +171,38 @@ TEST_F(WorkerTest, detectsArbitrageOpportunity) {
               submitOrder(_, "USDTBTC", PreciseNumber{"1"}, PreciseNumber{"10"},
                           Position::SHORT))
       .Times(1);
+
+  // Process the price updates
+  for (auto &update : updates) {
+    worker.callProcessPriceUpdate(update);
+  }
+
+  // verify that balance is reserved
+  EXPECT_EQ(balance.getBalances().at("BTC"), zero);
+
+  // Verify that trades are reserved
+  EXPECT_EQ(worker.getReservedTrades().getReservedTrades().size(), 3);
 }
 
 TEST_F(WorkerTest, processesFilledExecutionReportCompleted) {
   // Create an opportunity and execution
-  auto opportunity = createSimpleOpportunity();
-  auto execution = Execution(opportunity);
+  auto updates = createSimpleOpportunity();
 
-  // Expect calls to submitOrder for both trades in the execution upfront
-  for (const auto &trade : opportunity.getTrades()) {
-    EXPECT_CALL(mockApplication,
-                submitOrder(_, trade.symbol()->symbol, trade.orderQty(),
-                            trade.orderPrice(), trade.position()))
-        .Times(1);
+  // Expect calls to submitOrder for all trades in the execution
+  EXPECT_CALL(mockApplication, submitOrder(_, "ETHBTC", PreciseNumber{"1"},
+                                           PreciseNumber{"1"}, Position::LONG))
+      .Times(1);
+  EXPECT_CALL(mockApplication, submitOrder(_, "ETHUSDT", PreciseNumber{"1"},
+                                           PreciseNumber{"1"}, Position::SHORT))
+      .Times(1);
+  EXPECT_CALL(mockApplication,
+              submitOrder(_, "USDTBTC", PreciseNumber{"1"}, PreciseNumber{"10"},
+                          Position::SHORT))
+      .Times(1);
+
+  for (const auto &update : updates) {
+    worker.callProcessPriceUpdate(update);
   }
-
-  // Process the execution first
-  worker.callProcessExecution(execution);
 
   std::unordered_map<std::string, PreciseNumber> feeDelta{
       {"BTC", PreciseNumber{"-0.1"}} // Example fee
@@ -261,7 +227,7 @@ TEST_F(WorkerTest, processesFilledExecutionReportCompleted) {
 
     // Create a filled execution report for each trade
     ExecutionReport executionReport{orderId, TradeExecutionStatus::FILLED,
-                                    PreciseNumber{"0.1"}, PreciseNumber{"0.2"},
+                                    PreciseNumber{"1"}, PreciseNumber{"2"},
                                     feeDelta};
 
     // Process the filled execution report
@@ -270,69 +236,67 @@ TEST_F(WorkerTest, processesFilledExecutionReportCompleted) {
 
   // Verify the balance is updated correctly
   // Initial BTC balance: 1.0
-  // Fees: -0.2 BTC
-  // 1st trade, spending: 0.1 BTC
-  // Final BTC balance: 1.0 - 0.2 - 0.1 = 0.7
+  // Fees: -0.3 BTC
+  // 1st trade, spending: 1 BTC
+  // 3rd trade, receiving: 2 BTC
+  // Final BTC balance: 1 - 1 - 0.3 + 2 = 1.7
   //
-  // Initial ETH balance: 0.0
-  // 1st trade, receiving: 0.2 ETH
-  // 2nd trade, spending: 0.1 ETH
-  // Final ETH balance: 0.0 + 0.2 - 0.1 = 0.1
+  // Initial ETH balance: 0
+  // 1st trade, receiving: 2 ETH
+  // 2nd trade, spending: 1 ETH
+  // Final ETH balance: 0 + 2 - 1 = 1
   //
-  // Initial USDT balance: 0.0
-  // 1st trade, no change
-  // 2nd trade, receiving: 0.2 USDT
-  // Final USDT balance: 0.0 + 0.2 = 0.2
-  EXPECT_EQ(balance.getBalances().at("BTC"), PreciseNumber{"0.7"});
-  EXPECT_EQ(balance.getBalances().at("USDT"), PreciseNumber{"0.2"});
-  EXPECT_EQ(balance.getBalances().at("ETH"), PreciseNumber{"0.1"});
+  // Initial USDT balance: 0
+  // 2nd trade, receiving: 2 USDT
+  // 3rd trade, spending: 1 USDT
+  // Final USDT balance: 0 + 2 - 1 = 1
+  EXPECT_EQ(balance.getBalances().at("BTC"), PreciseNumber{"1.7"});
+  EXPECT_EQ(balance.getBalances().at("USDT"), PreciseNumber{"1"});
+  EXPECT_EQ(balance.getBalances().at("ETH"), PreciseNumber{"1"});
 }
 
 TEST_F(WorkerTest, processesExpiredExecutionReport) {
   // Create an opportunity and execution
-  auto opportunity = createSimpleOpportunity();
-  auto execution = Execution(opportunity);
+  auto updates = createSimpleOpportunity();
 
-  // Reserve the trades
-  reservedTrades.reserveAll(opportunity.getTrades());
+  // Expect calls to submitOrder for all trades in the execution
+  EXPECT_CALL(mockApplication, submitOrder(_, "ETHBTC", PreciseNumber{"1"},
+                                           PreciseNumber{"1"}, Position::LONG))
+      .Times(1);
+  EXPECT_CALL(mockApplication, submitOrder(_, "ETHUSDT", PreciseNumber{"1"},
+                                           PreciseNumber{"1"}, Position::SHORT))
+      .Times(1);
+  EXPECT_CALL(mockApplication,
+              submitOrder(_, "USDTBTC", PreciseNumber{"1"}, PreciseNumber{"10"},
+                          Position::SHORT))
+      .Times(1);
 
-  // Process the execution first - expect calls for both trades
-  EXPECT_CALL(mockApplication, submitOrder(_, _, _, _, _)).Times(2);
-  worker.callProcessExecution(execution);
+  for (const auto &update : updates) {
+    worker.callProcessPriceUpdate(update);
+  }
 
-  // get any order ID from the map
-  auto orderId = worker.getExecutionIdMap().begin()->first;
+  // expire all orders in the execution
+  // This simulates the scenario where the orders are not filled and expire
+  // without any trades being executed.
 
-  std::unordered_map<std::string, PreciseNumber> feeDelta{};
-  ExecutionReport executionReport{orderId, TradeExecutionStatus::EXPIRED,
-                                  PreciseNumber{"0"}, PreciseNumber{"0"},
-                                  feeDelta};
+  // must collect all order IDs from the execution ID map
+  // because the map is modified in the loop
+  // and we cannot iterate over it while modifying
+  std::vector<std::string> orderIds{};
+  for (const auto &trade : worker.getExecutionIdMap()) {
+    orderIds.push_back(trade.first);
+  }
 
-  worker.callProcessReport(&executionReport);
+  for (const auto &orderId : orderIds) {
+    ExecutionReport executionReport{
+        orderId, TradeExecutionStatus::EXPIRED, zero, zero, {}};
+
+    worker.callProcessReport(&executionReport);
+  }
 
   // Verify the balance is unchanged
   EXPECT_EQ(balance.getBalances().at("BTC"), PreciseNumber{"1.0"});
 
-  // Verify that trades are not released yet
-  auto reservedTradesSet = reservedTrades.getReservedTrades();
-  for (auto &trade : opportunity.getTrades()) {
-    EXPECT_TRUE(reservedTradesSet.contains(trade.symbol()->symbol));
-  }
-
-  // process another report
-  auto orderId2 = worker.getExecutionIdMap().begin()++->first;
-  ExecutionReport executionReport2{orderId2, TradeExecutionStatus::EXPIRED,
-                                   PreciseNumber{"0"}, PreciseNumber{"0"},
-                                   feeDelta};
-
-  worker.callProcessReport(&executionReport2);
-
-  // Verify the balance is unchanged
-  EXPECT_EQ(balance.getBalances().at("BTC"), PreciseNumber{"1.0"});
-
-  // Verify that trades are released
-  auto reservedTradesSetAfter = reservedTrades.getReservedTrades();
-  for (auto &trade : opportunity.getTrades()) {
-    EXPECT_FALSE(reservedTradesSetAfter.contains(trade.symbol()->symbol));
-  }
+  // Verify that reserved trades are cleared
+  EXPECT_TRUE(worker.getReservedTrades().getReservedTrades().empty());
 }

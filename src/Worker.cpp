@@ -18,12 +18,12 @@ Worker::Worker(
     std::vector<std::vector<Trade>> &tradingPaths,
     boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
     boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
-    IApplication &application, Balance &balance,
+    IApplication &application,
     std::unordered_map<std::string, PreciseNumber> &relativeValues,
-    const PreciseNumber &commission)
+    Balance &balance, const PreciseNumber &commission)
     : _priceUpdateQueue(&priceUpdateQueue),
       _executionReportQueue(&executionReportQueue), _application(&application),
-      _balance(balance), _relativeValues(relativeValues) {
+      _relativeValues(relativeValues), _balance(&balance) {
 
   // Initialize _opportunities with the trading paths
   for (auto &path : tradingPaths) {
@@ -44,8 +44,8 @@ Worker::Worker(
 
 void Worker::reserveBudgetAndSymbols(const Opportunity &opp) {
   _reservedTrades.reserveAll(opp.getTrades());
-  _balance.updateBalance(opp.getStartingAsset(),
-                         opp.getCapacity() * PreciseNumber{"-1"});
+  _balance->updateBalance(opp.getStartingAsset(),
+                          opp.getCapacity() * PreciseNumber{"-1"});
 }
 
 /** Generate ID for execution */
@@ -71,7 +71,7 @@ void Worker::processPriceUpdate(const PriceUpdate &update) {
   update.symbol->bidQty = update.bidQty;
 
   // get balances
-  const auto balanceMap = _balance.getBalances();
+  const auto balanceMap = _balance->getBalances();
 
   // get reserved trades
   auto reservedSymbols = _reservedTrades.getReservedTrades();
@@ -248,7 +248,7 @@ void Worker::processReport(ExecutionReport *execReport) {
     _failedExecutions.erase(executionId);
 
     // update balance
-    _balance.updateBalance(delta);
+    _balance->updateBalance(delta);
 
     // free symbols
     _reservedTrades.releaseAll(execution.getOriginalTrades());

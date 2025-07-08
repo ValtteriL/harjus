@@ -40,8 +40,6 @@ private:
   boost::lockfree::spsc_queue<PriceUpdate> *_priceUpdateQueue;
   boost::lockfree::spsc_queue<ExecutionReport> *_executionReportQueue;
   IApplication *_application;
-  Balance _balance;
-  ReservedTrades _reservedTrades{};
   std::unordered_multimap<std::string, size_t> _opportunities{};
   std::vector<Opportunity> _opportunityList{};
   std::unordered_map<std::string, PreciseNumber> _relativeValues{};
@@ -60,6 +58,8 @@ private:
 
 protected:
   void processReport(ExecutionReport *execReport);
+  Balance *_balance;
+  ReservedTrades _reservedTrades{};
   std::unordered_map<std::string, entry>
       _executionsMap{}; // Map of execution ID to execution and delta
   std::unordered_map<std::string, std::pair<StaticTrade, std::string>>
@@ -101,7 +101,7 @@ public:
   Worker(std::vector<std::vector<Trade>> &tradingPaths,
          boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
          boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
-         IApplication &application, Balance &balance,
+         IApplication &application,
          std::unordered_map<std::string, PreciseNumber> &relativeValues,
-         const PreciseNumber &commission);
+         Balance &balance, const PreciseNumber &commission);
 };
