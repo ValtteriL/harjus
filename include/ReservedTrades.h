@@ -2,7 +2,6 @@
 
 #include "StaticTrade.h"
 #include "Trade.h"
-#include <shared_mutex>
 #include <unordered_set>
 #include <vector>
 
@@ -19,11 +18,6 @@ private:
    *  Reserved symbols list using pairs of symbol string.
    */
   std::unordered_set<std::string> _reservedTrades;
-
-  /**
-   * Mutex for thread safety.
-   */
-  mutable std::shared_mutex mtx;
 
 public:
   /**
@@ -46,5 +40,5 @@ public:
    *  Get all reserved trades.
    *  @return Vector of reserved trades.
    */
-  std::unordered_set<std::string> getReservedTrades() const;
+  auto getReservedTrades() const -> const std::unordered_set<std::string> &;
 };

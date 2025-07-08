@@ -62,11 +62,10 @@ add_executable(harjus
   src/Trade.cpp
   src/Arbmapper.cpp
   src/Opportunity.cpp
-  src/Engine.cpp
   src/Execution.cpp
   src/ReservedTrades.cpp
   src/ExecutionReport.cpp
-  src/Trader.cpp
+  src/Worker.cpp
   src/PriceUpdate.cpp
   src/StaticTrade.cpp
   src/FixConfig.cpp
@@ -183,29 +182,7 @@ if(HARJUS_TESTS)
   gtest_discover_tests(OpportunityTest)
 
 
-  add_executable(EngineTest tests/EngineTest.cpp
-    src/Opportunity.cpp
-    src/Trade.cpp
-    src/Engine.cpp
-    src/ReservedTrades.cpp
-    src/Balance.cpp
-    src/PreciseNumber.cpp
-    src/Execution.cpp
-    src/PriceUpdate.cpp
-    src/StaticTrade.cpp
-  )
-  target_link_libraries(EngineTest PRIVATE
-    gtest_main
-    GTest::gmock
-    Boost::log
-    ${GMP_LIBRARIES}
-  )
-
-  gtest_discover_tests(EngineTest)
-
-
-  add_executable(TraderTest tests/TraderTest.cpp
-    src/Trader.cpp
+  add_executable(WorkerTest tests/WorkerTest.cpp
     src/Opportunity.cpp
     src/Trade.cpp
     src/ReservedTrades.cpp
@@ -213,16 +190,18 @@ if(HARJUS_TESTS)
     src/PreciseNumber.cpp
     src/Execution.cpp
     src/ExecutionReport.cpp
+    src/PriceUpdate.cpp
     src/StaticTrade.cpp
+    src/Worker.cpp
   )
-  target_link_libraries(TraderTest PRIVATE
+  target_link_libraries(WorkerTest PRIVATE
     gtest_main
     GTest::gmock
     Boost::log
     ${GMP_LIBRARIES}
   )
 
-  gtest_discover_tests(TraderTest)
+  gtest_discover_tests(WorkerTest)
 
   add_executable(PreciseNumberTest tests/PreciseNumberTest.cpp
     src/PreciseNumber.cpp
@@ -277,15 +256,12 @@ target_precompile_headers(harjus PRIVATE
   <unordered_set>
   <vector>
   <thread>
-  <mutex>
-  <shared_mutex>
   <stop_token>
   <queue>
   <fstream>
   <ostream>
   <utility>
   <memory>
-  <semaphore>
   <filesystem>
   <thread>
   <cmath>
@@ -345,6 +321,5 @@ if(HARJUS_TESTS)
   target_precompile_headers(ExchangeTest REUSE_FROM harjus)
   target_precompile_headers(ArbmapperTest REUSE_FROM harjus)
   target_precompile_headers(OpportunityTest REUSE_FROM harjus)
-  target_precompile_headers(EngineTest REUSE_FROM harjus)
-  target_precompile_headers(TraderTest REUSE_FROM harjus)
+  target_precompile_headers(WorkerTest REUSE_FROM harjus)
 endif()

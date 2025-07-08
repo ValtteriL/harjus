@@ -3,19 +3,6 @@
 #include <fstream>
 #include <quickfix/SessionSettings.h>
 
-void prepareFixFileStore(const std::string &dir) {
-  std::filesystem::create_directory(dir);
-
-  for (const auto &entry : std::filesystem::directory_iterator(dir)) {
-    if (entry.path().extension() == ".session" ||
-        entry.path().extension() == ".body" ||
-        entry.path().extension() == ".header" ||
-        entry.path().extension() == ".seqnums") {
-      std::filesystem::remove(entry.path());
-    }
-  }
-}
-
 auto writeSchemaToTemp(const std::string &xml,
                        const std::string &name) -> std::string {
   auto tmp = std::filesystem::temp_directory_path() / name;
@@ -802,10 +789,6 @@ auto FixOeSchema() -> std::string {
 
 FixConfig::FixConfig(const IConfiguration &config) {
 
-  // prepare fix file store
-  // delete old files that contain state
-  prepareFixFileStore(config.getFixFileStorePath());
-
   // write schemas to disk
   auto tmpMd = writeSchemaToTemp(FixMdSchema(), "spot-fix-md.xml");
   auto tmpOe = writeSchemaToTemp(FixOeSchema(), "spot-fix-oe.xml");
@@ -819,8 +802,6 @@ FixConfig::FixConfig(const IConfiguration &config) {
   ResetOnLogout=Y
   ResetOnDisconnect=Y
   ReconnectInterval=1
-  FileStorePath=)" + config.getFixFileStorePath() +
-                           R"(
   ConnectionType=initiator
   TargetCompID=SPOT
   DefaultApplVerID=FIX.4.4

@@ -1,13 +1,12 @@
 #include "Application.h"
 #include "Arbmapper.h"
 #include "Configuration.h"
-#include "Engine.h"
 #include "Exchange.h"
 #include "FixConfig.h"
 #include "PriceUpdate.h"
-#include "ReservedTrades.h"
 #include "Trade.h"
-#include "Trader.h"
+#include "Worker.h"
+#include <MessageStore.h>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -95,10 +94,7 @@ auto main() -> int {
 
   // Create queues for price updates & executions
   boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{QUEUE_SIZE};
-  boost::lockfree::spsc_queue<Execution> executionQueue{QUEUE_SIZE};
   boost::lockfree::spsc_queue<ExecutionReport> reportQueue{QUEUE_SIZE};
-
-  ReservedTrades reservedTrades;
 
   // Extract the list of symbols for subscription
   auto symbols = getUniqueSymbolsForTradingPaths(tradingPaths);
@@ -121,7 +117,7 @@ auto main() -> int {
   auto settings = fixConfig.sessionSettings();
 
   Application application{config, priceUpdateQueue, reportQueue, symbolMap};
-  FIX::FileStoreFactory storeFactory{settings};
+  FIX::MemoryStoreFactory storeFactory{};
   FIX::ScreenLogFactory logFactory{settings};
 
   auto initiator =
@@ -150,25 +146,18 @@ auto main() -> int {
     }
   });
 
-  // Create the engine
-  Engine engine{tradingPaths,          *balance,       reservedTrades,
-                priceUpdateQueue,      executionQueue, relativeValueMap,
+  // Create the worker
+
+  Worker worker{tradingPaths,          priceUpdateQueue, reportQueue,
+                application,           relativeValueMap, *balance,
                 config.getCommission()};
 
-  // create a jthread to run engine
-  std::jthread j_thread_engine(
-      [&engine](const std::stop_token &stoken) { engine.run(stoken); });
-
-  // create a trader
-  Trader trader{executionQueue, reportQueue, application, *balance,
-                reservedTrades};
-
-  // create a jthread to run trader
-  std::jthread j_thread_trader(
-      [&trader](const std::stop_token &stoken) { trader.run(stoken); });
+  // create a jthread to run worker
+  std::jthread j_thread_worker(
+      [&worker](const std::stop_token &stoken) { worker.run(stoken); });
 
   // Start processing execiutions
-  BOOST_LOG_TRIVIAL(info) << "Worker threads started. Press Ctrl+C to exit.";
+  BOOST_LOG_TRIVIAL(info) << "Worker thread started. Press Ctrl+C to exit.";
 
   // wait for ctrl+c
 
@@ -187,12 +176,8 @@ auto main() -> int {
   BOOST_LOG_TRIVIAL(info)
       << "Stopping threads... Press Ctrl+C to exit immediately.";
   // Stop the engine
-  j_thread_engine.request_stop();
-  j_thread_engine.join();
-
-  // Stop the trader
-  j_thread_trader.request_stop();
-  j_thread_trader.join();
+  j_thread_worker.request_stop();
+  j_thread_worker.join();
 
   // Stop the application
   isShuttingDown = true;

@@ -11,7 +11,7 @@
 class ExecutionReport {
 private:
   std::string _id;
-  TradeExecutionStatus _status;
+  TradeExecutionStatus _status{TradeExecutionStatus::UNKNOWN};
   PreciseNumber _usedQty;
   PreciseNumber _recvQty;
   std::unordered_map<std::string, PreciseNumber> _feeDelta;
@@ -32,6 +32,26 @@ public:
    * @brief Default constructor for ExecutionReport class
    */
   ExecutionReport() = default;
+
+  /**
+   * @brief Copy constructor
+   */
+  ExecutionReport(const ExecutionReport &) = default;
+
+  /**
+   * @brief Copy assignment operator
+   */
+  auto operator=(const ExecutionReport &) -> ExecutionReport & = default;
+
+  /**
+   * @brief Move constructor
+   */
+  ExecutionReport(ExecutionReport &&) = default;
+
+  /**
+   * @brief Move assignment operator
+   */
+  auto operator=(ExecutionReport &&) -> ExecutionReport & = default;
 
   /**
    * @brief Destructor for ExecutionReport class
@@ -77,5 +97,5 @@ public:
    * @return Reference to the output stream
    */
   friend auto operator<<(std::ostream &os,
-                                  const ExecutionReport &report) -> std::ostream &;
+                         const ExecutionReport &report) -> std::ostream &;
 };

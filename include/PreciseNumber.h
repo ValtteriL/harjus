@@ -52,7 +52,7 @@ public:
    * @brief Copy constructor for PreciseNumber.
    * @param other The PreciseNumber object to copy from.
    */
-  PreciseNumber(const PreciseNumber &other);
+  PreciseNumber(const PreciseNumber &other) = default;
 
   /**
    * @brief Adds two PreciseNumber objects.
