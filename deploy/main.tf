@@ -109,7 +109,7 @@ resource "aws_instance" "instance" {
   # Amazon Linux 2023 AMI 2023.7.20250609.0 x86_64 HVM kernel-6.1
   ami = "ami-07460a3f37dd24dc0"
 
-  instance_type        = "c6in.xlarge"
+  instance_type        = "c6in.large"
   key_name             = aws_key_pair.ec_key.key_name
   security_groups      = [aws_security_group.security.name]
   iam_instance_profile = aws_iam_instance_profile.instance_profile.name
