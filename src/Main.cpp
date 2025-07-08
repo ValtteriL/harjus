@@ -6,6 +6,7 @@
 #include "PriceUpdate.h"
 #include "Trade.h"
 #include "Worker.h"
+#include <MessageStore.h>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -116,7 +117,7 @@ auto main() -> int {
   auto settings = fixConfig.sessionSettings();
 
   Application application{config, priceUpdateQueue, reportQueue, symbolMap};
-  FIX::FileStoreFactory storeFactory{settings};
+  FIX::MemoryStoreFactory storeFactory{};
   FIX::ScreenLogFactory logFactory{settings};
 
   auto initiator =
