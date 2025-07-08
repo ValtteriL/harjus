@@ -256,15 +256,12 @@ target_precompile_headers(harjus PRIVATE
   <unordered_set>
   <vector>
   <thread>
-  <mutex>
-  <shared_mutex>
   <stop_token>
   <queue>
   <fstream>
   <ostream>
   <utility>
   <memory>
-  <semaphore>
   <filesystem>
   <thread>
   <cmath>
