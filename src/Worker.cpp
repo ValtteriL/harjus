@@ -259,8 +259,7 @@ void Worker::run(const std::stop_token &stoken) {
 
   BOOST_LOG_TRIVIAL(debug) << "Starting Trader";
 
-  // Wait for the semaphore to be released
-  // or stop requested
+  // Wait for stop request
   while (!stoken.stop_requested()) {
 
     // Process price update
