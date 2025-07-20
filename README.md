@@ -89,7 +89,7 @@ terraform -chdir=deploy apply
 ### Access prod server
 
 ```bash
-ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ec2-user@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
+ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ubuntu@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
 ```
 
 ### Inspect service

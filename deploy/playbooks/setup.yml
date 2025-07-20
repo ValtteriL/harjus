@@ -5,7 +5,7 @@
   become: yes
   vars:
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
-    ansible_user: ec2-user
+    ansible_user: ubuntu
   tasks:
   
     - name: Install packages
@@ -16,16 +16,12 @@
           - vim
           - python3
           - python3-pip
+          - python3-boto3
+          - python3-botocore
+          - python3-packaging
+          - tuned
         state: present
         update_cache: yes
-
-    - name: Install pip packages for s3 operations
-      ansible.builtin.pip:
-        name:
-          - boto3
-          - botocore
-          - packaging
-        executable: pip3
 
     - name: Install Nix package manager
       ansible.builtin.shell:
@@ -35,7 +31,7 @@
     - name: Set default nix channels
       ansible.builtin.shell: "bash -lc 'nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs && nix-channel --update'"
       args:
-        creates: /home/{{ ansible_user }}/.nix-defexpr/channels/nixpkgs
+        creates: /root/.nix-defexpr/channels/nixpkgs
 
     - name: allow unsigned nix packages
       ansible.builtin.lineinfile:
@@ -44,9 +40,61 @@
         state: present
       notify: Restart nix-daemon
 
+    - name: Install realtime kernel
+      ansible.builtin.package:
+        name: linux-realtime
+        state: present
+      notify: Reboot
+
+    - name: Enable & start tuned service
+      ansible.builtin.systemd:
+        name: tuned
+        enabled: yes
+        state: started
+
+    - name: Create tuned profile directory
+      ansible.builtin.file:
+        path: /etc/tuned/profiles/harjus
+        state: directory
+        mode: '0755'
+
+    - name: Create tuned profile
+      ansible.builtin.copy:
+        src: tuned.conf
+        dest: /etc/tuned/profiles/harjus/tuned.conf
+
+    - name: Set tuned profile
+      ansible.builtin.command: tuned-adm profile harjus
+
+    - name: Verify tuned profile
+      ansible.builtin.command: tuned-adm verify
+      register: tuned_verify
+      ignore_errors: yes
+      changed_when: 'tuned_verify.rc != 0'
+      failed_when: false
+      notify: Reboot
+
+    - name: Disable interrupt modification and dynamic interrupt moderation
+      ansible.builtin.command: >
+        ethtool -C ens5 adaptive-rx off rx-usecs 0 tx-usecs 0
+
+    - name: Blacklist iptables kernel module
+      ansible.builtin.copy:
+        dest: /etc/modprobe.d/blacklist-iptables.conf
+        content: |
+          blacklist ip_tables
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reboot
+
   handlers:
+
     - name: Restart nix-daemon
       ansible.builtin.systemd_service:
         name: nix-daemon
         state: restarted
         daemon_reload: yes
+
+    - name: Reboot
+      ansible.builtin.reboot:

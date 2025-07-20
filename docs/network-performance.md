@@ -76,10 +76,26 @@ Raw packets sent: 100 (4.000KB) | Rcvd: 100 (4.600KB) | Lost: 0 (0.00%)
 Nping done: 1 IP address pinged in 99.21 seconds
 ```
 
+After optimizations
+
+```text
+Max rtt: 0.828ms | Min rtt: 0.433ms | Avg rtt: 0.479ms
+Raw packets sent: 100 (4.000KB) | Rcvd: 100 (4.600KB) | Lost: 0 (0.00%)
+Nping done: 1 IP address pinged in 99.20 seconds
+```
+
 ### OE
 
 ```text
 Max rtt: 1.943ms | Min rtt: 0.348ms | Avg rtt: 0.410ms
 Raw packets sent: 100 (4.000KB) | Rcvd: 100 (4.600KB) | Lost: 0 (0.00%)
 Nping done: 1 IP address pinged in 99.16 seconds
+```
+
+After optimizations
+
+```text
+Max rtt: 0.863ms | Min rtt: 0.492ms | Avg rtt: 0.530ms
+Raw packets sent: 100 (4.000KB) | Rcvd: 100 (4.600KB) | Lost: 0 (0.00%)
+Nping done: 1 IP address pinged in 99.19 seconds
 ```
