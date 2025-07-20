@@ -78,6 +78,16 @@
       ansible.builtin.command: >
         ethtool -C ens5 adaptive-rx off rx-usecs 0 tx-usecs 0
 
+    - name: Blacklist iptables kernel module
+      ansible.builtin.copy:
+        dest: /etc/modprobe.d/blacklist-iptables.conf
+        content: |
+          blacklist ip_tables
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Reboot
+
   handlers:
 
     - name: Restart nix-daemon
