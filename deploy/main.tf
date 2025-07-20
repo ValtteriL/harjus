@@ -109,7 +109,7 @@ resource "aws_instance" "instance" {
   # Ubuntu 25.04 HVM ebs-ssd-gp3
   ami = "ami-02145888c84f41705"
 
-  instance_type        = "c6in.large"
+  instance_type        = "c6in.xlarge"
   key_name             = aws_key_pair.ec_key.key_name
   security_groups      = [aws_security_group.security.name]
   iam_instance_profile = aws_iam_instance_profile.instance_profile.name
