@@ -5,7 +5,7 @@
   become: yes
   vars:
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
-    ansible_user: ec2-user
+    ansible_user: ubuntu
   tasks:
   
     - name: Install packages
@@ -16,16 +16,11 @@
           - vim
           - python3
           - python3-pip
+          - python3-boto3
+          - python3-botocore
+          - python3-packaging
         state: present
         update_cache: yes
-
-    - name: Install pip packages for s3 operations
-      ansible.builtin.pip:
-        name:
-          - boto3
-          - botocore
-          - packaging
-        executable: pip3
 
     - name: Install Nix package manager
       ansible.builtin.shell:
