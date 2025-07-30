@@ -1,10 +1,11 @@
 # Harjus
 
-Binance arbitrage bot.
+Binance Spot arbitrage bot. Writeup [here](https://shufflingbytes.com/posts/binance-triangular-arbitrage/).
 
-Captures triangular arbitrage opportunities on Spot trading.
+## Requirements
 
-![build workflow](https://github.com/ValtteriL/harjus/actions/workflows/build.yml/badge.svg)
+- nix
+- aws-cli configured (for deployment)
 
 ## Development
 
