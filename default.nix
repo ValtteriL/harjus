@@ -86,7 +86,6 @@ let
         glibcLocales
         nixpkgs-fmt
         nixfmt-classic
-        cowsay
 
         # C++
         cmake
@@ -122,7 +121,6 @@ let
         export USE_CCACHE=1
         export CCACHE_COMPRESS=1
         export CCACHE_MAXSIZE=10G
-        cowsay "Harjus!"
       '';
     };
 
