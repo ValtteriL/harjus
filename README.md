@@ -16,6 +16,11 @@
   </p>
 </div>
 
+## Demo
+
+Exploiting triangular arbitrage opportunities in Binance testnet
+[![asciicast](https://asciinema.org/a/730934.svg)](https://asciinema.org/a/730934)
+
 ## Requirements
 
 - nix
