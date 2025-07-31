@@ -1,6 +1,20 @@
 # Harjus
 
-Binance Spot arbitrage bot. Writeup [here](https://shufflingbytes.com/posts/binance-triangular-arbitrage/).
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/ValtteriL/harjus">
+    <img src="images/harjus-logo.png" alt="Logo" width="300" height="300">
+  </a>
+
+  <h3 align="center">Harjus</h3>
+
+  <p align="center">
+    Binance Spot Arbitrage Bot
+    <br />
+    <a href="https://shufflingbytes.com/posts/binance-triangular-arbitrage/"><strong>Read the writeup »</strong></a>
+  </p>
+</div>
 
 ## Requirements
 
