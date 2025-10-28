@@ -18,19 +18,16 @@ pkgs.mkShell {
     git
     gcc
     openssl
-    linux_6_6
     bc
     pcre
     zlib
     numactl
+    gawk
+    libbsd
 
     cmake
-    meson
     ninja
     pkg-config
-    cudatoolkit
-
-    python313Packages.pyelftools
 
   ];
 
@@ -39,3 +36,4 @@ pkgs.mkShell {
   '';
 
 }
+
