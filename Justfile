@@ -7,6 +7,9 @@ install-deps:
 initialize:
     sudo ./scripts/initialize.sh
 
+install-wsl-headers:
+    sudo ./scripts/install-wsl-headers.sh
+
 build-all:
     nix-build
 
