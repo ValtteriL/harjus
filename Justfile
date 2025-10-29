@@ -6,3 +6,6 @@ install-deps:
 
 build-fstack:
     nix-build -A fstack
+
+build-fstack-examples:
+    nix-build -A fstack-examples

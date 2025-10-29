@@ -7,6 +7,7 @@ let
   };
   pkgs = import nixpkgs { config = {allowUnfree = true;}; overlays = []; };
 in
-{
+rec { 
   fstack = pkgs.callPackage ./fstack.nix { };
+  fstack-examples = pkgs.callPackage ./fstack-examples.nix { fstack = fstack; };
 }
