@@ -3,8 +3,17 @@
   fetchFromGitHub,
   fstack,
   pkg-config,
+  gawk,
+  openssl,
   numactl,
-  openssl
+  pcre,
+  zlib,
+  bc,
+  lib,
+  libpcap,
+  libnl,
+  libelf,
+  jansson
 }:
 
 let
@@ -30,8 +39,15 @@ stdenv.mkDerivation {
   inherit src;
 
   # Make the fstack library available when building the examples.
-  nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ fstack pinnedNixpkgs.dpdk numactl openssl ];
+  nativeBuildInputs = [ pkg-config gawk pinnedNixpkgs.dpdk ];
+  buildInputs = [ openssl numactl pcre zlib bc pinnedNixpkgs.dpdk libpcap libnl libelf jansson fstack ];
 
   sourceRoot = "${src.name}/example";
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p "$out/bin"
+    cp helloworld $out/bin
+    runHook postInstall
+  '';
 }

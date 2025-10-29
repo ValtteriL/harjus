@@ -36,3 +36,4 @@ SMEDockerfile
 
 # nix builds
 result
+result-*
