@@ -4,6 +4,9 @@ default:
 install-deps:
     sudo apt install dpdk dpdk-doc dpdk-kmods-dkms dpdk-dev libdpdk-dev
 
+initialize:
+    sudo ./scripts/initialize.sh
+
 build-all:
     nix-build
 
