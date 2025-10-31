@@ -2,7 +2,7 @@ default:
     just --list
 
 install-deps:
-    sudo apt install dpdk dpdk-doc dpdk-kmods-dkms dpdk-dev libdpdk-dev
+    sudo apt install dpdk dpdk-doc dpdk-kmods-dkms dpdk-dev libdpdk-dev net-tools
 
 initialize:
     sudo ./scripts/initialize.sh
