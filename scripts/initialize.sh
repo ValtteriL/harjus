@@ -15,8 +15,8 @@ echo 0 > /proc/sys/kernel/randomize_va_space
 # insmod ko
 modprobe uio
 modprobe hwmon
-insmod /lib/modules/$(uname -r)/updates/dkms/igb_uio.ko
+modprobe /lib/modules/$(uname -r)/updates/dkms/igb_uio.ko
 
 dpdk-devbind.py --status
-#ifconfig eth0 down
-#dpdk-devbind.py --bind=igb_uio eth0 # assuming that use 10GE NIC and eth0
+ifconfig eth0 down
+dpdk-devbind.py --bind=igb_uio eth0 # assuming that use 10GE NIC and eth0
