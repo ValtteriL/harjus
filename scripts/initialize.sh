@@ -15,8 +15,16 @@ echo 0 > /proc/sys/kernel/randomize_va_space
 # insmod ko
 modprobe uio
 modprobe hwmon
-modprobe /lib/modules/$(uname -r)/updates/dkms/igb_uio.ko
+modprobe igb_uio
 
+# take over ens19 for f-stack
+if [ -d /sys/class/net/ens19 ]; then
+    ifconfig ens19 down
+    dpdk-devbind.py --bind=igb_uio ens19
+fi
+# to undo, run:
+# dpdk-devbind.py --bind=virtio-pci 00:13.0
+# ifconfig ens19 up
+
+# show status
 dpdk-devbind.py --status
-ifconfig eth0 down
-dpdk-devbind.py --bind=igb_uio eth0 # assuming that use 10GE NIC and eth0
