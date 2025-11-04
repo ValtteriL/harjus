@@ -6,7 +6,7 @@
 - cpu with SSE4.2 support
 - 2 NICS
     - eth0 for control traffic
-    - ens19 dedicated for dpdk
+    - ens19 dedicated for dpdk (of type vmxnet3)
 
 ```bash
 # setup dependencies
@@ -21,5 +21,12 @@ just provision
 # prepare kernel bypass
 just initialize
 
-# TODO
+# launch helloworld http server
+just helloworld
+
+# get served page
+curl -v http://172.16.1.22
+
+# stop helloworld
+just stop-helloworld
 ```
