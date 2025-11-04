@@ -1,6 +1,9 @@
 default:
     just --list
 
+provision:
+    sudo ./scripts/provision.sh
+
 initialize:
     sudo ./scripts/initialize.sh
 

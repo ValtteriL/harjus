@@ -3,9 +3,6 @@
 
 set -e
 
-# Update package list
-apt-get update
-
 # Install dependencies
 apt-get install -y \
     linux-headers-$(uname -r) \
@@ -15,8 +12,12 @@ apt-get install -y \
     dpdk-kmods-dkms \
     dpdk-dev \
     libdpdk-dev \
-    net-tools
+    net-tools \
+    direnv \
+    pkg-config
 
-# Install nix
-curl -L https://nixos.org/nix/install | sh -s -- --daemon
-
+# Install nix if not already installed
+if ! ls /etc/bashrc.backup-before-nix >/dev/null 2>&1
+then
+    curl -L https://nixos.org/nix/install | sh -s -- --daemon
+fi
