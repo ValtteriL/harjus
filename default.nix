@@ -10,4 +10,5 @@ in
 rec { 
   fstack = pkgs.callPackage ./fstack.nix { };
   fstack-examples = pkgs.callPackage ./fstack-examples.nix { fstack = fstack; };
+  quickfix = pkgs.callPackage ./quickfix.nix { };
 }
