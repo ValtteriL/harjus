@@ -7,16 +7,23 @@ provision:
 initialize:
     sudo ./scripts/initialize.sh
 
-build-all:
+build:
+    cmake quickfix -G Ninja -DHAVE_SSL=ON
+    ninja -C quickfix
+
+clean:
+    ninja -C quickfix clean
+
+nix-build-all:
     nix-build
 
-build-fstack:
+nix-build-fstack:
     nix-build -A fstack
 
-build-fstack-examples:
+nix-build-fstack-examples:
     nix-build -A fstack-examples
 
-build-quickfix:
+nix-build-plain-quickfix:
     nix-build -A quickfix
 
 helloworld: build-all

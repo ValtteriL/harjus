@@ -74,3 +74,8 @@ compile_commands.json
 *.vcxproj
 *.vcxproj.filters
 *.sln
+
+# ninja files
+.ninja_deps
+.ninja_log
+.ninja_lock
