@@ -5,8 +5,8 @@
 - Debian 13
 - cpu with SSE4.2 support
 - 2 NICS
-    - eth0 for control traffic
-    - ens19 dedicated for dpdk (of type vmxnet3)
+  - eth0 for control traffic
+  - ens19 dedicated for dpdk (of type vmxnet3)
 
 ```bash
 # setup dependencies
