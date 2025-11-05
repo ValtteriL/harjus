@@ -1,3 +1,7 @@
 # nix builds
 result
 result-*
+
+# test output
+store
+log

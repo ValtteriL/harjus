@@ -7,19 +7,29 @@ provision:
 initialize:
     sudo ./scripts/initialize.sh
 
-build-all:
+build:
+    cmake quickfix -G Ninja -DHAVE_SSL=ON
+    ninja -C quickfix
+
+clean:
+    ninja -C quickfix clean
+
+test:
+    ./quickfix/src/C++/test/ut --quickfix-config-file ./quickfix/test/cfg/ut.cfg --quickfix-spec-path ./quickfix/spec
+
+nix-build-all:
     nix-build
 
-build-fstack:
+nix-build-fstack:
     nix-build -A fstack
 
-build-fstack-examples:
+nix-build-fstack-examples:
     nix-build -A fstack-examples
 
-build-quickfix:
+nix-build-plain-quickfix:
     nix-build -A quickfix
 
-helloworld: build-all
+helloworld: nix-build-all
     sudo ./result/bin/ff_start -b ./result-2/bin/helloworld -c ./config.ini
 
 stop-helloworld:
