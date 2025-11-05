@@ -29,7 +29,7 @@ nix-build-fstack-examples:
 nix-build-plain-quickfix:
     nix-build -A quickfix
 
-helloworld: build-all
+helloworld: nix-build-all
     sudo ./result/bin/ff_start -b ./result-2/bin/helloworld -c ./config.ini
 
 stop-helloworld:
