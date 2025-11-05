@@ -14,6 +14,9 @@ build:
 clean:
     ninja -C quickfix clean
 
+test:
+    ./quickfix/src/C++/test/ut --quickfix-config-file ./quickfix/test/cfg/ut.cfg --quickfix-spec-path ./quickfix/spec
+
 nix-build-all:
     nix-build
 
