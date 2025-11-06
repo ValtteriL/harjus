@@ -25,11 +25,16 @@ in pkgs.mkShell {
 
     cmake
     ninja
-    pkg-config
     clang-tools
 
     # f-stack
     fstack
     fstack-examples
   ];
+
+  nativeBuildInputs = [ pkgs.pkg-config ];
+
+  shellHook = ''
+    export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/usr/lib/x86_64-linux-gnu/pkgconfig"
+  '';
 }
