@@ -29,6 +29,9 @@ nix-build-fstack-mt:
 nix-build-fstack-examples:
     nix-build -A fstack-examples
 
+nix-build-fstack-tools:
+    nix-build -A fstack-tools
+
 nix-build-plain-quickfix:
     nix-build -A quickfix
 
