@@ -1,4 +1,4 @@
-{ pkgs, fstack, fstack-examples }:
+{ pkgs, fstack, fstack-examples, fstack-mt }:
 
 let
 
@@ -30,6 +30,7 @@ in pkgs.mkShell {
     # f-stack
     fstack
     fstack-examples
+    fstack-mt
   ];
 
   nativeBuildInputs = [ pkgs.pkg-config ];

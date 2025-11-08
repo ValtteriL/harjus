@@ -20,7 +20,11 @@ just provision
 ```bash
 # prepare kernel bypass
 just initialize
+```
 
+### Hello world webserver
+
+```bash
 # launch helloworld http server
 just helloworld
 
@@ -29,4 +33,17 @@ curl -v http://172.16.1.22
 
 # stop helloworld
 just stop-helloworld
+```
+
+### Echo server
+
+```bash
+# launch echo server
+just echo
+
+# connect to it to play around
+nc -v 172.16.1.22 80
+
+# stop echo
+just stop-echo
 ```
