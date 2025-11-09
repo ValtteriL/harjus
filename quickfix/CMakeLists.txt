@@ -40,10 +40,11 @@ option(QUICKFIX_SHARED_LIBS "Build using shared libraries" ON)
 option(QUICKFIX_EXAMPLES "Build quickfix examples" ON)
 option(QUICKFIX_TESTS "Build quickfix tests" ON)
 
-# add libdpdk and fstack dependencies
+# add libdpdk, libfstack, libmt dependencies
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBDPDK REQUIRED libdpdk)
 pkg_check_modules(LIBFSTACK REQUIRED libfstack)
+pkg_check_modules(LIBMT REQUIRED libmt)
 
 #Make sure that a previous config.h has not undefined HAVE_SSL
 if(HAVE_SSL)
