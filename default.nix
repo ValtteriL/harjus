@@ -14,5 +14,10 @@ in rec {
   fstack-examples = pkgs.callPackage ./fstack-examples.nix { fstack = fstack; };
   fstack-mt = pkgs.callPackage ./fstack-mt.nix { fstack = fstack; };
   fstack-tools = pkgs.callPackage ./fstack-tools.nix { fstack = fstack; };
-  devshell = pkgs.callPackage ./devshell.nix { fstack = fstack; fstack-examples = fstack-examples; fstack-mt = fstack-mt; fstack-tools = fstack-tools; };
+  devshell = pkgs.callPackage ./devshell.nix {
+    fstack = fstack;
+    fstack-examples = fstack-examples;
+    fstack-mt = fstack-mt;
+    fstack-tools = fstack-tools;
+  };
 }
