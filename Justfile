@@ -23,15 +23,26 @@ nix-build-all:
 nix-build-fstack:
     nix-build -A fstack
 
+nix-build-fstack-mt:
+    nix-build -A fstack-mt
+
 nix-build-fstack-examples:
     nix-build -A fstack-examples
+
+nix-build-fstack-tools:
+    nix-build -A fstack-tools
 
 nix-build-plain-quickfix:
     nix-build -A quickfix
 
 helloworld: nix-build-all
-    sudo ./result/bin/ff_start -b ./result-2/bin/helloworld -c ./config.ini
+    sudo ./result-2/bin/ff_start -b ./result-3/bin/helloworld -c ./config.ini
 
 stop-helloworld:
     sudo kill $(pidof helloworld) || echo "helloworld is not running"
 
+echo: nix-build-all
+    sudo ./result-2/bin/ff_start -b ./result-4/bin/fstack-mt-echo -c ./config.ini
+
+stop-echo:
+    sudo kill $(pidof fstack-mt-echo) || echo "fstack-mt-echo is not running"

@@ -12,6 +12,12 @@ let
 in rec {
   fstack = pkgs.callPackage ./fstack.nix { };
   fstack-examples = pkgs.callPackage ./fstack-examples.nix { fstack = fstack; };
-  quickfix = pkgs.callPackage ./quickfix.nix { };
-  devshell = pkgs.callPackage ./devshell.nix { fstack = fstack; fstack-examples = fstack-examples; };
+  fstack-mt = pkgs.callPackage ./fstack-mt.nix { fstack = fstack; };
+  fstack-tools = pkgs.callPackage ./fstack-tools.nix { fstack = fstack; };
+  devshell = pkgs.callPackage ./devshell.nix {
+    fstack = fstack;
+    fstack-examples = fstack-examples;
+    fstack-mt = fstack-mt;
+    fstack-tools = fstack-tools;
+  };
 }
