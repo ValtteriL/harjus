@@ -30,6 +30,7 @@
 #include <sys/conf.h>
 #endif
 #include <algorithm>
+#include <cctype>
 #include <cstdarg>
 #include <fstream>
 #include <iostream>
@@ -38,20 +39,26 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <micro_thread.h>
+#include <mt_incl.h>
+
 namespace FIX {
 std::string error_strerror(decltype(errno) error_number) {
-  return "(errno[" + std::to_string(error_number) + "]:" + std::strerror(error_number) + ")";
+  return "(errno[" + std::to_string(error_number) +
+         "]:" + std::strerror(error_number) + ")";
 }
 
 std::string error_strerror() { return error_strerror(errno); }
 
 #ifdef _MSC_VER
 std::string error_wsaerror(int wsa_error_number) {
-  auto format = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS
-                | FORMAT_MESSAGE_MAX_WIDTH_MASK;
+  auto format = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_MAX_WIDTH_MASK;
   LPSTR buffer = NULL;
 
-  FormatMessageA(format, 0, wsa_error_number, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buffer, 0, NULL);
+  FormatMessageA(format, 0, wsa_error_number,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buffer, 0,
+                 NULL);
 
   return "(wsaerror[" + std::to_string(wsa_error_number) + "]:" + buffer + ")";
 }
@@ -59,8 +66,10 @@ std::string error_wsaerror(int wsa_error_number) {
 std::string error_wsaerror() { return error_wsaerror(WSAGetLastError()); }
 #endif
 
-void string_replace(const std::string &oldValue, const std::string &newValue, std::string &value) {
-  for (std::string::size_type pos = value.find(oldValue); pos != std::string::npos; pos = value.find(oldValue, pos)) {
+void string_replace(const std::string &oldValue, const std::string &newValue,
+                    std::string &value) {
+  for (std::string::size_type pos = value.find(oldValue);
+       pos != std::string::npos; pos = value.find(oldValue, pos)) {
     value.replace(pos, oldValue.size(), newValue);
     pos += newValue.size();
   }
@@ -110,16 +119,18 @@ char *string_concat(const char *a, ...) {
 
   return res;
 }
-
 std::string string_toUpper(const std::string &value) {
   std::string copy = value;
-  std::transform(copy.begin(), copy.end(), copy.begin(), toupper);
+  std::transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c) {
+    return static_cast<char>(std::toupper(c));
+  });
   return copy;
 }
-
 std::string string_toLower(const std::string &value) {
   std::string copy = value;
-  std::transform(copy.begin(), copy.end(), copy.begin(), tolower);
+  std::transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c) {
+    return static_cast<char>(std::tolower(c));
+  });
   return copy;
 }
 
@@ -138,7 +149,8 @@ std::string string_strip(const std::string &value) {
   return std::string(value, startPos, endPos - startPos + 1);
 }
 
-std::set<std::string> string_split(const std::string &value, const char delimiter) {
+std::set<std::string> string_split(const std::string &value,
+                                   const char delimiter) {
   std::set<std::string> subStrings;
   std::size_t start = 0;
   for (std::size_t pos = 0; pos < value.size(); ++pos) {
@@ -228,7 +240,9 @@ socket_handle socket_createAcceptor(int port, bool reuse) {
   return socket;
 }
 
-socket_handle socket_createConnector() { return ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP); }
+socket_handle socket_createConnector() {
+  return ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+}
 
 int socket_connect(socket_handle socket, const char *address, int port) {
   const char *hostname = socket_hostname(address);
@@ -237,8 +251,9 @@ int socket_connect(socket_handle socket, const char *address, int port) {
     // In a case of Windows + MSVC, select() does not fire a write event for
     // a bare socket (no connection ever attempted). Therefore the later
     // logic, which is based on unconditional continuation with select(),
-    // leads to a deadlock (the select never gets back) for the connecting session.
-    // So keep going ahead with a bad address to issue a faulty connect.
+    // leads to a deadlock (the select never gets back) for the connecting
+    // session. So keep going ahead with a bad address to issue a faulty
+    // connect.
     hostname = address;
 #else
     return -1;
@@ -250,7 +265,8 @@ int socket_connect(socket_handle socket, const char *address, int port) {
   addr.sin_port = htons(port);
   addr.sin_addr.s_addr = inet_addr(hostname);
 
-  int result = connect(socket, reinterpret_cast<sockaddr *>(&addr), sizeof(addr));
+  int result = mt_connect(socket, reinterpret_cast<sockaddr *>(&addr),
+                          sizeof(addr), 3000);
 
   return result;
 }
@@ -293,19 +309,16 @@ std::string socket_get_last_error() {
   int winsockErrorCode = WSAGetLastError();
 
   char *s = NULL;
-  FormatMessageA(
-      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-      NULL,
-      winsockErrorCode,
-      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-      (LPSTR)&s,
-      0,
-      NULL);
+  FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+                     FORMAT_MESSAGE_IGNORE_INSERTS,
+                 NULL, winsockErrorCode,
+                 MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&s, 0, NULL);
   errorMessage << "Winsock error " << winsockErrorCode << ": " << s;
   LocalFree(s);
 #else
   int errorNumber = errno;
-  errorMessage << "Winsock error " << errorNumber << ": " << strerror(errorNumber);
+  errorMessage << "Winsock error " << errorNumber << ": "
+               << strerror(errorNumber);
 #endif
   return errorMessage.str();
 }
@@ -366,9 +379,13 @@ int socket_getsockopt(socket_handle s, int opt, int &optval) {
 #ifndef _MSC_VER
 int socket_fcntl(int s, int opt, int arg) { return ::fcntl(s, opt, arg); }
 
-int socket_getfcntlflag(int s, int arg) { return socket_fcntl(s, F_GETFL, arg); }
+int socket_getfcntlflag(int s, int arg) {
+  return socket_fcntl(s, F_GETFL, arg);
+}
 
-int socket_setfcntlflag(int s, int arg) { return socket_fcntl(s, F_SETFL, arg); }
+int socket_setfcntlflag(int s, int arg) {
+  return socket_fcntl(s, F_SETFL, arg);
+}
 #endif
 
 void socket_setnonblock(socket_handle socket) {
@@ -396,7 +413,9 @@ bool socket_isBad(int s) {
 }
 #endif
 
-void socket_invalidate(socket_handle &socket) { socket = INVALID_SOCKET_HANDLE; }
+void socket_invalidate(socket_handle &socket) {
+  socket = INVALID_SOCKET_HANDLE;
+}
 
 short socket_hostport(socket_handle socket) {
   struct sockaddr_in addr;
@@ -515,7 +534,8 @@ bool thread_spawn(THREAD_START_ROUTINE func, void *var, thread_id &thread) {
 #ifdef _MSC_VER
   thread_id result = 0;
   unsigned int id = 0;
-  result = reinterpret_cast<thread_id>(_beginthreadex(NULL, 0, func, var, 0, &id));
+  result =
+      reinterpret_cast<thread_id>(_beginthreadex(NULL, 0, func, var, 0, &id));
   if (result == 0) {
     return false;
   }
@@ -627,7 +647,9 @@ void file_unlink(const char *path) {
 #endif
 }
 
-int file_rename(const char *oldpath, const char *newpath) { return rename(oldpath, newpath); }
+int file_rename(const char *oldpath, const char *newpath) {
+  return rename(oldpath, newpath);
+}
 
 std::string file_appendpath(const std::string &path, const std::string &file) {
   const char last = path[path.size() - 1];

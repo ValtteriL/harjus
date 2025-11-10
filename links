@@ -1,0 +1,10 @@
+<https://deepwiki.com/F-Stack/f-stack/2.6-micro-thread-framework>
+<https://deepwiki.com/F-Stack/f-stack/3.1-micro-thread-api>
+<https://deepwiki.com/F-Stack/f-stack/4.2-micro-thread-integration#avoid-blocking-system-calls>
+
+Idea:
+
+1. Implement initiator using Micro threads
+2. Use mt_or ff_ functions instead of the std socket ones
+3. dont use blocking functions: <https://deepwiki.com/F-Stack/f-stack/4.2-micro-thread-integration#avoid-blocking-system-calls>
+4. remove other initiators than microthread?
