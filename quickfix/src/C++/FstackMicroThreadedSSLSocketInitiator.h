@@ -4,7 +4,7 @@
 
 #include "HostDetailsProvider.h"
 #include "Initiator.h"
-#include "ThreadedSSLSocketConnection.h"
+#include "FstackMicroThreadedSSLSocketConnection.h"
 #include <map>
 
 namespace FIX {
@@ -38,7 +38,7 @@ private:
   typedef std::pair<socket_handle, SSL *> SocketKey;
   typedef std::map<SocketKey, thread_id> SocketToThread;
   typedef std::pair<FstackMicroThreadedSSLSocketInitiator *,
-                    ThreadedSSLSocketConnection *>
+                    FstackMicroThreadedSSLSocketConnection *>
       ThreadPair;
 
   void onConfigure(const SessionSettings &) EXCEPT(ConfigError);

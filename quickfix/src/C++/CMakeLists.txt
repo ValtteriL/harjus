@@ -68,6 +68,7 @@ if (HAVE_SSL)
     ThreadedSSLSocketConnection.cpp
     ThreadedSSLSocketInitiator.cpp
     FstackMicroThreadedSSLSocketInitiator.cpp
+    FstackMicroThreadedSSLSocketConnection.cpp
     UtilitySSL.cpp)
 endif()
 

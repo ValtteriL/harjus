@@ -198,7 +198,7 @@ void FstackMicroThreadedSSLSocketInitiator::doConnect(const SessionID &s,
         socket, BIO_CLOSE); // unfortunately OpenSSL uses int for socket handles
     SSL_set_bio(ssl, sbio, sbio);
 
-    ThreadedSSLSocketConnection *pConnection = new ThreadedSSLSocketConnection(
+    FstackMicroThreadedSSLSocketConnection *pConnection = new FstackMicroThreadedSSLSocketConnection(
         s, socket, ssl, host.address, host.port, getLog());
 
     ThreadPair *pair = new ThreadPair(this, pConnection);
@@ -243,7 +243,7 @@ THREAD_PROC FstackMicroThreadedSSLSocketInitiator::socketThread(void *p) {
   ThreadPair *pair = reinterpret_cast<ThreadPair *>(p);
 
   FstackMicroThreadedSSLSocketInitiator *pInitiator = pair->first;
-  ThreadedSSLSocketConnection *pConnection = pair->second;
+  FstackMicroThreadedSSLSocketConnection *pConnection = pair->second;
   FIX::SessionID sessionID = pConnection->getSession()->getSessionID();
   FIX::Session *pSession = FIX::Session::lookupSession(sessionID);
   socket_handle socket = pConnection->getSocket();
