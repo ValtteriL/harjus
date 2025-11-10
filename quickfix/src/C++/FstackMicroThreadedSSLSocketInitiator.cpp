@@ -1,4 +1,5 @@
 #include "config.h"
+#include <mt_api.h>
 
 #if (HAVE_SSL > 0)
 
@@ -6,12 +7,15 @@
 #include "Session.h"
 #include "Settings.h"
 #include "UtilitySSL.h"
+#include <micro_thread.h>
+#include <mt_incl.h>
 
 namespace FIX {
 
-int FstackMicroThreadedSSLSocketInitiator::passwordHandleCB(char *buf, int bufsize,
-                                                      int verify,
-                                                      void *instance) {
+int FstackMicroThreadedSSLSocketInitiator::passwordHandleCB(char *buf,
+                                                            int bufsize,
+                                                            int verify,
+                                                            void *instance) {
   return reinterpret_cast<FstackMicroThreadedSSLSocketInitiator *>(instance)
       ->passwordHandleCallback(buf, bufsize, verify);
 }
@@ -34,7 +38,8 @@ FstackMicroThreadedSSLSocketInitiator::FstackMicroThreadedSSLSocketInitiator(
   socket_init();
 }
 
-FstackMicroThreadedSSLSocketInitiator::~FstackMicroThreadedSSLSocketInitiator() {
+FstackMicroThreadedSSLSocketInitiator::
+    ~FstackMicroThreadedSSLSocketInitiator() {
   if (m_sslInit) {
     SSL_CTX_free(m_ctx);
     m_ctx = 0;
@@ -44,8 +49,8 @@ FstackMicroThreadedSSLSocketInitiator::~FstackMicroThreadedSSLSocketInitiator() 
   socket_term();
 }
 
-void FstackMicroThreadedSSLSocketInitiator::onConfigure(const SessionSettings &s)
-    EXCEPT(ConfigError) {
+void FstackMicroThreadedSSLSocketInitiator::onConfigure(
+    const SessionSettings &s) EXCEPT(ConfigError) {
   const Dictionary &dict = s.get();
 
   if (dict.has(RECONNECT_INTERVAL)) // ReconnectInterval in [DEFAULT]
@@ -63,8 +68,8 @@ void FstackMicroThreadedSSLSocketInitiator::onConfigure(const SessionSettings &s
   }
 }
 
-void FstackMicroThreadedSSLSocketInitiator::onInitialize(const SessionSettings &s)
-    EXCEPT(RuntimeError) {
+void FstackMicroThreadedSSLSocketInitiator::onInitialize(
+    const SessionSettings &s) EXCEPT(RuntimeError) {
   if (m_sslInit) {
     return;
   }
@@ -88,9 +93,10 @@ void FstackMicroThreadedSSLSocketInitiator::onInitialize(const SessionSettings &
       ssl_term();
       throw RuntimeError("Failed to set key");
     }
-  } else if (!loadSSLCert(m_ctx, false, s, getLog(),
-                          FstackMicroThreadedSSLSocketInitiator::passwordHandleCB,
-                          this, errStr)) {
+  } else if (!loadSSLCert(
+                 m_ctx, false, s, getLog(),
+                 FstackMicroThreadedSSLSocketInitiator::passwordHandleCB, this,
+                 errStr)) {
     ssl_term();
     throw RuntimeError(errStr);
   }
@@ -156,7 +162,7 @@ void FstackMicroThreadedSSLSocketInitiator::onStop() {
 }
 
 void FstackMicroThreadedSSLSocketInitiator::doConnect(const SessionID &s,
-                                                const Dictionary &d) {
+                                                      const Dictionary &d) {
   try {
     Session *session = Session::lookupSession(s);
     if (!session->isSessionTime(UtcTimeStamp::now())) {
@@ -198,15 +204,16 @@ void FstackMicroThreadedSSLSocketInitiator::doConnect(const SessionID &s,
         socket, BIO_CLOSE); // unfortunately OpenSSL uses int for socket handles
     SSL_set_bio(ssl, sbio, sbio);
 
-    FstackMicroThreadedSSLSocketConnection *pConnection = new FstackMicroThreadedSSLSocketConnection(
-        s, socket, ssl, host.address, host.port, getLog());
+    FstackMicroThreadedSSLSocketConnection *pConnection =
+        new FstackMicroThreadedSSLSocketConnection(s, socket, ssl, host.address,
+                                                   host.port, getLog());
 
     ThreadPair *pair = new ThreadPair(this, pConnection);
 
     {
       Locker l(m_mutex);
       thread_id thread;
-      if (thread_spawn(&socketThread, pair, thread)) {
+      if (mt_start_thread((void *)socketThread, pair)) {
         addThread(SocketKey(socket, ssl), thread);
       } else {
         delete pair;
@@ -220,7 +227,8 @@ void FstackMicroThreadedSSLSocketInitiator::doConnect(const SessionID &s,
   }
 }
 
-void FstackMicroThreadedSSLSocketInitiator::addThread(SocketKey s, thread_id t) {
+void FstackMicroThreadedSSLSocketInitiator::addThread(SocketKey s,
+                                                      thread_id t) {
   Locker l(m_mutex);
 
   m_threads[s] = t;
@@ -231,7 +239,6 @@ void FstackMicroThreadedSSLSocketInitiator::removeThread(SocketKey s) {
   SocketToThread::iterator i = m_threads.find(s);
 
   if (i != m_threads.end()) {
-    thread_detach(i->second);
     if (i->first.second != 0) {
       SSL_free(i->first.second);
     }
@@ -293,9 +300,8 @@ THREAD_PROC FstackMicroThreadedSSLSocketInitiator::socketThread(void *p) {
   return 0;
 }
 
-int FstackMicroThreadedSSLSocketInitiator::passwordHandleCallback(char *buf,
-                                                            size_t bufsize,
-                                                            int verify) {
+int FstackMicroThreadedSSLSocketInitiator::passwordHandleCallback(
+    char *buf, size_t bufsize, int verify) {
   if (m_password.length() > bufsize) {
     return -1;
   }
