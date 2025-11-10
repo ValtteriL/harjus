@@ -5,3 +5,6 @@ result-*
 # test output
 store
 log
+
+# vscode settings
+.vscode/
