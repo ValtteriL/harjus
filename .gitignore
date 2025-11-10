@@ -8,3 +8,6 @@ log
 
 # vscode settings
 .vscode/
+
+# build artifacts
+build/
