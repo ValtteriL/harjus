@@ -376,7 +376,8 @@ void socket_setnonblock(socket_handle socket) {
   u_long opt = 1;
   ::ioctlsocket(socket, FIONBIO, &opt);
 #else
-  socket_setfcntlflag(socket, O_NONBLOCK);
+  int on = 1;
+  ::ioctl(socket, FIONBIO, &on);
 #endif
 }
 bool socket_isValid(socket_handle socket) {
