@@ -11,3 +11,6 @@ log
 
 # build artifacts
 build/
+
+# cache
+.cache/
