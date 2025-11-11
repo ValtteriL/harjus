@@ -1,4 +1,4 @@
-{ pkgs, fstack, fstack-examples, fstack-mt, fstack-tools }:
+{ pkgs, fstack, fstack-examples, fstack-mt, fstack-tools, run-clang-tidy }:
 
 let
 
@@ -32,6 +32,9 @@ in pkgs.mkShell {
     fstack-examples
     fstack-mt
     fstack-tools
+
+    # code quality
+    run-clang-tidy
   ];
 
   nativeBuildInputs = [ pkgs.pkg-config ];
