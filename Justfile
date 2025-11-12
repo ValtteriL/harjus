@@ -61,6 +61,10 @@ fmt:
 	@echo "Running clang-format on tracked C/C++ files..."
 	git-clang-format -f
 
+fmt-all:
+    @echo "Running clang-format on all C/C++ files..."
+    clang-format -i `find quickfix -name "*.cpp" -or -name "*.hpp" -or -name "*.c" -or -name "*.h"`
+
 # Lint built C/C++ sources with clang-tidy
 lint:
     echo "Running clang-tidy on tracked C/C++ files..."
