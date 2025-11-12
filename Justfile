@@ -7,13 +7,16 @@ provision:
 initialize:
     sudo ./scripts/initialize.sh
 
+# Build Fast-QuickFIX
 build:
-    cmake quickfix -G Ninja -DHAVE_SSL=ON
+    cmake quickfix -G Ninja -DHAVE_SSL=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     ninja -C quickfix
 
+# Clean build artifacts
 clean:
     ninja -C quickfix clean
 
+# Run unit tests
 test:
     ./quickfix/src/C++/test/ut --quickfix-config-file ./quickfix/test/cfg/ut.cfg --quickfix-spec-path ./quickfix/spec
 
