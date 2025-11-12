@@ -46,3 +46,13 @@ echo: nix-build-all
 
 stop-echo:
     sudo kill $(pidof fstack-mt-echo) || echo "fstack-mt-echo is not running"
+
+# Format tracked C/C++ sources with clang-format
+fmt:
+	@echo "Running clang-format on tracked C/C++ files..."
+	git-clang-format -f
+
+# Lint built C/C++ sources with clang-tidy
+lint:
+    echo "Running clang-tidy on tracked C/C++ files..."
+    run-clang-tidy -p build -use-color -fix -quiet -j$(nproc)
