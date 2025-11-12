@@ -1,2 +1,2 @@
 ---
-Checks: '-*,cppcoreguidelines-*,modernize-*,boost-*,performance-*'
+Checks: '-*,cppcoreguidelines-*,modernize-*,performance-*'
