@@ -35,42 +35,54 @@
 
 typedef std::unique_ptr<FIX::Acceptor> AcceptorPtr;
 
-int main(int argc, char **argv) {
-  std::string file;
-  bool threaded = false;
+int main(int argc, char **argv)
+{
+    std::string file;
+    bool threaded = false;
 
-  if (getopt(argc, argv, "+f:") == 'f') {
-    file = optarg;
-  } else {
-    std::cout << "usage: " << argv[0] << " -f FILE [-t]" << std::endl;
-    return 1;
-  }
-
-  if (getopt(argc, argv, "+t") == 't') {
-    threaded = true;
-  }
-
-  try {
-    FIX::SessionSettings settings(file);
-    Application application;
-    FIX::FileStoreFactory factory("store");
-
-    AcceptorPtr pAcceptor;
-    if (threaded) {
-      pAcceptor.reset(new FIX::ThreadedSocketAcceptor(application, factory, settings));
-    } else {
-      pAcceptor.reset(new FIX::SocketAcceptor(application, factory, settings));
+    if (getopt(argc, argv, "+f:") == 'f')
+    {
+        file = optarg;
+    }
+    else
+    {
+        std::cout << "usage: " << argv[0] << " -f FILE [-t]" << std::endl;
+        return 1;
     }
 
-    pAcceptor->start();
-    while (true) {
-      FIX::process_sleep(1);
+    if (getopt(argc, argv, "+t") == 't')
+    {
+        threaded = true;
     }
-    pAcceptor->stop();
-  } catch (std::exception &e) {
-    std::cout << e.what();
-    return 2;
-  }
 
-  return 0;
+    try
+    {
+        FIX::SessionSettings settings(file);
+        Application application;
+        FIX::FileStoreFactory factory("store");
+
+        AcceptorPtr pAcceptor;
+        if (threaded)
+        {
+            pAcceptor.reset(new FIX::ThreadedSocketAcceptor(application, factory, settings));
+        }
+        else
+        {
+            pAcceptor.reset(new FIX::SocketAcceptor(application, factory, settings));
+        }
+
+        pAcceptor->start();
+        while (true)
+        {
+            FIX::process_sleep(1);
+        }
+        pAcceptor->stop();
+    }
+    catch (std::exception &e)
+    {
+        std::cout << e.what();
+        return 2;
+    }
+
+    return 0;
 }

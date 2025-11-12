@@ -2,201 +2,219 @@
 
 #include "Utility.h"
 
-class PGconn {};
-
-namespace FIX {
-
-class PostgreSQLQuery {
-public:
-  PostgreSQLQuery(const std::string &query) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
-
-  ~PostgreSQLQuery() {}
-
-  bool execute(PGconn *pConnection) { unreachable(); }
-
-  bool success() { unreachable(); };
-
-  int rows() { unreachable(); }
-
-  const char *reason() { unreachable(); }
-
-  char *getValue(int row, int column) { unreachable(); }
-
-  void throwException() EXCEPT(IOException) {}
+class PGconn
+{
 };
 
-class PostgreSQLConnection {
-public:
-  PostgreSQLConnection(const DatabaseConnectionID &id) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
+namespace FIX
+{
 
-  PostgreSQLConnection(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_POSTGRESQL not enabled");
-  }
+    class PostgreSQLQuery
+    {
+    public:
+        PostgreSQLQuery(const std::string &query) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
 
-  ~PostgreSQLConnection() {}
+        ~PostgreSQLQuery() {}
 
-  const DatabaseConnectionID &connectionID() { unreachable(); }
+        bool execute(PGconn *pConnection) { unreachable(); }
 
-  bool connected() { unreachable(); }
+        bool success() { unreachable(); };
 
-  bool reconnect() { unreachable(); }
+        int rows() { unreachable(); }
 
-  bool execute(PostgreSQLQuery &pQuery) { unreachable(); }
-};
+        const char *reason() { unreachable(); }
 
-typedef DatabaseConnectionPool<PostgreSQLConnection> PostgreSQLConnectionPool;
-typedef std::unique_ptr<PostgreSQLConnectionPool> PostgreSQLConnectionPoolPtr;
+        char *getValue(int row, int column) { unreachable(); }
 
-class PostgreSQLStoreFactory : public MessageStoreFactory {
-public:
-  static const std::string DEFAULT_DATABASE;
-  static const std::string DEFAULT_USER;
-  static const std::string DEFAULT_PASSWORD;
-  static const std::string DEFAULT_HOST;
-  static const short DEFAULT_PORT;
+        void throwException() EXCEPT(IOException) {}
+    };
 
-  PostgreSQLStoreFactory(const SessionSettings &settings) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
+    class PostgreSQLConnection
+    {
+    public:
+        PostgreSQLConnection(const DatabaseConnectionID &id) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
 
-  PostgreSQLStoreFactory(const Dictionary &dictionary) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
+        PostgreSQLConnection(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_POSTGRESQL not enabled");
+        }
 
-  PostgreSQLStoreFactory(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_POSTGRESQL not enabled");
-  }
+        ~PostgreSQLConnection() {}
 
-  PostgreSQLStoreFactory() { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
+        const DatabaseConnectionID &connectionID() { unreachable(); }
 
-  MessageStore *create(const UtcTimeStamp &, const SessionID &) { return nullptr; }
-  void destroy(MessageStore *) {}
-};
+        bool connected() { unreachable(); }
 
-const std::string PostgreSQLStoreFactory::DEFAULT_DATABASE = "";
-const std::string PostgreSQLStoreFactory::DEFAULT_USER = "";
-const std::string PostgreSQLStoreFactory::DEFAULT_PASSWORD = "";
-const std::string PostgreSQLStoreFactory::DEFAULT_HOST = "";
-const short PostgreSQLStoreFactory::DEFAULT_PORT = 3306;
+        bool reconnect() { unreachable(); }
 
-class PostgreSQLStore : public MessageStore {
-public:
-  PostgreSQLStore(
-      const UtcTimeStamp &now,
-      const SessionID &sessionID,
-      const DatabaseConnectionID &connection,
-      PostgreSQLConnectionPool *pool) {
-    throw ConfigError("HAVE_POSTGRESQL not enabled");
-  }
+        bool execute(PostgreSQLQuery &pQuery) { unreachable(); }
+    };
 
-  PostgreSQLStore(
-      const UtcTimeStamp &now,
-      const SessionID &sessionID,
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_POSTGRESQL not enabled");
-  }
+    typedef DatabaseConnectionPool<PostgreSQLConnection> PostgreSQLConnectionPool;
+    typedef std::unique_ptr<PostgreSQLConnectionPool> PostgreSQLConnectionPoolPtr;
 
-  ~PostgreSQLStore() {}
+    class PostgreSQLStoreFactory : public MessageStoreFactory
+    {
+    public:
+        static const std::string DEFAULT_DATABASE;
+        static const std::string DEFAULT_USER;
+        static const std::string DEFAULT_PASSWORD;
+        static const std::string DEFAULT_HOST;
+        static const short DEFAULT_PORT;
 
-  bool set(SEQNUM, const std::string &) EXCEPT(IOException) { unreachable(); }
-  void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException) {}
+        PostgreSQLStoreFactory(const SessionSettings &settings) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
 
-  SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException) { unreachable(); }
-  SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException) { unreachable(); }
-  void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException) {}
-  void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException) {}
-  void incrNextSenderMsgSeqNum() EXCEPT(IOException) {}
-  void incrNextTargetMsgSeqNum() EXCEPT(IOException) {}
+        PostgreSQLStoreFactory(const Dictionary &dictionary) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
 
-  UtcTimeStamp getCreationTime() const EXCEPT(IOException) { unreachable(); }
+        PostgreSQLStoreFactory(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_POSTGRESQL not enabled");
+        }
 
-  void reset(const UtcTimeStamp &now) EXCEPT(IOException) {}
-  void refresh() EXCEPT(IOException) {}
-};
+        PostgreSQLStoreFactory() { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
 
-class PostgreSQLLogFactory : public LogFactory {
-public:
-  static const std::string DEFAULT_DATABASE;
-  static const std::string DEFAULT_USER;
-  static const std::string DEFAULT_PASSWORD;
-  static const std::string DEFAULT_HOST;
-  static const short DEFAULT_PORT;
+        MessageStore *create(const UtcTimeStamp &, const SessionID &) { return nullptr; }
+        void destroy(MessageStore *) {}
+    };
 
-  PostgreSQLLogFactory(const SessionSettings &settings) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
+    const std::string PostgreSQLStoreFactory::DEFAULT_DATABASE = "";
+    const std::string PostgreSQLStoreFactory::DEFAULT_USER = "";
+    const std::string PostgreSQLStoreFactory::DEFAULT_PASSWORD = "";
+    const std::string PostgreSQLStoreFactory::DEFAULT_HOST = "";
+    const short PostgreSQLStoreFactory::DEFAULT_PORT = 3306;
 
-  PostgreSQLLogFactory(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_POSTGRESQL not enabled");
-  }
+    class PostgreSQLStore : public MessageStore
+    {
+    public:
+        PostgreSQLStore(
+            const UtcTimeStamp &now,
+            const SessionID &sessionID,
+            const DatabaseConnectionID &connection,
+            PostgreSQLConnectionPool *pool)
+        {
+            throw ConfigError("HAVE_POSTGRESQL not enabled");
+        }
 
-  PostgreSQLLogFactory() { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
+        PostgreSQLStore(
+            const UtcTimeStamp &now,
+            const SessionID &sessionID,
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_POSTGRESQL not enabled");
+        }
 
-  Log *create() { return nullptr; }
-  Log *create(const SessionID &) { return nullptr; }
-  void destroy(Log *) {}
-};
+        ~PostgreSQLStore() {}
 
-const std::string PostgreSQLLogFactory::DEFAULT_DATABASE = "";
-const std::string PostgreSQLLogFactory::DEFAULT_USER = "";
-const std::string PostgreSQLLogFactory::DEFAULT_PASSWORD = "";
-const std::string PostgreSQLLogFactory::DEFAULT_HOST = "";
-const short PostgreSQLLogFactory::DEFAULT_PORT = 0;
+        bool set(SEQNUM, const std::string &) EXCEPT(IOException) { unreachable(); }
+        void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException) {}
 
-class PostgreSQLLog : public Log {
-public:
-  PostgreSQLLog(const SessionID &sessionID, const DatabaseConnectionID &connectionID, PostgreSQLConnectionPool *pool) {
-    throw ConfigError("HAVE_POSTGRESQL not enabled");
-  }
+        SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException) { unreachable(); }
+        SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException) { unreachable(); }
+        void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException) {}
+        void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException) {}
+        void incrNextSenderMsgSeqNum() EXCEPT(IOException) {}
+        void incrNextTargetMsgSeqNum() EXCEPT(IOException) {}
 
-  PostgreSQLLog(const DatabaseConnectionID &connectionID, PostgreSQLConnectionPool *pool) {
-    throw ConfigError("HAVE_POSTGRESQL not enabled");
-  }
+        UtcTimeStamp getCreationTime() const EXCEPT(IOException) { unreachable(); }
 
-  PostgreSQLLog(
-      const SessionID &sessionID,
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_POSTGRESQL not enabled");
-  }
+        void reset(const UtcTimeStamp &now) EXCEPT(IOException) {}
+        void refresh() EXCEPT(IOException) {}
+    };
 
-  PostgreSQLLog(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_POSTGRESQL not enabled");
-  }
+    class PostgreSQLLogFactory : public LogFactory
+    {
+    public:
+        static const std::string DEFAULT_DATABASE;
+        static const std::string DEFAULT_USER;
+        static const std::string DEFAULT_PASSWORD;
+        static const std::string DEFAULT_HOST;
+        static const short DEFAULT_PORT;
 
-  ~PostgreSQLLog() {}
+        PostgreSQLLogFactory(const SessionSettings &settings) { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
 
-  void clear() {}
-  void backup() {}
-  void setIncomingTable(const std::string &incomingTable) {}
-  void setOutgoingTable(const std::string &outgoingTable) {}
-  void setEventTable(const std::string &eventTable) {}
+        PostgreSQLLogFactory(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_POSTGRESQL not enabled");
+        }
 
-  void onIncoming(const std::string &value) {}
-  void onOutgoing(const std::string &value) {}
-  void onEvent(const std::string &value) {}
-};
+        PostgreSQLLogFactory() { throw ConfigError("HAVE_POSTGRESQL not enabled"); }
+
+        Log *create() { return nullptr; }
+        Log *create(const SessionID &) { return nullptr; }
+        void destroy(Log *) {}
+    };
+
+    const std::string PostgreSQLLogFactory::DEFAULT_DATABASE = "";
+    const std::string PostgreSQLLogFactory::DEFAULT_USER = "";
+    const std::string PostgreSQLLogFactory::DEFAULT_PASSWORD = "";
+    const std::string PostgreSQLLogFactory::DEFAULT_HOST = "";
+    const short PostgreSQLLogFactory::DEFAULT_PORT = 0;
+
+    class PostgreSQLLog : public Log
+    {
+    public:
+        PostgreSQLLog(const SessionID &sessionID, const DatabaseConnectionID &connectionID, PostgreSQLConnectionPool *pool)
+        {
+            throw ConfigError("HAVE_POSTGRESQL not enabled");
+        }
+
+        PostgreSQLLog(const DatabaseConnectionID &connectionID, PostgreSQLConnectionPool *pool)
+        {
+            throw ConfigError("HAVE_POSTGRESQL not enabled");
+        }
+
+        PostgreSQLLog(
+            const SessionID &sessionID,
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_POSTGRESQL not enabled");
+        }
+
+        PostgreSQLLog(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_POSTGRESQL not enabled");
+        }
+
+        ~PostgreSQLLog() {}
+
+        void clear() {}
+        void backup() {}
+        void setIncomingTable(const std::string &incomingTable) {}
+        void setOutgoingTable(const std::string &outgoingTable) {}
+        void setEventTable(const std::string &eventTable) {}
+
+        void onIncoming(const std::string &value) {}
+        void onOutgoing(const std::string &value) {}
+        void onEvent(const std::string &value) {}
+    };
 
 } // namespace FIX
 

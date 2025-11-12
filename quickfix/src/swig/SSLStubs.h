@@ -1,129 +1,144 @@
 #ifndef HAVE_SSL
 
-struct SSL {};
-struct RSA {};
-struct X509 {};
-
-namespace FIX {
-enum SSLHandshakeStatus {
-  SSL_HANDSHAKE_FAILED = 0,
-  SSL_HANDSHAKE_SUCCEDED = 1,
-  SSL_HANDSHAKE_IN_PROGRESS = 2
+struct SSL
+{
+};
+struct RSA
+{
+};
+struct X509
+{
 };
 
-class SSLSocketInitiator : public Initiator, SocketConnector::Strategy {
-public:
-  SSLSocketInitiator(Application &application, MessageStoreFactory &factory, const SessionSettings &settings)
-      EXCEPT(ConfigError)
-      : Initiator(application, factory, settings) {
-    throw ConfigError("HAVE_SSL not enabled");
-  }
+namespace FIX
+{
+    enum SSLHandshakeStatus
+    {
+        SSL_HANDSHAKE_FAILED = 0,
+        SSL_HANDSHAKE_SUCCEDED = 1,
+        SSL_HANDSHAKE_IN_PROGRESS = 2
+    };
 
-  SSLSocketInitiator(
-      Application &application,
-      MessageStoreFactory &factory,
-      const SessionSettings &settings,
-      LogFactory &logFactory) EXCEPT(ConfigError)
-      : Initiator(application, factory, settings, logFactory) {
-    throw ConfigError("HAVE_SSL not enabled");
-  }
+    class SSLSocketInitiator : public Initiator, SocketConnector::Strategy
+    {
+    public:
+        SSLSocketInitiator(Application &application, MessageStoreFactory &factory, const SessionSettings &settings)
+            EXCEPT(ConfigError)
+            : Initiator(application, factory, settings)
+        {
+            throw ConfigError("HAVE_SSL not enabled");
+        }
 
-  virtual ~SSLSocketInitiator() {}
+        SSLSocketInitiator(
+            Application &application,
+            MessageStoreFactory &factory,
+            const SessionSettings &settings,
+            LogFactory &logFactory) EXCEPT(ConfigError)
+            : Initiator(application, factory, settings, logFactory)
+        {
+            throw ConfigError("HAVE_SSL not enabled");
+        }
 
-  void setPassword(const std::string &) {}
+        virtual ~SSLSocketInitiator() {}
 
-  void setCertAndKey(X509 *, RSA *) {}
+        void setPassword(const std::string &) {}
 
-  int passwordHandleCallback(char *, size_t, int) { return 0; }
+        void setCertAndKey(X509 *, RSA *) {}
 
-  static int passwordHandleCB(char *, int, int, void *) { return 0; }
+        int passwordHandleCallback(char *, size_t, int) { return 0; }
 
-private:
-  void onStart() {};
-  bool onPoll() { return false; };
-  void onStop() {};
+        static int passwordHandleCB(char *, int, int, void *) { return 0; }
 
-  void doConnect(const SessionID &, const Dictionary &) override {};
-  void onConnect(SocketConnector &, socket_handle) override {};
-  void onWrite(SocketConnector &, socket_handle) override {};
-  bool onData(SocketConnector &, socket_handle) override { return false; };
-  void onDisconnect(SocketConnector &, socket_handle) override {};
-  void onError(SocketConnector &) override {};
-};
+    private:
+        void onStart() {};
+        bool onPoll() { return false; };
+        void onStop() {};
 
-class SSLSocketAcceptor : public Acceptor, SocketServer::Strategy {
-public:
-  SSLSocketAcceptor(Application &application, MessageStoreFactory &factory, const SessionSettings &settings)
-      EXCEPT(ConfigError)
-      : Acceptor(application, factory, settings) {
-    throw ConfigError("HAVE_SSL not enabled");
-  }
+        void doConnect(const SessionID &, const Dictionary &) override {};
+        void onConnect(SocketConnector &, socket_handle) override {};
+        void onWrite(SocketConnector &, socket_handle) override {};
+        bool onData(SocketConnector &, socket_handle) override { return false; };
+        void onDisconnect(SocketConnector &, socket_handle) override {};
+        void onError(SocketConnector &) override {};
+    };
 
-  SSLSocketAcceptor(
-      Application &application,
-      MessageStoreFactory &factory,
-      const SessionSettings &settings,
-      LogFactory &logFactory) EXCEPT(ConfigError)
-      : Acceptor(application, factory, settings, logFactory) {
-    throw ConfigError("HAVE_SSL not enabled");
-  }
+    class SSLSocketAcceptor : public Acceptor, SocketServer::Strategy
+    {
+    public:
+        SSLSocketAcceptor(Application &application, MessageStoreFactory &factory, const SessionSettings &settings)
+            EXCEPT(ConfigError)
+            : Acceptor(application, factory, settings)
+        {
+            throw ConfigError("HAVE_SSL not enabled");
+        }
 
-  virtual ~SSLSocketAcceptor() {}
+        SSLSocketAcceptor(
+            Application &application,
+            MessageStoreFactory &factory,
+            const SessionSettings &settings,
+            LogFactory &logFactory) EXCEPT(ConfigError)
+            : Acceptor(application, factory, settings, logFactory)
+        {
+            throw ConfigError("HAVE_SSL not enabled");
+        }
 
-  void setPassword(const std::string &pwd) {}
+        virtual ~SSLSocketAcceptor() {}
 
-  int passwordHandleCallback(char *, size_t, int) { return 0; }
+        void setPassword(const std::string &pwd) {}
 
-  static int passPhraseHandleCB(char *, int, int, void *) { return 0; }
+        int passwordHandleCallback(char *, size_t, int) { return 0; }
 
-private:
-  void onStart() override {};
-  bool onPoll() override { return false; };
-  void onStop() override {};
+        static int passPhraseHandleCB(char *, int, int, void *) { return 0; }
 
-  void onConnect(SocketServer &, socket_handle, socket_handle) override {};
-  void onWrite(SocketServer &, socket_handle) override {};
-  bool onData(SocketServer &, socket_handle) override { return false; };
-  void onDisconnect(SocketServer &, socket_handle) override {};
-  void onError(SocketServer &) override {};
-};
+    private:
+        void onStart() override {};
+        bool onPoll() override { return false; };
+        void onStop() override {};
 
-class SSLSocketConnection : Responder {
-public:
-  typedef std::set<SessionID> Sessions;
+        void onConnect(SocketServer &, socket_handle, socket_handle) override {};
+        void onWrite(SocketServer &, socket_handle) override {};
+        bool onData(SocketServer &, socket_handle) override { return false; };
+        void onDisconnect(SocketServer &, socket_handle) override {};
+        void onError(SocketServer &) override {};
+    };
 
-  SSLSocketConnection(socket_handle, SSL *, Sessions, SocketMonitor *) {}
-  SSLSocketConnection(SSLSocketInitiator &, const SessionID &, socket_handle, SSL *, SocketMonitor *) {}
-  virtual ~SSLSocketConnection() {};
+    class SSLSocketConnection : Responder
+    {
+    public:
+        typedef std::set<SessionID> Sessions;
 
-  socket_handle getSocket() const { return 0; }
-  Session *getSession() const { return nullptr; }
+        SSLSocketConnection(socket_handle, SSL *, Sessions, SocketMonitor *) {}
+        SSLSocketConnection(SSLSocketInitiator &, const SessionID &, socket_handle, SSL *, SocketMonitor *) {}
+        virtual ~SSLSocketConnection() {};
 
-  bool read(SocketConnector &) { return false; };
-  bool read(SSLSocketAcceptor &, SocketServer &) { return false; };
-  bool processQueue() { return false; }
+        socket_handle getSocket() const { return 0; }
+        Session *getSession() const { return nullptr; }
 
-  void signal() {}
+        bool read(SocketConnector &) { return false; };
+        bool read(SSLSocketAcceptor &, SocketServer &) { return false; };
+        bool processQueue() { return false; }
 
-  void subscribeToSocketWriteAvailableEvents() {}
+        void signal() {}
 
-  void unsignal() {}
+        void subscribeToSocketWriteAvailableEvents() {}
 
-  void setHandshakeStartTime(time_t) {}
+        void unsignal() {}
 
-  int getSecondsFromHandshakeStart(time_t) { return 0; }
+        void setHandshakeStartTime(time_t) {}
 
-  void onTimeout() {}
+        int getSecondsFromHandshakeStart(time_t) { return 0; }
 
-  SSL *sslObject() { return nullptr; }
+        void onTimeout() {}
 
-  bool didProcessQueueRequestToRead() const { return false; };
-  bool didReadFromSocketRequestToWrite() const { return false; };
+        SSL *sslObject() { return nullptr; }
 
-private:
-  bool send(const std::string &) override { return false; };
-  void disconnect() override {};
-};
+        bool didProcessQueueRequestToRead() const { return false; };
+        bool didReadFromSocketRequestToWrite() const { return false; };
+
+    private:
+        bool send(const std::string &) override { return false; };
+        void disconnect() override {};
+    };
 } // namespace FIX
 
 #endif

@@ -2,201 +2,219 @@
 
 #include "Utility.h"
 
-class MYSQL {};
-
-namespace FIX {
-
-class MySQLQuery {
-public:
-  MySQLQuery(const std::string &query) { throw ConfigError("HAVE_MYSQL not enabled"); }
-
-  ~MySQLQuery() {}
-
-  bool execute(MYSQL *pConnection) { unreachable(); }
-
-  bool success() { unreachable(); };
-
-  int rows() { unreachable(); }
-
-  const std::string &reason() { unreachable(); }
-
-  char *getValue(int row, int column) { unreachable(); }
-
-  void throwException() EXCEPT(IOException) {}
+class MYSQL
+{
 };
 
-class MySQLConnection {
-public:
-  MySQLConnection(const DatabaseConnectionID &id) { throw ConfigError("HAVE_MYSQL not enabled"); }
+namespace FIX
+{
 
-  MySQLConnection(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_MYSQL not enabled");
-  }
+    class MySQLQuery
+    {
+    public:
+        MySQLQuery(const std::string &query) { throw ConfigError("HAVE_MYSQL not enabled"); }
 
-  ~MySQLConnection() {}
+        ~MySQLQuery() {}
 
-  const DatabaseConnectionID &connectionID() { unreachable(); }
+        bool execute(MYSQL *pConnection) { unreachable(); }
 
-  bool connected() { unreachable(); }
+        bool success() { unreachable(); };
 
-  bool reconnect() { unreachable(); }
+        int rows() { unreachable(); }
 
-  bool execute(MySQLQuery &pQuery) { unreachable(); }
-};
+        const std::string &reason() { unreachable(); }
 
-typedef DatabaseConnectionPool<MySQLConnection> MySQLConnectionPool;
-typedef std::unique_ptr<MySQLConnectionPool> MySQLConnectionPoolPtr;
+        char *getValue(int row, int column) { unreachable(); }
 
-class MySQLStoreFactory : public MessageStoreFactory {
-public:
-  static const std::string DEFAULT_DATABASE;
-  static const std::string DEFAULT_USER;
-  static const std::string DEFAULT_PASSWORD;
-  static const std::string DEFAULT_HOST;
-  static const short DEFAULT_PORT;
+        void throwException() EXCEPT(IOException) {}
+    };
 
-  MySQLStoreFactory(const SessionSettings &settings) { throw ConfigError("HAVE_MYSQL not enabled"); }
+    class MySQLConnection
+    {
+    public:
+        MySQLConnection(const DatabaseConnectionID &id) { throw ConfigError("HAVE_MYSQL not enabled"); }
 
-  MySQLStoreFactory(const Dictionary &dictionary) { throw ConfigError("HAVE_MYSQL not enabled"); }
+        MySQLConnection(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_MYSQL not enabled");
+        }
 
-  MySQLStoreFactory(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_MYSQL not enabled");
-  }
+        ~MySQLConnection() {}
 
-  MySQLStoreFactory() { throw ConfigError("HAVE_MYSQL not enabled"); }
+        const DatabaseConnectionID &connectionID() { unreachable(); }
 
-  MessageStore *create(const UtcTimeStamp &, const SessionID &) { return nullptr; }
-  void destroy(MessageStore *) {}
-};
+        bool connected() { unreachable(); }
 
-const std::string MySQLStoreFactory::DEFAULT_DATABASE = "";
-const std::string MySQLStoreFactory::DEFAULT_USER = "";
-const std::string MySQLStoreFactory::DEFAULT_PASSWORD = "";
-const std::string MySQLStoreFactory::DEFAULT_HOST = "";
-const short MySQLStoreFactory::DEFAULT_PORT = 3306;
+        bool reconnect() { unreachable(); }
 
-class MySQLStore : public MessageStore {
-public:
-  MySQLStore(
-      const UtcTimeStamp &now,
-      const SessionID &sessionID,
-      const DatabaseConnectionID &connection,
-      MySQLConnectionPool *pool) {
-    throw ConfigError("HAVE_MYSQL not enabled");
-  }
+        bool execute(MySQLQuery &pQuery) { unreachable(); }
+    };
 
-  MySQLStore(
-      const UtcTimeStamp &now,
-      const SessionID &sessionID,
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_MYSQL not enabled");
-  }
+    typedef DatabaseConnectionPool<MySQLConnection> MySQLConnectionPool;
+    typedef std::unique_ptr<MySQLConnectionPool> MySQLConnectionPoolPtr;
 
-  ~MySQLStore() {}
+    class MySQLStoreFactory : public MessageStoreFactory
+    {
+    public:
+        static const std::string DEFAULT_DATABASE;
+        static const std::string DEFAULT_USER;
+        static const std::string DEFAULT_PASSWORD;
+        static const std::string DEFAULT_HOST;
+        static const short DEFAULT_PORT;
 
-  bool set(SEQNUM, const std::string &) EXCEPT(IOException) { unreachable(); }
-  void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException) {}
+        MySQLStoreFactory(const SessionSettings &settings) { throw ConfigError("HAVE_MYSQL not enabled"); }
 
-  SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException) { unreachable(); }
-  SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException) { unreachable(); }
-  void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException) {}
-  void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException) {}
-  void incrNextSenderMsgSeqNum() EXCEPT(IOException) {}
-  void incrNextTargetMsgSeqNum() EXCEPT(IOException) {}
+        MySQLStoreFactory(const Dictionary &dictionary) { throw ConfigError("HAVE_MYSQL not enabled"); }
 
-  UtcTimeStamp getCreationTime() const EXCEPT(IOException) { unreachable(); }
+        MySQLStoreFactory(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_MYSQL not enabled");
+        }
 
-  void reset(const UtcTimeStamp &now) EXCEPT(IOException) {}
-  void refresh() EXCEPT(IOException) {}
-};
+        MySQLStoreFactory() { throw ConfigError("HAVE_MYSQL not enabled"); }
 
-class MySQLLogFactory : public LogFactory {
-public:
-  static const std::string DEFAULT_DATABASE;
-  static const std::string DEFAULT_USER;
-  static const std::string DEFAULT_PASSWORD;
-  static const std::string DEFAULT_HOST;
-  static const short DEFAULT_PORT;
+        MessageStore *create(const UtcTimeStamp &, const SessionID &) { return nullptr; }
+        void destroy(MessageStore *) {}
+    };
 
-  MySQLLogFactory(const SessionSettings &settings) { throw ConfigError("HAVE_MYSQL not enabled"); }
+    const std::string MySQLStoreFactory::DEFAULT_DATABASE = "";
+    const std::string MySQLStoreFactory::DEFAULT_USER = "";
+    const std::string MySQLStoreFactory::DEFAULT_PASSWORD = "";
+    const std::string MySQLStoreFactory::DEFAULT_HOST = "";
+    const short MySQLStoreFactory::DEFAULT_PORT = 3306;
 
-  MySQLLogFactory(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_MYSQL not enabled");
-  }
+    class MySQLStore : public MessageStore
+    {
+    public:
+        MySQLStore(
+            const UtcTimeStamp &now,
+            const SessionID &sessionID,
+            const DatabaseConnectionID &connection,
+            MySQLConnectionPool *pool)
+        {
+            throw ConfigError("HAVE_MYSQL not enabled");
+        }
 
-  MySQLLogFactory() { throw ConfigError("HAVE_MYSQL not enabled"); }
+        MySQLStore(
+            const UtcTimeStamp &now,
+            const SessionID &sessionID,
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_MYSQL not enabled");
+        }
 
-  Log *create() { return nullptr; }
-  Log *create(const SessionID &) { return nullptr; }
-  void destroy(Log *) {}
-};
+        ~MySQLStore() {}
 
-const std::string MySQLLogFactory::DEFAULT_DATABASE = "";
-const std::string MySQLLogFactory::DEFAULT_USER = "";
-const std::string MySQLLogFactory::DEFAULT_PASSWORD = "";
-const std::string MySQLLogFactory::DEFAULT_HOST = "";
-const short MySQLLogFactory::DEFAULT_PORT = 0;
+        bool set(SEQNUM, const std::string &) EXCEPT(IOException) { unreachable(); }
+        void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException) {}
 
-class MySQLLog : public Log {
-public:
-  MySQLLog(const SessionID &sessionID, const DatabaseConnectionID &connectionID, MySQLConnectionPool *pool) {
-    throw ConfigError("HAVE_MYSQL not enabled");
-  }
+        SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException) { unreachable(); }
+        SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException) { unreachable(); }
+        void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException) {}
+        void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException) {}
+        void incrNextSenderMsgSeqNum() EXCEPT(IOException) {}
+        void incrNextTargetMsgSeqNum() EXCEPT(IOException) {}
 
-  MySQLLog(const DatabaseConnectionID &connectionID, MySQLConnectionPool *pool) {
-    throw ConfigError("HAVE_MYSQL not enabled");
-  }
+        UtcTimeStamp getCreationTime() const EXCEPT(IOException) { unreachable(); }
 
-  MySQLLog(
-      const SessionID &sessionID,
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_MYSQL not enabled");
-  }
+        void reset(const UtcTimeStamp &now) EXCEPT(IOException) {}
+        void refresh() EXCEPT(IOException) {}
+    };
 
-  MySQLLog(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port) {
-    throw ConfigError("HAVE_MYSQL not enabled");
-  }
+    class MySQLLogFactory : public LogFactory
+    {
+    public:
+        static const std::string DEFAULT_DATABASE;
+        static const std::string DEFAULT_USER;
+        static const std::string DEFAULT_PASSWORD;
+        static const std::string DEFAULT_HOST;
+        static const short DEFAULT_PORT;
 
-  ~MySQLLog() {}
+        MySQLLogFactory(const SessionSettings &settings) { throw ConfigError("HAVE_MYSQL not enabled"); }
 
-  void clear() {}
-  void backup() {}
-  void setIncomingTable(const std::string &incomingTable) {}
-  void setOutgoingTable(const std::string &outgoingTable) {}
-  void setEventTable(const std::string &eventTable) {}
+        MySQLLogFactory(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_MYSQL not enabled");
+        }
 
-  void onIncoming(const std::string &value) {}
-  void onOutgoing(const std::string &value) {}
-  void onEvent(const std::string &value) {}
-};
+        MySQLLogFactory() { throw ConfigError("HAVE_MYSQL not enabled"); }
+
+        Log *create() { return nullptr; }
+        Log *create(const SessionID &) { return nullptr; }
+        void destroy(Log *) {}
+    };
+
+    const std::string MySQLLogFactory::DEFAULT_DATABASE = "";
+    const std::string MySQLLogFactory::DEFAULT_USER = "";
+    const std::string MySQLLogFactory::DEFAULT_PASSWORD = "";
+    const std::string MySQLLogFactory::DEFAULT_HOST = "";
+    const short MySQLLogFactory::DEFAULT_PORT = 0;
+
+    class MySQLLog : public Log
+    {
+    public:
+        MySQLLog(const SessionID &sessionID, const DatabaseConnectionID &connectionID, MySQLConnectionPool *pool)
+        {
+            throw ConfigError("HAVE_MYSQL not enabled");
+        }
+
+        MySQLLog(const DatabaseConnectionID &connectionID, MySQLConnectionPool *pool)
+        {
+            throw ConfigError("HAVE_MYSQL not enabled");
+        }
+
+        MySQLLog(
+            const SessionID &sessionID,
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_MYSQL not enabled");
+        }
+
+        MySQLLog(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+        {
+            throw ConfigError("HAVE_MYSQL not enabled");
+        }
+
+        ~MySQLLog() {}
+
+        void clear() {}
+        void backup() {}
+        void setIncomingTable(const std::string &incomingTable) {}
+        void setOutgoingTable(const std::string &outgoingTable) {}
+        void setEventTable(const std::string &eventTable) {}
+
+        void onIncoming(const std::string &value) {}
+        void onOutgoing(const std::string &value) {}
+        void onEvent(const std::string &value) {}
+    };
 
 } // namespace FIX
 
