@@ -33,6 +33,8 @@
 #include <unistd.h>
 #endif
 #include <exception>
+#include <utility>
+#include <utility>
 
 namespace FIX
 {
@@ -41,14 +43,14 @@ namespace FIX
     {
     public:
         ServerWrapper(std::set<socket_handle> sockets, SocketServer &server, SocketServer::Strategy &strategy)
-            : m_sockets(sockets),
+            : m_sockets(std::move(std::move(sockets))),
               m_server(server),
               m_strategy(strategy) {}
 
     private:
-        void onConnect(SocketMonitor &, socket_handle socket) {}
+        void onConnect(SocketMonitor &, socket_handle socket) override {}
 
-        void onEvent(SocketMonitor &monitor, socket_handle socket)
+        void onEvent(SocketMonitor &monitor, socket_handle socket) override
         {
             if (m_sockets.find(socket) != m_sockets.end())
             {
@@ -63,19 +65,19 @@ namespace FIX
             }
         }
 
-        void onWrite(SocketMonitor &, socket_handle socket) { m_strategy.onWrite(m_server, socket); }
+        void onWrite(SocketMonitor &, socket_handle socket) override { m_strategy.onWrite(m_server, socket); }
 
-        void onError(SocketMonitor &monitor, socket_handle socket)
+        void onError(SocketMonitor &monitor, socket_handle socket) override
         {
             m_strategy.onDisconnect(m_server, socket);
             monitor.drop(socket);
         }
 
-        void onError(SocketMonitor &) { m_strategy.onError(m_server); }
+        void onError(SocketMonitor &) override { m_strategy.onError(m_server); }
 
-        void onTimeout(SocketMonitor &) { m_strategy.onTimeout(m_server); };
+        void onTimeout(SocketMonitor &) override { m_strategy.onTimeout(m_server); };
 
-        typedef std::set<socket_handle> Sockets;
+        using Sockets = std::set<socket_handle>;
 
         Sockets m_sockets;
         SocketServer &m_server;
@@ -85,7 +87,7 @@ namespace FIX
     SocketServer::SocketServer(int timeout)
         : m_monitor(timeout) {}
 
-    socket_handle SocketServer::add(int port, bool reuse, bool noDelay, int sendBufSize, int rcvBufSize)
+    auto SocketServer::add(int port, bool reuse, bool noDelay, int sendBufSize, int rcvBufSize) -> socket_handle
         EXCEPT(SocketException &)
     {
         if (m_portToInfo.find(port) != m_portToInfo.end())
@@ -118,7 +120,7 @@ namespace FIX
         return socket;
     }
 
-    socket_handle SocketServer::accept(socket_handle socket)
+    auto SocketServer::accept(socket_handle socket) -> socket_handle
     {
         SocketInfo info = m_socketToInfo[socket];
 
@@ -152,7 +154,7 @@ namespace FIX
         }
     }
 
-    bool SocketServer::block(Strategy &strategy, bool poll, double timeout)
+    auto SocketServer::block(Strategy &strategy, bool poll, double timeout) -> bool
     {
         std::set<socket_handle> sockets;
         for (const SocketToInfo::value_type &socketWithInfo : m_socketToInfo)
@@ -169,9 +171,9 @@ namespace FIX
         return true;
     }
 
-    int SocketServer::socketToPort(socket_handle socket)
+    auto SocketServer::socketToPort(socket_handle socket) -> int
     {
-        SocketToInfo::iterator find = m_socketToInfo.find(socket);
+        auto find = m_socketToInfo.find(socket);
         if (find == m_socketToInfo.end())
         {
             return 0;
@@ -179,9 +181,9 @@ namespace FIX
         return find->second.m_port;
     }
 
-    socket_handle SocketServer::portToSocket(int port)
+    auto SocketServer::portToSocket(int port) -> socket_handle
     {
-        PortToInfo::iterator find = m_portToInfo.find(port);
+        auto find = m_portToInfo.find(port);
         if (find == m_portToInfo.end())
         {
             return 0;

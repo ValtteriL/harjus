@@ -36,29 +36,29 @@ using namespace FIX;
 
 struct TestStrategy : public SocketServer::Strategy
 {
-    void onConnect(SocketServer &, socket_handle accept, socket_handle socket)
+    void onConnect(SocketServer &, socket_handle accept, socket_handle socket) override
     {
         connect++;
         connectSocket = socket;
     }
-    void onWrite(SocketServer &, socket_handle socket)
+    void onWrite(SocketServer &, socket_handle socket) override
     {
         write++;
         writeSocket = socket;
     }
-    bool onData(SocketServer &server, socket_handle socket)
+    auto onData(SocketServer &server, socket_handle socket) -> bool override
     {
         data++;
         dataSocket = socket;
         bufLen = recv(socket, buf, 1, 0);
         return bufLen > 0;
     }
-    void onDisconnect(SocketServer &, socket_handle socket)
+    void onDisconnect(SocketServer &, socket_handle socket) override
     {
         disconnect++;
         disconnectSocket = socket;
     }
-    void onError(SocketServer &) {}
+    void onError(SocketServer &) override {}
 
     int connect = 0;
     int write = 0;
@@ -68,7 +68,7 @@ struct TestStrategy : public SocketServer::Strategy
     socket_handle writeSocket = 0;
     socket_handle dataSocket = 0;
     socket_handle disconnectSocket = 0;
-    char buf[1];
+    char buf[1]{};
     size_t bufLen = 0;
 };
 

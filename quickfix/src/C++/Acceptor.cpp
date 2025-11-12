@@ -32,17 +32,18 @@
 
 #include <algorithm>
 #include <fstream>
+#include <utility>
 
 namespace FIX
 {
-    Acceptor::Acceptor(Application &application, MessageStoreFactory &messageStoreFactory, const SessionSettings &settings)
+    Acceptor::Acceptor(Application &application, MessageStoreFactory &messageStoreFactory, SessionSettings settings)
         EXCEPT(ConfigError)
         : m_threadid(0),
           m_application(application),
           m_messageStoreFactory(messageStoreFactory),
-          m_settings(settings),
-          m_pLogFactory(0),
-          m_pLog(0),
+          m_settings(std::move(settings)),
+          m_pLogFactory(nullptr),
+          m_pLog(nullptr),
           m_processing(false),
           m_firstPoll(true),
           m_stop(true)
@@ -53,12 +54,12 @@ namespace FIX
     Acceptor::Acceptor(
         Application &application,
         MessageStoreFactory &messageStoreFactory,
-        const SessionSettings &settings,
+        SessionSettings settings,
         LogFactory &logFactory) EXCEPT(ConfigError)
         : m_threadid(0),
           m_application(application),
           m_messageStoreFactory(messageStoreFactory),
-          m_settings(settings),
+          m_settings(std::move(settings)),
           m_pLogFactory(&logFactory),
           m_pLog(logFactory.create()),
           m_processing(false),
@@ -109,12 +110,12 @@ namespace FIX
         }
     }
 
-    Session *Acceptor::getSession(const std::string &msg, Responder &responder)
+    auto Acceptor::getSession(const std::string &msg, Responder &responder) -> Session *
     {
         Message message;
         if (!message.setStringHeader(msg))
         {
-            return 0;
+            return nullptr;
         }
 
         try
@@ -125,14 +126,14 @@ namespace FIX
             auto const &msgType = message.getHeader().getField<MsgType>();
             if (msgType != MsgType_Logon)
             {
-                return 0;
+                return nullptr;
             }
 
             SenderCompID senderCompID(clTargetCompID);
             TargetCompID targetCompID(clSenderCompID);
             SessionID sessionID(beginString, senderCompID, targetCompID);
 
-            Sessions::iterator i = m_sessions.find(sessionID);
+            auto i = m_sessions.find(sessionID);
             if (i != m_sessions.end())
             {
                 i->second->setResponder(&responder);
@@ -142,23 +143,23 @@ namespace FIX
         catch (FieldNotFound &)
         {
         }
-        return 0;
+        return nullptr;
     }
 
-    Session *Acceptor::getSession(const SessionID &sessionID) const
+    auto Acceptor::getSession(const SessionID &sessionID) const -> Session *
     {
-        Sessions::const_iterator i = m_sessions.find(sessionID);
+        auto i = m_sessions.find(sessionID);
         if (i != m_sessions.end())
         {
             return i->second;
         }
         else
         {
-            return 0;
+            return nullptr;
         }
     }
 
-    const Dictionary *const Acceptor::getSessionSettings(const SessionID &sessionID) const
+    auto Acceptor::getSessionSettings(const SessionID &sessionID) const -> const Dictionary *const
     {
         try
         {
@@ -166,7 +167,7 @@ namespace FIX
         }
         catch (ConfigError &)
         {
-            return 0;
+            return nullptr;
         }
     }
 
@@ -215,7 +216,7 @@ namespace FIX
         startThread(this);
     }
 
-    bool Acceptor::poll() EXCEPT(ConfigError, RuntimeError)
+    auto Acceptor::poll() -> bool EXCEPT(ConfigError, RuntimeError)
     {
         if (m_processing)
         {
@@ -224,7 +225,7 @@ namespace FIX
 
         {
             auto guard = sg::make_scope_guard([this]()
-                                              { m_processing = false; });
+                                              -> void { m_processing = false; });
 
             m_processing = true;
             if (m_firstPoll)
@@ -251,7 +252,7 @@ namespace FIX
         std::vector<Session *> enabledSessions;
 
         Sessions sessions = m_sessions;
-        Sessions::iterator i = sessions.begin();
+        auto i = sessions.begin();
         for (; i != sessions.end(); ++i)
         {
             Session *pSession = Session::lookupSession(i->first);
@@ -285,7 +286,7 @@ namespace FIX
         }
     }
 
-    bool Acceptor::isLoggedOn() const
+    auto Acceptor::isLoggedOn() const -> bool
     {
         Sessions sessions = m_sessions;
         for (Sessions::value_type const &sessionIDWithSession : sessions)
@@ -298,12 +299,12 @@ namespace FIX
         return false;
     }
 
-    THREAD_PROC Acceptor::startThread(void *p)
+    auto Acceptor::startThread(void *p) -> THREAD_PROC
     {
-        Acceptor *pAcceptor = static_cast<Acceptor *>(p);
+        auto *pAcceptor = static_cast<Acceptor *>(p);
         auto guard = sg::make_scope_guard([pAcceptor]()
-                                          { pAcceptor->m_processing = false; });
+                                          -> void { pAcceptor->m_processing = false; });
         pAcceptor->onStart();
-        return 0;
+        return nullptr;
     }
 } // namespace FIX

@@ -1053,7 +1053,7 @@ namespace pugi
     private:
         char_t *_buffer;
 
-        char _memory[192];
+        char _memory[192]{};
 
         // Non-copyable semantics
         xml_document(const xml_document &);
@@ -1195,7 +1195,7 @@ namespace pugi
     class PUGIXML_CLASS xpath_variable_set
     {
     private:
-        xpath_variable *_data[64];
+        xpath_variable *_data[64]{};
 
         void _assign(const xpath_variable_set &rhs);
         void _swap(xpath_variable_set &rhs);

@@ -64,7 +64,7 @@ namespace FIX
         void disconnect(int error = 0);
 
         socket_handle m_socket;
-        char m_buffer[BUFSIZ];
+        char m_buffer[BUFSIZ]{};
 
         HttpParser m_parser;
 #if _MSC_VER

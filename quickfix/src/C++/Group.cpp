@@ -31,16 +31,16 @@ namespace FIX
 
     void Group::replaceGroup(unsigned num, const FIX::Group &group) { FieldMap::replaceGroup(num, group.field(), group); }
 
-    Group &Group::getGroup(unsigned num, Group &group) const EXCEPT(FieldNotFound)
+    auto Group::getGroup(unsigned num, Group &group) const -> Group & EXCEPT(FieldNotFound)
     {
-        return static_cast<Group &>(FieldMap::getGroup(num, group.field(), group));
+        return dynamic_cast<Group &>(FieldMap::getGroup(num, group.field(), group));
     }
 
     void Group::removeGroup(unsigned num, const Group &group) { FieldMap::removeGroup(num, group.field()); }
 
     void Group::removeGroup(const Group &group) { FieldMap::removeGroup(group.field()); }
 
-    bool Group::hasGroup(unsigned num, const Group &group) { return FieldMap::hasGroup(num, group.field()); }
+    auto Group::hasGroup(unsigned num, const Group &group) -> bool { return FieldMap::hasGroup(num, group.field()); }
 
-    bool Group::hasGroup(const Group &group) { return FieldMap::hasGroup(group.field()); }
+    auto Group::hasGroup(const Group &group) -> bool { return FieldMap::hasGroup(group.field()); }
 } // namespace FIX

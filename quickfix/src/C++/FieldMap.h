@@ -83,7 +83,7 @@ namespace FIX
         };
 
     protected:
-        FieldMap(const message_order &order, int size);
+        FieldMap(message_order order, int size);
 
     public:
         typedef std::vector<FieldBase, ALLOCATOR<FieldBase>> Fields;
@@ -98,7 +98,7 @@ namespace FIX
         typedef Groups::const_iterator g_const_iterator;
         typedef Groups::value_type g_value_type;
 
-        FieldMap(const message_order &order = message_order(message_order::normal));
+        FieldMap(message_order order = message_order(message_order::normal));
 
         FieldMap(const int order[]);
 

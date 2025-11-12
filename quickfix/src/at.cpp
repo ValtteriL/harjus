@@ -33,9 +33,9 @@
 #include <iostream>
 #include <memory>
 
-typedef std::unique_ptr<FIX::Acceptor> AcceptorPtr;
+using AcceptorPtr = std::unique_ptr<FIX::Acceptor>;
 
-int main(int argc, char **argv)
+auto main(int argc, char **argv) -> int
 {
     std::string file;
     bool threaded = false;
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        std::cout << "usage: " << argv[0] << " -f FILE [-t]" << std::endl;
+        std::cout << "usage: " << argv[0] << " -f FILE [-t]" << '\n';
         return 1;
     }
 
@@ -64,11 +64,11 @@ int main(int argc, char **argv)
         AcceptorPtr pAcceptor;
         if (threaded)
         {
-            pAcceptor.reset(new FIX::ThreadedSocketAcceptor(application, factory, settings));
+            pAcceptor = std::make_unique<FIX::ThreadedSocketAcceptor>(application, factory, settings);
         }
         else
         {
-            pAcceptor.reset(new FIX::SocketAcceptor(application, factory, settings));
+            pAcceptor = std::make_unique<FIX::SocketAcceptor>(application, factory, settings);
         }
 
         pAcceptor->start();

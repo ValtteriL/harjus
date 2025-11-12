@@ -116,7 +116,7 @@ namespace FIX
         }
     }
 
-    bool SocketInitiator::onPoll()
+    auto SocketInitiator::onPoll() -> bool
     {
         time_t start = 0;
         time_t now = 0;
@@ -183,7 +183,7 @@ namespace FIX
 
     void SocketInitiator::onConnect(SocketConnector &, socket_handle s)
     {
-        SocketConnections::iterator i = m_pendingConnections.find(s);
+        auto i = m_pendingConnections.find(s);
         if (i == m_pendingConnections.end())
         {
             return;
@@ -198,7 +198,7 @@ namespace FIX
 
     void SocketInitiator::onWrite(SocketConnector &connector, socket_handle s)
     {
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i == m_connections.end())
         {
             return;
@@ -210,9 +210,9 @@ namespace FIX
         }
     }
 
-    bool SocketInitiator::onData(SocketConnector &connector, socket_handle s)
+    auto SocketInitiator::onData(SocketConnector &connector, socket_handle s) -> bool
     {
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i == m_connections.end())
         {
             return false;
@@ -223,10 +223,10 @@ namespace FIX
 
     void SocketInitiator::onDisconnect(SocketConnector &, socket_handle s)
     {
-        SocketConnections::iterator i = m_connections.find(s);
-        SocketConnections::iterator j = m_pendingConnections.find(s);
+        auto i = m_connections.find(s);
+        auto j = m_pendingConnections.find(s);
 
-        SocketConnection *pSocketConnection = 0;
+        SocketConnection *pSocketConnection = nullptr;
         if (i != m_connections.end())
         {
             pSocketConnection = i->second;
@@ -258,7 +258,7 @@ namespace FIX
 
     void SocketInitiator::onTimeout(SocketConnector &)
     {
-        time_t now;
+        time_t now = 0;
         ::time(&now);
 
         if ((now - m_lastConnect) >= m_reconnectInterval)

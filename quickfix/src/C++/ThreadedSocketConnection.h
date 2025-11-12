@@ -50,10 +50,10 @@ namespace FIX
         ThreadedSocketConnection(
             const SessionID &,
             socket_handle s,
-            const std::string &address,
+            std::string address,
             short port,
             Log *pLog,
-            const std::string &sourceAddress = "",
+            std::string sourceAddress = "",
             short sourcePort = 0);
         virtual ~ThreadedSocketConnection();
 
@@ -70,12 +70,12 @@ namespace FIX
         bool setSession(const std::string &msg);
 
         socket_handle m_socket;
-        char m_buffer[BUFSIZ];
+        char m_buffer[BUFSIZ]{};
 
         std::string m_address;
-        int m_port;
+        int m_port{};
         std::string m_sourceAddress;
-        int m_sourcePort;
+        int m_sourcePort{};
 
         Log *m_pLog;
         Parser m_parser;

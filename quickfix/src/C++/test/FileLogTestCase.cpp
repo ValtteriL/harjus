@@ -34,7 +34,7 @@ using namespace FIX;
 
 namespace
 {
-    inline void deleteLogSession(std::string sender, std::string target)
+    inline void deleteLogSession(const std::string& sender, const std::string& target)
     {
         file_unlink(("log/FIX.4.2-" + sender + "-" + target + ".event.current.log").c_str());
         file_unlink(("log/backup/FIX.4.2-" + sender + "-" + target + ".event.backup.1.log").c_str());
@@ -61,7 +61,7 @@ struct generateFileNameFixture
         deleteLogSession("GENERATEFILENAME", "TEST");
         SessionID sessionID(BeginString("FIX.4.2"), SenderCompID("GENERATEFILENAME"), TargetCompID("TEST"));
 
-        object = (FileLog *)fileLogFactory.create(sessionID);
+        object = dynamic_cast<FileLog *>(fileLogFactory.create(sessionID));
     }
 
     ~generateFileNameFixture()

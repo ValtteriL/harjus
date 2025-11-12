@@ -54,7 +54,7 @@ namespace FIX
         }
     }
 
-    int TimeRange::getRangeStartDate(const DateTime &time, int startDay, const DateTime &startTime)
+    auto TimeRange::getRangeStartDate(const DateTime &time, int startDay, const DateTime &startTime) -> int
     {
         if (time.getWeekDay() > startDay)
         {
@@ -77,7 +77,7 @@ namespace FIX
         }
     }
 
-    bool TimeRange::isInRange(const DateTime &start, const DateTime &end, const DateTime &time)
+    auto TimeRange::isInRange(const DateTime &start, const DateTime &end, const DateTime &time) -> bool
     {
         UtcTimeOnly timeOnly(time);
 
@@ -91,13 +91,13 @@ namespace FIX
         }
     }
 
-    bool TimeRange::isInRange(
+    auto TimeRange::isInRange(
         const DateTime &startTime,
         const DateTime &endTime,
         int startDay,
         int endDay,
         const DateTime &time,
-        int day)
+        int day) -> bool
     {
         UtcTimeOnly timeOnly(time);
 
@@ -142,21 +142,21 @@ namespace FIX
         return true;
     }
 
-    bool TimeRange::isInRange(
+    auto TimeRange::isInRange(
         const DateTime &startTime,
         const DateTime &endTime,
         int startDay,
         int endDay,
-        const DateTime &time)
+        const DateTime &time) -> bool
     {
         return isInRange(startTime, endTime, startDay, endDay, time, time.getWeekDay());
     }
 
-    bool TimeRange::isInSameRange(
+    auto TimeRange::isInSameRange(
         const DateTime &start,
         const DateTime &end,
         const DateTime &time1,
-        const DateTime &time2)
+        const DateTime &time2) -> bool
     {
         if (!isInRange(start, end, time1))
         {
@@ -202,13 +202,13 @@ namespace FIX
         }
     }
 
-    bool TimeRange::isInSameRange(
+    auto TimeRange::isInSameRange(
         const DateTime &startTime,
         const DateTime &endTime,
         int startDay,
         int endDay,
         const DateTime &time1,
-        const DateTime &time2)
+        const DateTime &time2) -> bool
     {
         if (!isInRange(startTime, endTime, startDay, endDay, time1, time1.getWeekDay()))
         {

@@ -431,7 +431,7 @@ namespace FIX
         mutable Header m_header;
         mutable Trailer m_trailer;
         bool m_validStructure;
-        int m_tag;
+        int m_tag{};
         static std::unique_ptr<DataDictionary> s_dataDictionary;
     };
     /*! @} */

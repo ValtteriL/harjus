@@ -22,6 +22,10 @@
 #else
 #include "config.h"
 #include <poll.h>
+
+#include <utility>
+
+#include <utility>
 #endif
 
 #include "Session.h"
@@ -35,8 +39,8 @@ namespace FIX
     ThreadedSocketConnection::ThreadedSocketConnection(socket_handle s, Sessions sessions, Log *pLog)
         : m_socket(s),
           m_pLog(pLog),
-          m_sessions(sessions),
-          m_pSession(0),
+          m_sessions(std::move(std::move(sessions))),
+          m_pSession(nullptr),
           m_disconnect(false)
     {
 #if _MSC_VER
@@ -48,15 +52,15 @@ namespace FIX
     ThreadedSocketConnection::ThreadedSocketConnection(
         const SessionID &sessionID,
         socket_handle s,
-        const std::string &address,
+        std::string address,
         short port,
         Log *pLog,
-        const std::string &sourceAddress,
+        std::string sourceAddress,
         short sourcePort)
         : m_socket(s),
-          m_address(address),
+          m_address(std::move(address)),
           m_port(port),
-          m_sourceAddress(sourceAddress),
+          m_sourceAddress(std::move(sourceAddress)),
           m_sourcePort(sourcePort),
           m_pLog(pLog),
           m_pSession(Session::lookupSession(sessionID)),
@@ -76,12 +80,12 @@ namespace FIX
     {
         if (m_pSession)
         {
-            m_pSession->setResponder(0);
+            m_pSession->setResponder(nullptr);
             Session::unregisterSession(m_pSession->getSessionID());
         }
     }
 
-    bool ThreadedSocketConnection::send(const std::string &msg)
+    auto ThreadedSocketConnection::send(const std::string &msg) -> bool
     {
         ssize_t totalSent = 0;
         while (totalSent < (int)msg.length())
@@ -97,7 +101,7 @@ namespace FIX
         return true;
     }
 
-    bool ThreadedSocketConnection::connect()
+    auto ThreadedSocketConnection::connect() -> bool
     {
         // do the bind in the thread as name resolution may block
         if (!m_sourceAddress.empty() || m_sourcePort)
@@ -114,7 +118,7 @@ namespace FIX
         socket_close(m_socket);
     }
 
-    bool ThreadedSocketConnection::read()
+    auto ThreadedSocketConnection::read() -> bool
     {
 #if _MSC_VER
         struct timeval timeout = {1, 0};
@@ -176,7 +180,7 @@ namespace FIX
         }
     }
 
-    bool ThreadedSocketConnection::readMessage(std::string &msg) EXCEPT(SocketRecvFailed)
+    auto ThreadedSocketConnection::readMessage(std::string &msg) -> bool EXCEPT(SocketRecvFailed)
     {
         try
         {
@@ -216,7 +220,7 @@ namespace FIX
         }
     }
 
-    bool ThreadedSocketConnection::setSession(const std::string &msg)
+    auto ThreadedSocketConnection::setSession(const std::string &msg) -> bool
     {
         m_pSession = Session::lookupSession(msg, true);
         if (!m_pSession)
@@ -230,7 +234,7 @@ namespace FIX
         }
 
         SessionID sessionID = m_pSession->getSessionID();
-        m_pSession = 0;
+        m_pSession = nullptr;
 
         // see if the session frees up within 5 seconds
         for (int i = 1; i <= 5; i++)

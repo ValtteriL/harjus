@@ -49,8 +49,8 @@ namespace FIX
     class Acceptor
     {
     public:
-        Acceptor(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
-        Acceptor(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
+        Acceptor(Application &, MessageStoreFactory &, SessionSettings ) EXCEPT(ConfigError);
+        Acceptor(Application &, MessageStoreFactory &, SessionSettings , LogFactory &) EXCEPT(ConfigError);
 
         virtual ~Acceptor();
 

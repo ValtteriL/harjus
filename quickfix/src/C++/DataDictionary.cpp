@@ -78,7 +78,7 @@ namespace FIX
         {
             const FieldPresenceMap &presenceMap = i->second;
 
-            FieldPresenceMap::const_iterator iter = presenceMap.begin();
+            auto iter = presenceMap.begin();
             for (; iter != presenceMap.end(); ++iter)
             {
                 delete iter->second.second;
@@ -86,7 +86,7 @@ namespace FIX
         }
     }
 
-    DataDictionary &DataDictionary::operator=(const DataDictionary &rhs)
+    auto DataDictionary::operator=(const DataDictionary &rhs) -> DataDictionary &
     {
         m_hasVersion = rhs.m_hasVersion;
         m_checkFieldsOutOfOrder = rhs.m_checkFieldsOutOfOrder;
@@ -115,12 +115,12 @@ namespace FIX
         m_trailerOrder = rhs.m_trailerOrder;
         m_messageOrderedFields = rhs.m_messageOrderedFields;
 
-        FieldToGroup::const_iterator i = rhs.m_groups.begin();
+        auto i = rhs.m_groups.begin();
         for (; i != rhs.m_groups.end(); ++i)
         {
             const FieldPresenceMap &presenceMap = i->second;
 
-            FieldPresenceMap::const_iterator iter = presenceMap.begin();
+            auto iter = presenceMap.begin();
             for (; iter != presenceMap.end(); ++iter)
             {
                 addGroup(iter->first, i->first, iter->second.first, *iter->second.second);
@@ -135,10 +135,10 @@ namespace FIX
         const DataDictionary *const pAppDD) EXCEPT(FIX::Exception)
     {
         const Header &header = message.getHeader();
-        const BeginString &beginString = FIELD_GET_REF(header, BeginString);
-        const MsgType &msgType = FIELD_GET_REF(header, MsgType);
+        const auto &beginString = FIELD_GET_REF(header, BeginString);
+        const auto &msgType = FIELD_GET_REF(header, MsgType);
 
-        if (pSessionDD != 0 && pSessionDD->m_hasVersion)
+        if (pSessionDD != nullptr && pSessionDD->m_hasVersion)
         {
             if (pSessionDD->getVersion() != beginString)
             {
@@ -147,7 +147,7 @@ namespace FIX
         }
 
         int field = 0;
-        if ((pSessionDD != 0 && pSessionDD->m_checkFieldsOutOfOrder) || (pAppDD != 0 && pAppDD->m_checkFieldsOutOfOrder))
+        if ((pSessionDD != nullptr && pSessionDD->m_checkFieldsOutOfOrder) || (pAppDD != nullptr && pAppDD->m_checkFieldsOutOfOrder))
         {
             if (!message.hasValidStructure(field))
             {
@@ -155,19 +155,19 @@ namespace FIX
             }
         }
 
-        if (pAppDD != 0 && pAppDD->m_hasVersion)
+        if (pAppDD != nullptr && pAppDD->m_hasVersion)
         {
             pAppDD->checkMsgType(msgType);
             pAppDD->checkHasRequired(message.getHeader(), message, message.getTrailer(), msgType);
         }
 
-        if (pSessionDD != 0)
+        if (pSessionDD != nullptr)
         {
             pSessionDD->iterate(message.getHeader(), msgType);
             pSessionDD->iterate(message.getTrailer(), msgType);
         }
 
-        if (pAppDD != 0)
+        if (pAppDD != nullptr)
         {
             pAppDD->iterate(message, msgType);
         }
@@ -489,7 +489,7 @@ namespace FIX
         }
     }
 
-    message_order const &DataDictionary::getOrderedFields() const
+    auto DataDictionary::getOrderedFields() const -> message_order const &
     {
         if (m_orderedFieldsArray)
         {
@@ -499,7 +499,7 @@ namespace FIX
         return m_orderedFieldsArray = message_order(m_orderedFields.data(), m_orderedFields.size());
     }
 
-    message_order const &DataDictionary::getHeaderOrderedFields() const EXCEPT(ConfigError)
+    auto DataDictionary::getHeaderOrderedFields() const -> message_order const & EXCEPT(ConfigError)
     {
         if (m_headerOrder)
         {
@@ -514,7 +514,7 @@ namespace FIX
         return m_headerOrder = message_order(m_headerOrderedFields.data(), m_headerOrderedFields.size());
     }
 
-    message_order const &DataDictionary::getTrailerOrderedFields() const EXCEPT(ConfigError)
+    auto DataDictionary::getTrailerOrderedFields() const -> message_order const & EXCEPT(ConfigError)
     {
         if (m_trailerOrder)
         {
@@ -529,9 +529,9 @@ namespace FIX
         return m_trailerOrder = message_order(m_trailerOrderedFields.data(), m_trailerOrderedFields.size());
     }
 
-    const message_order &DataDictionary::getMessageOrderedFields(const std::string &msgType) const EXCEPT(ConfigError)
+    auto DataDictionary::getMessageOrderedFields(const std::string &msgType) const -> const message_order & EXCEPT(ConfigError)
     {
-        MsgTypeToOrderedFields::const_iterator iter = m_messageOrderedFields.find(msgType);
+        auto iter = m_messageOrderedFields.find(msgType);
         if (iter == m_messageOrderedFields.end())
         {
             throw ConfigError("<Message> " + msgType + " does not have a stored message order");
@@ -540,7 +540,7 @@ namespace FIX
         return iter->second.getMessageOrder();
     }
 
-    int DataDictionary::lookupXMLFieldNumber(DOMDocument *pDoc, DOMNode *pNode) const
+    auto DataDictionary::lookupXMLFieldNumber(DOMDocument *pDoc, DOMNode *pNode) const -> int
     {
         DOMAttributesPtr attrs = pNode->getAttributes();
         std::string name;
@@ -551,9 +551,9 @@ namespace FIX
         return lookupXMLFieldNumber(pDoc, name);
     }
 
-    int DataDictionary::lookupXMLFieldNumber(DOMDocument *pDoc, const std::string &name) const
+    auto DataDictionary::lookupXMLFieldNumber(DOMDocument *pDoc, const std::string &name) const -> int
     {
-        NameToField::const_iterator i = m_names.find(name);
+        auto i = m_names.find(name);
         if (i == m_names.end())
         {
             throw ConfigError("Field " + name + " not defined in fields section");
@@ -561,12 +561,12 @@ namespace FIX
         return i->second;
     }
 
-    int DataDictionary::addXMLComponentFields(
+    auto DataDictionary::addXMLComponentFields(
         DOMDocument *pDoc,
         DOMNode *pNode,
         const std::string &msgtype,
         DataDictionary &DD,
-        bool componentRequired)
+        bool componentRequired) -> int
     {
         int firstField = 0;
 
@@ -578,7 +578,7 @@ namespace FIX
         }
 
         DOMNodePtr pComponentNode = pDoc->getNode("/fix/components/component[@name='" + name + "']");
-        if (pComponentNode.get() == 0)
+        if (pComponentNode.get() == nullptr)
         {
             throw ConfigError("Component not found: " + name);
         }
@@ -696,7 +696,7 @@ namespace FIX
         }
     }
 
-    TYPE::Type DataDictionary::XMLTypeToType(const std::string &type) const
+    auto DataDictionary::XMLTypeToType(const std::string &type) const -> TYPE::Type
     {
         if (m_beginString < "FIX.4.2" && type == "CHAR")
         {

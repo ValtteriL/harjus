@@ -29,7 +29,7 @@ namespace FIX
             const SessionID &,
             socket_handle s,
             SSL *ssl,
-            const std::string &address,
+            std::string address,
             short port,
             Log *pLog);
         virtual ~FstackMicroThreadedSSLSocketConnection();
@@ -51,17 +51,17 @@ namespace FIX
 
         socket_handle m_socket;
         SSL *m_ssl;
-        char m_buffer[BUFSIZ];
+        char m_buffer[BUFSIZ]{};
 
         std::string m_address;
-        int m_port;
+        int m_port{};
 
         Log *m_pLog;
         Parser m_parser;
         Sessions m_sessions;
         Session *m_pSession;
         bool m_disconnect;
-        fd_set m_fds;
+        fd_set m_fds{};
 
         Mutex m_mutex;
     };

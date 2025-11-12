@@ -34,7 +34,7 @@ namespace FIX
     SocketAcceptor::SocketAcceptor(Application &application, MessageStoreFactory &factory, const SessionSettings &settings)
         EXCEPT(ConfigError)
         : Acceptor(application, factory, settings),
-          m_pServer(0) {}
+          m_pServer(nullptr) {}
 
     SocketAcceptor::SocketAcceptor(
         Application &application,
@@ -42,7 +42,7 @@ namespace FIX
         const SessionSettings &settings,
         LogFactory &logFactory) EXCEPT(ConfigError)
         : Acceptor(application, factory, settings, logFactory),
-          m_pServer(0) {}
+          m_pServer(nullptr) {}
 
     SocketAcceptor::~SocketAcceptor()
     {
@@ -99,7 +99,7 @@ namespace FIX
         catch (SocketException &e)
         {
             delete m_pServer;
-            m_pServer = 0;
+            m_pServer = nullptr;
             throw RuntimeError(
                 "Unable to create, bind, or listen to port " + IntConvertor::convert((unsigned short)port) + " (" + e.what() + ")");
         }
@@ -131,10 +131,10 @@ namespace FIX
 
         m_pServer->close();
         delete m_pServer;
-        m_pServer = 0;
+        m_pServer = nullptr;
     }
 
-    bool SocketAcceptor::onPoll()
+    auto SocketAcceptor::onPoll() -> bool
     {
         if (!m_pServer)
         {
@@ -180,7 +180,7 @@ namespace FIX
         {
             return;
         }
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i != m_connections.end())
         {
             return;
@@ -200,7 +200,7 @@ namespace FIX
 
     void SocketAcceptor::onWrite(SocketServer &server, socket_handle s)
     {
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i == m_connections.end())
         {
             return;
@@ -212,9 +212,9 @@ namespace FIX
         }
     }
 
-    bool SocketAcceptor::onData(SocketServer &server, socket_handle s)
+    auto SocketAcceptor::onData(SocketServer &server, socket_handle s) -> bool
     {
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i == m_connections.end())
         {
             return false;
@@ -225,7 +225,7 @@ namespace FIX
 
     void SocketAcceptor::onDisconnect(SocketServer &, socket_handle s)
     {
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i == m_connections.end())
         {
             return;

@@ -39,7 +39,7 @@ TEST_CASE("SessionFactoryTests")
     {
         NullApplication application;
         MemoryStoreFactory messageStoreFactory;
-        SessionFactory object(application, messageStoreFactory, 0);
+        SessionFactory object(application, messageStoreFactory, nullptr);
 
         SessionID sessionID("FIX.4.2", "SENDER", "TARGET");
         Dictionary settings;
@@ -55,7 +55,7 @@ TEST_CASE("SessionFactoryTests")
     {
         NullApplication application;
         MemoryStoreFactory messageStoreFactory;
-        SessionFactory object(application, messageStoreFactory, 0);
+        SessionFactory object(application, messageStoreFactory, nullptr);
 
         SessionID sessionID("FIX.4.2", "SENDER", "TARGET");
         Dictionary settings;
@@ -73,7 +73,7 @@ TEST_CASE("SessionFactoryTests")
     {
         NullApplication application;
         MemoryStoreFactory messageStoreFactory;
-        SessionFactory object(application, messageStoreFactory, 0);
+        SessionFactory object(application, messageStoreFactory, nullptr);
 
         SessionID sessionID("FIX.4.2", "SENDER", "TARGET");
         Dictionary settings;
@@ -92,7 +92,7 @@ TEST_CASE("SessionFactoryTests")
     {
         NullApplication application;
         MemoryStoreFactory messageStoreFactory;
-        SessionFactory object(application, messageStoreFactory, 0);
+        SessionFactory object(application, messageStoreFactory, nullptr);
 
         SessionID sessionID("FIX.4.2", "SENDER", "TARGET");
         Dictionary settings;

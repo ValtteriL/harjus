@@ -34,23 +34,23 @@
 #include <cstdarg>
 #include <fstream>
 #include <iostream>
-#include <math.h>
+#include <cmath>
 #include <sstream>
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 
 #include <micro_thread.h>
 #include <mt_incl.h>
 
 namespace FIX
 {
-    std::string error_strerror(decltype(errno) error_number)
+    auto error_strerror(decltype(errno) error_number) -> std::string
     {
         return "(errno[" + std::to_string(error_number) +
                "]:" + std::strerror(error_number) + ")";
     }
 
-    std::string error_strerror() { return error_strerror(errno); }
+    auto error_strerror() -> std::string { return error_strerror(errno); }
 
 #ifdef _MSC_VER
     std::string error_wsaerror(int wsa_error_number)
@@ -80,24 +80,24 @@ namespace FIX
         }
     }
 
-    char *string_concat(const char *a, ...)
+    auto string_concat(const char *a, ...) -> char *
     {
-        char *cp, *argp, *res;
+        char *cp = nullptr, *argp = nullptr, *res = nullptr;
 
         /* Pass one --- find length of required string */
 
         std::size_t len = 0;
         va_list adummy;
 
-        if (a == 0)
+        if (a == nullptr)
         {
-            return 0;
+            return nullptr;
         }
 
         va_start(adummy, a);
 
         len = strlen(a);
-        while ((cp = va_arg(adummy, char *)) != 0)
+        while ((cp = va_arg(adummy, char *)) != nullptr)
         {
             len += strlen(cp);
         }
@@ -116,7 +116,7 @@ namespace FIX
 
         strcpy(cp, a);
         cp += strlen(a);
-        while ((argp = va_arg(adummy, char *)) != 0)
+        while ((argp = va_arg(adummy, char *)) != nullptr)
         {
             strcpy(cp, argp);
             cp += strlen(argp);
@@ -128,22 +128,22 @@ namespace FIX
 
         return res;
     }
-    std::string string_toUpper(const std::string &value)
+    auto string_toUpper(const std::string &value) -> std::string
     {
         std::string copy = value;
         std::transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c)
-                       { return static_cast<char>(std::toupper(c)); });
+                       -> char { return static_cast<char>(std::toupper(c)); });
         return copy;
     }
-    std::string string_toLower(const std::string &value)
+    auto string_toLower(const std::string &value) -> std::string
     {
         std::string copy = value;
         std::transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c)
-                       { return static_cast<char>(std::tolower(c)); });
+                       -> char { return static_cast<char>(std::tolower(c)); });
         return copy;
     }
 
-    std::string string_strip(const std::string &value)
+    auto string_strip(const std::string &value) -> std::string
     {
         if (!value.size())
         {
@@ -161,8 +161,8 @@ namespace FIX
         return std::string(value, startPos, endPos - startPos + 1);
     }
 
-    std::set<std::string> string_split(const std::string &value,
-                                       const char delimiter)
+    auto string_split(const std::string &value,
+                                       const char delimiter) -> std::set<std::string>
     {
         std::set<std::string> subStrings;
         std::size_t start = 0;
@@ -191,11 +191,11 @@ namespace FIX
         WSADATA data;
         WSAStartup(version, &data);
 #else
-        struct sigaction sa;
+        struct sigaction sa{};
         sa.sa_handler = SIG_IGN;
         sigemptyset(&sa.sa_mask);
         sa.sa_flags = 0;
-        sigaction(SIGPIPE, &sa, 0);
+        sigaction(SIGPIPE, &sa, nullptr);
 #endif
     }
 
@@ -206,7 +206,7 @@ namespace FIX
 #endif
     }
 
-    std::string socket_error()
+    auto socket_error() -> std::string
     {
 #ifdef _MSC_VER
         return error_wsaerror();
@@ -215,10 +215,10 @@ namespace FIX
 #endif
     }
 
-    int socket_bind(socket_handle socket, const char *hostname, int port)
+    auto socket_bind(socket_handle socket, const char *hostname, int port) -> int
     {
-        sockaddr_in address;
-        socklen_t socklen;
+        sockaddr_in address{};
+        socklen_t socklen = 0;
 
         address.sin_family = PF_INET;
         address.sin_port = htons(port);
@@ -235,7 +235,7 @@ namespace FIX
         return bind(socket, reinterpret_cast<sockaddr *>(&address), socklen);
     }
 
-    socket_handle socket_createAcceptor(int port, bool reuse)
+    auto socket_createAcceptor(int port, bool reuse) -> socket_handle
     {
         socket_handle socket = ::socket(PF_INET, SOCK_STREAM, 0);
         if (socket == INVALID_SOCKET_HANDLE)
@@ -243,8 +243,8 @@ namespace FIX
             return INVALID_SOCKET_HANDLE;
         }
 
-        sockaddr_in address;
-        socklen_t socklen;
+        sockaddr_in address{};
+        socklen_t socklen = 0;
 
         address.sin_family = PF_INET;
         address.sin_port = htons(port);
@@ -269,15 +269,15 @@ namespace FIX
         return socket;
     }
 
-    socket_handle socket_createConnector()
+    auto socket_createConnector() -> socket_handle
     {
         return ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
     }
 
-    int socket_connect(socket_handle socket, const char *address, int port)
+    auto socket_connect(socket_handle socket, const char *address, int port) -> int
     {
         const char *hostname = socket_hostname(address);
-        if (hostname == 0)
+        if (hostname == nullptr)
         {
 #ifdef _MSC_VER
             // In a case of Windows + MSVC, select() does not fire a write event for
@@ -292,7 +292,7 @@ namespace FIX
 #endif
         }
 
-        sockaddr_in addr;
+        sockaddr_in addr{};
         addr.sin_family = PF_INET;
         addr.sin_port = htons(port);
         addr.sin_addr.s_addr = inet_addr(hostname);
@@ -303,16 +303,16 @@ namespace FIX
         return result;
     }
 
-    socket_handle socket_accept(socket_handle s)
+    auto socket_accept(socket_handle s) -> socket_handle
     {
         if (!socket_isValid(s))
         {
             return INVALID_SOCKET_HANDLE;
         }
-        return accept(s, 0, 0);
+        return accept(s, nullptr, nullptr);
     }
 
-    ssize_t socket_recv(socket_handle s, char *buf, size_t length)
+    auto socket_recv(socket_handle s, char *buf, size_t length) -> ssize_t
     {
 #ifdef _MSC_VER
         return recv(s, buf, static_cast<int>(length), 0);
@@ -321,7 +321,7 @@ namespace FIX
 #endif
     }
 
-    ssize_t socket_send(socket_handle s, const char *msg, size_t length)
+    auto socket_send(socket_handle s, const char *msg, size_t length) -> ssize_t
     {
 #ifdef _MSC_VER
         return send(s, msg, static_cast<int>(length), 0);
@@ -340,7 +340,7 @@ namespace FIX
 #endif
     }
 
-    std::string socket_get_last_error()
+    auto socket_get_last_error() -> std::string
     {
         std::stringstream errorMessage;
 #ifdef _MSC_VER
@@ -361,7 +361,7 @@ namespace FIX
         return errorMessage.str();
     }
 
-    bool socket_fionread(socket_handle s, int &bytes)
+    auto socket_fionread(socket_handle s, int &bytes) -> bool
     {
         bytes = 0;
 #if defined(_MSC_VER)
@@ -373,13 +373,13 @@ namespace FIX
 #endif
     }
 
-    bool socket_disconnected(socket_handle s)
+    auto socket_disconnected(socket_handle s) -> bool
     {
-        char byte;
+        char byte = 0;
         return ::recv(s, &byte, sizeof(byte), MSG_PEEK) <= 0;
     }
 
-    int socket_setsockopt(socket_handle s, int opt)
+    auto socket_setsockopt(socket_handle s, int opt) -> int
     {
 #ifdef _MSC_VER
         BOOL optval = TRUE;
@@ -389,7 +389,7 @@ namespace FIX
         return socket_setsockopt(s, opt, optval);
     }
 
-    int socket_setsockopt(socket_handle s, int opt, int optval)
+    auto socket_setsockopt(socket_handle s, int opt, int optval) -> int
     {
         int level = SOL_SOCKET;
         if (opt == TCP_NODELAY)
@@ -404,7 +404,7 @@ namespace FIX
 #endif
     }
 
-    int socket_getsockopt(socket_handle s, int opt, int &optval)
+    auto socket_getsockopt(socket_handle s, int opt, int &optval) -> int
     {
         int level = SOL_SOCKET;
         if (opt == TCP_NODELAY)
@@ -422,14 +422,14 @@ namespace FIX
     }
 
 #ifndef _MSC_VER
-    int socket_fcntl(int s, int opt, int arg) { return ::fcntl(s, opt, arg); }
+    auto socket_fcntl(int s, int opt, int arg) -> int { return ::fcntl(s, opt, arg); }
 
-    int socket_getfcntlflag(int s, int arg)
+    auto socket_getfcntlflag(int s, int arg) -> int
     {
         return socket_fcntl(s, F_GETFL, arg);
     }
 
-    int socket_setfcntlflag(int s, int arg)
+    auto socket_setfcntlflag(int s, int arg) -> int
     {
         return socket_fcntl(s, F_SETFL, arg);
     }
@@ -445,7 +445,7 @@ namespace FIX
         ::ioctl(socket, FIONBIO, &on);
 #endif
     }
-    bool socket_isValid(socket_handle socket)
+    auto socket_isValid(socket_handle socket) -> bool
     {
 #ifdef _MSC_VER
         return socket != INVALID_SOCKET_HANDLE;
@@ -455,9 +455,9 @@ namespace FIX
     }
 
 #ifndef _MSC_VER
-    bool socket_isBad(int s)
+    auto socket_isBad(int s) -> bool
     {
-        struct stat buf;
+        struct stat buf{};
         fstat(s, &buf);
         return errno == EBADF;
     }
@@ -468,9 +468,9 @@ namespace FIX
         socket = INVALID_SOCKET_HANDLE;
     }
 
-    short socket_hostport(socket_handle socket)
+    auto socket_hostport(socket_handle socket) -> short
     {
-        struct sockaddr_in addr;
+        struct sockaddr_in addr{};
         socklen_t len = sizeof(addr);
         if (getsockname(socket, (struct sockaddr *)&addr, &len) != 0)
         {
@@ -480,28 +480,28 @@ namespace FIX
         return ntohs(addr.sin_port);
     }
 
-    const char *socket_hostname(socket_handle socket)
+    auto socket_hostname(socket_handle socket) -> const char *
     {
-        struct sockaddr_in addr;
+        struct sockaddr_in addr{};
         socklen_t len = sizeof(addr);
         if (getsockname(socket, (struct sockaddr *)&addr, &len) != 0)
         {
-            return 0;
+            return nullptr;
         }
 
         return inet_ntoa(addr.sin_addr);
     }
 
-    const char *socket_hostname(const char *name)
+    auto socket_hostname(const char *name) -> const char *
     {
-        struct hostent *host_ptr = 0;
-        struct in_addr **paddr;
-        struct in_addr saddr;
+        struct hostent *host_ptr = nullptr;
+        struct in_addr **paddr = nullptr;
+        struct in_addr saddr{};
 
 #if (GETHOSTBYNAME_R_INPUTS_RESULT || GETHOSTBYNAME_R_RETURNS_RESULT)
-        hostent host;
+        hostent host{};
         char buf[1024];
-        int error;
+        int error = 0;
 #endif
 
         saddr.s_addr = inet_addr(name);
@@ -518,18 +518,18 @@ namespace FIX
         host_ptr = gethostbyname(name);
 #endif
 
-        if (host_ptr == 0)
+        if (host_ptr == nullptr)
         {
-            return 0;
+            return nullptr;
         }
 
         paddr = (struct in_addr **)host_ptr->h_addr_list;
         return inet_ntoa(**paddr);
     }
 
-    const char *socket_peername(socket_handle socket)
+    auto socket_peername(socket_handle socket) -> const char *
     {
-        struct sockaddr_in addr;
+        struct sockaddr_in addr{};
         socklen_t len = sizeof(addr);
         if (getpeername(socket, (struct sockaddr *)&addr, &len) < 0)
         {
@@ -546,7 +546,7 @@ namespace FIX
         }
     }
 
-    std::pair<socket_handle, socket_handle> socket_createpair()
+    auto socket_createpair() -> std::pair<socket_handle, socket_handle>
     {
 #ifdef _MSC_VER
         socket_handle acceptor = socket_createAcceptor(0, true);
@@ -564,7 +564,7 @@ namespace FIX
 #endif
     }
 
-    tm time_gmtime(const time_t *t)
+    auto time_gmtime(const time_t *t) -> tm
     {
 #ifdef _MSC_VER
 #if (_MSC_VER >= 1400)
@@ -575,12 +575,12 @@ namespace FIX
         return *gmtime(t);
 #endif
 #else
-        tm result;
+        tm result{};
         return *gmtime_r(t, &result);
 #endif
     }
 
-    tm time_localtime(const time_t *t)
+    auto time_localtime(const time_t *t) -> tm
     {
 #ifdef _MSC_VER
 #if (_MSC_VER >= 1400)
@@ -591,12 +591,12 @@ namespace FIX
         return *localtime(t);
 #endif
 #else
-        tm result;
+        tm result{};
         return *localtime_r(t, &result);
 #endif
     }
 
-    bool thread_spawn(THREAD_START_ROUTINE func, void *var, thread_id &thread)
+    auto thread_spawn(THREAD_START_ROUTINE func, void *var, thread_id &thread) -> bool
     {
 #ifdef _MSC_VER
         thread_id result = 0;
@@ -609,7 +609,7 @@ namespace FIX
         }
 #else
         thread_id result = 0;
-        if (pthread_create(&result, 0, func, var) != 0)
+        if (pthread_create(&result, nullptr, func, var) != 0)
         {
             return false;
         }
@@ -618,7 +618,7 @@ namespace FIX
         return true;
     }
 
-    bool thread_spawn(THREAD_START_ROUTINE func, void *var)
+    auto thread_spawn(THREAD_START_ROUTINE func, void *var) -> bool
     {
         thread_id thread = 0;
         return thread_spawn(func, var, thread);
@@ -630,7 +630,7 @@ namespace FIX
         WaitForSingleObject((void *)thread, INFINITE);
         CloseHandle(thread);
 #else
-        pthread_join((pthread_t)thread, 0);
+        pthread_join((pthread_t)thread, nullptr);
 #endif
     }
 
@@ -644,7 +644,7 @@ namespace FIX
 #endif
     }
 
-    thread_id thread_self()
+    auto thread_self() -> thread_id
     {
 #ifdef _MSC_VER
         return GetCurrentThread();
@@ -658,8 +658,8 @@ namespace FIX
 #ifdef _MSC_VER
         Sleep((long)(s * 1000));
 #else
-        timespec time, remainder;
-        double intpart;
+        timespec time{}, remainder{};
+        double intpart = NAN;
         time.tv_nsec = (long)(modf(s, &intpart) * 1e9);
         time.tv_sec = (int)intpart;
         while (nanosleep(&time, &remainder) == -1)
@@ -669,7 +669,7 @@ namespace FIX
 #endif
     }
 
-    std::string file_separator()
+    auto file_separator() -> std::string
     {
 #ifdef _MSC_VER
         return "\\";
@@ -698,7 +698,7 @@ namespace FIX
         }
     }
 
-    FILE *file_fopen(const char *path, const char *mode)
+    auto file_fopen(const char *path, const char *mode) -> FILE *
     {
 #ifdef _MSC_VER
         return _fsopen(path, mode, _SH_DENYWR);
@@ -709,7 +709,7 @@ namespace FIX
 
     void file_fclose(FILE *file) { fclose(file); }
 
-    bool file_exists(const char *path)
+    auto file_exists(const char *path) -> bool
     {
         std::ifstream stream;
         stream.open(path, std::ios_base::in);
@@ -730,12 +730,12 @@ namespace FIX
 #endif
     }
 
-    int file_rename(const char *oldpath, const char *newpath)
+    auto file_rename(const char *oldpath, const char *newpath) -> int
     {
         return rename(oldpath, newpath);
     }
 
-    std::string file_appendpath(const std::string &path, const std::string &file)
+    auto file_appendpath(const std::string &path, const std::string &file) -> std::string
     {
         const char last = path[path.size() - 1];
         if (last == '/' || last == '\\')

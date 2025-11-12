@@ -27,6 +27,8 @@
 #include "Values.h"
 #include <algorithm>
 #include <iostream>
+#include <memory>
+#include <utility>
 
 namespace FIX
 {
@@ -49,14 +51,14 @@ namespace FIX
         std::function<UtcTimeStamp()> timestamper,
         Application &application,
         MessageStoreFactory &messageStoreFactory,
-        const SessionID &sessionID,
+        SessionID sessionID,
         const DataDictionaryProvider &dataDictionaryProvider,
         const TimeRange &sessionTime,
         int heartBtInt,
         LogFactory *pLogFactory)
         : m_timestamper(std::move(timestamper)),
           m_application(application),
-          m_sessionID(sessionID),
+          m_sessionID(std::move(sessionID)),
           m_sessionTime(sessionTime),
           m_logonTime(sessionTime),
           m_senderDefaultApplVerID(ApplVerID_FIX50),
@@ -78,7 +80,7 @@ namespace FIX
           m_dataDictionaryProvider(dataDictionaryProvider),
           m_messageStoreFactory(messageStoreFactory),
           m_pLogFactory(pLogFactory),
-          m_pResponder(0)
+          m_pResponder(nullptr)
     {
         m_state.heartBtInt(heartBtInt);
         m_state.initiate(heartBtInt != 0);
@@ -449,7 +451,7 @@ namespace FIX
 
         Locker l(m_mutex);
 
-        auto beginSeqNo = resendRequest.getField<BeginSeqNo>();
+        const auto& beginSeqNo = resendRequest.getField<BeginSeqNo>();
         auto endSeqNo = resendRequest.getField<EndSeqNo>();
 
         m_state.onEvent(
@@ -524,35 +526,35 @@ namespace FIX
                 const DataDictionary &applicationDD = m_dataDictionaryProvider.getApplicationDataDictionary(applVerID);
                 if (strMsgType.empty())
                 {
-                    pMsg.reset(new Message(*i, sessionDD, applicationDD, m_validateLengthAndChecksum));
+                    pMsg = std::make_unique<Message>(*i, sessionDD, applicationDD, m_validateLengthAndChecksum);
                 }
                 else
                 {
                     const message_order &headerOrder = sessionDD.getHeaderOrderedFields();
                     const message_order &trailerOrder = sessionDD.getTrailerOrderedFields();
                     const message_order &messageOrder = applicationDD.getMessageOrderedFields(strMsgType);
-                    pMsg.reset(new Message(
+                    pMsg = std::make_unique<Message>(
                         headerOrder,
                         trailerOrder,
                         messageOrder,
                         *i,
                         sessionDD,
                         applicationDD,
-                        m_validateLengthAndChecksum));
+                        m_validateLengthAndChecksum);
                 }
             }
             else
             {
                 if (strMsgType.empty())
                 {
-                    pMsg.reset(new Message(*i, sessionDD, m_validateLengthAndChecksum));
+                    pMsg = std::make_unique<Message>(*i, sessionDD, m_validateLengthAndChecksum);
                 }
                 else
                 {
                     const message_order &headerOrder = sessionDD.getHeaderOrderedFields();
                     const message_order &trailerOrder = sessionDD.getTrailerOrderedFields();
                     const message_order &messageOrder = sessionDD.getMessageOrderedFields(strMsgType);
-                    pMsg.reset(new Message(headerOrder, trailerOrder, messageOrder, *i, sessionDD, m_validateLengthAndChecksum));
+                    pMsg = std::make_unique<Message>(headerOrder, trailerOrder, messageOrder, *i, sessionDD, m_validateLengthAndChecksum);
                 }
             }
 
@@ -617,7 +619,7 @@ namespace FIX
         }
     }
 
-    Message Session::newMessage(const MsgType &msgType) const
+    auto Session::newMessage(const MsgType &msgType) const -> Message
     {
         const DataDictionary &sessionDD = m_dataDictionaryProvider.getSessionDataDictionary(m_sessionID.getBeginString());
 
@@ -649,14 +651,14 @@ namespace FIX
         }
     }
 
-    bool Session::send(Message &message)
+    auto Session::send(Message &message) -> bool
     {
         message.getHeader().removeField(FIELD::PossDupFlag);
         message.getHeader().removeField(FIELD::OrigSendingTime);
         return sendRaw(message);
     }
 
-    bool Session::sendRaw(Message &message, SEQNUM num)
+    auto Session::sendRaw(Message &message, SEQNUM num) -> bool
     {
         Locker l(m_mutex);
 
@@ -742,7 +744,7 @@ namespace FIX
         }
     }
 
-    bool Session::send(const std::string &string)
+    auto Session::send(const std::string &string) -> bool
     {
         if (!m_pResponder)
         {
@@ -761,7 +763,7 @@ namespace FIX
             m_state.onEvent("Disconnecting");
 
             m_pResponder->disconnect();
-            m_pResponder = 0;
+            m_pResponder = nullptr;
         }
 
         if (m_state.receivedLogon() || m_state.sentLogon())
@@ -784,7 +786,7 @@ namespace FIX
         m_state.resendRange(0, 0);
     }
 
-    bool Session::resend(Message &message)
+    auto Session::resend(Message &message) -> bool
     {
         Header &header = message.getHeader();
         auto const &sendingTime = header.getField<SendingTime>();
@@ -984,7 +986,7 @@ namespace FIX
             m_state.incrNextTargetMsgSeqNum();
         }
 
-        const char *reason = 0;
+        const char *reason = nullptr;
         switch (err)
         {
         case SessionRejectReason_INVALID_TAG_NUMBER:
@@ -1092,7 +1094,7 @@ namespace FIX
         reject.setField(BusinessRejectReason(err));
         m_state.incrNextTargetMsgSeqNum();
 
-        const char *reason = 0;
+        const char *reason = nullptr;
         switch (err)
         {
         case BusinessRejectReason_OTHER:
@@ -1172,19 +1174,19 @@ namespace FIX
 
     void Session::populateRejectReason(Message &reject, const std::string &text) { reject.setField(Text(text)); }
 
-    bool Session::verify(const Message &msg, bool checkTooHigh, bool checkTooLow)
+    auto Session::verify(const Message &msg, bool checkTooHigh, bool checkTooLow) -> bool
     {
-        const MsgType *pMsgType = 0;
-        const MsgSeqNum *pMsgSeqNum = 0;
+        const MsgType *pMsgType = nullptr;
+        const MsgSeqNum *pMsgSeqNum = nullptr;
 
         try
         {
             const Header &header = msg.getHeader();
 
             pMsgType = FIELD_GET_PTR(header, MsgType);
-            const SenderCompID &senderCompID = FIELD_GET_REF(header, SenderCompID);
-            const TargetCompID &targetCompID = FIELD_GET_REF(header, TargetCompID);
-            const SendingTime &sendingTime = FIELD_GET_REF(header, SendingTime);
+            const auto &senderCompID = FIELD_GET_REF(header, SenderCompID);
+            const auto &targetCompID = FIELD_GET_REF(header, TargetCompID);
+            const auto &sendingTime = FIELD_GET_REF(header, SendingTime);
 
             if (checkTooHigh || checkTooLow)
             {
@@ -1244,13 +1246,13 @@ namespace FIX
         return true;
     }
 
-    bool Session::shouldSendReset()
+    auto Session::shouldSendReset() -> bool
     {
         std::string beginString = m_sessionID.getBeginString();
         return beginString >= FIX::BeginString_FIX41 && (m_resetOnLogon || m_resetOnLogout || m_resetOnDisconnect) && (getExpectedSenderNum() == 1) && (getExpectedTargetNum() == 1);
     }
 
-    bool Session::validLogonState(const MsgType &msgType)
+    auto Session::validLogonState(const MsgType &msgType) -> bool
     {
         if ((msgType == MsgType_Logon && m_state.sentReset()) || (m_state.receivedReset()))
         {
@@ -1304,7 +1306,7 @@ namespace FIX
         generateLogout();
     }
 
-    bool Session::doPossDup(const Message &msg)
+    auto Session::doPossDup(const Message &msg) -> bool
     {
         OrigSendingTime origSendingTime = m_timestamper();
 
@@ -1330,7 +1332,7 @@ namespace FIX
         return true;
     }
 
-    bool Session::doTargetTooLow(const Message &msg)
+    auto Session::doTargetTooLow(const Message &msg) -> bool
     {
         const Header &header = msg.getHeader();
         PossDupFlag possDupFlag(false);
@@ -1381,7 +1383,7 @@ namespace FIX
         }
     }
 
-    bool Session::nextQueued(SEQNUM num, const UtcTimeStamp &now)
+    auto Session::nextQueued(SEQNUM num, const UtcTimeStamp &now) -> bool
     {
         Message msg;
 
@@ -1449,8 +1451,8 @@ namespace FIX
                 return;
             }
 
-            const MsgType &msgType = FIELD_GET_REF(header, MsgType);
-            const BeginString &beginString = FIELD_GET_REF(header, BeginString);
+            const auto &msgType = FIELD_GET_REF(header, MsgType);
+            const auto &beginString = FIELD_GET_REF(header, BeginString);
             // make sure these fields are present
             FIELD_THROW_IF_NOT_FOUND(header, SenderCompID);
             FIELD_THROW_IF_NOT_FOUND(header, TargetCompID);
@@ -1464,7 +1466,7 @@ namespace FIX
             {
                 if (m_sessionID.isFIXT())
                 {
-                    const DefaultApplVerID &applVerID = FIELD_GET_REF(message, DefaultApplVerID);
+                    const auto &applVerID = FIELD_GET_REF(message, DefaultApplVerID);
                     setTargetDefaultApplVerID(applVerID);
                 }
                 else
@@ -1634,7 +1636,7 @@ namespace FIX
         }
     }
 
-    bool Session::sendToTarget(Message &message, const std::string &qualifier) EXCEPT(SessionNotFound)
+    auto Session::sendToTarget(Message &message, const std::string &qualifier) -> bool EXCEPT(SessionNotFound)
     {
         try
         {
@@ -1647,7 +1649,7 @@ namespace FIX
         }
     }
 
-    bool Session::sendToTarget(Message &message, const SessionID &sessionID) EXCEPT(SessionNotFound)
+    auto Session::sendToTarget(Message &message, const SessionID &sessionID) -> bool EXCEPT(SessionNotFound)
     {
         message.setSessionID(sessionID);
         Session *pSession = lookupSession(sessionID);
@@ -1658,38 +1660,38 @@ namespace FIX
         return pSession->send(message);
     }
 
-    bool Session::sendToTarget(
+    auto Session::sendToTarget(
         Message &message,
         const SenderCompID &senderCompID,
         const TargetCompID &targetCompID,
-        const std::string &qualifier) EXCEPT(SessionNotFound)
+        const std::string &qualifier) -> bool EXCEPT(SessionNotFound)
     {
         message.getHeader().setField(senderCompID);
         message.getHeader().setField(targetCompID);
         return sendToTarget(message, qualifier);
     }
 
-    bool Session::sendToTarget(
+    auto Session::sendToTarget(
         Message &message,
         const std::string &sender,
         const std::string &target,
-        const std::string &qualifier) EXCEPT(SessionNotFound)
+        const std::string &qualifier) -> bool EXCEPT(SessionNotFound)
     {
         return sendToTarget(message, SenderCompID(sender), TargetCompID(target), qualifier);
     }
 
-    std::set<SessionID> Session::getSessions() { return s_sessionIDs; }
+    auto Session::getSessions() -> std::set<SessionID> { return s_sessionIDs; }
 
-    bool Session::doesSessionExist(const SessionID &sessionID)
+    auto Session::doesSessionExist(const SessionID &sessionID) -> bool
     {
         Locker locker(s_mutex);
         return s_sessions.end() != s_sessions.find(sessionID);
     }
 
-    Session *Session::lookupSession(const SessionID &sessionID)
+    auto Session::lookupSession(const SessionID &sessionID) -> Session *
     {
         Locker locker(s_mutex);
-        Sessions::iterator find = s_sessions.find(sessionID);
+        auto find = s_sessions.find(sessionID);
         if (find != s_sessions.end())
         {
             return find->second;
@@ -1700,7 +1702,7 @@ namespace FIX
         }
     }
 
-    Session *Session::lookupSession(const std::string &string, bool reverse)
+    auto Session::lookupSession(const std::string &string, bool reverse) -> Session *
     {
         Message message;
         if (!message.setStringHeader(string))
@@ -1711,9 +1713,9 @@ namespace FIX
         try
         {
             const Header &header = message.getHeader();
-            const BeginString &beginString = FIELD_GET_REF(header, BeginString);
-            const SenderCompID &senderCompID = FIELD_GET_REF(header, SenderCompID);
-            const TargetCompID &targetCompID = FIELD_GET_REF(header, TargetCompID);
+            const auto &beginString = FIELD_GET_REF(header, BeginString);
+            const auto &senderCompID = FIELD_GET_REF(header, SenderCompID);
+            const auto &targetCompID = FIELD_GET_REF(header, TargetCompID);
 
             if (reverse)
             {
@@ -1728,13 +1730,13 @@ namespace FIX
         }
     }
 
-    bool Session::isSessionRegistered(const SessionID &sessionID)
+    auto Session::isSessionRegistered(const SessionID &sessionID) -> bool
     {
         Locker locker(s_mutex);
         return s_registered.end() != s_registered.find(sessionID);
     }
 
-    Session *Session::registerSession(const SessionID &sessionID)
+    auto Session::registerSession(const SessionID &sessionID) -> Session *
     {
         Locker locker(s_mutex);
         Session *pSession = lookupSession(sessionID);
@@ -1756,16 +1758,16 @@ namespace FIX
         s_registered.erase(sessionID);
     }
 
-    size_t Session::numSessions()
+    auto Session::numSessions() -> size_t
     {
         Locker locker(s_mutex);
         return s_sessions.size();
     }
 
-    bool Session::addSession(Session &s)
+    auto Session::addSession(Session &s) -> bool
     {
         Locker locker(s_mutex);
-        Sessions::iterator it = s_sessions.find(s.m_sessionID);
+        auto it = s_sessions.find(s.m_sessionID);
         if (it == s_sessions.end())
         {
             s_sessions[s.m_sessionID] = &s;

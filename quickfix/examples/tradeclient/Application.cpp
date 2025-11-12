@@ -26,27 +26,29 @@
 #include "quickfix/config.h"
 
 #include "Application.h"
+
+#include <math.h>
 #include "quickfix/Session.h"
 #include <iostream>
 
 void Application::onLogon(const FIX::SessionID &sessionID)
 {
-    std::cout << std::endl
-              << "Logon - " << sessionID << std::endl;
+    std::cout << '\n'
+              << "Logon - " << sessionID << '\n';
 }
 
 void Application::onLogout(const FIX::SessionID &sessionID)
 {
-    std::cout << std::endl
-              << "Logout - " << sessionID << std::endl;
+    std::cout << '\n'
+              << "Logout - " << sessionID << '\n';
 }
 
 void Application::fromApp(const FIX::Message &message, const FIX::SessionID &sessionID)
     EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::UnsupportedMessageType)
 {
     crack(message, sessionID);
-    std::cout << std::endl
-              << "IN: " << message << std::endl;
+    std::cout << '\n'
+              << "IN: " << message << '\n';
 }
 
 void Application::toApp(FIX::Message &message, const FIX::SessionID &sessionID) EXCEPT(FIX::DoNotSend)
@@ -64,8 +66,8 @@ void Application::toApp(FIX::Message &message, const FIX::SessionID &sessionID) 
     {
     }
 
-    std::cout << std::endl
-              << "OUT: " << message << std::endl;
+    std::cout << '\n'
+              << "OUT: " << message << '\n';
 }
 
 void Application::onMessage(const FIX40::ExecutionReport &, const FIX::SessionID &) {}
@@ -144,7 +146,7 @@ void Application::queryEnterOrder()
         order = queryNewOrderSingle50();
         break;
     default:
-        std::cerr << "No test for version " << version << std::endl;
+        std::cerr << "No test for version " << version << '\n';
         break;
     }
 
@@ -181,7 +183,7 @@ void Application::queryCancelOrder()
         cancel = queryOrderCancelRequest50();
         break;
     default:
-        std::cerr << "No test for version " << version << std::endl;
+        std::cerr << "No test for version " << version << '\n';
         break;
     }
 
@@ -218,7 +220,7 @@ void Application::queryReplaceOrder()
         replace = queryCancelReplaceRequest50();
         break;
     default:
-        std::cerr << "No test for version " << version << std::endl;
+        std::cerr << "No test for version " << version << '\n';
         break;
     }
 
@@ -246,14 +248,14 @@ void Application::queryMarketDataRequest()
         md = queryMarketDataRequest50();
         break;
     default:
-        std::cerr << "No test for version " << version << std::endl;
+        std::cerr << "No test for version " << version << '\n';
         break;
     }
 
     FIX::Session::sendToTarget(md);
 }
 
-FIX40::NewOrderSingle Application::queryNewOrderSingle40()
+auto Application::queryNewOrderSingle40() -> FIX40::NewOrderSingle
 {
     FIX::OrdType ordType;
 
@@ -279,7 +281,7 @@ FIX40::NewOrderSingle Application::queryNewOrderSingle40()
     return newOrderSingle;
 }
 
-FIX41::NewOrderSingle Application::queryNewOrderSingle41()
+auto Application::queryNewOrderSingle41() -> FIX41::NewOrderSingle
 {
     FIX::OrdType ordType;
 
@@ -301,7 +303,7 @@ FIX41::NewOrderSingle Application::queryNewOrderSingle41()
     return newOrderSingle;
 }
 
-FIX42::NewOrderSingle Application::queryNewOrderSingle42()
+auto Application::queryNewOrderSingle42() -> FIX42::NewOrderSingle
 {
     FIX::OrdType ordType;
 
@@ -328,7 +330,7 @@ FIX42::NewOrderSingle Application::queryNewOrderSingle42()
     return newOrderSingle;
 }
 
-FIX43::NewOrderSingle Application::queryNewOrderSingle43()
+auto Application::queryNewOrderSingle43() -> FIX43::NewOrderSingle
 {
     FIX::OrdType ordType;
 
@@ -351,7 +353,7 @@ FIX43::NewOrderSingle Application::queryNewOrderSingle43()
     return newOrderSingle;
 }
 
-FIX44::NewOrderSingle Application::queryNewOrderSingle44()
+auto Application::queryNewOrderSingle44() -> FIX44::NewOrderSingle
 {
     FIX::OrdType ordType;
 
@@ -374,7 +376,7 @@ FIX44::NewOrderSingle Application::queryNewOrderSingle44()
     return newOrderSingle;
 }
 
-FIX50::NewOrderSingle Application::queryNewOrderSingle50()
+auto Application::queryNewOrderSingle50() -> FIX50::NewOrderSingle
 {
     FIX::OrdType ordType;
 
@@ -397,7 +399,7 @@ FIX50::NewOrderSingle Application::queryNewOrderSingle50()
     return newOrderSingle;
 }
 
-FIX40::OrderCancelRequest Application::queryOrderCancelRequest40()
+auto Application::queryOrderCancelRequest40() -> FIX40::OrderCancelRequest
 {
     FIX40::OrderCancelRequest orderCancelRequest(
         queryOrigClOrdID(),
@@ -411,7 +413,7 @@ FIX40::OrderCancelRequest Application::queryOrderCancelRequest40()
     return orderCancelRequest;
 }
 
-FIX41::OrderCancelRequest Application::queryOrderCancelRequest41()
+auto Application::queryOrderCancelRequest41() -> FIX41::OrderCancelRequest
 {
     FIX41::OrderCancelRequest orderCancelRequest(queryOrigClOrdID(), queryClOrdID(), querySymbol(), querySide());
 
@@ -420,7 +422,7 @@ FIX41::OrderCancelRequest Application::queryOrderCancelRequest41()
     return orderCancelRequest;
 }
 
-FIX42::OrderCancelRequest Application::queryOrderCancelRequest42()
+auto Application::queryOrderCancelRequest42() -> FIX42::OrderCancelRequest
 {
     FIX42::OrderCancelRequest
         orderCancelRequest(queryOrigClOrdID(), queryClOrdID(), querySymbol(), querySide(), FIX::TransactTime());
@@ -430,7 +432,7 @@ FIX42::OrderCancelRequest Application::queryOrderCancelRequest42()
     return orderCancelRequest;
 }
 
-FIX43::OrderCancelRequest Application::queryOrderCancelRequest43()
+auto Application::queryOrderCancelRequest43() -> FIX43::OrderCancelRequest
 {
     FIX43::OrderCancelRequest orderCancelRequest(queryOrigClOrdID(), queryClOrdID(), querySide(), FIX::TransactTime());
 
@@ -440,7 +442,7 @@ FIX43::OrderCancelRequest Application::queryOrderCancelRequest43()
     return orderCancelRequest;
 }
 
-FIX44::OrderCancelRequest Application::queryOrderCancelRequest44()
+auto Application::queryOrderCancelRequest44() -> FIX44::OrderCancelRequest
 {
     FIX44::OrderCancelRequest orderCancelRequest(queryOrigClOrdID(), queryClOrdID(), querySide(), FIX::TransactTime());
 
@@ -450,7 +452,7 @@ FIX44::OrderCancelRequest Application::queryOrderCancelRequest44()
     return orderCancelRequest;
 }
 
-FIX50::OrderCancelRequest Application::queryOrderCancelRequest50()
+auto Application::queryOrderCancelRequest50() -> FIX50::OrderCancelRequest
 {
     FIX50::OrderCancelRequest orderCancelRequest(queryOrigClOrdID(), queryClOrdID(), querySide(), FIX::TransactTime());
 
@@ -460,7 +462,7 @@ FIX50::OrderCancelRequest Application::queryOrderCancelRequest50()
     return orderCancelRequest;
 }
 
-FIX40::OrderCancelReplaceRequest Application::queryCancelReplaceRequest40()
+auto Application::queryCancelReplaceRequest40() -> FIX40::OrderCancelReplaceRequest
 {
     FIX40::OrderCancelReplaceRequest cancelReplaceRequest(
         queryOrigClOrdID(),
@@ -484,7 +486,7 @@ FIX40::OrderCancelReplaceRequest Application::queryCancelReplaceRequest40()
     return cancelReplaceRequest;
 }
 
-FIX41::OrderCancelReplaceRequest Application::queryCancelReplaceRequest41()
+auto Application::queryCancelReplaceRequest41() -> FIX41::OrderCancelReplaceRequest
 {
     FIX41::OrderCancelReplaceRequest cancelReplaceRequest(
         queryOrigClOrdID(),
@@ -507,7 +509,7 @@ FIX41::OrderCancelReplaceRequest Application::queryCancelReplaceRequest41()
     return cancelReplaceRequest;
 }
 
-FIX42::OrderCancelReplaceRequest Application::queryCancelReplaceRequest42()
+auto Application::queryCancelReplaceRequest42() -> FIX42::OrderCancelReplaceRequest
 {
     FIX42::OrderCancelReplaceRequest cancelReplaceRequest(
         queryOrigClOrdID(),
@@ -531,7 +533,7 @@ FIX42::OrderCancelReplaceRequest Application::queryCancelReplaceRequest42()
     return cancelReplaceRequest;
 }
 
-FIX43::OrderCancelReplaceRequest Application::queryCancelReplaceRequest43()
+auto Application::queryCancelReplaceRequest43() -> FIX43::OrderCancelReplaceRequest
 {
     FIX43::OrderCancelReplaceRequest cancelReplaceRequest(
         queryOrigClOrdID(),
@@ -555,7 +557,7 @@ FIX43::OrderCancelReplaceRequest Application::queryCancelReplaceRequest43()
     return cancelReplaceRequest;
 }
 
-FIX44::OrderCancelReplaceRequest Application::queryCancelReplaceRequest44()
+auto Application::queryCancelReplaceRequest44() -> FIX44::OrderCancelReplaceRequest
 {
     FIX44::OrderCancelReplaceRequest
         cancelReplaceRequest(queryOrigClOrdID(), queryClOrdID(), querySide(), FIX::TransactTime(), queryOrdType());
@@ -575,7 +577,7 @@ FIX44::OrderCancelReplaceRequest Application::queryCancelReplaceRequest44()
     return cancelReplaceRequest;
 }
 
-FIX50::OrderCancelReplaceRequest Application::queryCancelReplaceRequest50()
+auto Application::queryCancelReplaceRequest50() -> FIX50::OrderCancelReplaceRequest
 {
     FIX50::OrderCancelReplaceRequest
         cancelReplaceRequest(queryOrigClOrdID(), queryClOrdID(), querySide(), FIX::TransactTime(), queryOrdType());
@@ -595,7 +597,7 @@ FIX50::OrderCancelReplaceRequest Application::queryCancelReplaceRequest50()
     return cancelReplaceRequest;
 }
 
-FIX43::MarketDataRequest Application::queryMarketDataRequest43()
+auto Application::queryMarketDataRequest43() -> FIX43::MarketDataRequest
 {
     FIX::MDReqID mdReqID("MARKETDATAID");
     FIX::SubscriptionRequestType subType(FIX::SubscriptionRequestType_SNAPSHOT);
@@ -615,13 +617,13 @@ FIX43::MarketDataRequest Application::queryMarketDataRequest43()
 
     queryHeader(message.getHeader());
 
-    std::cout << message.toXML() << std::endl;
-    std::cout << message.toString() << std::endl;
+    std::cout << message.toXML() << '\n';
+    std::cout << message.toString() << '\n';
 
     return message;
 }
 
-FIX44::MarketDataRequest Application::queryMarketDataRequest44()
+auto Application::queryMarketDataRequest44() -> FIX44::MarketDataRequest
 {
     FIX::MDReqID mdReqID("MARKETDATAID");
     FIX::SubscriptionRequestType subType(FIX::SubscriptionRequestType_SNAPSHOT);
@@ -641,13 +643,13 @@ FIX44::MarketDataRequest Application::queryMarketDataRequest44()
 
     queryHeader(message.getHeader());
 
-    std::cout << message.toXML() << std::endl;
-    std::cout << message.toString() << std::endl;
+    std::cout << message.toXML() << '\n';
+    std::cout << message.toString() << '\n';
 
     return message;
 }
 
-FIX50::MarketDataRequest Application::queryMarketDataRequest50()
+auto Application::queryMarketDataRequest50() -> FIX50::MarketDataRequest
 {
     FIX::MDReqID mdReqID("MARKETDATAID");
     FIX::SubscriptionRequestType subType(FIX::SubscriptionRequestType_SNAPSHOT);
@@ -667,8 +669,8 @@ FIX50::MarketDataRequest Application::queryMarketDataRequest50()
 
     queryHeader(message.getHeader());
 
-    std::cout << message.toXML() << std::endl;
-    std::cout << message.toString() << std::endl;
+    std::cout << message.toXML() << '\n';
+    std::cout << message.toString() << '\n';
 
     return message;
 }
@@ -684,15 +686,15 @@ void Application::queryHeader(FIX::Header &header)
     }
 }
 
-char Application::queryAction()
+auto Application::queryAction() -> char
 {
-    char value;
-    std::cout << std::endl
-              << "1) Enter Order" << std::endl
-              << "2) Cancel Order" << std::endl
-              << "3) Replace Order" << std::endl
-              << "4) Market data test" << std::endl
-              << "5) Quit" << std::endl
+    char value = 0;
+    std::cout << '\n'
+              << "1) Enter Order" << '\n'
+              << "2) Cancel Order" << '\n'
+              << "3) Replace Order" << '\n'
+              << "4) Market data test" << '\n'
+              << "5) Quit" << '\n'
               << "Action: ";
     std::cin >> value;
     switch (value)
@@ -709,16 +711,16 @@ char Application::queryAction()
     return value;
 }
 
-int Application::queryVersion()
+auto Application::queryVersion() -> int
 {
-    char value;
-    std::cout << std::endl
-              << "1) FIX.4.0" << std::endl
-              << "2) FIX.4.1" << std::endl
-              << "3) FIX.4.2" << std::endl
-              << "4) FIX.4.3" << std::endl
-              << "5) FIX.4.4" << std::endl
-              << "6) FIXT.1.1 (FIX.5.0)" << std::endl
+    char value = 0;
+    std::cout << '\n'
+              << "1) FIX.4.0" << '\n'
+              << "2) FIX.4.1" << '\n'
+              << "3) FIX.4.2" << '\n'
+              << "4) FIX.4.3" << '\n'
+              << "5) FIX.4.4" << '\n'
+              << "6) FIXT.1.1 (FIX.5.0)" << '\n'
               << "BeginString: ";
     std::cin >> value;
     switch (value)
@@ -740,80 +742,80 @@ int Application::queryVersion()
     }
 }
 
-bool Application::queryConfirm(const std::string &query)
+auto Application::queryConfirm(const std::string &query) -> bool
 {
     std::string value;
-    std::cout << std::endl
+    std::cout << '\n'
               << query << "?: ";
     std::cin >> value;
     return toupper(*value.c_str()) == 'Y';
 }
 
-FIX::SenderCompID Application::querySenderCompID()
+auto Application::querySenderCompID() -> FIX::SenderCompID
 {
     std::string value;
-    std::cout << std::endl
+    std::cout << '\n'
               << "SenderCompID: ";
     std::cin >> value;
     return FIX::SenderCompID(value);
 }
 
-FIX::TargetCompID Application::queryTargetCompID()
+auto Application::queryTargetCompID() -> FIX::TargetCompID
 {
     std::string value;
-    std::cout << std::endl
+    std::cout << '\n'
               << "TargetCompID: ";
     std::cin >> value;
     return FIX::TargetCompID(value);
 }
 
-FIX::TargetSubID Application::queryTargetSubID()
+auto Application::queryTargetSubID() -> FIX::TargetSubID
 {
     std::string value;
-    std::cout << std::endl
+    std::cout << '\n'
               << "TargetSubID: ";
     std::cin >> value;
     return FIX::TargetSubID(value);
 }
 
-FIX::ClOrdID Application::queryClOrdID()
+auto Application::queryClOrdID() -> FIX::ClOrdID
 {
     std::string value;
-    std::cout << std::endl
+    std::cout << '\n'
               << "ClOrdID: ";
     std::cin >> value;
     return FIX::ClOrdID(value);
 }
 
-FIX::OrigClOrdID Application::queryOrigClOrdID()
+auto Application::queryOrigClOrdID() -> FIX::OrigClOrdID
 {
     std::string value;
-    std::cout << std::endl
+    std::cout << '\n'
               << "OrigClOrdID: ";
     std::cin >> value;
     return FIX::OrigClOrdID(value);
 }
 
-FIX::Symbol Application::querySymbol()
+auto Application::querySymbol() -> FIX::Symbol
 {
     std::string value;
-    std::cout << std::endl
+    std::cout << '\n'
               << "Symbol: ";
     std::cin >> value;
     return FIX::Symbol(value);
 }
 
-FIX::Side Application::querySide()
+auto Application::querySide() -> FIX::Side
 {
-    char value;
-    std::cout << std::endl
-              << "1) Buy" << std::endl
-              << "2) Sell" << std::endl
-              << "3) Sell Short" << std::endl
-              << "4) Sell Short Exempt" << std::endl
-              << "5) Cross" << std::endl
-              << "6) Cross Short" << std::endl
-              << "7) Cross Short Exempt" << std::endl
+    char value = 0;
+    std::cout << '\n'
+              << "1) Buy" << '\n'
+              << "2) Sell" << '\n'
+              << "3) Sell Short" << '\n'
+              << "4) Sell Short Exempt" << '\n'
+              << "5) Cross" << '\n'
+              << "6) Cross Short" << '\n'
+              << "7) Cross Short Exempt" << '\n'
               << "Side: ";
 
     std::cin >> value;
@@ -838,23 +840,23 @@ FIX::Side Application::querySide()
     }
 }
 
-FIX::OrderQty Application::queryOrderQty()
+auto Application::queryOrderQty() -> FIX::OrderQty
 {
-    long value;
-    std::cout << std::endl
+    long value = 0;
+    std::cout << '\n'
               << "OrderQty: ";
     std::cin >> value;
     return FIX::OrderQty(value);
 }
 
-FIX::OrdType Application::queryOrdType()
+auto Application::queryOrdType() -> FIX::OrdType
 {
-    char value;
-    std::cout << std::endl
-              << "1) Market" << std::endl
-              << "2) Limit" << std::endl
-              << "3) Stop" << std::endl
-              << "4) Stop Limit" << std::endl
+    char value = 0;
+    std::cout << '\n'
+              << "1) Market" << '\n'
+              << "2) Limit" << '\n'
+              << "3) Stop" << '\n'
+              << "4) Stop Limit" << '\n'
               << "OrdType: ";
 
     std::cin >> value;
@@ -873,33 +875,33 @@ FIX::OrdType Application::queryOrdType()
     }
 }
 
-FIX::Price Application::queryPrice()
+auto Application::queryPrice() -> FIX::Price
 {
-    double value;
-    std::cout << std::endl
+    double value = NAN;
+    std::cout << '\n'
               << "Price: ";
     std::cin >> value;
     return FIX::Price(value);
 }
 
-FIX::StopPx Application::queryStopPx()
+auto Application::queryStopPx() -> FIX::StopPx
 {
-    double value;
-    std::cout << std::endl
+    double value = NAN;
+    std::cout << '\n'
               << "StopPx: ";
     std::cin >> value;
     return FIX::StopPx(value);
 }
 
-FIX::TimeInForce Application::queryTimeInForce()
+auto Application::queryTimeInForce() -> FIX::TimeInForce
 {
-    char value;
-    std::cout << std::endl
-              << "1) Day" << std::endl
-              << "2) IOC" << std::endl
-              << "3) OPG" << std::endl
-              << "4) GTC" << std::endl
-              << "5) GTX" << std::endl
+    char value = 0;
+    std::cout << '\n'
+              << "1) Day" << '\n'
+              << "2) IOC" << '\n'
+              << "3) OPG" << '\n'
+              << "4) GTC" << '\n'
+              << "5) GTX" << '\n'
               << "TimeInForce: ";
 
     std::cin >> value;

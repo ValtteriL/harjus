@@ -109,8 +109,8 @@ TEST_CASE("FieldTypesTests")
 
     SECTION("DateTime_fromLocalTimeT")
     {
-        time_t currTime;
-        currTime = time(NULL);
+        time_t currTime = 0;
+        currTime = time(nullptr);
         localtime(&currTime);
 
         FIX::DateTime nonFractionalDateTime;
@@ -127,7 +127,7 @@ TEST_CASE("FieldTypesTests")
 
     SECTION("DateTime_fromTm")
     {
-        tm expectedTm;
+        tm expectedTm{};
         expectedTm.tm_year = 119;
         expectedTm.tm_mon = 5;
         expectedTm.tm_mday = 6;
@@ -147,8 +147,8 @@ TEST_CASE("FieldTypesTests")
 
     SECTION("DateTime_nowLocal")
     {
-        time_t currTime;
-        currTime = time(NULL);
+        time_t currTime = 0;
+        currTime = time(nullptr);
         localtime(&currTime);
 
         FIX::DateTime localTime = FIX::DateTime::nowLocal();
@@ -159,8 +159,8 @@ TEST_CASE("FieldTypesTests")
 
     SECTION("LocalTimeStamp_fromTm")
     {
-        time_t currTime;
-        currTime = time(NULL);
+        time_t currTime = 0;
+        currTime = time(nullptr);
         localtime(&currTime);
 
         FIX::LocalTimeStamp timestamp(currTime);

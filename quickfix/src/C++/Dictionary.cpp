@@ -29,10 +29,10 @@
 
 namespace FIX
 {
-    std::string Dictionary::getString(const std::string &key, bool capitalize) const
+    auto Dictionary::getString(const std::string &key, bool capitalize) const -> std::string
         EXCEPT(ConfigError, FieldConvertError)
     {
-        Data::const_iterator i = m_data.find(string_toUpper(key));
+        auto i = m_data.find(string_toUpper(key));
         if (i == m_data.end())
         {
             throw ConfigError(key + " not defined");
@@ -47,7 +47,7 @@ namespace FIX
         return result;
     }
 
-    int Dictionary::getInt(const std::string &key) const EXCEPT(ConfigError, FieldConvertError)
+    auto Dictionary::getInt(const std::string &key) const -> int EXCEPT(ConfigError, FieldConvertError)
     {
         try
         {
@@ -59,7 +59,7 @@ namespace FIX
         }
     }
 
-    double Dictionary::getDouble(const std::string &key) const EXCEPT(ConfigError, FieldConvertError)
+    auto Dictionary::getDouble(const std::string &key) const -> double EXCEPT(ConfigError, FieldConvertError)
     {
         try
         {
@@ -71,7 +71,7 @@ namespace FIX
         }
     }
 
-    bool Dictionary::getBool(const std::string &key) const EXCEPT(ConfigError, FieldConvertError)
+    auto Dictionary::getBool(const std::string &key) const -> bool EXCEPT(ConfigError, FieldConvertError)
     {
         try
         {
@@ -83,7 +83,7 @@ namespace FIX
         }
     }
 
-    int Dictionary::getDay(const std::string &key) const EXCEPT(ConfigError, FieldConvertError)
+    auto Dictionary::getDay(const std::string &key) const -> int EXCEPT(ConfigError, FieldConvertError)
     {
         try
         {
@@ -178,11 +178,11 @@ namespace FIX
         }
     }
 
-    bool Dictionary::has(const std::string &key) const { return m_data.find(string_toUpper(key)) != m_data.end(); }
+    auto Dictionary::has(const std::string &key) const -> bool { return m_data.find(string_toUpper(key)) != m_data.end(); }
 
     void Dictionary::merge(const Dictionary &toMerge)
     {
-        Data::const_iterator i = toMerge.m_data.begin();
+        auto i = toMerge.m_data.begin();
         for (; i != toMerge.m_data.end(); ++i)
         {
             if (m_data.find(i->first) == m_data.end())

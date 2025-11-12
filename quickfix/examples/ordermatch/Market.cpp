@@ -26,7 +26,7 @@
 #include "Market.h"
 #include <iostream>
 
-bool Market::insert(const Order &order)
+auto Market::insert(const Order &order) -> bool
 {
     if (order.getSide() == Order::buy)
     {
@@ -41,7 +41,7 @@ bool Market::insert(const Order &order)
 
 void Market::erase(const Order &order)
 {
-    std::string id = order.getClientID();
+    const std::string& id = order.getClientID();
     if (order.getSide() == Order::buy)
     {
         BidOrders::iterator i;
@@ -68,7 +68,7 @@ void Market::erase(const Order &order)
     }
 }
 
-bool Market::match(std::queue<Order> &orders)
+auto Market::match(std::queue<Order> &orders) -> bool
 {
     while (true)
     {
@@ -77,8 +77,8 @@ bool Market::match(std::queue<Order> &orders)
             return orders.size() != 0;
         }
 
-        BidOrders::iterator iBid = m_bidOrders.begin();
-        AskOrders::iterator iAsk = m_askOrders.begin();
+        auto iBid = m_bidOrders.begin();
+        auto iAsk = m_askOrders.begin();
 
         if (iBid->second.getPrice() >= iAsk->second.getPrice())
         {
@@ -105,7 +105,7 @@ bool Market::match(std::queue<Order> &orders)
     }
 }
 
-Order &Market::find(Order::Side side, std::string id)
+auto Market::find(Order::Side side, const std::string& id) -> Order &
 {
     if (side == Order::buy)
     {
@@ -155,22 +155,22 @@ void Market::display() const
     BidOrders::const_iterator iBid;
     AskOrders::const_iterator iAsk;
 
-    std::cout << "BIDS:" << std::endl;
-    std::cout << "-----" << std::endl
-              << std::endl;
+    std::cout << "BIDS:" << '\n';
+    std::cout << "-----" << '\n'
+              << '\n';
     for (iBid = m_bidOrders.begin(); iBid != m_bidOrders.end(); ++iBid)
     {
-        std::cout << iBid->second << std::endl;
+        std::cout << iBid->second << '\n';
     }
 
-    std::cout << std::endl
-              << std::endl;
+    std::cout << '\n'
+              << '\n';
 
-    std::cout << "ASKS:" << std::endl;
-    std::cout << "-----" << std::endl
-              << std::endl;
+    std::cout << "ASKS:" << '\n';
+    std::cout << "-----" << '\n'
+              << '\n';
     for (iAsk = m_askOrders.begin(); iAsk != m_askOrders.end(); ++iAsk)
     {
-        std::cout << iAsk->second << std::endl;
+        std::cout << iAsk->second << '\n';
     }
 }

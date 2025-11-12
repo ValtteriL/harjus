@@ -129,7 +129,7 @@
 namespace FIX
 {
 
-    int SSLSocketAcceptor::passPhraseHandleCB(char *buf, int bufsize, int verify, void *instance)
+    auto SSLSocketAcceptor::passPhraseHandleCB(char *buf, int bufsize, int verify, void *instance) -> int
     {
         return reinterpret_cast<SSLSocketAcceptor *>(instance)->passwordHandleCallback(buf, bufsize, verify);
     }
@@ -139,11 +139,11 @@ namespace FIX
         MessageStoreFactory &factory,
         const SessionSettings &settings) EXCEPT(ConfigError)
         : Acceptor(application, factory, settings),
-          m_pServer(0),
+          m_pServer(nullptr),
           m_sslInit(false),
           m_verify(SSL_CLIENT_VERIFY_NOTSET),
-          m_ctx(0),
-          m_revocationStore(0) {}
+          m_ctx(nullptr),
+          m_revocationStore(nullptr) {}
 
     SSLSocketAcceptor::SSLSocketAcceptor(
         Application &application,
@@ -151,11 +151,11 @@ namespace FIX
         const SessionSettings &settings,
         LogFactory &logFactory) EXCEPT(ConfigError)
         : Acceptor(application, factory, settings, logFactory),
-          m_pServer(0),
+          m_pServer(nullptr),
           m_sslInit(false),
           m_verify(SSL_CLIENT_VERIFY_NOTSET),
-          m_ctx(0),
-          m_revocationStore(0) {}
+          m_ctx(nullptr),
+          m_revocationStore(nullptr) {}
 
     SSLSocketAcceptor::~SSLSocketAcceptor()
     {
@@ -167,7 +167,7 @@ namespace FIX
         if (m_sslInit)
         {
             SSL_CTX_free(m_ctx);
-            m_ctx = 0;
+            m_ctx = nullptr;
             ssl_term();
         }
     }
@@ -199,7 +199,7 @@ namespace FIX
             std::string errStr;
 
             /* set up the application context */
-            if ((m_ctx = createSSLContext(true, m_settings, errStr)) == 0)
+            if ((m_ctx = createSSLContext(true, m_settings, errStr)) == nullptr)
             {
                 ssl_term();
                 throw RuntimeError(errStr);
@@ -284,10 +284,10 @@ namespace FIX
 
         m_pServer->close();
         delete m_pServer;
-        m_pServer = 0;
+        m_pServer = nullptr;
     }
 
-    bool SSLSocketAcceptor::onPoll()
+    auto SSLSocketAcceptor::onPoll() -> bool
     {
         if (!m_pServer)
         {
@@ -327,7 +327,7 @@ namespace FIX
         {
             return;
         }
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i != m_connections.end())
         {
             return;
@@ -343,7 +343,7 @@ namespace FIX
         SSL_set_app_data(ssl, m_revocationStore);
         SSL_set_verify_result(ssl, X509_V_OK);
 
-        SSLSocketConnection *sconn = new SSLSocketConnection(s, ssl, sessions, &server.getMonitor());
+        auto *sconn = new SSLSocketConnection(s, ssl, sessions, &server.getMonitor());
         // SSL accept
         if (acceptSSLConnection(sconn->getSocket(), sconn->sslObject(), getLog(), m_verify) != 0)
         {
@@ -372,7 +372,7 @@ namespace FIX
 
     void SSLSocketAcceptor::onWrite(SocketServer &server, socket_handle s)
     {
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i == m_connections.end())
         {
             return;
@@ -390,9 +390,9 @@ namespace FIX
         }
     }
 
-    bool SSLSocketAcceptor::onData(SocketServer &server, socket_handle s)
+    auto SSLSocketAcceptor::onData(SocketServer &server, socket_handle s) -> bool
     {
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i == m_connections.end())
         {
             return false;
@@ -410,7 +410,7 @@ namespace FIX
 
     void SSLSocketAcceptor::onDisconnect(SocketServer &, socket_handle s)
     {
-        SocketConnections::iterator i = m_connections.find(s);
+        auto i = m_connections.find(s);
         if (i == m_connections.end())
         {
             return;
@@ -446,7 +446,7 @@ namespace FIX
         }
     }
 
-    int SSLSocketAcceptor::passwordHandleCallback(char *buf, size_t bufsize, int verify)
+    auto SSLSocketAcceptor::passwordHandleCallback(char *buf, size_t bufsize, int verify) -> int
     {
         if (m_password.length() > bufsize)
         {

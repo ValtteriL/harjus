@@ -32,11 +32,11 @@
 namespace FIX
 {
 
-    DateTime DateTime::nowUtc()
+    auto DateTime::nowUtc() -> DateTime
     {
 #if defined(_POSIX_SOURCE) || defined(HAVE_GETTIMEOFDAY)
-        struct timeval tv;
-        gettimeofday(&tv, 0);
+        struct timeval tv{};
+        gettimeofday(&tv, nullptr);
         return fromUtcTimeT(tv.tv_sec, tv.tv_usec, 6);
 #elif defined(HAVE_FTIME)
         timeb tb;
@@ -47,11 +47,11 @@ namespace FIX
 #endif
     }
 
-    DateTime DateTime::nowLocal()
+    auto DateTime::nowLocal() -> DateTime
     {
 #if defined(_POSIX_SOURCE) || defined(HAVE_GETTIMEOFDAY)
-        struct timeval tv;
-        gettimeofday(&tv, 0);
+        struct timeval tv{};
+        gettimeofday(&tv, nullptr);
         return fromLocalTimeT(tv.tv_sec, tv.tv_usec, 6);
 #elif defined(HAVE_FTIME)
         timeb tb;

@@ -655,12 +655,12 @@ namespace FIX
         void addXMLGroup(DOMDocument *, DOMNode *, const std::string &msgtype, DataDictionary &, bool);
         TYPE::Type XMLTypeToType(const std::string &xmlType) const;
 
-        bool m_hasVersion;
-        bool m_checkFieldsOutOfOrder;
-        bool m_checkFieldsHaveValues;
-        bool m_checkUserDefinedFields;
-        bool m_allowUnknownMessageFields;
-        bool m_storeMsgFieldsOrder;
+        bool m_hasVersion{};
+        bool m_checkFieldsOutOfOrder{};
+        bool m_checkFieldsHaveValues{};
+        bool m_checkUserDefinedFields{};
+        bool m_allowUnknownMessageFields{};
+        bool m_storeMsgFieldsOrder{};
 
         BeginString m_beginString;
         MsgTypeToField m_messageFields;

@@ -269,23 +269,23 @@ TEST_CASE("SessionSettingsTests")
     {
         SessionSettings object;
         std::stringstream istream;
-        istream << "[DEFAULT]" << std::endl
-                << "BEGINSTRING=FIX.4.0" << std::endl
-                << "CONNECTIONTYPE=initiator" << std::endl
-                << "VALUE=4" << std::endl
-                << std::endl
-                << "[SESSION]" << std::endl
-                << "BEGINSTRING=FIX.4.2" << std::endl
-                << "SENDERCOMPID=SENDER1" << std::endl
-                << "TARGETCOMPID=TARGET1" << std::endl
-                << "VALUE=1" << std::endl
-                << std::endl
-                << "[SESSION]" << std::endl
-                << "BEGINSTRING=FIX.4.2" << std::endl
-                << "SENDERCOMPID=SENDER2" << std::endl
-                << "TARGETCOMPID=TARGET2" << std::endl
-                << "VALUE=2" << std::endl
-                << std::endl;
+        istream << "[DEFAULT]" << '\n'
+                << "BEGINSTRING=FIX.4.0" << '\n'
+                << "CONNECTIONTYPE=initiator" << '\n'
+                << "VALUE=4" << '\n'
+                << '\n'
+                << "[SESSION]" << '\n'
+                << "BEGINSTRING=FIX.4.2" << '\n'
+                << "SENDERCOMPID=SENDER1" << '\n'
+                << "TARGETCOMPID=TARGET1" << '\n'
+                << "VALUE=1" << '\n'
+                << '\n'
+                << "[SESSION]" << '\n'
+                << "BEGINSTRING=FIX.4.2" << '\n'
+                << "SENDERCOMPID=SENDER2" << '\n'
+                << "TARGETCOMPID=TARGET2" << '\n'
+                << "VALUE=2" << '\n'
+                << '\n';
 
         istream >> object;
 

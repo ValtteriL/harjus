@@ -30,7 +30,7 @@
 
 namespace FIX
 {
-    bool Parser::extractLength(int &length, std::string::size_type &pos, const std::string &buffer)
+    auto Parser::extractLength(int &length, std::string::size_type &pos, const std::string &buffer) -> bool
         EXCEPT(MessageParseError)
     {
         if (!buffer.size())
@@ -44,7 +44,7 @@ namespace FIX
             return false;
         }
         startPos += 3;
-        std::string::size_type endPos = buffer.find("\001", startPos);
+        std::string::size_type endPos = buffer.find('\001', startPos);
         if (endPos == std::string::npos)
         {
             return false;
@@ -69,7 +69,7 @@ namespace FIX
         return true;
     }
 
-    bool Parser::readFixMessage(std::string &str) EXCEPT(MessageParseError)
+    auto Parser::readFixMessage(std::string &str) -> bool EXCEPT(MessageParseError)
     {
         std::string::size_type pos = 0;
 
@@ -102,7 +102,7 @@ namespace FIX
                     return false;
                 }
                 pos += 4;
-                pos = m_buffer.find("\001", pos);
+                pos = m_buffer.find('\001', pos);
                 if (pos == std::string::npos)
                 {
                     return false;

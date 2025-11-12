@@ -53,8 +53,8 @@ namespace FIX
     class Initiator
     {
     public:
-        Initiator(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
-        Initiator(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
+        Initiator(Application &, MessageStoreFactory &, SessionSettings ) EXCEPT(ConfigError);
+        Initiator(Application &, MessageStoreFactory &, SessionSettings , LogFactory &) EXCEPT(ConfigError);
 
         virtual ~Initiator();
 

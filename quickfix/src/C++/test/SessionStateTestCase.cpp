@@ -38,11 +38,11 @@ TEST_CASE("SessionStateTests")
     class TestLog : public Log
     {
     public:
-        void clear() { events = 0; }
-        void backup() { eventsBackup = events; }
-        void onIncoming(const std::string &) {}
-        void onOutgoing(const std::string &) {}
-        void onEvent(const std::string &) {}
+        void clear() override { events = 0; }
+        void backup() override { eventsBackup = events; }
+        void onIncoming(const std::string &) override {}
+        void onOutgoing(const std::string &) override {}
+        void onEvent(const std::string &) override {}
 
         int events = 0;
         int eventsBackup = 0;

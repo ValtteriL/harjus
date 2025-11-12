@@ -24,7 +24,7 @@
 #endif
 
 #include "FieldConvertors.h"
-#include <math.h>
+#include <cmath>
 
 namespace FIX
 {
@@ -59,12 +59,12 @@ namespace FIX
         "INF",
         "NAN");
 
-    double DoubleConvertor::fast_strtod(const char *buffer, int size, int *processed_chars)
+    auto DoubleConvertor::fast_strtod(const char *buffer, int size, int *processed_chars) -> double
     {
         return g_atod_converter.StringToDouble(buffer, size, processed_chars);
     }
 
-    int DoubleConvertor::fast_dtoa(char *buffer, int size, double value, int significant_digits)
+    auto DoubleConvertor::fast_dtoa(char *buffer, int size, double value, int significant_digits) -> int
     {
         double_conversion::StringBuilder builder(buffer, size);
         if (!g_dtoa_converter.ToPrecision(value, significant_digits, &builder))
@@ -77,7 +77,7 @@ namespace FIX
         return builder.position();
     }
 
-    int DoubleConvertor::fast_fixed_dtoa(char *buffer, int size, double value, int significant_digits)
+    auto DoubleConvertor::fast_fixed_dtoa(char *buffer, int size, double value, int significant_digits) -> int
     {
         double_conversion::StringBuilder builder(buffer, size);
         if (!g_dtoa_converter.ToFixed(value, significant_digits, &builder))

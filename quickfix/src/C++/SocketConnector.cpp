@@ -44,11 +44,11 @@ namespace FIX
               m_strategy(strategy) {}
 
     private:
-        virtual void onConnect(SocketMonitor &, socket_handle socket) override { m_strategy.onConnect(m_connector, socket); }
+        void onConnect(SocketMonitor &, socket_handle socket) override { m_strategy.onConnect(m_connector, socket); }
 
-        virtual void onWrite(SocketMonitor &, socket_handle socket) override { m_strategy.onWrite(m_connector, socket); }
+        void onWrite(SocketMonitor &, socket_handle socket) override { m_strategy.onWrite(m_connector, socket); }
 
-        virtual void onEvent(SocketMonitor &, socket_handle socket) override
+        void onEvent(SocketMonitor &, socket_handle socket) override
         {
             if (!m_strategy.onData(m_connector, socket))
             {
@@ -56,11 +56,11 @@ namespace FIX
             }
         }
 
-        virtual void onError(SocketMonitor &, socket_handle socket) override { m_strategy.onDisconnect(m_connector, socket); }
+        void onError(SocketMonitor &, socket_handle socket) override { m_strategy.onDisconnect(m_connector, socket); }
 
-        virtual void onError(SocketMonitor &) override { m_strategy.onError(m_connector); }
+        void onError(SocketMonitor &) override { m_strategy.onError(m_connector); }
 
-        virtual void onTimeout(SocketMonitor &) override { m_strategy.onTimeout(m_connector); };
+        void onTimeout(SocketMonitor &) override { m_strategy.onTimeout(m_connector); };
 
         SocketConnector &m_connector;
         SocketConnector::Strategy &m_strategy;
@@ -69,14 +69,14 @@ namespace FIX
     SocketConnector::SocketConnector(int timeout)
         : m_monitor(timeout) {}
 
-    socket_handle SocketConnector::connect(
+    auto SocketConnector::connect(
         const std::string &address,
         int port,
         bool noDelay,
         int sendBufSize,
         int rcvBufSize,
         const std::string &sourceAddress,
-        int sourcePort)
+        int sourcePort) -> socket_handle
     {
         socket_handle socket = socket_createConnector();
 
@@ -104,13 +104,13 @@ namespace FIX
         return socket;
     }
 
-    socket_handle SocketConnector::connect(
+    auto SocketConnector::connect(
         const std::string &address,
         int port,
         bool noDelay,
         int sendBufSize,
         int rcvBufSize,
-        Strategy &strategy)
+        Strategy &strategy) -> socket_handle
     {
         socket_handle socket = connect(address, port, noDelay, sendBufSize, rcvBufSize, "", 0);
         return socket;

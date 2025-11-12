@@ -36,6 +36,7 @@
 #include <Utility.h>
 #include <fix42/Logon.h>
 #include <fix42/NewOrderSingle.h>
+#include <memory>
 #include <set>
 
 #include "catch_amalgamated.hpp"
@@ -50,7 +51,7 @@ TEST_CASE("SocketConnectionTests")
 
         virtual void unsignal(int socket) { unsignalSocket = socket; }
 
-        virtual bool drop(int socket)
+        virtual auto drop(int socket) -> bool
         {
             dropSocket = socket;
             return true;
@@ -64,7 +65,7 @@ TEST_CASE("SocketConnectionTests")
     struct TestApplication : public FIX::NullApplication
     {
         void fromApp(const FIX::Message &m, const FIX::SessionID &)
-            EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::UnsupportedMessageType)
+            EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::UnsupportedMessageType) override
         {
             count++;
         }
@@ -75,10 +76,10 @@ TEST_CASE("SocketConnectionTests")
     struct NullLogFactory : public LogFactory
     {
     public:
-        virtual ~NullLogFactory() {}
-        virtual Log *create() { return 0; }
-        virtual Log *create(const SessionID &) { return 0; }
-        virtual void destroy(Log *) {}
+        ~NullLogFactory() override = default;
+        auto create() -> Log * override { return nullptr; }
+        auto create(const SessionID &) -> Log * override { return nullptr; }
+        void destroy(Log *) override {}
     };
 
     struct TestSession : public Session
@@ -92,7 +93,7 @@ TEST_CASE("SocketConnectionTests")
             int heartBtInt)
             : Session(
                   []()
-                  { return UtcTimeStamp::now(); },
+                  -> UtcTimeStamp { return UtcTimeStamp::now(); },
                   app,
                   factory,
                   sessionId,
@@ -100,7 +101,7 @@ TEST_CASE("SocketConnectionTests")
                   timeRange,
                   heartBtInt,
                   nullptr) {};
-        ~TestSession() {};
+        ~TestSession() override = default;
 
         virtual void next(const std::string &, const UtcTimeStamp &timeStamp, bool queued = false)
         {
@@ -124,9 +125,9 @@ TEST_CASE("SocketConnectionTests")
             : SocketInitiator(app, factory, settings),
               pSession(session) {};
 
-        virtual ~TestSocketInitiator() {};
+        ~TestSocketInitiator() override = default;
 
-        virtual Session *getSession(const SessionID &, Responder &responder)
+        virtual auto getSession(const SessionID &, Responder &responder) -> Session *
         {
             pSession->setResponder(&responder);
             return pSession;
@@ -146,9 +147,9 @@ TEST_CASE("SocketConnectionTests")
             : SocketAcceptor(app, factory, settings, log),
               pSession(session) {};
 
-        virtual ~TestSocketAcceptor() {};
+        ~TestSocketAcceptor() override = default;
 
-        virtual Session *getSession(const std::string &msg, Responder &responder)
+        virtual auto getSession(const std::string &msg, Responder &responder) -> Session *
         {
             pSession->setResponder(&responder);
             return pSession;
@@ -172,7 +173,7 @@ TEST_CASE("SocketConnectionTests")
                 acceptorSessionID.getBeginString(),
                 FIX::TestSettings::pathForSpec("FIX42"));
 
-            sessionTime.reset(new TimeRange(UtcTimeOnly(), UtcTimeOnly(), 0, 31));
+            sessionTime = std::make_unique<TimeRange>(UtcTimeOnly(), UtcTimeOnly(), 0, 31);
 
             dictionaryInitiator.setString("ConnectionType", "initiator");
             dictionaryInitiator.setString("FileStorePath", "store");
@@ -194,14 +195,14 @@ TEST_CASE("SocketConnectionTests")
             dictionaryAcceptor.setString(END_DAY, "Mon");
 
             settingsAcceptor.set(acceptorSessionID, dictionaryAcceptor);
-            acceptorSession.reset(
-                new TestSession(application, factory, acceptorSessionID, acceptorProvider, *sessionTime, 1));
-            acceptor.reset(new TestSocketAcceptor(application, factory, settingsAcceptor, acceptorSession.get(), logFactory));
+            acceptorSession = std::make_unique<TestSession>(
+                application, factory, acceptorSessionID, acceptorProvider, *sessionTime, 1);
+            acceptor = std::make_unique<TestSocketAcceptor>(application, factory, settingsAcceptor, acceptorSession.get(), logFactory);
 
-            initiator.reset(new SocketInitiator(application, factory, settingsInitiator));
-            initiatorSession.reset(
-                new TestSession(application, factory, initiatorSessionID, initiatorProvider, *sessionTime, 1));
-            testInitiator.reset(new TestSocketInitiator(application, factory, settingsInitiator, initiatorSession.get()));
+            initiator = std::make_unique<SocketInitiator>(application, factory, settingsInitiator);
+            initiatorSession = std::make_unique<TestSession>(
+                application, factory, initiatorSessionID, initiatorProvider, *sessionTime, 1);
+            testInitiator = std::make_unique<TestSocketInitiator>(application, factory, settingsInitiator, initiatorSession.get());
         };
 
         ~BaseSocketConnection() { socket_close(socket); };
@@ -239,12 +240,12 @@ TEST_CASE("SocketConnectionTests")
         TestSessionConnection()
             : BaseSocketConnection()
         {
-            pSocketConnection.reset(new SocketConnection(*testInitiator, initiatorSessionID, socket, &monitor));
+            pSocketConnection = std::make_unique<SocketConnection>(*testInitiator, initiatorSessionID, socket, &monitor);
         };
 
-        ~TestSessionConnection() {};
+        ~TestSessionConnection() = default;
 
-        Session *getSession() { return pSocketConnection->getSession(); }
+        auto getSession() -> Session * { return pSocketConnection->getSession(); }
 
         std::unique_ptr<SocketConnection> pSocketConnection;
     };
@@ -261,7 +262,7 @@ TEST_CASE("SocketConnectionTests")
     {
         TestSessionConnection connection;
         std::set<SessionID> sessions;
-        connection.pSocketConnection.reset(new SocketConnection(connection.socket, sessions, &connection.monitor));
+        connection.pSocketConnection = std::make_unique<SocketConnection>(connection.socket, sessions, &connection.monitor);
 
         SocketConnector connector;
         CHECK(!connection.pSocketConnection->read(connector));

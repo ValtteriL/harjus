@@ -127,7 +127,7 @@
 namespace FIX
 {
 
-    int ThreadedSSLSocketAcceptor::passPhraseHandleCB(char *buf, int bufsize, int verify, void *instance)
+    auto ThreadedSSLSocketAcceptor::passPhraseHandleCB(char *buf, int bufsize, int verify, void *instance) -> int
     {
         return reinterpret_cast<ThreadedSSLSocketAcceptor *>(instance)->passwordHandleCallback(buf, bufsize, verify);
     }
@@ -139,8 +139,8 @@ namespace FIX
         : Acceptor(application, factory, settings),
           m_sslInit(false),
           m_verify(SSL_CLIENT_VERIFY_NOTSET),
-          m_ctx(0),
-          m_revocationStore(0)
+          m_ctx(nullptr),
+          m_revocationStore(nullptr)
     {
         socket_init();
     }
@@ -153,8 +153,8 @@ namespace FIX
         : Acceptor(application, factory, settings, logFactory),
           m_sslInit(false),
           m_verify(SSL_CLIENT_VERIFY_NOTSET),
-          m_ctx(0),
-          m_revocationStore(0)
+          m_ctx(nullptr),
+          m_revocationStore(nullptr)
     {
         socket_init();
     }
@@ -164,7 +164,7 @@ namespace FIX
         if (m_sslInit)
         {
             SSL_CTX_free(m_ctx);
-            m_ctx = 0;
+            m_ctx = nullptr;
             ssl_term();
         }
 
@@ -200,7 +200,7 @@ namespace FIX
             std::string errStr;
 
             /* set up the application context */
-            if ((m_ctx = createSSLContext(true, m_settings, errStr)) == 0)
+            if ((m_ctx = createSSLContext(true, m_settings, errStr)) == nullptr)
             {
                 ssl_term();
                 throw RuntimeError(errStr);
@@ -232,7 +232,7 @@ namespace FIX
         std::set<int> ports;
 
         std::set<SessionID> sessions = s.getSessions();
-        std::set<SessionID>::iterator i = sessions.begin();
+        auto i = sessions.begin();
         for (; i != sessions.end(); ++i)
         {
             const Dictionary &settings = s.get(*i);
@@ -287,14 +287,14 @@ namespace FIX
         {
             Locker l(m_mutex);
             int port = m_socketToPort[*i];
-            AcceptorThreadInfo *info = new AcceptorThreadInfo(this, *i, port);
-            thread_id thread;
+            auto *info = new AcceptorThreadInfo(this, *i, port);
+            thread_id thread = 0;
             thread_spawn(&socketAcceptorThread, info, thread);
             addThread(SocketKey(*i, 0), thread);
         }
     }
 
-    bool ThreadedSSLSocketAcceptor::onPoll() { return false; }
+    auto ThreadedSSLSocketAcceptor::onPoll() -> bool { return false; }
 
     void ThreadedSSLSocketAcceptor::onStop()
     {
@@ -344,7 +344,7 @@ namespace FIX
     void ThreadedSSLSocketAcceptor::removeThread(SocketKey s)
     {
         Locker l(m_mutex);
-        SocketToThread::iterator i = m_threads.find(s);
+        auto i = m_threads.find(s);
         if (i != m_threads.end())
         {
             thread_detach(i->second);
@@ -356,9 +356,9 @@ namespace FIX
         }
     }
 
-    THREAD_PROC ThreadedSSLSocketAcceptor::socketAcceptorThread(void *p)
+    auto ThreadedSSLSocketAcceptor::socketAcceptorThread(void *p) -> THREAD_PROC
     {
-        AcceptorThreadInfo *info = reinterpret_cast<AcceptorThreadInfo *>(p);
+        auto *info = reinterpret_cast<AcceptorThreadInfo *>(p);
 
         ThreadedSSLSocketAcceptor *pAcceptor = info->m_pAcceptor;
         socket_handle s = info->m_socket;
@@ -391,7 +391,7 @@ namespace FIX
             Sessions sessions = pAcceptor->m_portToSessions[port];
 
             SSL *ssl = SSL_new(pAcceptor->sslContext());
-            ThreadedSSLSocketConnection *pConnection = new ThreadedSSLSocketConnection(socket, ssl, sessions, pAcceptor->getLog());
+            auto *pConnection = new ThreadedSSLSocketConnection(socket, ssl, sessions, pAcceptor->getLog());
             SSL_clear(ssl);
             BIO *sBio = BIO_new_socket(socket, BIO_CLOSE); // unfortunately OpenSSL uses int as socket handle
             SSL_set_bio(ssl, sBio, sBio);
@@ -399,7 +399,7 @@ namespace FIX
             SSL_set_app_data(ssl, pAcceptor->revocationStore());
             SSL_set_verify_result(ssl, X509_V_OK);
 
-            ConnectionThreadInfo *info = new ConnectionThreadInfo(pAcceptor, pConnection);
+            auto *info = new ConnectionThreadInfo(pAcceptor, pConnection);
 
             {
                 Locker l(pAcceptor->m_mutex);
@@ -412,7 +412,7 @@ namespace FIX
                     pAcceptor->getLog()->onEvent(stream.str());
                 }
 
-                thread_id thread;
+                thread_id thread = 0;
                 if (!thread_spawn(&socketConnectionThread, info, thread))
                 {
                     delete info;
@@ -431,12 +431,12 @@ namespace FIX
             pAcceptor->removeThread(SocketKey(s, 0));
         }
 
-        return 0;
+        return nullptr;
     }
 
-    THREAD_PROC ThreadedSSLSocketAcceptor::socketConnectionThread(void *p)
+    auto ThreadedSSLSocketAcceptor::socketConnectionThread(void *p) -> THREAD_PROC
     {
-        ConnectionThreadInfo *info = reinterpret_cast<ConnectionThreadInfo *>(p);
+        auto *info = reinterpret_cast<ConnectionThreadInfo *>(p);
 
         ThreadedSSLSocketAcceptor *pAcceptor = info->m_pAcceptor;
         ThreadedSSLSocketConnection *pConnection = info->m_pConnection;
@@ -456,7 +456,7 @@ namespace FIX
             {
                 pAcceptor->removeThread(SocketKey(socket, ssl));
             }
-            return 0;
+            return nullptr;
         }
 
         while (pConnection->read())
@@ -468,10 +468,10 @@ namespace FIX
         {
             pAcceptor->removeThread(SocketKey(socket, ssl));
         }
-        return 0;
+        return nullptr;
     }
 
-    int ThreadedSSLSocketAcceptor::passwordHandleCallback(char *buf, size_t bufsize, int verify)
+    auto ThreadedSSLSocketAcceptor::passwordHandleCallback(char *buf, size_t bufsize, int verify) -> int
     {
         if (m_password.length() > bufsize)
         {

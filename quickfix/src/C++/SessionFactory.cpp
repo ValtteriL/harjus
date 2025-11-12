@@ -34,9 +34,9 @@
 
 namespace FIX
 {
-    SessionFactory::~SessionFactory() {}
+    SessionFactory::~SessionFactory() = default;
 
-    Session *SessionFactory::create(const SessionID &sessionID, const Dictionary &settings) EXCEPT(ConfigError)
+    auto SessionFactory::create(const SessionID &sessionID, const Dictionary &settings) -> Session * EXCEPT(ConfigError)
     {
         std::string connectionType = settings.getString(CONNECTION_TYPE);
         if (connectionType != "acceptor" && connectionType != "initiator")
@@ -157,16 +157,16 @@ namespace FIX
         }
 
         std::unique_ptr<Session> pSession;
-        pSession.reset(new Session(
+        pSession = std::make_unique<Session>(
             []()
-            { return UtcTimeStamp::now(); },
+            -> UtcTimeStamp { return UtcTimeStamp::now(); },
             m_application,
             m_messageStoreFactory,
             sessionID,
             dataDictionaryProvider,
             sessionTimeRange,
             heartBtInt,
-            m_pLogFactory));
+            m_pLogFactory);
 
         pSession->setSenderDefaultApplVerID(defaultApplVerID);
 
@@ -299,14 +299,14 @@ namespace FIX
 
     void SessionFactory::destroy(Session *pSession) { delete pSession; }
 
-    std::shared_ptr<DataDictionary> SessionFactory::createDataDictionary(
+    auto SessionFactory::createDataDictionary(
         const SessionID &sessionID,
         const Dictionary &settings,
-        const std::string &settingsKey) EXCEPT(ConfigError)
+        const std::string &settingsKey) -> std::shared_ptr<DataDictionary> EXCEPT(ConfigError)
     {
         std::shared_ptr<DataDictionary> pDD;
         std::string path = settings.getString(settingsKey);
-        Dictionaries::iterator i = m_dictionaries.find(path);
+        auto i = m_dictionaries.find(path);
         if (i != m_dictionaries.end())
         {
             pDD = i->second;
@@ -318,11 +318,11 @@ namespace FIX
             {
                 preserveMsgFldsOrder = settings.getBool(PRESERVE_MESSAGE_FIELDS_ORDER);
             }
-            pDD = std::shared_ptr<DataDictionary>(new DataDictionary(path, preserveMsgFldsOrder));
+            pDD = std::make_shared<DataDictionary>(path, preserveMsgFldsOrder);
             m_dictionaries[path] = pDD;
         }
 
-        std::shared_ptr<DataDictionary> pCopyOfDD = std::shared_ptr<DataDictionary>(new DataDictionary(*pDD));
+        std::shared_ptr<DataDictionary> pCopyOfDD = std::make_shared<DataDictionary>(*pDD);
 
         if (settings.has(VALIDATE_FIELDS_OUT_OF_ORDER))
         {

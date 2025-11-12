@@ -43,7 +43,7 @@ namespace FIX
 #endif
     }
 
-    bool HttpConnection::send(const std::string &msg) { return socket_send(m_socket, msg.c_str(), msg.length()) >= 0; }
+    auto HttpConnection::send(const std::string &msg) -> bool { return socket_send(m_socket, msg.c_str(), msg.length()) >= 0; }
 
     void HttpConnection::disconnect(int error)
     {
@@ -55,7 +55,7 @@ namespace FIX
         socket_close(m_socket);
     }
 
-    bool HttpConnection::read()
+    auto HttpConnection::read() -> bool
     {
 #if _MSC_VER
         struct timeval timeout = {2, 0};
@@ -105,7 +105,7 @@ namespace FIX
         }
     }
 
-    bool HttpConnection::readMessage(std::string &msg) EXCEPT(SocketRecvFailed)
+    auto HttpConnection::readMessage(std::string &msg) -> bool EXCEPT(SocketRecvFailed)
     {
         try
         {
@@ -624,7 +624,7 @@ namespace FIX
 
             SessionID sessionID(beginString, senderCompID, targetCompID, sessionQualifier);
             Session *pSession = Session::lookupSession(sessionID);
-            if (pSession == 0)
+            if (pSession == nullptr)
             {
                 throw SessionNotFound();
             }
@@ -787,7 +787,7 @@ namespace FIX
 
             SessionID sessionID(beginString, senderCompID, targetCompID, sessionQualifier);
             Session *pSession = Session::lookupSession(sessionID);
-            if (pSession == 0)
+            if (pSession == nullptr)
             {
                 throw SessionNotFound();
             }
@@ -868,7 +868,7 @@ namespace FIX
 
             SessionID sessionID(beginString, senderCompID, targetCompID, sessionQualifier);
             Session *pSession = Session::lookupSession(sessionID);
-            if (pSession == 0)
+            if (pSession == nullptr)
             {
                 throw SessionNotFound();
             }

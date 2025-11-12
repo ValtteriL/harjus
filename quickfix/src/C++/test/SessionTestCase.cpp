@@ -56,6 +56,8 @@
 #include <fixt11/ResendRequest.h>
 #include <fixt11/SequenceReset.h>
 
+#include <memory>
+
 #include "catch_amalgamated.hpp"
 
 using namespace FIX;
@@ -70,7 +72,7 @@ namespace
         header.setField(MsgSeqNum(seq));
     }
 
-    FIX42::Logon createLogon(const char *sender, const char *target, int seq)
+    auto createLogon(const char *sender, const char *target, int seq) -> FIX42::Logon
     {
         FIX42::Logon logon;
         logon.set(EncryptMethod(0));
@@ -81,7 +83,7 @@ namespace
         return logon;
     }
 
-    FIX40::Logon createFIX40Logon(const char *sender, const char *target, int seq)
+    auto createFIX40Logon(const char *sender, const char *target, int seq) -> FIX40::Logon
     {
         FIX40::Logon logon;
         logon.set(EncryptMethod(0));
@@ -92,7 +94,7 @@ namespace
         return logon;
     }
 
-    FIXT11::Logon createT11Logon(const char *sender, const char *target, int seq)
+    auto createT11Logon(const char *sender, const char *target, int seq) -> FIXT11::Logon
     {
         FIXT11::Logon logon;
         logon.set(EncryptMethod(0));
@@ -104,7 +106,7 @@ namespace
         return logon;
     }
 
-    FIX42::Logout createLogout(const char *sender, const char *target, int seq)
+    auto createLogout(const char *sender, const char *target, int seq) -> FIX42::Logout
     {
         FIX42::Logout logout;
         fillHeader(logout.getHeader(), sender, target, seq);
@@ -113,7 +115,7 @@ namespace
         return logout;
     }
 
-    FIX42::Logout createT11Logout(const char *sender, const char *target, int seq)
+    auto createT11Logout(const char *sender, const char *target, int seq) -> FIX42::Logout
     {
         FIXT11::Logout logout;
         fillHeader(logout.getHeader(), sender, target, seq);
@@ -122,7 +124,7 @@ namespace
         return logout;
     }
 
-    FIX42::Heartbeat createHeartbeat(const char *sender, const char *target, int seq)
+    auto createHeartbeat(const char *sender, const char *target, int seq) -> FIX42::Heartbeat
     {
         FIX42::Heartbeat heartbeat;
         fillHeader(heartbeat.getHeader(), sender, target, seq);
@@ -131,7 +133,7 @@ namespace
         return heartbeat;
     }
 
-    FIXT11::Heartbeat createT11Heartbeat(const char *sender, const char *target, int seq)
+    auto createT11Heartbeat(const char *sender, const char *target, int seq) -> FIXT11::Heartbeat
     {
         FIXT11::Heartbeat heartbeat;
         fillHeader(heartbeat.getHeader(), sender, target, seq);
@@ -140,7 +142,7 @@ namespace
         return heartbeat;
     }
 
-    FIX42::TestRequest createTestRequest(const char *sender, const char *target, int seq, const char *id)
+    auto createTestRequest(const char *sender, const char *target, int seq, const char *id) -> FIX42::TestRequest
     {
         FIX42::TestRequest testRequest;
         testRequest.set(TestReqID(id));
@@ -150,7 +152,7 @@ namespace
         return testRequest;
     }
 
-    FIX42::SequenceReset createSequenceReset(const char *sender, const char *target, int seq, int newSeq)
+    auto createSequenceReset(const char *sender, const char *target, int seq, int newSeq) -> FIX42::SequenceReset
     {
         FIX42::SequenceReset sequenceReset;
         sequenceReset.set(NewSeqNo(newSeq));
@@ -160,7 +162,7 @@ namespace
         return sequenceReset;
     }
 
-    FIXT11::SequenceReset createT11SequenceReset(const char *sender, const char *target, int seq, int newSeq)
+    auto createT11SequenceReset(const char *sender, const char *target, int seq, int newSeq) -> FIXT11::SequenceReset
     {
         FIXT11::SequenceReset sequenceReset;
         sequenceReset.set(NewSeqNo(newSeq));
@@ -170,7 +172,7 @@ namespace
         return sequenceReset;
     }
 
-    FIX42::ResendRequest createResendRequest(const char *sender, const char *target, int seq, int begin, int end)
+    auto createResendRequest(const char *sender, const char *target, int seq, int begin, int end) -> FIX42::ResendRequest
     {
         FIX42::ResendRequest resendRequest;
         resendRequest.set(BeginSeqNo(begin));
@@ -181,7 +183,7 @@ namespace
         return resendRequest;
     }
 
-    FIXT11::ResendRequest createT11ResendRequest(const char *sender, const char *target, int seq, int begin, int end)
+    auto createT11ResendRequest(const char *sender, const char *target, int seq, int begin, int end) -> FIXT11::ResendRequest
     {
         FIXT11::ResendRequest resendRequest;
         resendRequest.set(BeginSeqNo(begin));
@@ -192,7 +194,7 @@ namespace
         return resendRequest;
     }
 
-    FIX42::Reject createReject(const char *sender, const char *target, int seq, int refSeq)
+    auto createReject(const char *sender, const char *target, int seq, int refSeq) -> FIX42::Reject
     {
         FIX42::Reject reject;
         reject.set(RefSeqNum(refSeq));
@@ -202,7 +204,7 @@ namespace
         return reject;
     }
 
-    FIX42::NewOrderSingle createNewOrderSingle(const char *sender, const char *target, int seq)
+    auto createNewOrderSingle(const char *sender, const char *target, int seq) -> FIX42::NewOrderSingle
     {
         FIX42::NewOrderSingle newOrderSingle(
             ClOrdID("ID"),
@@ -217,7 +219,7 @@ namespace
         return newOrderSingle;
     }
 
-    FIX50::NewOrderSingle createT1150NewOrderSingle(const char *sender, const char *target, int seq)
+    auto createT1150NewOrderSingle(const char *sender, const char *target, int seq) -> FIX50::NewOrderSingle
     {
         FIX50::NewOrderSingle newOrderSingle(ClOrdID("ID"), Side(Side_BUY), TransactTime(), OrdType(OrdType_MARKET));
         fillHeader(newOrderSingle.getHeader(), sender, target, seq);
@@ -226,7 +228,7 @@ namespace
         return newOrderSingle;
     }
 
-    FIX42::ExecutionReport createExecutionReport(const char *sender, const char *target, int seq)
+    auto createExecutionReport(const char *sender, const char *target, int seq) -> FIX42::ExecutionReport
     {
         FIX42::ExecutionReport executionReport(
             OrderID("ID"),
@@ -256,7 +258,7 @@ namespace
         return executionReport;
     }
 
-    FIX40::ExecutionReport createFIX40ExecutionReport(const char *sender, const char *target, int seq)
+    auto createFIX40ExecutionReport(const char *sender, const char *target, int seq) -> FIX40::ExecutionReport
     {
         FIX40::ExecutionReport executionReport(
             OrderID("ID"),
@@ -277,7 +279,7 @@ namespace
         return executionReport;
     }
 
-    FIX42::ExecutionReport createT1142ExecutionReport(const char *sender, const char *target, int seq)
+    auto createT1142ExecutionReport(const char *sender, const char *target, int seq) -> FIX42::ExecutionReport
     {
         FIX42::ExecutionReport executionReport(
             OrderID("ID"),
@@ -309,7 +311,7 @@ namespace
         return executionReport;
     }
 
-    FIX42::ExecutionReport createT1150ExecutionReport(const char *sender, const char *target, int seq)
+    auto createT1150ExecutionReport(const char *sender, const char *target, int seq) -> FIX42::ExecutionReport
     {
         FIX50::ExecutionReport executionReport(
             OrderID("ID"),
@@ -353,9 +355,9 @@ namespace
               endTimeStamp(UtcTimeStamp::now()),
               endTime(startTime) {}
 
-        bool send(const std::string &) { return true; }
+        auto send(const std::string &) -> bool override { return true; }
 
-        virtual void toAdmin(FIX::Message &message, const SessionID &)
+        void toAdmin(FIX::Message &message, const SessionID &) override
         {
             MsgType msgType;
             message.getHeader().getField(msgType);
@@ -386,7 +388,7 @@ namespace
         }
 
         void fromAdmin(const FIX::Message &message, const SessionID &)
-            EXCEPT(FieldNotFound, IncorrectDataFormat, IncorrectTagValue, RejectLogon)
+            EXCEPT(FieldNotFound, IncorrectDataFormat, IncorrectTagValue, RejectLogon) override
         {
             MsgType msgType;
             message.getHeader().getField(msgType);
@@ -411,7 +413,7 @@ namespace
         }
 
         void fromApp(const FIX::Message &message, const SessionID &)
-            EXCEPT(FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType)
+            EXCEPT(FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType) override
         {
             MsgType msgType;
             message.getHeader().getField(msgType);
@@ -421,7 +423,7 @@ namespace
             }
         }
 
-        void toApp(FIX::Message &message, const SessionID &) EXCEPT(DoNotSend)
+        void toApp(FIX::Message &message, const SessionID &) EXCEPT(DoNotSend) override
         {
             if (checkForDoNotSend)
             {
@@ -453,7 +455,7 @@ namespace
             }
         }
 
-        void disconnect() { disconnected++; }
+        void disconnect() override { disconnected++; }
 
         FIX::Message sentLogon;
         FIX::Message sentResendRequest;
@@ -492,7 +494,7 @@ namespace
         ExceptionDataDictionary(DataDictionary &dictionary, ExceptionType type)
             : DataDictionary(dictionary),
               exceptionType(type) {};
-        ~ExceptionDataDictionary() {};
+        ~ExceptionDataDictionary() override = default;
 
         virtual void validate(const FIX::Message &) const EXCEPT(FIX::Exception) { throwException(); }
         virtual void validate(const FIX::Message &, bool) const EXCEPT(FIX::Exception) { throwException(); }
@@ -524,15 +526,15 @@ namespace
 
     struct sessionFixture : public TestCallback
     {
-        sessionFixture() { object = 0; }
+        sessionFixture() : object(0) { }
 
-        sessionFixture(int heartBtInt)
+        sessionFixture(int heartBtInt) : object(0)
         {
-            object = 0;
+            
             createSession(heartBtInt);
         }
 
-        ~sessionFixture()
+        ~sessionFixture() override
         {
             if (object)
             {
@@ -553,7 +555,7 @@ namespace
             DataDictionaryProvider provider;
             provider.addTransportDataDictionary(sessionID.getBeginString(), FIX::TestSettings::pathForSpec("FIX42"));
             object = new Session([this]()
-                                 { return now; }, *this, factory, sessionID, provider, sessionTime, heartBtInt, 0);
+                                 -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, heartBtInt, nullptr);
             object->setResponder(this);
         }
 
@@ -563,15 +565,15 @@ namespace
 
     struct sessionT11Fixture : public TestCallback
     {
-        sessionT11Fixture() { object = 0; }
+        sessionT11Fixture() : object(0) { }
 
-        sessionT11Fixture(int heartBtInt)
+        sessionT11Fixture(int heartBtInt) : object(0)
         {
-            object = 0;
+            
             createSession(heartBtInt);
         }
 
-        ~sessionT11Fixture()
+        ~sessionT11Fixture() override
         {
             if (object)
             {
@@ -596,7 +598,7 @@ namespace
             provider.addApplicationDataDictionary(ApplVerID(ApplVerID_FIX40), FIX::TestSettings::pathForSpec("FIX40"));
 
             object = new Session([this]()
-                                 { return now; }, *this, factory, sessionID, provider, sessionTime, heartBtInt, 0);
+                                 -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, heartBtInt, nullptr);
             object->setSenderDefaultApplVerID(FIX::Message::toApplVerID(BeginString("FIX.5.0")));
             object->setResponder(this);
         }
@@ -607,15 +609,15 @@ namespace
 
     struct sessionFIX40Fixture : public TestCallback
     {
-        sessionFIX40Fixture() { object = 0; }
+        sessionFIX40Fixture() : object(0) { }
 
-        sessionFIX40Fixture(int heartBtInt)
+        sessionFIX40Fixture(int heartBtInt) : object(0)
         {
-            object = 0;
+            
             createSession(heartBtInt);
         }
 
-        ~sessionFIX40Fixture()
+        ~sessionFIX40Fixture() override
         {
             if (object)
             {
@@ -637,7 +639,7 @@ namespace
             provider.addTransportDataDictionary(sessionID.getBeginString(), FIX::TestSettings::pathForSpec("FIX40"));
 
             object = new Session([this]()
-                                 { return now; }, *this, factory, sessionID, provider, sessionTime, heartBtInt, 0);
+                                 -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, heartBtInt, nullptr);
             object->setResponder(this);
         }
 
@@ -746,12 +748,12 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
     SECTION("doesSessionExist")
     {
         DataDictionaryProvider provider;
-        provider.addTransportDataDictionary(BeginString("FIX.4.2"), std::shared_ptr<DataDictionary>(new DataDictionary()));
+        provider.addTransportDataDictionary(BeginString("FIX.4.2"), std::make_shared<DataDictionary>());
         auto const timestamper = [this]()
-        { return now; };
+        -> UtcTimeStamp { return now; };
 
-        auto createSession = [&](SenderCompID senderCompID, TargetCompID targetCompID)
-        {
+        auto createSession = [&](const SenderCompID& senderCompID, const TargetCompID& targetCompID)
+        -> Session * {
             return new Session(
                 timestamper,
                 *this,
@@ -760,7 +762,7 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
                 provider,
                 TimeRange(UtcTimeOnly(), UtcTimeOnly()),
                 0,
-                0);
+                nullptr);
         };
 
         Session *pSession1 = createSession(SenderCompID("TW"), TargetCompID("ISLD"));
@@ -803,12 +805,12 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
     SECTION("lookupSession")
     {
         DataDictionaryProvider provider;
-        provider.addTransportDataDictionary(BeginString("FIX.4.2"), std::shared_ptr<DataDictionary>(new DataDictionary()));
+        provider.addTransportDataDictionary(BeginString("FIX.4.2"), std::make_shared<DataDictionary>());
         auto const timestamper = [this]()
-        { return now; };
+        -> UtcTimeStamp { return now; };
 
-        auto createSession = [&](SenderCompID senderCompID, TargetCompID targetCompID)
-        {
+        auto createSession = [&](const SenderCompID& senderCompID, const TargetCompID& targetCompID)
+        -> Session {
             return Session(
                 timestamper,
                 *this,
@@ -817,7 +819,7 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
                 provider,
                 TimeRange(UtcTimeOnly(), UtcTimeOnly()),
                 0,
-                0);
+                nullptr);
         };
 
         Session session1 = createSession(SenderCompID("TW"), TargetCompID("ISLD"));
@@ -848,18 +850,18 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
     SECTION("registerSession")
     {
         DataDictionaryProvider provider;
-        provider.addTransportDataDictionary(BeginString("FIX.4.2"), std::shared_ptr<DataDictionary>(new DataDictionary()));
+        provider.addTransportDataDictionary(BeginString("FIX.4.2"), std::make_shared<DataDictionary>());
 
-        Session *pSession = new Session(
+        auto *pSession = new Session(
             [this]()
-            { return now; },
+            -> UtcTimeStamp { return now; },
             *this,
             factory,
             SessionID(BeginString("FIX.4.2"), SenderCompID("TW"), TargetCompID("ISLD")),
             provider,
             TimeRange(UtcTimeOnly(), UtcTimeOnly()),
             0,
-            0);
+            nullptr);
 
         CHECK(
             nullptr == Session::registerSession(SessionID(BeginString("FIX.4.1"), SenderCompID("TW"), TargetCompID("ISLD"))));
@@ -1146,7 +1148,7 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
 
         Session sessionObject = Session(
             [this]()
-            { return now; },
+            -> UtcTimeStamp { return now; },
             *this,
             factory,
             sessionIDCustom,
@@ -1201,14 +1203,14 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
         ExceptionMessageStoreFactory exceptionFactory(settings);
         Session sessionObject = Session(
             [this]()
-            { return now; },
+            -> UtcTimeStamp { return now; },
             *this,
             exceptionFactory,
             sessionIDCustom,
             providerCustom,
             sessionTimeCustom,
             1,
-            0);
+            nullptr);
 
         UtcTimeStamp oldTime(8, 8, 8, 13, 5, 2010);
         sessionObject.next(oldTime);
@@ -1433,7 +1435,7 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addTransportDataDictionary(sessionID.getBeginString(), pDataDictionary);
 
         object = new Session([this]()
-                             { return now; }, *this, factory, sessionID, provider, sessionTime, 1, 0);
+                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
 
         FIX::Message sentLogon = createLogon("TW", "ISLD", 1);
         object->send(sentLogon);
@@ -1471,7 +1473,7 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addApplicationDataDictionary(ApplVerID("20"), pDataDictionary);
 
         object = new Session([this]()
-                             { return now; }, *this, factory, sessionID, provider, sessionTime, 1, 0);
+                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
         object->setSenderDefaultApplVerID(ApplVerID("20"));
         object->setTargetDefaultApplVerID(ApplVerID("20"));
 
@@ -1545,7 +1547,7 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addApplicationDataDictionary(ApplVerID("20"), pDataDictionary);
 
         object = new Session([this]()
-                             { return now; }, *this, factory, sessionID, provider, sessionTime, 1, 0);
+                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
         object->setSenderDefaultApplVerID(ApplVerID("20"));
         object->setTargetDefaultApplVerID(ApplVerID("20"));
 
@@ -1601,7 +1603,7 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addApplicationDataDictionary(ApplVerID("20"), pDataDictionary);
 
         object = new Session([this]()
-                             { return now; }, *this, factory, sessionID, provider, sessionTime, 1, 0);
+                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
         object->setSenderDefaultApplVerID(ApplVerID("20"));
         object->setTargetDefaultApplVerID(ApplVerID("20"));
 
@@ -1697,7 +1699,7 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addTransportDataDictionary(sessionID.getBeginString(), pDataDictionary);
 
         object = new Session([this]()
-                             { return now; }, *this, factory, sessionID, provider, sessionTime, 1, 0);
+                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
 
         FIX::Message sentLogon = createLogon("TW", "ISLD", 1);
         object->send(sentLogon);
@@ -1829,7 +1831,7 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addApplicationDataDictionary(ApplVerID("20"), pDataDictionary);
 
         object = new Session([this]()
-                             { return now; }, *this, factory, sessionID, provider, sessionTime, 1, 0);
+                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
         object->setSenderDefaultApplVerID(ApplVerID("20"));
         object->setTargetDefaultApplVerID(ApplVerID("20"));
 
@@ -2755,14 +2757,14 @@ struct initiatorCreatedBeforeStartTimeFixture : public TestCallback
     static const int STARTTIMEFROMNOW = 2;
     static const int ENDTIMEFROMNOW = 4;
 
-    int actuallySent;
-    bool actuallySentLogon;
+    int actuallySent{0};
+    bool actuallySentLogon{false};
     Session *object;
     MemoryStoreFactory messageStoreFactory;
 
     initiatorCreatedBeforeStartTimeFixture()
-        : actuallySent(0),
-          actuallySentLogon(false)
+        
+          
     {
         now.setCurrent();
         startTime = now;
@@ -2779,17 +2781,17 @@ struct initiatorCreatedBeforeStartTimeFixture : public TestCallback
         provider.addTransportDataDictionary(sessionID.getBeginString(), FIX::TestSettings::pathForSpec("FIX42"));
         object = new Session(
             [this]()
-            { return now; },
+            -> UtcTimeStamp { return now; },
             *this,
             messageStoreFactory,
             sessionID,
             provider,
             sessionTime,
             HEARTBTINT,
-            0);
+            nullptr);
     }
 
-    virtual ~initiatorCreatedBeforeStartTimeFixture()
+    ~initiatorCreatedBeforeStartTimeFixture() override
     {
         if (object)
         {
@@ -2797,7 +2799,7 @@ struct initiatorCreatedBeforeStartTimeFixture : public TestCallback
         }
     }
 
-    bool send(const std::string &s)
+    auto send(const std::string &s) -> bool override
     {
         std::string::size_type p = s.find("\00135=A\001", 0);
         if (p != std::string::npos)
@@ -2891,7 +2893,7 @@ TEST_CASE_METHOD(initiatorFIX40Fixture, "customFIX40_UnsupportedMessageType_ERRe
     provider.addTransportDataDictionary(sessionID.getBeginString(), pDataDictionary);
 
     object = new Session([this]()
-                         { return now; }, *this, factory, sessionID, provider, sessionTime, 1, 0);
+                         -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
     object->setResponder(this);
 
     FIX::Message sentLogon = createFIX40Logon("TW", "ISLD", 1);

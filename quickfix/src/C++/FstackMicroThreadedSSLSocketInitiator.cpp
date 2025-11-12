@@ -13,10 +13,10 @@
 namespace FIX
 {
 
-    int FstackMicroThreadedSSLSocketInitiator::passwordHandleCB(char *buf,
+    auto FstackMicroThreadedSSLSocketInitiator::passwordHandleCB(char *buf,
                                                                 int bufsize,
                                                                 int verify,
-                                                                void *instance)
+                                                                void *instance) -> int
     {
         return reinterpret_cast<FstackMicroThreadedSSLSocketInitiator *>(instance)
             ->passwordHandleCallback(buf, bufsize, verify);
@@ -27,7 +27,7 @@ namespace FIX
         const SessionSettings &settings) EXCEPT(ConfigError)
         : Initiator(application, factory, settings), m_lastConnect(0),
           m_reconnectInterval(30), m_noDelay(false), m_sendBufSize(0),
-          m_rcvBufSize(0), m_sslInit(false), m_ctx(0), m_cert(0), m_key(0)
+          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr)
     {
         socket_init();
     }
@@ -37,7 +37,7 @@ namespace FIX
         const SessionSettings &settings, LogFactory &logFactory) EXCEPT(ConfigError)
         : Initiator(application, factory, settings, logFactory), m_lastConnect(0),
           m_reconnectInterval(30), m_noDelay(false), m_sendBufSize(0),
-          m_rcvBufSize(0), m_sslInit(false), m_ctx(0), m_cert(0), m_key(0)
+          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr)
     {
         socket_init();
     }
@@ -48,7 +48,7 @@ namespace FIX
         if (m_sslInit)
         {
             SSL_CTX_free(m_ctx);
-            m_ctx = 0;
+            m_ctx = nullptr;
             ssl_term();
         }
 
@@ -91,7 +91,7 @@ namespace FIX
         std::string errStr;
 
         /* set up the application context */
-        if ((m_ctx = createSSLContext(false, s, errStr)) == 0)
+        if ((m_ctx = createSSLContext(false, s, errStr)) == nullptr)
         {
             throw RuntimeError(errStr);
         }
@@ -119,7 +119,7 @@ namespace FIX
             throw RuntimeError(errStr);
         }
 
-        int verifyLevel;
+        int verifyLevel = 0;
         if (!loadCAInfo(m_ctx, false, s, getLog(), errStr, verifyLevel))
         {
             ssl_term();
@@ -133,7 +133,7 @@ namespace FIX
     {
         while (!isStopped())
         {
-            time_t now;
+            time_t now = 0;
             ::time(&now);
 
             if ((now - m_lastConnect) >= m_reconnectInterval)
@@ -147,7 +147,7 @@ namespace FIX
         }
     }
 
-    bool FstackMicroThreadedSSLSocketInitiator::onPoll() { return false; }
+    auto FstackMicroThreadedSSLSocketInitiator::onPoll() -> bool { return false; }
 
     void FstackMicroThreadedSSLSocketInitiator::onStop()
     {
@@ -229,7 +229,7 @@ namespace FIX
                          IntConvertor::convert((int)m_reconnectInterval));
 
             SSL *ssl = SSL_new(m_ctx);
-            if (ssl == 0)
+            if (ssl == nullptr)
             {
                 log->onEvent("Failed to create ssl object");
                 return;
@@ -239,15 +239,15 @@ namespace FIX
                 socket, BIO_CLOSE); // unfortunately OpenSSL uses int for socket handles
             SSL_set_bio(ssl, sbio, sbio);
 
-            FstackMicroThreadedSSLSocketConnection *pConnection =
+            auto *pConnection =
                 new FstackMicroThreadedSSLSocketConnection(s, socket, ssl, host.address,
                                                            host.port, getLog());
 
-            ThreadPair *pair = new ThreadPair(this, pConnection);
+            auto *pair = new ThreadPair(this, pConnection);
 
             {
                 Locker l(m_mutex);
-                thread_id thread;
+                thread_id thread = 0;
                 if (mt_start_thread((void *)socketThread, pair))
                 {
                     addThread(SocketKey(socket, ssl), thread);
@@ -278,7 +278,7 @@ namespace FIX
     void FstackMicroThreadedSSLSocketInitiator::removeThread(SocketKey s)
     {
         Locker l(m_mutex);
-        SocketToThread::iterator i = m_threads.find(s);
+        auto i = m_threads.find(s);
 
         if (i != m_threads.end())
         {
@@ -290,9 +290,9 @@ namespace FIX
         }
     }
 
-    THREAD_PROC FstackMicroThreadedSSLSocketInitiator::socketThread(void *p)
+    auto FstackMicroThreadedSSLSocketInitiator::socketThread(void *p) -> THREAD_PROC
     {
-        ThreadPair *pair = reinterpret_cast<ThreadPair *>(p);
+        auto *pair = reinterpret_cast<ThreadPair *>(p);
 
         FstackMicroThreadedSSLSocketInitiator *pInitiator = pair->first;
         FstackMicroThreadedSSLSocketConnection *pConnection = pair->second;
@@ -311,7 +311,7 @@ namespace FIX
             delete pConnection;
             pInitiator->removeThread(SocketKey(socket, ssl));
             pInitiator->setDisconnected(sessionID);
-            return 0;
+            return nullptr;
         }
 
         // Do the SSL handshake.
@@ -326,7 +326,7 @@ namespace FIX
             delete pConnection;
             pInitiator->removeThread(SocketKey(socket, ssl));
             pInitiator->setDisconnected(sessionID);
-            return 0;
+            return nullptr;
         }
 
         pInitiator->setConnected(sessionID);
@@ -346,11 +346,11 @@ namespace FIX
         }
 
         pInitiator->setDisconnected(sessionID);
-        return 0;
+        return nullptr;
     }
 
-    int FstackMicroThreadedSSLSocketInitiator::passwordHandleCallback(
-        char *buf, size_t bufsize, int verify)
+    auto FstackMicroThreadedSSLSocketInitiator::passwordHandleCallback(
+        char *buf, size_t bufsize, int verify) -> int
     {
         if (m_password.length() > bufsize)
         {

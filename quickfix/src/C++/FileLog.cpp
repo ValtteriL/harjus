@@ -27,7 +27,7 @@
 
 namespace FIX
 {
-    Log *FileLogFactory::create()
+    auto FileLogFactory::create() -> Log *
     {
         if (++m_globalLogCount > 1)
         {
@@ -60,7 +60,7 @@ namespace FIX
         }
     }
 
-    Log *FileLogFactory::create(const SessionID &s)
+    auto FileLogFactory::create(const SessionID &s) -> Log *
     {
         if (m_path.size() && m_backupPath.size())
         {
@@ -103,7 +103,7 @@ namespace FIX
         init(path, backupPath, generatePrefix(s));
     }
 
-    std::string FileLog::generatePrefix(const SessionID &s)
+    auto FileLog::generatePrefix(const SessionID &s) -> std::string
     {
         const std::string &begin = s.getBeginString().getString();
         const std::string &sender = s.getSenderCompID().getString();
@@ -182,7 +182,7 @@ namespace FIX
             FILE *messagesLogFile = file_fopen(messagesFileName.str().c_str(), "r");
             FILE *eventLogFile = file_fopen(eventFileName.str().c_str(), "r");
 
-            if (messagesLogFile == NULL && eventLogFile == NULL)
+            if (messagesLogFile == nullptr && eventLogFile == nullptr)
             {
                 file_rename(m_messagesFileName.c_str(), messagesFileName.str().c_str());
                 file_rename(m_eventFileName.c_str(), eventFileName.str().c_str());
@@ -191,11 +191,11 @@ namespace FIX
                 return;
             }
 
-            if (messagesLogFile != NULL)
+            if (messagesLogFile != nullptr)
             {
                 file_fclose(messagesLogFile);
             }
-            if (eventLogFile != NULL)
+            if (eventLogFile != nullptr)
             {
                 file_fclose(eventLogFile);
             }

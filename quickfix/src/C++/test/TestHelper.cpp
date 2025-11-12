@@ -12,5 +12,5 @@ namespace FIX
     FIX::SessionSettings TestSettings::sessionSettings;
     std::string TestSettings::specPath = "";
 
-    std::string TestSettings::pathForSpec(const std::string &spec) { return TestSettings::specPath + "/" + spec + ".xml"; }
+    auto TestSettings::pathForSpec(const std::string &spec) -> std::string { return TestSettings::specPath + "/" + spec + ".xml"; }
 } // namespace FIX

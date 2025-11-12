@@ -123,6 +123,10 @@
 #include "Session.h"
 #include "ThreadedSSLSocketAcceptor.h"
 #include "ThreadedSSLSocketConnection.h"
+
+#include <utility>
+
+#include <utility>
 #include "ThreadedSSLSocketInitiator.h"
 #include "Utility.h"
 
@@ -132,8 +136,8 @@ namespace FIX
         : m_socket(socket),
           m_ssl(ssl),
           m_pLog(pLog),
-          m_sessions(sessions),
-          m_pSession(0),
+          m_sessions(std::move(std::move(sessions))),
+          m_pSession(nullptr),
           m_disconnect(false)
     {
         FD_ZERO(&m_fds);
@@ -144,12 +148,12 @@ namespace FIX
         const SessionID &sessionID,
         socket_handle socket,
         SSL *ssl,
-        const std::string &address,
+        std::string address,
         short port,
         Log *pLog)
         : m_socket(socket),
           m_ssl(ssl),
-          m_address(address),
+          m_address(std::move(address)),
           m_port(port),
           m_pLog(pLog),
           m_pSession(Session::lookupSession(sessionID)),
@@ -167,12 +171,12 @@ namespace FIX
     {
         if (m_pSession)
         {
-            m_pSession->setResponder(0);
+            m_pSession->setResponder(nullptr);
             Session::unregisterSession(m_pSession->getSessionID());
         }
     }
 
-    bool ThreadedSSLSocketConnection::send(const std::string &message)
+    auto ThreadedSSLSocketConnection::send(const std::string &message) -> bool
     {
         int totalSent = 0;
 
@@ -218,7 +222,7 @@ namespace FIX
         return true;
     }
 
-    bool ThreadedSSLSocketConnection::connect() { return socket_connect(getSocket(), m_address.c_str(), m_port) >= 0; }
+    auto ThreadedSSLSocketConnection::connect() -> bool { return socket_connect(getSocket(), m_address.c_str(), m_port) >= 0; }
 
     void ThreadedSSLSocketConnection::disconnect()
     {
@@ -226,7 +230,7 @@ namespace FIX
         ssl_socket_close(m_socket, m_ssl);
     }
 
-    bool ThreadedSSLSocketConnection::read()
+    auto ThreadedSSLSocketConnection::read() -> bool
     {
         struct timeval timeout = {1, 0};
         fd_set readset = m_fds;
@@ -234,7 +238,7 @@ namespace FIX
         try
         {
             // Wait for input (1 second timeout)
-            int result = select(1 + m_socket, &readset, 0, 0, &timeout);
+            int result = select(1 + m_socket, &readset, nullptr, nullptr, &timeout);
 
             if (result > 0) // Something to read
             {
@@ -284,7 +288,7 @@ namespace FIX
                             else
                             {
                                 std::cerr << UtcTimeStampConvertor::convert(UtcTimeStamp::now()) << "SSL read error <"
-                                          << IntConvertor::convert(errCodeSSL) << "> " << error << std::endl;
+                                          << IntConvertor::convert(errCodeSSL) << "> " << error << '\n';
                             }
 
                             throw SocketRecvFailed(size);
@@ -333,7 +337,7 @@ namespace FIX
         }
     }
 
-    bool ThreadedSSLSocketConnection::readMessage(std::string &message) EXCEPT(SocketRecvFailed)
+    auto ThreadedSSLSocketConnection::readMessage(std::string &message) -> bool EXCEPT(SocketRecvFailed)
     {
         try
         {
@@ -373,7 +377,7 @@ namespace FIX
         }
     }
 
-    bool ThreadedSSLSocketConnection::setSession(const std::string &message)
+    auto ThreadedSSLSocketConnection::setSession(const std::string &message) -> bool
     {
         m_pSession = Session::lookupSession(message, true);
         if (!m_pSession)
@@ -387,7 +391,7 @@ namespace FIX
         }
 
         SessionID sessionID = m_pSession->getSessionID();
-        m_pSession = 0;
+        m_pSession = nullptr;
 
         // see if the session frees up within 5 seconds
         for (int i = 1; i <= 5; i++)

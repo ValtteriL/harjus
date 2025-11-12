@@ -51,7 +51,7 @@ namespace FIX
             std::function<UtcTimeStamp()> timestamper,
             Application &,
             MessageStoreFactory &,
-            const SessionID &,
+            SessionID ,
             const DataDictionaryProvider &,
             const TimeRange &,
             int heartBtInt,

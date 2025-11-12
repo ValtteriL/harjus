@@ -25,18 +25,18 @@
 
 #include "MessageSorters.h"
 
-#include <string.h>
+#include <cstring>
 
 namespace FIX
 {
     message_order::message_order(int first, ...)
         : m_mode(group),
           m_delim(0),
-          m_largest(0)
+          m_largest(m_delim = first)
     {
         int field = first;
         int size = 0;
-        m_largest = m_delim = first;
+        
 
         va_list arguments;
         va_start(arguments, first);

@@ -127,7 +127,7 @@
 namespace FIX
 {
 
-    int SSLSocketInitiator::passwordHandleCB(char *buf, int bufsize, int verify, void *instance)
+    auto SSLSocketInitiator::passwordHandleCB(char *buf, int bufsize, int verify, void *instance) -> int
     {
         return reinterpret_cast<SSLSocketInitiator *>(instance)->passwordHandleCallback(buf, bufsize, verify);
     }
@@ -144,9 +144,9 @@ namespace FIX
           m_sendBufSize(0),
           m_rcvBufSize(0),
           m_sslInit(false),
-          m_ctx(0),
-          m_cert(0),
-          m_key(0) {}
+          m_ctx(nullptr),
+          m_cert(nullptr),
+          m_key(nullptr) {}
 
     SSLSocketInitiator::SSLSocketInitiator(
         Application &application,
@@ -161,9 +161,9 @@ namespace FIX
           m_sendBufSize(0),
           m_rcvBufSize(0),
           m_sslInit(false),
-          m_ctx(0),
-          m_cert(0),
-          m_key(0) {}
+          m_ctx(nullptr),
+          m_cert(nullptr),
+          m_key(nullptr) {}
 
     SSLSocketInitiator::~SSLSocketInitiator()
     {
@@ -185,7 +185,7 @@ namespace FIX
         if (m_sslInit)
         {
             SSL_CTX_free(m_ctx);
-            m_ctx = 0;
+            m_ctx = nullptr;
             ssl_term();
         }
     }
@@ -224,7 +224,7 @@ namespace FIX
         std::string errStr;
 
         /* set up the application context */
-        if ((m_ctx = createSSLContext(false, s, errStr)) == 0)
+        if ((m_ctx = createSSLContext(false, s, errStr)) == nullptr)
         {
             throw RuntimeError(errStr);
         }
@@ -249,7 +249,7 @@ namespace FIX
             throw RuntimeError(errStr);
         }
 
-        int verifyLevel;
+        int verifyLevel = 0;
         if (!loadCAInfo(m_ctx, false, s, getLog(), errStr, verifyLevel))
         {
             ssl_term();
@@ -283,7 +283,7 @@ namespace FIX
         }
     }
 
-    bool SSLSocketInitiator::onPoll()
+    auto SSLSocketInitiator::onPoll() -> bool
     {
         time_t start = 0;
         time_t now = 0;
@@ -343,7 +343,7 @@ namespace FIX
             log->onEvent("Socket created with handle:" + std::to_string(result));
 
             SSL *ssl = SSL_new(m_ctx);
-            if (ssl == 0)
+            if (ssl == nullptr)
             {
                 log->onEvent("Failed to create ssl object");
                 return;
@@ -351,7 +351,7 @@ namespace FIX
             SSL_clear(ssl);
             BIO *sbio = BIO_new_socket(result, BIO_NOCLOSE); // unfortunately OpenSSL assumes socket is int
 
-            if (sbio == 0)
+            if (sbio == nullptr)
             {
                 log->onEvent("BIO_new_socket failed");
                 return;
@@ -367,7 +367,7 @@ namespace FIX
         }
     }
 
-    SSLHandshakeStatus SSLSocketInitiator::handshakeSSL(SSLSocketConnection *connection)
+    auto SSLSocketInitiator::handshakeSSL(SSLSocketConnection *connection) -> SSLHandshakeStatus
     {
         SSL *ssl = connection->sslObject();
         ERR_clear_error();
@@ -391,7 +391,7 @@ namespace FIX
                 getLog()->onEvent("SSL_connect failed with SSL error " + IntConvertor::convert(err) + ". Error stack:");
 
                 char errorBuffer[512];
-                unsigned long systemError;
+                unsigned long systemError = 0;
 
                 while ((systemError = ERR_get_error()) != 0)
                 {
@@ -418,10 +418,10 @@ namespace FIX
     {
         getLog()->onEvent("Socket connected handle: " + std::to_string(socket));
 
-        time_t now;
+        time_t now = 0;
         ::time(&now);
 
-        SocketConnections::iterator i = m_pendingConnections.find(socket);
+        auto i = m_pendingConnections.find(socket);
         if (i == m_pendingConnections.end())
         {
             return;
@@ -437,7 +437,7 @@ namespace FIX
 
     void SSLSocketInitiator::handshakeSSLAndHandleConnection(SocketConnector &connector, socket_handle socket)
     {
-        SocketConnections::iterator i = m_pendingSSLHandshakes.find(socket);
+        auto i = m_pendingSSLHandshakes.find(socket);
         if (i == m_pendingSSLHandshakes.end())
         {
             return;
@@ -473,7 +473,7 @@ namespace FIX
 
     void SSLSocketInitiator::onWrite(SocketConnector &connector, socket_handle socket)
     {
-        SocketConnections::iterator iPendingSSL = m_pendingSSLHandshakes.find(socket);
+        auto iPendingSSL = m_pendingSSLHandshakes.find(socket);
         if (iPendingSSL != m_pendingSSLHandshakes.end())
         {
             SSLSocketConnection *pSocketConnection = iPendingSSL->second;
@@ -482,7 +482,7 @@ namespace FIX
             return;
         }
 
-        SocketConnections::iterator i = m_connections.find(socket);
+        auto i = m_connections.find(socket);
         if (i == m_connections.end())
         {
             return;
@@ -500,16 +500,16 @@ namespace FIX
         }
     }
 
-    bool SSLSocketInitiator::onData(SocketConnector &connector, socket_handle socket)
+    auto SSLSocketInitiator::onData(SocketConnector &connector, socket_handle socket) -> bool
     {
-        SocketConnections::iterator iPending = m_pendingSSLHandshakes.find(socket);
+        auto iPending = m_pendingSSLHandshakes.find(socket);
         if (iPending != m_pendingSSLHandshakes.end())
         {
             handshakeSSLAndHandleConnection(connector, socket);
             return true;
         }
 
-        SocketConnections::iterator i = m_connections.find(socket);
+        auto i = m_connections.find(socket);
         if (i == m_connections.end())
         {
             return false;
@@ -528,11 +528,11 @@ namespace FIX
     void SSLSocketInitiator::onDisconnect(SocketConnector &, socket_handle socket)
     {
         getLog()->onEvent("Socket disconnect " + std::to_string(socket));
-        SocketConnections::iterator i = m_connections.find(socket);
-        SocketConnections::iterator j = m_pendingConnections.find(socket);
-        SocketConnections::iterator k = m_pendingSSLHandshakes.find(socket);
+        auto i = m_connections.find(socket);
+        auto j = m_pendingConnections.find(socket);
+        auto k = m_pendingSSLHandshakes.find(socket);
 
-        SSLSocketConnection *pSocketConnection = 0;
+        SSLSocketConnection *pSocketConnection = nullptr;
         if (i != m_connections.end())
         {
             pSocketConnection = i->second;
@@ -572,7 +572,7 @@ namespace FIX
 
     void SSLSocketInitiator::onTimeout(SocketConnector &)
     {
-        time_t now;
+        time_t now = 0;
         ::time(&now);
 
         disconnectPendingSSLHandshakesThatTakeTooLong(now);
@@ -621,7 +621,7 @@ namespace FIX
         }
     }
 
-    int SSLSocketInitiator::passwordHandleCallback(char *buf, size_t bufsize, int verify)
+    auto SSLSocketInitiator::passwordHandleCallback(char *buf, size_t bufsize, int verify) -> int
     {
         if (m_password.length() > bufsize)
         {

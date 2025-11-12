@@ -122,6 +122,10 @@
 
 #include "SSLSocketAcceptor.h"
 #include "SSLSocketConnection.h"
+
+#include <utility>
+
+#include <utility>
 #include "SSLSocketInitiator.h"
 #include "Session.h"
 #include "SocketConnector.h"
@@ -133,8 +137,8 @@ namespace FIX
         : m_socket(socket),
           m_ssl(ssl),
           m_sendLength(0),
-          m_sessions(sessions),
-          m_pSession(0),
+          m_sessions(std::move(std::move(sessions))),
+          m_pSession(nullptr),
           m_pMonitor(pMonitor)
     {
 #ifdef _MSC_VER
@@ -174,7 +178,7 @@ namespace FIX
         SSL_free(m_ssl);
     }
 
-    bool SSLSocketConnection::send(const std::string &message)
+    auto SSLSocketConnection::send(const std::string &message) -> bool
     {
         Locker l(m_mutex);
 
@@ -184,7 +188,7 @@ namespace FIX
         return true;
     }
 
-    bool SSLSocketConnection::processQueue()
+    auto SSLSocketConnection::processQueue() -> bool
     {
         Locker l(m_mutex);
 
@@ -257,7 +261,7 @@ namespace FIX
         }
     }
 
-    bool SSLSocketConnection::didProcessQueueRequestToRead() const
+    auto SSLSocketConnection::didProcessQueueRequestToRead() const -> bool
     {
         Locker l(m_mutex);
         return m_processQueueNeedsToReadData;
@@ -271,7 +275,7 @@ namespace FIX
         }
     }
 
-    bool SSLSocketConnection::read(SocketConnector &connector)
+    auto SSLSocketConnection::read(SocketConnector &connector) -> bool
     {
         if (!m_pSession)
         {
@@ -291,7 +295,7 @@ namespace FIX
         return true;
     }
 
-    bool SSLSocketConnection::read(SSLSocketAcceptor &acceptor, SocketServer &server)
+    auto SSLSocketConnection::read(SSLSocketAcceptor &acceptor, SocketServer &server) -> bool
     {
         std::string message;
         try
@@ -330,7 +334,7 @@ namespace FIX
                 m_pSession = Session::lookupSession(message, true);
                 if (!isValidSession())
                 {
-                    m_pSession = 0;
+                    m_pSession = nullptr;
                     if (acceptor.getLog())
                     {
                         acceptor.getLog()->onEvent("Session not found for incoming message: " + message);
@@ -376,9 +380,9 @@ namespace FIX
         return false;
     }
 
-    bool SSLSocketConnection::isValidSession()
+    auto SSLSocketConnection::isValidSession() -> bool
     {
-        if (m_pSession == 0)
+        if (m_pSession == nullptr)
         {
             return false;
         }
@@ -446,7 +450,7 @@ namespace FIX
                     else
                     {
                         std::cerr << UtcTimeStampConvertor::convert(UtcTimeStamp::now()) << "SSL read error <"
-                                  << IntConvertor::convert(errCodeSSL) << "> " << error << std::endl;
+                                  << IntConvertor::convert(errCodeSSL) << "> " << error << '\n';
                     }
 
                     throw SocketRecvFailed(size);
@@ -457,13 +461,13 @@ namespace FIX
         } while (pending);
     }
 
-    bool SSLSocketConnection::didReadFromSocketRequestToWrite() const
+    auto SSLSocketConnection::didReadFromSocketRequestToWrite() const -> bool
     {
         Locker locker(m_mutex);
         return m_readFromSocketNeedsToWriteData;
     }
 
-    bool SSLSocketConnection::readMessage(std::string &message)
+    auto SSLSocketConnection::readMessage(std::string &message) -> bool
     {
         try
         {

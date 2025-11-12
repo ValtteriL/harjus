@@ -47,7 +47,7 @@ namespace FIX
         fstream >> *this;
     }
 
-    std::istream &operator>>(std::istream &stream, SessionSettings &s) EXCEPT(ConfigError)
+    auto operator>>(std::istream &stream, SessionSettings &s) -> std::istream & EXCEPT(ConfigError)
     {
         Settings settings(s.m_resolveEnvVars);
         stream >> settings;
@@ -63,7 +63,7 @@ namespace FIX
         s.set(def);
 
         section = settings.get("SESSION");
-        Settings::Sections::size_type session;
+        Settings::Sections::size_type session = 0;
         Dictionary dict;
 
         for (session = 0; session < section.size(); ++session)
@@ -86,22 +86,22 @@ namespace FIX
         return stream;
     }
 
-    std::ostream &operator<<(std::ostream &stream, const SessionSettings &sessionSettings)
+    auto operator<<(std::ostream &stream, const SessionSettings &sessionSettings) -> std::ostream &
     {
         const Dictionary &defaults = sessionSettings.get();
         if (defaults.size())
         {
-            stream << "[DEFAULT]" << std::endl;
+            stream << "[DEFAULT]" << '\n';
             for (const Dictionary::value_type &defaultParam : defaults)
             {
-                stream << defaultParam.first << "=" << defaultParam.second << std::endl;
+                stream << defaultParam.first << "=" << defaultParam.second << '\n';
             }
-            stream << std::endl;
+            stream << '\n';
         }
 
         for (const SessionID &sessionID : sessionSettings.getSessions())
         {
-            stream << "[SESSION]" << std::endl;
+            stream << "[SESSION]" << '\n';
             const Dictionary &section = sessionSettings.get(sessionID);
             if (!section.size())
             {
@@ -114,20 +114,20 @@ namespace FIX
                 {
                     continue;
                 }
-                stream << sectionParam.first << "=" << sectionParam.second << std::endl;
+                stream << sectionParam.first << "=" << sectionParam.second << '\n';
             }
-            stream << std::endl;
+            stream << '\n';
         }
 
         return stream;
     }
 
-    const bool SessionSettings::has(const SessionID &sessionID) const
+    auto SessionSettings::has(const SessionID &sessionID) const -> const bool
     {
         return m_settings.find(sessionID) != m_settings.end();
     }
 
-    const Dictionary &SessionSettings::get(const SessionID &sessionID) const EXCEPT(ConfigError)
+    auto SessionSettings::get(const SessionID &sessionID) const -> const Dictionary & EXCEPT(ConfigError)
     {
         Dictionaries::const_iterator i;
         i = m_settings.find(sessionID);
@@ -163,7 +163,7 @@ namespace FIX
         }
     }
 
-    std::set<SessionID> SessionSettings::getSessions() const
+    auto SessionSettings::getSessions() const -> std::set<SessionID>
     {
         std::set<SessionID> result;
         for (const Dictionaries::value_type &setting : m_settings)

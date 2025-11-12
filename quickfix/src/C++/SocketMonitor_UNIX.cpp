@@ -31,7 +31,7 @@
 namespace FIX
 {
     SocketMonitor::SocketMonitor(int timeout)
-        : m_timeout(timeout)
+        : m_timeout(timeout), m_ticks(clock())
     {
         socket_init();
 
@@ -42,7 +42,7 @@ namespace FIX
         socket_setnonblock(m_interrupt);
         m_readSockets.insert(m_interrupt);
 
-        m_ticks = clock();
+        
     }
 
     SocketMonitor::~SocketMonitor()
@@ -57,10 +57,10 @@ namespace FIX
         socket_term();
     }
 
-    bool SocketMonitor::addConnect(socket_handle s)
+    auto SocketMonitor::addConnect(socket_handle s) -> bool
     {
         socket_setnonblock(s);
-        Sockets::iterator i = m_connectSockets.find(s);
+        auto i = m_connectSockets.find(s);
         if (i != m_connectSockets.end())
         {
             return false;
@@ -70,10 +70,10 @@ namespace FIX
         return true;
     }
 
-    bool SocketMonitor::addRead(socket_handle s)
+    auto SocketMonitor::addRead(socket_handle s) -> bool
     {
         socket_setnonblock(s);
-        Sockets::iterator i = m_readSockets.find(s);
+        auto i = m_readSockets.find(s);
         if (i != m_readSockets.end())
         {
             return false;
@@ -83,7 +83,7 @@ namespace FIX
         return true;
     }
 
-    bool SocketMonitor::addWrite(socket_handle s)
+    auto SocketMonitor::addWrite(socket_handle s) -> bool
     {
         if (m_readSockets.find(s) == m_readSockets.end())
         {
@@ -91,7 +91,7 @@ namespace FIX
         }
 
         socket_setnonblock(s);
-        Sockets::iterator i = m_writeSockets.find(s);
+        auto i = m_writeSockets.find(s);
         if (i != m_writeSockets.end())
         {
             return false;
@@ -101,11 +101,11 @@ namespace FIX
         return true;
     }
 
-    bool SocketMonitor::drop(socket_handle s)
+    auto SocketMonitor::drop(socket_handle s) -> bool
     {
-        Sockets::iterator i = m_readSockets.find(s);
-        Sockets::iterator j = m_writeSockets.find(s);
-        Sockets::iterator k = m_connectSockets.find(s);
+        auto i = m_readSockets.find(s);
+        auto j = m_writeSockets.find(s);
+        auto k = m_connectSockets.find(s);
 
         if (i != m_readSockets.end() || j != m_writeSockets.end() || k != m_connectSockets.end())
         {
@@ -119,7 +119,7 @@ namespace FIX
         return false;
     }
 
-    inline int SocketMonitor::getTimeval(bool poll, double timeout)
+    inline auto SocketMonitor::getTimeval(bool poll, double timeout) -> int
     {
         if (poll)
         {
@@ -146,7 +146,7 @@ namespace FIX
         return (timeout * 1000);
     }
 
-    bool SocketMonitor::sleepIfEmpty(bool poll)
+    auto SocketMonitor::sleepIfEmpty(bool poll) -> bool
     {
         if (poll)
         {
@@ -168,7 +168,7 @@ namespace FIX
 
     void SocketMonitor::unsignal(socket_handle s)
     {
-        Sockets::iterator i = m_writeSockets.find(s);
+        auto i = m_writeSockets.find(s);
         if (i == m_writeSockets.end())
         {
             return;

@@ -27,11 +27,11 @@
 
 namespace FIX
 {
-    MessageStore *MemoryStoreFactory::create(const UtcTimeStamp &now, const SessionID &) { return new MemoryStore(now); }
+    auto MemoryStoreFactory::create(const UtcTimeStamp &now, const SessionID &) -> MessageStore * { return new MemoryStore(now); }
 
     void MemoryStoreFactory::destroy(MessageStore *pStore) { delete pStore; }
 
-    bool MemoryStore::set(SEQNUM msgSeqNum, const std::string &msg) EXCEPT(IOException)
+    auto MemoryStore::set(SEQNUM msgSeqNum, const std::string &msg) -> bool EXCEPT(IOException)
     {
         m_messages[msgSeqNum] = msg;
         return true;
@@ -40,18 +40,18 @@ namespace FIX
     void MemoryStore::get(SEQNUM begin, SEQNUM end, std::vector<std::string> &messages) const EXCEPT(IOException)
     {
         messages.clear();
-        Messages::const_iterator find = m_messages.find(begin);
+        auto find = m_messages.find(begin);
         for (; find != m_messages.end() && find->first <= end; ++find)
         {
             messages.push_back(find->second);
         }
     }
 
-    MessageStore *MessageStoreFactoryExceptionWrapper::create(
+    auto MessageStoreFactoryExceptionWrapper::create(
         const UtcTimeStamp &now,
         const SessionID &sessionID,
         bool &threw,
-        ConfigError &ex)
+        ConfigError &ex) -> MessageStore *
     {
         threw = false;
         try
@@ -62,13 +62,13 @@ namespace FIX
         {
             threw = true;
             ex = e;
-            return 0;
+            return nullptr;
         }
     }
 
     void MessageStoreFactoryExceptionWrapper::destroy(MessageStore *pStore) { m_pFactory->destroy(pStore); }
 
-    bool MessageStoreExceptionWrapper::set(SEQNUM num, const std::string &msg, bool &threw, IOException &ex)
+    auto MessageStoreExceptionWrapper::set(SEQNUM num, const std::string &msg, bool &threw, IOException &ex) -> bool
     {
         threw = false;
         try
@@ -102,7 +102,7 @@ namespace FIX
         }
     }
 
-    SEQNUM MessageStoreExceptionWrapper::getNextSenderMsgSeqNum(bool &threw, IOException &ex) const
+    auto MessageStoreExceptionWrapper::getNextSenderMsgSeqNum(bool &threw, IOException &ex) const -> SEQNUM
     {
         threw = false;
         try
@@ -117,7 +117,7 @@ namespace FIX
         }
     }
 
-    SEQNUM MessageStoreExceptionWrapper::getNextTargetMsgSeqNum(bool &threw, IOException &ex) const
+    auto MessageStoreExceptionWrapper::getNextTargetMsgSeqNum(bool &threw, IOException &ex) const -> SEQNUM
     {
         threw = false;
         try
@@ -188,7 +188,7 @@ namespace FIX
         }
     }
 
-    UtcTimeStamp MessageStoreExceptionWrapper::getCreationTime(bool &threw, IOException &ex)
+    auto MessageStoreExceptionWrapper::getCreationTime(bool &threw, IOException &ex) -> UtcTimeStamp
     {
         threw = false;
         try

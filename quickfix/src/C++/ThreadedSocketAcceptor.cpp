@@ -125,14 +125,14 @@ namespace FIX
         {
             Locker l(m_mutex);
             int port = m_socketToPort[socket];
-            AcceptorThreadInfo *info = new AcceptorThreadInfo(this, socket, port);
-            thread_id thread;
+            auto *info = new AcceptorThreadInfo(this, socket, port);
+            thread_id thread = 0;
             thread_spawn(&socketAcceptorThread, info, thread);
             addThread(socket, thread);
         }
     }
 
-    bool ThreadedSocketAcceptor::onPoll() { return false; }
+    auto ThreadedSocketAcceptor::onPoll() -> bool { return false; }
 
     void ThreadedSocketAcceptor::onStop()
     {
@@ -178,7 +178,7 @@ namespace FIX
     void ThreadedSocketAcceptor::removeThread(socket_handle s)
     {
         Locker l(m_mutex);
-        SocketToThread::iterator i = m_threads.find(s);
+        auto i = m_threads.find(s);
         if (i != m_threads.end())
         {
             thread_detach(i->second);
@@ -186,9 +186,9 @@ namespace FIX
         }
     }
 
-    THREAD_PROC ThreadedSocketAcceptor::socketAcceptorThread(void *p)
+    auto ThreadedSocketAcceptor::socketAcceptorThread(void *p) -> THREAD_PROC
     {
-        AcceptorThreadInfo *info = reinterpret_cast<AcceptorThreadInfo *>(p);
+        auto *info = reinterpret_cast<AcceptorThreadInfo *>(p);
 
         ThreadedSocketAcceptor *pAcceptor = info->m_pAcceptor;
         socket_handle s = info->m_socket;
@@ -220,9 +220,9 @@ namespace FIX
 
             Sessions sessions = pAcceptor->m_portToSessions[port];
 
-            ThreadedSocketConnection *pConnection = new ThreadedSocketConnection(socket, sessions, pAcceptor->getLog());
+            auto *pConnection = new ThreadedSocketConnection(socket, sessions, pAcceptor->getLog());
 
-            ConnectionThreadInfo *info = new ConnectionThreadInfo(pAcceptor, pConnection);
+            auto *info = new ConnectionThreadInfo(pAcceptor, pConnection);
 
             {
                 Locker l(pAcceptor->m_mutex);
@@ -235,7 +235,7 @@ namespace FIX
                     pAcceptor->getLog()->onEvent(stream.str());
                 }
 
-                thread_id thread;
+                thread_id thread = 0;
                 if (!thread_spawn(&socketConnectionThread, info, thread))
                 {
                     delete info;
@@ -253,12 +253,12 @@ namespace FIX
             pAcceptor->removeThread(s);
         }
 
-        return 0;
+        return nullptr;
     }
 
-    THREAD_PROC ThreadedSocketAcceptor::socketConnectionThread(void *p)
+    auto ThreadedSocketAcceptor::socketConnectionThread(void *p) -> THREAD_PROC
     {
-        ConnectionThreadInfo *info = reinterpret_cast<ConnectionThreadInfo *>(p);
+        auto *info = reinterpret_cast<ConnectionThreadInfo *>(p);
 
         ThreadedSocketAcceptor *pAcceptor = info->m_pAcceptor;
         ThreadedSocketConnection *pConnection = info->m_pConnection;
@@ -274,6 +274,6 @@ namespace FIX
         {
             pAcceptor->removeThread(socket);
         }
-        return 0;
+        return nullptr;
     }
 } // namespace FIX

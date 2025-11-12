@@ -90,7 +90,7 @@ namespace FIX
         void disconnect();
 
         socket_handle m_socket;
-        char m_buffer[BUFSIZ];
+        char m_buffer[BUFSIZ]{};
 
         Parser m_parser;
         Queue m_sendQueue;

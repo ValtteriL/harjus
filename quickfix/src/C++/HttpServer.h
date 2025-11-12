@@ -37,7 +37,7 @@ namespace FIX
     class HttpServer : public SocketServer::Strategy
     {
     public:
-        HttpServer(const SessionSettings &) EXCEPT(ConfigError);
+        HttpServer(SessionSettings ) EXCEPT(ConfigError);
 
         static void startGlobal(const SessionSettings &) EXCEPT(ConfigError, RuntimeError);
         static void stopGlobal();

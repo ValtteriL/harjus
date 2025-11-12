@@ -21,6 +21,8 @@
 #pragma warning(disable : 4503 4355 4786)
 #include "stdafx.h"
 #else
+#include <utility>
+
 #include "config.h"
 #endif
 
@@ -28,17 +30,17 @@
 
 #include "catch_amalgamated.hpp"
 
-int main(int argc, char **argv)
+auto main(int argc, char **argv) -> int
 {
     std::string quickfixConfigFile;
 
     Catch::Session session;
     auto &cli = session.cli();
-    auto newCli = cli | Catch::Clara::Opt([](std::string quickfixConfigFile)
-                                          { FIX::TestSettings::sessionSettings = FIX::SessionSettings(quickfixConfigFile); }, "user")["--quickfix-config-file"]("QuickFIX config file for tests") |
+    auto newCli = cli | Catch::Clara::Opt([](const std::string& quickfixConfigFile)
+                                          -> void { FIX::TestSettings::sessionSettings = FIX::SessionSettings(quickfixConfigFile); }, "user")["--quickfix-config-file"]("QuickFIX config file for tests") |
                   Catch::Clara::Opt(
                       [](std::string quickfixSpecPath)
-                      { FIX::TestSettings::specPath = quickfixSpecPath; },
+                      -> void { FIX::TestSettings::specPath = std::move(quickfixSpecPath); },
                       "user")["--quickfix-spec-path"]("QuickFIX spec path");
     session.cli(newCli);
 

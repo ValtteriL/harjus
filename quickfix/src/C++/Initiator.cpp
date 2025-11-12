@@ -32,19 +32,20 @@
 
 #include <algorithm>
 #include <fstream>
+#include <utility>
 
 namespace FIX
 {
     Initiator::Initiator(
         Application &application,
         MessageStoreFactory &messageStoreFactory,
-        const SessionSettings &settings) EXCEPT(ConfigError)
+        SessionSettings settings) EXCEPT(ConfigError)
         : m_threadid(0),
           m_application(application),
           m_messageStoreFactory(messageStoreFactory),
-          m_settings(settings),
-          m_pLogFactory(0),
-          m_pLog(0),
+          m_settings(std::move(settings)),
+          m_pLogFactory(nullptr),
+          m_pLog(nullptr),
           m_processing(false),
           m_firstPoll(true),
           m_stop(true)
@@ -55,12 +56,12 @@ namespace FIX
     Initiator::Initiator(
         Application &application,
         MessageStoreFactory &messageStoreFactory,
-        const SessionSettings &settings,
+        SessionSettings settings,
         LogFactory &logFactory) EXCEPT(ConfigError)
         : m_threadid(0),
           m_application(application),
           m_messageStoreFactory(messageStoreFactory),
-          m_settings(settings),
+          m_settings(std::move(settings)),
           m_pLogFactory(&logFactory),
           m_pLog(logFactory.create()),
           m_processing(false),
@@ -112,31 +113,31 @@ namespace FIX
         }
     }
 
-    Session *Initiator::getSession(const SessionID &sessionID, Responder &responder)
+    auto Initiator::getSession(const SessionID &sessionID, Responder &responder) -> Session *
     {
-        Sessions::iterator i = m_sessions.find(sessionID);
+        auto i = m_sessions.find(sessionID);
         if (i != m_sessions.end())
         {
             i->second->setResponder(&responder);
             return i->second;
         }
-        return 0;
+        return nullptr;
     }
 
-    Session *Initiator::getSession(const SessionID &sessionID) const
+    auto Initiator::getSession(const SessionID &sessionID) const -> Session *
     {
-        Sessions::const_iterator i = m_sessions.find(sessionID);
+        auto i = m_sessions.find(sessionID);
         if (i != m_sessions.end())
         {
             return i->second;
         }
         else
         {
-            return 0;
+            return nullptr;
         }
     }
 
-    const Dictionary *const Initiator::getSessionSettings(const SessionID &sessionID) const
+    auto Initiator::getSessionSettings(const SessionID &sessionID) const -> const Dictionary *const
     {
         try
         {
@@ -144,7 +145,7 @@ namespace FIX
         }
         catch (ConfigError &)
         {
-            return 0;
+            return nullptr;
         }
     }
 
@@ -153,7 +154,7 @@ namespace FIX
         Locker l(m_mutex);
 
         SessionIDs disconnected = m_disconnected;
-        SessionIDs::iterator i = disconnected.begin();
+        auto i = disconnected.begin();
         for (; i != disconnected.end(); ++i)
         {
             Session *pSession = Session::lookupSession(*i);
@@ -191,19 +192,19 @@ namespace FIX
         m_disconnected.insert(sessionID);
     }
 
-    bool Initiator::isPending(const SessionID &sessionID) const
+    auto Initiator::isPending(const SessionID &sessionID) const -> bool
     {
         Locker l(m_mutex);
         return m_pending.find(sessionID) != m_pending.end();
     }
 
-    bool Initiator::isConnected(const SessionID &sessionID) const
+    auto Initiator::isConnected(const SessionID &sessionID) const -> bool
     {
         Locker l(m_mutex);
         return m_connected.find(sessionID) != m_connected.end();
     }
 
-    bool Initiator::isDisconnected(const SessionID &sessionID) const
+    auto Initiator::isDisconnected(const SessionID &sessionID) const -> bool
     {
         Locker l(m_mutex);
         return m_disconnected.find(sessionID) != m_disconnected.end();
@@ -247,7 +248,7 @@ namespace FIX
         }
 
         auto guard = sg::make_scope_guard([this]()
-                                          { m_processing = false; });
+                                          -> void { m_processing = false; });
 
         m_processing = true;
         m_stop = false;
@@ -258,7 +259,7 @@ namespace FIX
         startThread(this);
     }
 
-    bool Initiator::poll() EXCEPT(ConfigError, RuntimeError)
+    auto Initiator::poll() -> bool EXCEPT(ConfigError, RuntimeError)
     {
         if (m_processing)
         {
@@ -266,7 +267,7 @@ namespace FIX
         }
 
         auto guard = sg::make_scope_guard([this]()
-                                          { m_processing = false; });
+                                          -> void { m_processing = false; });
 
         m_processing = true;
         if (m_firstPoll)
@@ -299,7 +300,7 @@ namespace FIX
             connected = m_connected;
         }
 
-        SessionIDs::iterator i = connected.begin();
+        auto i = connected.begin();
         for (; i != connected.end(); ++i)
         {
             Session *pSession = Session::lookupSession(*i);
@@ -340,12 +341,12 @@ namespace FIX
         }
     }
 
-    bool Initiator::isLoggedOn() const
+    auto Initiator::isLoggedOn() const -> bool
     {
         Locker l(m_mutex);
 
         SessionIDs connected = m_connected;
-        SessionIDs::iterator i = connected.begin();
+        auto i = connected.begin();
         for (; i != connected.end(); ++i)
         {
             if (Session::lookupSession(*i)->isLoggedOn())
@@ -356,12 +357,12 @@ namespace FIX
         return false;
     }
 
-    THREAD_PROC Initiator::startThread(void *p)
+    auto Initiator::startThread(void *p) -> THREAD_PROC
     {
-        Initiator *pInitiator = static_cast<Initiator *>(p);
+        auto *pInitiator = static_cast<Initiator *>(p);
         auto guard = sg::make_scope_guard([pInitiator]()
-                                          { pInitiator->m_processing = false; });
+                                          -> void { pInitiator->m_processing = false; });
         pInitiator->onStart();
-        return 0;
+        return nullptr;
     }
 } // namespace FIX

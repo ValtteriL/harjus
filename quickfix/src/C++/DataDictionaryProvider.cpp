@@ -25,16 +25,18 @@
 
 #include "DataDictionary.h"
 #include "DataDictionaryProvider.h"
+
+#include <utility>
 #include "Fields.h"
 
 namespace FIX
 {
     DataDictionaryProvider::DataDictionaryProvider(const DataDictionaryProvider &copy) { *this = copy; }
 
-    const DataDictionary &DataDictionaryProvider::getSessionDataDictionary(const BeginString &beginString) const
+    auto DataDictionaryProvider::getSessionDataDictionary(const BeginString &beginString) const -> const DataDictionary &
         EXCEPT(DataDictionaryNotFound)
     {
-        std::map<std::string, std::shared_ptr<DataDictionary>>::const_iterator find = m_transportDictionaries.find(beginString);
+        auto find = m_transportDictionaries.find(beginString);
         if (find != m_transportDictionaries.end())
         {
             return *find->second;
@@ -43,10 +45,10 @@ namespace FIX
         return emptyDataDictionary;
     }
 
-    const DataDictionary &DataDictionaryProvider::getApplicationDataDictionary(const ApplVerID &applVerID) const
+    auto DataDictionaryProvider::getApplicationDataDictionary(const ApplVerID &applVerID) const -> const DataDictionary &
         EXCEPT(DataDictionaryNotFound)
     {
-        std::map<std::string, std::shared_ptr<DataDictionary>>::const_iterator find = m_applicationDictionaries.find(applVerID);
+        auto find = m_applicationDictionaries.find(applVerID);
         if (find != m_applicationDictionaries.end())
         {
             return *find->second;
@@ -59,13 +61,13 @@ namespace FIX
         const BeginString &beginString,
         std::shared_ptr<DataDictionary> pDD)
     {
-        m_transportDictionaries[beginString.getValue()] = pDD;
+        m_transportDictionaries[beginString.getValue()] = std::move(pDD);
     }
 
     void DataDictionaryProvider::addApplicationDataDictionary(
         const ApplVerID &applVerID,
         std::shared_ptr<DataDictionary> pDD)
     {
-        m_applicationDictionaries[applVerID.getValue()] = pDD;
+        m_applicationDictionaries[applVerID.getValue()] = std::move(pDD);
     }
 } // namespace FIX

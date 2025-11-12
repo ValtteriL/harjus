@@ -44,7 +44,7 @@ TEST_CASE("FieldMapTests")
 
         int pos1 = 0, pos2 = 0, pos3 = 0;
         int iterationCount = 0;
-        for (FieldMap::iterator itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
+        for (auto itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
         {
             if (iterationCount == 0)
             {

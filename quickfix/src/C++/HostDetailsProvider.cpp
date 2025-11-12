@@ -3,7 +3,7 @@
 
 const std::string FIX::HostDetailsProvider::HOST_SELECTION_POLICY_PRIORITY = "PRIORITY";
 
-FIX::HostDetails FIX::HostDetailsProvider::getHost(const SessionID &s, const Dictionary &d)
+auto FIX::HostDetailsProvider::getHost(const SessionID &s, const Dictionary &d) -> FIX::HostDetails
 {
     std::string hostSelectionPolicy;
     if (d.has(HOST_SELECTION_POLICY))
@@ -60,7 +60,7 @@ FIX::HostDetails FIX::HostDetailsProvider::getHost(const SessionID &s, const Dic
     return details;
 }
 
-bool FIX::HostDetailsProvider::populateHostDetails(int n, const Dictionary &d, HostDetails &out)
+auto FIX::HostDetailsProvider::populateHostDetails(int n, const Dictionary &d, HostDetails &out) -> bool
 {
     std::string host = SOCKET_CONNECT_HOST;
     std::string port = SOCKET_CONNECT_PORT;

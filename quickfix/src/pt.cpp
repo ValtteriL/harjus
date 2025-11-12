@@ -47,39 +47,39 @@
 #include <iostream>
 #include <memory>
 
-long testIntegerToString(int);
-long testStringToInteger(int);
-long testDoubleToString(int);
-long testStringToDouble(int);
-long testCreateHeartbeat(int);
-long testIdentifyType(int);
-long testSerializeHeartbeat(int);
-long testDeserializeHeartbeat(int);
-long testDeserializeAndValidateHeartbeat(int);
-long testCreateNewOrderSingle(int);
-long testSerializeNewOrderSingle(int);
-long testDeserializeNewOrderSingle(int);
-long testDeserializeAndValidateNewOrderSingle(int);
-long testCreateQuoteRequest(int);
-long testReadFromQuoteRequest(int);
-long testSerializeQuoteRequest(int);
-long testDeserializeQuoteRequest(int);
-long testDeserializeAndValidateQuoteRequest(int);
-long testFileStoreNewOrderSingle(int);
-long testValidateNewOrderSingle(int);
-long testValidateDictNewOrderSingle(int);
-long testValidateQuoteRequest(int);
-long testValidateDictQuoteRequest(int);
-long testSendOnSocket(int, short);
-long testSendOnThreadedSocket(int, short);
+auto testIntegerToString(int) -> long;
+auto testStringToInteger(int) -> long;
+auto testDoubleToString(int) -> long;
+auto testStringToDouble(int) -> long;
+auto testCreateHeartbeat(int) -> long;
+auto testIdentifyType(int) -> long;
+auto testSerializeHeartbeat(int) -> long;
+auto testDeserializeHeartbeat(int) -> long;
+auto testDeserializeAndValidateHeartbeat(int) -> long;
+auto testCreateNewOrderSingle(int) -> long;
+auto testSerializeNewOrderSingle(int) -> long;
+auto testDeserializeNewOrderSingle(int) -> long;
+auto testDeserializeAndValidateNewOrderSingle(int) -> long;
+auto testCreateQuoteRequest(int) -> long;
+auto testReadFromQuoteRequest(int) -> long;
+auto testSerializeQuoteRequest(int) -> long;
+auto testDeserializeQuoteRequest(int) -> long;
+auto testDeserializeAndValidateQuoteRequest(int) -> long;
+auto testFileStoreNewOrderSingle(int) -> long;
+auto testValidateNewOrderSingle(int) -> long;
+auto testValidateDictNewOrderSingle(int) -> long;
+auto testValidateQuoteRequest(int) -> long;
+auto testValidateDictQuoteRequest(int) -> long;
+auto testSendOnSocket(int, short) -> long;
+auto testSendOnThreadedSocket(int, short) -> long;
 void report(long, int);
 
 #ifndef _MSC_VER
 #include <sys/time.h>
-long GetTickCount()
+auto GetTickCount() -> long
 {
-    timeval tv;
-    gettimeofday(&tv, 0);
+    timeval tv{};
+    gettimeofday(&tv, nullptr);
     long microsec = tv.tv_sec * 1e6;
     microsec += (long)tv.tv_usec;
 
@@ -91,12 +91,12 @@ std::unique_ptr<FIX::DataDictionary> s_dataDictionary;
 const bool VALIDATE = true;
 const bool DONT_VALIDATE = false;
 
-int main(int argc, char **argv)
+auto main(int argc, char **argv) -> int
 {
     int count = 0;
     short port = 0;
 
-    int opt;
+    int opt = 0;
     while ((opt = getopt(argc, argv, "+p:+c:")) != -1)
     {
         switch (opt)
@@ -108,14 +108,14 @@ int main(int argc, char **argv)
             count = atoi(optarg);
             break;
         default:
-            std::cout << "usage: " << argv[0] << " -p port -c count" << std::endl;
+            std::cout << "usage: " << argv[0] << " -p port -c count" << '\n';
             return EXIT_FAILURE;
         }
     }
 
     try
     {
-        s_dataDictionary.reset(new FIX::DataDictionary("../spec/FIX42.xml"));
+        s_dataDictionary = std::make_unique<FIX::DataDictionary>("../spec/FIX42.xml");
 
         std::cout << "Converting integers to strings: ";
         report(testIntegerToString(count), count);
@@ -194,7 +194,7 @@ int main(int argc, char **argv)
     }
     catch (std::exception const &e)
     {
-        std::cerr << e.what() << std::endl;
+        std::cerr << e.what() << '\n';
         return EXIT_FAILURE;
     }
 
@@ -206,12 +206,12 @@ void report(long total_micros, int count)
     double total_seconds = static_cast<double>(total_micros) / 1e6;
     double num_per_second = count / total_seconds;
     double micros_per = static_cast<double>(total_micros) / count;
-    std::cout << std::endl
+    std::cout << '\n'
               << "    num: " << count << ", total_seconds: " << total_seconds << ", num_per_second: " << num_per_second
-              << ", micros_per: " << micros_per << std::endl;
+              << ", micros_per: " << micros_per << '\n';
 }
 
-long testIntegerToString(int count)
+auto testIntegerToString(int count) -> long
 {
     count = count - 1;
 
@@ -223,7 +223,7 @@ long testIntegerToString(int count)
     return GetTickCount() - start;
 }
 
-long testStringToInteger(int count)
+auto testStringToInteger(int count) -> long
 {
     std::string value("1234");
     count = count - 1;
@@ -236,7 +236,7 @@ long testStringToInteger(int count)
     return GetTickCount() - start;
 }
 
-long testDoubleToString(int count)
+auto testDoubleToString(int count) -> long
 {
     count = count - 1;
 
@@ -248,7 +248,7 @@ long testDoubleToString(int count)
     return GetTickCount() - start;
 }
 
-long testStringToDouble(int count)
+auto testStringToDouble(int count) -> long
 {
     std::string value("123.45");
     count = count - 1;
@@ -261,7 +261,7 @@ long testStringToDouble(int count)
     return GetTickCount() - start;
 }
 
-long testCreateHeartbeat(int count)
+auto testCreateHeartbeat(int count) -> long
 {
     count = count - 1;
 
@@ -274,7 +274,7 @@ long testCreateHeartbeat(int count)
     return GetTickCount() - start;
 }
 
-long testIdentifyType(int count)
+auto testIdentifyType(int count) -> long
 {
     FIX42::Heartbeat message;
     std::string messageString = message.toString();
@@ -290,7 +290,7 @@ long testIdentifyType(int count)
     return GetTickCount() - start;
 }
 
-long testSerializeHeartbeat(int count)
+auto testSerializeHeartbeat(int count) -> long
 {
     FIX42::Heartbeat message;
     count = count - 1;
@@ -303,7 +303,7 @@ long testSerializeHeartbeat(int count)
     return GetTickCount() - start;
 }
 
-long testDeserializeHeartbeat(int count)
+auto testDeserializeHeartbeat(int count) -> long
 {
     FIX42::Heartbeat message;
     std::string string = message.toString();
@@ -317,7 +317,7 @@ long testDeserializeHeartbeat(int count)
     return GetTickCount() - start;
 }
 
-long testDeserializeAndValidateHeartbeat(int count)
+auto testDeserializeAndValidateHeartbeat(int count) -> long
 {
     FIX42::Heartbeat message;
     std::string string = message.toString();
@@ -331,7 +331,7 @@ long testDeserializeAndValidateHeartbeat(int count)
     return GetTickCount() - start;
 }
 
-long testCreateNewOrderSingle(int count)
+auto testCreateNewOrderSingle(int count) -> long
 {
     long start = GetTickCount();
     for (int i = 0; i <= count; ++i)
@@ -348,7 +348,7 @@ long testCreateNewOrderSingle(int count)
     return GetTickCount() - start;
 }
 
-long testSerializeNewOrderSingle(int count)
+auto testSerializeNewOrderSingle(int count) -> long
 {
     FIX::ClOrdID clOrdID("ORDERID");
     FIX::HandlInst handlInst('1');
@@ -368,7 +368,7 @@ long testSerializeNewOrderSingle(int count)
     return GetTickCount() - start;
 }
 
-long testDeserializeNewOrderSingle(int count)
+auto testDeserializeNewOrderSingle(int count) -> long
 {
     FIX::ClOrdID clOrdID("ORDERID");
     FIX::HandlInst handlInst('1');
@@ -389,7 +389,7 @@ long testDeserializeNewOrderSingle(int count)
     return GetTickCount() - start;
 }
 
-long testDeserializeAndValidateNewOrderSingle(int count)
+auto testDeserializeAndValidateNewOrderSingle(int count) -> long
 {
     FIX::ClOrdID clOrdID("ORDERID");
     FIX::HandlInst handlInst('1');
@@ -410,7 +410,7 @@ long testDeserializeAndValidateNewOrderSingle(int count)
     return GetTickCount() - start;
 }
 
-long testCreateQuoteRequest(int count)
+auto testCreateQuoteRequest(int count) -> long
 {
     count = count - 1;
 
@@ -455,7 +455,7 @@ long testCreateQuoteRequest(int count)
     return GetTickCount() - start;
 }
 
-long testSerializeQuoteRequest(int count)
+auto testSerializeQuoteRequest(int count) -> long
 {
     FIX42::QuoteRequest message(FIX::QuoteReqID("1"));
     FIX42::QuoteRequest::NoRelatedSym noRelatedSym;
@@ -483,7 +483,7 @@ long testSerializeQuoteRequest(int count)
     return GetTickCount() - start;
 }
 
-long testDeserializeQuoteRequest(int count)
+auto testDeserializeQuoteRequest(int count) -> long
 {
     FIX42::QuoteRequest message(FIX::QuoteReqID("1"));
     FIX42::QuoteRequest::NoRelatedSym noRelatedSym;
@@ -512,7 +512,7 @@ long testDeserializeQuoteRequest(int count)
     return GetTickCount() - start;
 }
 
-long testDeserializeAndValidateQuoteRequest(int count)
+auto testDeserializeAndValidateQuoteRequest(int count) -> long
 {
     FIX42::QuoteRequest message(FIX::QuoteReqID("1"));
     FIX42::QuoteRequest::NoRelatedSym noRelatedSym;
@@ -541,7 +541,7 @@ long testDeserializeAndValidateQuoteRequest(int count)
     return GetTickCount() - start;
 }
 
-long testReadFromQuoteRequest(int count)
+auto testReadFromQuoteRequest(int count) -> long
 {
     count = count - 1;
 
@@ -602,7 +602,7 @@ long testReadFromQuoteRequest(int count)
     return GetTickCount() - start;
 }
 
-long testFileStoreNewOrderSingle(int count)
+auto testFileStoreNewOrderSingle(int count) -> long
 {
     FIX::BeginString beginString(FIX::BeginString_FIX42);
     FIX::SenderCompID senderCompID("SENDER");
@@ -633,7 +633,7 @@ long testFileStoreNewOrderSingle(int count)
     return end - start;
 }
 
-long testValidateNewOrderSingle(int count)
+auto testValidateNewOrderSingle(int count) -> long
 {
     FIX::ClOrdID clOrdID("ORDERID");
     FIX::HandlInst handlInst('1');
@@ -660,7 +660,7 @@ long testValidateNewOrderSingle(int count)
     return GetTickCount() - start;
 }
 
-long testValidateDictNewOrderSingle(int count)
+auto testValidateDictNewOrderSingle(int count) -> long
 {
     FIX::ClOrdID clOrdID("ORDERID");
     FIX::HandlInst handlInst('1');
@@ -686,7 +686,7 @@ long testValidateDictNewOrderSingle(int count)
     return GetTickCount() - start;
 }
 
-long testValidateQuoteRequest(int count)
+auto testValidateQuoteRequest(int count) -> long
 {
     FIX42::QuoteRequest message(FIX::QuoteReqID("1"));
     FIX42::QuoteRequest::NoRelatedSym noRelatedSym;
@@ -722,7 +722,7 @@ long testValidateQuoteRequest(int count)
     return GetTickCount() - start;
 }
 
-long testValidateDictQuoteRequest(int count)
+auto testValidateDictQuoteRequest(int count) -> long
 {
     FIX42::QuoteRequest message(FIX::QuoteReqID("1"));
     FIX42::QuoteRequest::NoRelatedSym noRelatedSym;
@@ -761,42 +761,42 @@ class TestApplication : public FIX::NullApplication
 {
 public:
     TestApplication()
-        : m_count(0) {}
+         {}
 
     void fromApp(const FIX::Message &m, const FIX::SessionID &)
-        EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::UnsupportedMessageType)
+        EXCEPT(FIX::FieldNotFound, FIX::IncorrectDataFormat, FIX::IncorrectTagValue, FIX::UnsupportedMessageType) override
     {
         m_count++;
     }
 
-    int getCount() { return m_count; }
+    auto getCount() -> int { return m_count; }
 
 private:
-    int m_count;
+    int m_count{0};
 };
 
-long testSendOnSocket(int count, short port)
+auto testSendOnSocket(int count, short port) -> long
 {
     std::stringstream stream;
-    stream << "[DEFAULT]" << std::endl
-           << "SocketConnectHost=localhost" << std::endl
-           << "SocketConnectPort=" << (unsigned short)port << std::endl
-           << "SocketAcceptPort=" << (unsigned short)port << std::endl
-           << "SocketReuseAddress=Y" << std::endl
-           << "StartTime=00:00:00" << std::endl
-           << "EndTime=00:00:00" << std::endl
-           << "UseDataDictionary=N" << std::endl
-           << "BeginString=FIX.4.2" << std::endl
-           << "PersistMessages=N" << std::endl
-           << "[SESSION]" << std::endl
-           << "ConnectionType=acceptor" << std::endl
-           << "SenderCompID=SERVER" << std::endl
-           << "TargetCompID=CLIENT" << std::endl
-           << "[SESSION]" << std::endl
-           << "ConnectionType=initiator" << std::endl
-           << "SenderCompID=CLIENT" << std::endl
-           << "TargetCompID=SERVER" << std::endl
-           << "HeartBtInt=30" << std::endl;
+    stream << "[DEFAULT]" << '\n'
+           << "SocketConnectHost=localhost" << '\n'
+           << "SocketConnectPort=" << (unsigned short)port << '\n'
+           << "SocketAcceptPort=" << (unsigned short)port << '\n'
+           << "SocketReuseAddress=Y" << '\n'
+           << "StartTime=00:00:00" << '\n'
+           << "EndTime=00:00:00" << '\n'
+           << "UseDataDictionary=N" << '\n'
+           << "BeginString=FIX.4.2" << '\n'
+           << "PersistMessages=N" << '\n'
+           << "[SESSION]" << '\n'
+           << "ConnectionType=acceptor" << '\n'
+           << "SenderCompID=SERVER" << '\n'
+           << "TargetCompID=CLIENT" << '\n'
+           << "[SESSION]" << '\n'
+           << "ConnectionType=initiator" << '\n'
+           << "SenderCompID=CLIENT" << '\n'
+           << "TargetCompID=SERVER" << '\n'
+           << "HeartBtInt=30" << '\n';
 
     FIX::ClOrdID clOrdID("ORDERID");
     FIX::HandlInst handlInst('1');
@@ -841,28 +841,28 @@ long testSendOnSocket(int count, short port)
     return ticks;
 }
 
-long testSendOnThreadedSocket(int count, short port)
+auto testSendOnThreadedSocket(int count, short port) -> long
 {
     std::stringstream stream;
-    stream << "[DEFAULT]" << std::endl
-           << "SocketConnectHost=localhost" << std::endl
-           << "SocketConnectPort=" << (unsigned short)port << std::endl
-           << "SocketAcceptPort=" << (unsigned short)port << std::endl
-           << "SocketReuseAddress=Y" << std::endl
-           << "StartTime=00:00:00" << std::endl
-           << "EndTime=00:00:00" << std::endl
-           << "UseDataDictionary=N" << std::endl
-           << "BeginString=FIX.4.2" << std::endl
-           << "PersistMessages=N" << std::endl
-           << "[SESSION]" << std::endl
-           << "ConnectionType=acceptor" << std::endl
-           << "SenderCompID=SERVER" << std::endl
-           << "TargetCompID=CLIENT" << std::endl
-           << "[SESSION]" << std::endl
-           << "ConnectionType=initiator" << std::endl
-           << "SenderCompID=CLIENT" << std::endl
-           << "TargetCompID=SERVER" << std::endl
-           << "HeartBtInt=30" << std::endl;
+    stream << "[DEFAULT]" << '\n'
+           << "SocketConnectHost=localhost" << '\n'
+           << "SocketConnectPort=" << (unsigned short)port << '\n'
+           << "SocketAcceptPort=" << (unsigned short)port << '\n'
+           << "SocketReuseAddress=Y" << '\n'
+           << "StartTime=00:00:00" << '\n'
+           << "EndTime=00:00:00" << '\n'
+           << "UseDataDictionary=N" << '\n'
+           << "BeginString=FIX.4.2" << '\n'
+           << "PersistMessages=N" << '\n'
+           << "[SESSION]" << '\n'
+           << "ConnectionType=acceptor" << '\n'
+           << "SenderCompID=SERVER" << '\n'
+           << "TargetCompID=CLIENT" << '\n'
+           << "[SESSION]" << '\n'
+           << "ConnectionType=initiator" << '\n'
+           << "SenderCompID=CLIENT" << '\n'
+           << "TargetCompID=SERVER" << '\n'
+           << "HeartBtInt=30" << '\n';
 
     FIX::ClOrdID clOrdID("ORDERID");
     FIX::HandlInst handlInst('1');

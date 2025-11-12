@@ -27,18 +27,19 @@
 #include <algorithm>
 #include <deque>
 #include <iterator>
+#include <utility>
 
 namespace FIX
 {
 
-    FieldMap::FieldMap(const message_order &order, int size)
-        : m_order(order)
+    FieldMap::FieldMap(message_order order, int size)
+        : m_order(std::move(order))
     {
         m_fields.reserve(size);
     }
 
-    FieldMap::FieldMap(const message_order &order /*= message_order(message_order::normal)*/)
-        : m_order(order)
+    FieldMap::FieldMap(message_order order /*= message_order(message_order::normal)*/)
+        : m_order(std::move(order))
     {
         m_fields.reserve(DEFAULT_SIZE);
     }
@@ -51,14 +52,13 @@ namespace FIX
 
     FieldMap::FieldMap(const FieldMap &copy) { *this = copy; }
 
-    FieldMap::FieldMap(FieldMap &&rhs)
-        : m_fields(std::move(rhs.m_fields)),
-          m_groups(std::move(rhs.m_groups)),
-          m_order(std::move(rhs.m_order)) {}
+    FieldMap::FieldMap(FieldMap &&rhs) : m_fields(std::move(rhs.m_fields)),
+                                         m_groups(std::move(rhs.m_groups)),
+                                         m_order(std::move(rhs.m_order)) {}
 
     FieldMap::~FieldMap() { clear(); }
 
-    FieldMap &FieldMap::operator=(const FieldMap &rhs)
+    auto FieldMap::operator=(const FieldMap &rhs) -> FieldMap &
     {
         clear();
 
@@ -76,7 +76,7 @@ namespace FIX
         return *this;
     }
 
-    FieldMap &FieldMap::operator=(FieldMap &&rhs)
+    auto FieldMap::operator=(FieldMap &&rhs) -> FieldMap &
     {
         m_fields = std::move(rhs.m_fields);
         m_groups = std::move(rhs.m_groups);
@@ -86,14 +86,14 @@ namespace FIX
 
     void FieldMap::addGroup(int field, const FieldMap &group, bool setCount)
     {
-        FieldMap *pGroup = new FieldMap(group);
+        auto *pGroup = new FieldMap(group);
 
         addGroupPtr(field, pGroup, setCount);
     }
 
     void FieldMap::addGroupPtr(int tag, FieldMap *group, bool setCount)
     {
-        if (group == 0)
+        if (group == nullptr)
         {
             return;
         }
@@ -109,7 +109,7 @@ namespace FIX
 
     void FieldMap::replaceGroup(int num, int tag, const FieldMap &group)
     {
-        Groups::const_iterator tagWithGroups = m_groups.find(tag);
+        auto tagWithGroups = m_groups.find(tag);
         if (tagWithGroups == m_groups.end())
         {
             return;
@@ -127,7 +127,7 @@ namespace FIX
 
     void FieldMap::removeGroup(int num, int tag)
     {
-        Groups::iterator tagWithGroups = m_groups.find(tag);
+        auto tagWithGroups = m_groups.find(tag);
         if (tagWithGroups == m_groups.end())
         {
             return;
@@ -142,7 +142,7 @@ namespace FIX
             return;
         }
 
-        std::vector<FieldMap *>::iterator group = groups.begin();
+        auto group = groups.begin();
         std::advance(group, (num - 1));
 
         delete (*group);
@@ -162,7 +162,7 @@ namespace FIX
 
     void FieldMap::removeGroup(int tag)
     {
-        Groups::iterator tagWithGroups = m_groups.find(tag);
+        auto tagWithGroups = m_groups.find(tag);
         if (tagWithGroups == m_groups.end())
         {
             return;
@@ -173,7 +173,7 @@ namespace FIX
 
         m_groups.erase(tagWithGroups);
 
-        std::for_each(toDelete.begin(), toDelete.end(), [](FieldMap *group)
+        std::for_each(toDelete.begin(), toDelete.end(), [](FieldMap *group) -> void
                       { delete group; });
 
         removeField(tag);
@@ -181,7 +181,7 @@ namespace FIX
 
     void FieldMap::removeField(int tag)
     {
-        Fields::iterator field = findTag(tag);
+        auto field = findTag(tag);
         if (field != m_fields.end())
         {
             m_fields.erase(field);
@@ -189,13 +189,13 @@ namespace FIX
         }
     }
 
-    bool FieldMap::hasGroup(int num, int tag) const { return (int)groupCount(tag) >= num; }
+    auto FieldMap::hasGroup(int num, int tag) const -> bool { return (int)groupCount(tag) >= num; }
 
-    bool FieldMap::hasGroup(int tag) const { return m_groups.find(tag) != m_groups.end(); }
+    auto FieldMap::hasGroup(int tag) const -> bool { return m_groups.find(tag) != m_groups.end(); }
 
-    size_t FieldMap::groupCount(int tag) const
+    auto FieldMap::groupCount(int tag) const -> size_t
     {
-        Groups::const_iterator tagWithGroups = m_groups.find(tag);
+        auto tagWithGroups = m_groups.find(tag);
         return tagWithGroups == m_groups.end() ? 0 : tagWithGroups->second.size();
     }
 
@@ -214,9 +214,9 @@ namespace FIX
         m_groups.clear();
     }
 
-    bool FieldMap::isEmpty() { return m_fields.empty(); }
+    auto FieldMap::isEmpty() -> bool { return m_fields.empty(); }
 
-    size_t FieldMap::totalFields() const
+    auto FieldMap::totalFields() const -> size_t
     {
         size_t result = m_fields.size();
 
@@ -230,7 +230,7 @@ namespace FIX
         return result;
     }
 
-    std::string &FieldMap::calculateString(std::string &result) const
+    auto FieldMap::calculateString(std::string &result) const -> std::string &
     {
         for (auto const &field : m_fields)
         {
@@ -242,7 +242,7 @@ namespace FIX
                 continue;
             }
 
-            Groups::const_iterator tagWithGroups = m_groups.find(field.getTag());
+            auto tagWithGroups = m_groups.find(field.getTag());
             if (tagWithGroups == m_groups.end())
             {
                 continue;
@@ -256,7 +256,7 @@ namespace FIX
         return result;
     }
 
-    int FieldMap::calculateLength(int beginStringField, int bodyLengthField, int checkSumField) const
+    auto FieldMap::calculateLength(int beginStringField, int bodyLengthField, int checkSumField) const -> int
     {
         int result = 0;
 
@@ -279,7 +279,7 @@ namespace FIX
         return result;
     }
 
-    int FieldMap::calculateTotal(int checkSumField) const
+    auto FieldMap::calculateTotal(int checkSumField) const -> int
     {
         int result = 0;
 

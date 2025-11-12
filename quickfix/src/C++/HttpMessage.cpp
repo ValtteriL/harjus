@@ -31,17 +31,17 @@
 namespace FIX
 {
 
-    HttpMessage::HttpMessage() {}
+    HttpMessage::HttpMessage() = default;
 
     HttpMessage::HttpMessage(const std::string &string) EXCEPT(InvalidMessage) { setString(string); }
 
-    std::string HttpMessage::toString() const
+    auto HttpMessage::toString() const -> std::string
     {
         std::string str;
         return toString(str);
     }
 
-    std::string &HttpMessage::toString(std::string &str) const
+    auto HttpMessage::toString(std::string &str) const -> std::string &
     {
         str = m_root + getParameterString();
         return str;
@@ -80,20 +80,20 @@ namespace FIX
 
         while (paramPos != std::string::npos)
         {
-            std::string::size_type sepPos = parameters.find_first_of("=", paramPos);
+            std::string::size_type sepPos = parameters.find_first_of('=', paramPos);
             if (sepPos == std::string::npos)
             {
                 break;
             }
             std::string::size_type tempPos = paramPos;
-            paramPos = parameters.find_first_of("&", paramPos + 1);
+            paramPos = parameters.find_first_of('&', paramPos + 1);
             std::string key = parameters.substr(tempPos + 1, sepPos - tempPos - 1);
             std::string value = parameters.substr(sepPos + 1, paramPos - sepPos - 1);
             m_parameters[key] = value;
         }
     }
 
-    std::string HttpMessage::createResponse(int error, const std::string &text)
+    auto HttpMessage::createResponse(int error, const std::string &text) -> std::string
     {
         std::string errorString;
         switch (error)

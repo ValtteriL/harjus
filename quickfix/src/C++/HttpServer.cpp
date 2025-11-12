@@ -25,6 +25,8 @@
 
 #include "HttpConnection.h"
 #include "HttpServer.h"
+
+#include <utility>
 #include "Settings.h"
 #include "Utility.h"
 
@@ -32,7 +34,7 @@ namespace FIX
 {
     Mutex HttpServer::s_mutex;
     int HttpServer::s_count = 0;
-    HttpServer *HttpServer::s_pServer = 0;
+    HttpServer *HttpServer::s_pServer = nullptr;
 
     void HttpServer::startGlobal(const SessionSettings &s) EXCEPT(ConfigError, RuntimeError)
     {
@@ -60,13 +62,13 @@ namespace FIX
         {
             s_pServer->stop();
             delete s_pServer;
-            s_pServer = 0;
+            s_pServer = nullptr;
         }
     }
 
-    HttpServer::HttpServer(const SessionSettings &settings) EXCEPT(ConfigError)
-        : m_pServer(0),
-          m_settings(settings),
+    HttpServer::HttpServer(SessionSettings settings) EXCEPT(ConfigError)
+        : m_pServer(nullptr),
+          m_settings(std::move(settings)),
           m_threadid(0),
           m_port(0),
           m_stop(false) {}
@@ -130,10 +132,10 @@ namespace FIX
 
         m_pServer->close();
         delete m_pServer;
-        m_pServer = 0;
+        m_pServer = nullptr;
     }
 
-    bool HttpServer::onPoll()
+    auto HttpServer::onPoll() -> bool
     {
         if (!m_pServer || m_stop)
         {
@@ -161,7 +163,7 @@ namespace FIX
 
     void HttpServer::onWrite(SocketServer &server, socket_handle s) {}
 
-    bool HttpServer::onData(SocketServer &server, socket_handle s) { return true; }
+    auto HttpServer::onData(SocketServer &server, socket_handle s) -> bool { return true; }
 
     void HttpServer::onDisconnect(SocketServer &, socket_handle s) {}
 
@@ -169,11 +171,11 @@ namespace FIX
 
     void HttpServer::onTimeout(SocketServer &) {}
 
-    THREAD_PROC HttpServer::startThread(void *p)
+    auto HttpServer::startThread(void *p) -> THREAD_PROC
     {
-        HttpServer *pServer = static_cast<HttpServer *>(p);
+        auto *pServer = static_cast<HttpServer *>(p);
         pServer->onStart();
-        return 0;
+        return nullptr;
     }
 
 } // namespace FIX

@@ -27,6 +27,7 @@
 #include "Utility.h"
 #include "Values.h"
 #include <iomanip>
+#include <memory>
 
 namespace FIX
 {
@@ -117,13 +118,13 @@ namespace FIX
         m_header.setField(msgType);
     }
 
-    Message::~Message() {}
+    Message::~Message() = default;
 
-    bool Message::InitializeXML(const std::string &url)
+    auto Message::InitializeXML(const std::string &url) -> bool
     {
         try
         {
-            s_dataDictionary.reset(new DataDictionary(url));
+            s_dataDictionary = std::make_unique<DataDictionary>(url);
             return true;
         }
         catch (ConfigError &)
@@ -236,14 +237,14 @@ namespace FIX
         }
     }
 
-    std::string Message::toString(int beginStringField, int bodyLengthField, int checkSumField) const
+    auto Message::toString(int beginStringField, int bodyLengthField, int checkSumField) const -> std::string
     {
         std::string str;
         toString(str, beginStringField, bodyLengthField, checkSumField);
         return str;
     }
 
-    std::string &Message::toString(std::string &str, int beginStringField, int bodyLengthField, int checkSumField) const
+    auto Message::toString(std::string &str, int beginStringField, int bodyLengthField, int checkSumField) const -> std::string &
     {
         size_t length = bodyLength(beginStringField, bodyLengthField, checkSumField);
         m_header.setField(IntField(bodyLengthField, static_cast<int>(length)));
@@ -265,36 +266,36 @@ namespace FIX
         return str;
     }
 
-    std::string Message::toXML() const
+    auto Message::toXML() const -> std::string
     {
         std::string str;
         toXML(str);
         return str;
     }
 
-    std::string &Message::toXML(std::string &str) const
+    auto Message::toXML(std::string &str) const -> std::string &
     {
         std::stringstream stream;
-        stream << "<message>" << std::endl
-               << std::setw(2) << " " << "<header>" << std::endl
-               << toXMLFields(getHeader(), 4) << std::setw(2) << " " << "</header>" << std::endl
-               << std::setw(2) << " " << "<body>" << std::endl
-               << toXMLFields(*this, 4) << std::setw(2) << " " << "</body>" << std::endl
-               << std::setw(2) << " " << "<trailer>" << std::endl
-               << toXMLFields(getTrailer(), 4) << std::setw(2) << " " << "</trailer>" << std::endl
+        stream << "<message>" << '\n'
+               << std::setw(2) << " " << "<header>" << '\n'
+               << toXMLFields(getHeader(), 4) << std::setw(2) << " " << "</header>" << '\n'
+               << std::setw(2) << " " << "<body>" << '\n'
+               << toXMLFields(*this, 4) << std::setw(2) << " " << "</body>" << '\n'
+               << std::setw(2) << " " << "<trailer>" << '\n'
+               << toXMLFields(getTrailer(), 4) << std::setw(2) << " " << "</trailer>" << '\n'
                << "</message>";
 
         return str = stream.str();
     }
 
-    std::string Message::toXMLFields(const FieldMap &fields, int space) const
+    auto Message::toXMLFields(const FieldMap &fields, int space) const -> std::string
     {
         std::stringstream stream;
         std::string name;
         for (const FieldMap::value_type &field : fields)
         {
             int tag = field.getTag();
-            std::string value = field.getString();
+            const std::string& value = field.getString();
 
             stream << std::setw(space) << " " << "<field ";
             if (s_dataDictionary.get() && s_dataDictionary->getFieldName(tag, name))
@@ -308,15 +309,15 @@ namespace FIX
             }
             stream << ">";
             stream << "<![CDATA[" << value << "]]>";
-            stream << "</field>" << std::endl;
+            stream << "</field>" << '\n';
         }
 
         for (const FieldMap::g_value_type &group : fields.groups())
         {
             for (const FieldMap *groupFields : group.second)
             {
-                stream << std::setw(space) << " " << "<group>" << std::endl
-                       << toXMLFields(*groupFields, space + 2) << std::setw(space) << " " << "</group>" << std::endl;
+                stream << std::setw(space) << " " << "<group>" << '\n'
+                       << toXMLFields(*groupFields, space + 2) << std::setw(space) << " " << "</group>" << '\n';
             }
         }
 
@@ -427,8 +428,8 @@ namespace FIX
         const DataDictionary &dataDictionary)
     {
         int group = field.getTag();
-        int delim;
-        const DataDictionary *pDD = 0;
+        int delim = 0;
+        const DataDictionary *pDD = nullptr;
         if (!dataDictionary.getGroup(msg, group, delim, pDD))
         {
             return;
@@ -444,13 +445,13 @@ namespace FIX
             if ( // found delimiter
                 (field.getTag() == delim) ||
                 // no delimiter, but field belongs to group OR field already processed
-                (pDD->isField(field.getTag()) && (pGroup.get() == 0 || pGroup->isSetField(field.getTag()))))
+                (pDD->isField(field.getTag()) && (pGroup.get() == nullptr || pGroup->isSetField(field.getTag()))))
             {
                 if (pGroup.get())
                 {
                     map.addGroupPtr(group, pGroup.release(), false);
                 }
-                pGroup.reset(new Group(field.getTag(), delim, pDD->getOrderedFields()));
+                pGroup = std::make_unique<Group>(field.getTag(), delim, pDD->getOrderedFields());
             }
             else if (!pDD->isField(field.getTag()))
             {
@@ -471,7 +472,7 @@ namespace FIX
         }
     }
 
-    bool Message::setStringHeader(const std::string &string)
+    auto Message::setStringHeader(const std::string &string) -> bool
     {
         clear();
 
@@ -500,7 +501,7 @@ namespace FIX
         return true;
     }
 
-    bool Message::isHeaderField(int field)
+    auto Message::isHeaderField(int field) -> bool
     {
         switch (field)
         {
@@ -539,12 +540,12 @@ namespace FIX
         };
     }
 
-    bool Message::isHeaderField(const FieldBase &field, const DataDictionary *pD)
+    auto Message::isHeaderField(const FieldBase &field, const DataDictionary *pD) -> bool
     {
         return isHeaderField(field.getTag(), pD);
     }
 
-    bool Message::isHeaderField(int field, const DataDictionary *pD)
+    auto Message::isHeaderField(int field, const DataDictionary *pD) -> bool
     {
         if (isHeaderField(field))
         {
@@ -557,7 +558,7 @@ namespace FIX
         return false;
     }
 
-    bool Message::isTrailerField(int field)
+    auto Message::isTrailerField(int field) -> bool
     {
         switch (field)
         {
@@ -570,12 +571,12 @@ namespace FIX
         };
     }
 
-    bool Message::isTrailerField(const FieldBase &field, const DataDictionary *pD)
+    auto Message::isTrailerField(const FieldBase &field, const DataDictionary *pD) -> bool
     {
         return isTrailerField(field.getTag(), pD);
     }
 
-    bool Message::isTrailerField(int field, const DataDictionary *pD)
+    auto Message::isTrailerField(int field, const DataDictionary *pD) -> bool
     {
         if (isTrailerField(field))
         {
@@ -588,7 +589,7 @@ namespace FIX
         return false;
     }
 
-    SessionID Message::getSessionID(const std::string &qualifier) const EXCEPT(FieldNotFound)
+    auto Message::getSessionID(const std::string &qualifier) const -> SessionID EXCEPT(FieldNotFound)
     {
         return SessionID(
             getHeader().getField<BeginString>(),
@@ -608,9 +609,9 @@ namespace FIX
     {
         try
         {
-            const BodyLength &aBodyLength = FIELD_GET_REF(m_header, BodyLength);
+            const auto &aBodyLength = FIELD_GET_REF(m_header, BodyLength);
 
-            const size_t expectedLength = static_cast<size_t>(aBodyLength);
+            const auto expectedLength = static_cast<size_t>(aBodyLength);
             const size_t receivedLength = bodyLength();
 
             if (expectedLength != receivedLength)
@@ -620,7 +621,7 @@ namespace FIX
                 throw InvalidMessage(text.str());
             }
 
-            const CheckSum &aCheckSum = FIELD_GET_REF(m_trailer, CheckSum);
+            const auto &aCheckSum = FIELD_GET_REF(m_trailer, CheckSum);
 
             const int expectedChecksum = (int)aCheckSum;
             const int receivedChecksum = checkSum();
@@ -644,12 +645,12 @@ namespace FIX
         }
     }
 
-    FIX::FieldBase Message::extractField(
+    auto Message::extractField(
         const std::string &string,
         std::string::size_type &pos,
         const DataDictionary *pSessionDD /*= 0*/,
         const DataDictionary *pAppDD /*= 0*/,
-        const Group *pGroup /*= 0*/) const
+        const Group *pGroup /*= 0*/) const -> FIX::FieldBase
     {
         std::string::const_iterator const tagStart = string.begin() + pos;
         std::string::const_iterator const strEnd = string.end();
@@ -726,7 +727,7 @@ namespace FIX
         pos = std::distance(string.begin(), tagEnd);
 #endif
 
-        return FieldBase(field, valueStart, soh, tagStart, tagEnd);
+        return {field, valueStart, soh, tagStart, tagEnd};
     }
 
 } // namespace FIX

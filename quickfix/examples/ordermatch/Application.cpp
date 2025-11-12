@@ -126,7 +126,7 @@ void Application::onMessage(const FIX42::MarketDataRequest &message, const FIX::
 
 void Application::onMessage(const FIX43::MarketDataRequest &message, const FIX::SessionID &)
 {
-    std::cout << message.toXML() << std::endl;
+    std::cout << message.toXML() << '\n';
 }
 
 void Application::updateOrder(const Order &order, char status)
@@ -228,7 +228,7 @@ void Application::processCancel(const std::string &id, const std::string &symbol
     m_orderMatcher.erase(order);
 }
 
-Order::Side Application::convert(const FIX::Side &side)
+auto Application::convert(const FIX::Side &side) -> Order::Side
 {
     switch (side)
     {
@@ -241,7 +241,7 @@ Order::Side Application::convert(const FIX::Side &side)
     }
 }
 
-Order::Type Application::convert(const FIX::OrdType &ordType)
+auto Application::convert(const FIX::OrdType &ordType) -> Order::Type
 {
     switch (ordType)
     {
@@ -252,7 +252,7 @@ Order::Type Application::convert(const FIX::OrdType &ordType)
     }
 }
 
-FIX::Side Application::convert(Order::Side side)
+auto Application::convert(Order::Side side) -> FIX::Side
 {
     switch (side)
     {
@@ -265,7 +265,7 @@ FIX::Side Application::convert(Order::Side side)
     }
 }
 
-FIX::OrdType Application::convert(Order::Type type)
+auto Application::convert(Order::Type type) -> FIX::OrdType
 {
     switch (type)
     {

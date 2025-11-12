@@ -28,7 +28,7 @@
 
 namespace FIX
 {
-  bool PUGIXML_DOMAttributes::get( const std::string& name, std::string& value )
+  auto PUGIXML_DOMAttributes::get( const std::string& name, std::string& value ) -> bool
   {
     pugi::xml_attribute result = m_pNode.attribute(name.c_str());
     if( !result ) return false;
@@ -36,50 +36,49 @@ namespace FIX
     return true;
   }
 
-  DOMAttributes::map PUGIXML_DOMAttributes::toMap()
+  auto PUGIXML_DOMAttributes::toMap() -> DOMAttributes::map
   {
-    return DOMAttributes::map();
+    return {};
   }
 
-  DOMNodePtr PUGIXML_DOMNode::getFirstChildNode()
+  auto PUGIXML_DOMNode::getFirstChildNode() -> DOMNodePtr
   {
     pugi::xml_node pNode = m_pNode.first_child();
-    if( !pNode ) return DOMNodePtr();
+    if( !pNode ) return {};
     return DOMNodePtr(new PUGIXML_DOMNode(pNode));
   }
 
-  DOMNodePtr PUGIXML_DOMNode::getNextSiblingNode()
+  auto PUGIXML_DOMNode::getNextSiblingNode() -> DOMNodePtr
   {
     pugi::xml_node pNode = m_pNode.next_sibling();
-    if( !pNode ) return DOMNodePtr();
+    if( !pNode ) return {};
     return DOMNodePtr(new PUGIXML_DOMNode(pNode));
   }
 
-  DOMAttributesPtr PUGIXML_DOMNode::getAttributes()
+  auto PUGIXML_DOMNode::getAttributes() -> DOMAttributesPtr
   {
     return DOMAttributesPtr(new PUGIXML_DOMAttributes(m_pNode));
   }
 
-  std::string PUGIXML_DOMNode::getName()
+  auto PUGIXML_DOMNode::getName() -> std::string
   {
     return m_pNode.name();
   }
 
-  std::string PUGIXML_DOMNode::getText()
+  auto PUGIXML_DOMNode::getText() -> std::string
   {
     return m_pNode.value();
   }
 
   PUGIXML_DOMDocument::PUGIXML_DOMDocument() EXCEPT ( ConfigError )
-  {
-  }
+  = default;
 
   PUGIXML_DOMDocument::~PUGIXML_DOMDocument()
   {
     //xmlFreeDoc(m_pDoc);
   }
 
-  bool PUGIXML_DOMDocument::load( std::istream& stream )
+  auto PUGIXML_DOMDocument::load( std::istream& stream ) -> bool
   {
     try
     {
@@ -88,7 +87,7 @@ namespace FIX
     catch( ... ) { return false; }
   }
 
-  bool PUGIXML_DOMDocument::load( const std::string& url )
+  auto PUGIXML_DOMDocument::load( const std::string& url ) -> bool
   {
     try
     {
@@ -97,15 +96,15 @@ namespace FIX
     catch( ... ) { return false; }
   }
 
-  bool PUGIXML_DOMDocument::xml( std::ostream& out )
+  auto PUGIXML_DOMDocument::xml( std::ostream& out ) -> bool
   {
     return false;
   }
 
-  DOMNodePtr PUGIXML_DOMDocument::getNode( const std::string& XPath )
+  auto PUGIXML_DOMDocument::getNode( const std::string& XPath ) -> DOMNodePtr
   {
     pugi::xpath_node result = m_pDoc.select_node(XPath.c_str());
-    if( !result ) return DOMNodePtr();
+    if( !result ) return {};
 
     return DOMNodePtr(new PUGIXML_DOMNode(result.node()));
   }

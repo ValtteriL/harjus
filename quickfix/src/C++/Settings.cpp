@@ -28,7 +28,7 @@
 
 namespace FIX
 {
-    bool isComment(const std::string &line)
+    auto isComment(const std::string &line) -> bool
     {
         if (line.size() == 0)
         {
@@ -38,7 +38,7 @@ namespace FIX
         return line[0] == '#';
     }
 
-    bool isSection(const std::string &line)
+    auto isSection(const std::string &line) -> bool
     {
         if (line.size() == 0)
         {
@@ -48,11 +48,11 @@ namespace FIX
         return line[0] == '[' && line[line.size() - 1] == ']';
     }
 
-    std::string splitSection(const std::string &line) { return string_strip(std::string(line, 1, line.size() - 2)); }
+    auto splitSection(const std::string &line) -> std::string { return string_strip(std::string(line, 1, line.size() - 2)); }
 
-    bool isKeyValue(const std::string &line) { return line.find('=') != std::string::npos; }
+    auto isKeyValue(const std::string &line) -> bool { return line.find('=') != std::string::npos; }
 
-    std::pair<std::string, std::string> splitKeyValue(const std::string &line)
+    auto splitKeyValue(const std::string &line) -> std::pair<std::string, std::string>
     {
         size_t equals = line.find('=');
         std::string key = std::string(line, 0, equals);
@@ -60,7 +60,7 @@ namespace FIX
         return std::pair<std::string, std::string>(key, value);
     }
 
-    std::string resolveEnvVars(const std::string &str)
+    auto resolveEnvVars(const std::string &str) -> std::string
     {
         std::string resultStr;
         size_t actPos = 0;
@@ -127,8 +127,8 @@ namespace FIX
                     }
                     // varName contains the name of the variable,
                     // actPos points to first char _after_ variable
-                    const char *varValue = 0;
-                    if (!varName.empty() && (0 != (varValue = getenv(varName.c_str()))))
+                    const char *varValue = nullptr;
+                    if (!varName.empty() && (nullptr != (varValue = getenv(varName.c_str()))))
                     {
                         resultStr.append(varValue);
                     }
@@ -143,11 +143,11 @@ namespace FIX
         return resultStr;
     }
 
-    std::istream &operator>>(std::istream &stream, Settings &s)
+    auto operator>>(std::istream &stream, Settings &s) -> std::istream &
     {
         char buffer[1024];
         std::string line;
-        Settings::Sections::iterator section = s.m_sections.end();
+        auto section = s.m_sections.end();
         ;
 
         while (stream.getline(buffer, sizeof(buffer)))
@@ -174,14 +174,14 @@ namespace FIX
         return stream;
     }
 
-    Settings::Sections Settings::get(const std::string &name) const
+    auto Settings::get(const std::string &name) const -> Settings::Sections
     {
         Sections sections;
-        for (Sections::size_type i = 0; i < m_sections.size(); ++i)
+        for (const auto & m_section : m_sections)
         {
-            if (m_sections[i].getName() == name)
+            if (m_section.getName() == name)
             {
-                sections.push_back(m_sections[i]);
+                sections.push_back(m_section);
             }
         }
         return sections;

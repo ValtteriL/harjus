@@ -55,7 +55,7 @@ using namespace FIX44;
 
 namespace
 {
-    static UtcTimeStamp create_tm()
+    static auto create_tm() -> UtcTimeStamp
     {
         UtcTimeStamp result = UtcTimeStamp(0, 0, 0, 1, 1, 1900);
         return result;
@@ -335,8 +335,8 @@ TEST_CASE("MessageTests")
         message.addGroup(marketDataEntryGroup);
         message.addGroup(symbolGroup);
 
-        FIX::Message copy = object;
-        FIX::Message copy2 = copy;
+        const FIX::Message& copy = object;
+        const FIX::Message& copy2 = copy;
 
         CHECK(object.toString() == copy.toString());
         CHECK(object.toString() == copy2.toString());
@@ -349,8 +349,8 @@ TEST_CASE("MessageTests")
                                  "52=20000426-12:05:06\00156=ISLD\001";
         const std::string str2 = "8=FIX.4.2\0019=46\00135=0\00134=3\00149=TW\001"
                                  "52=20000426-12:05:06\00156=ISLD\00110=000\001";
-        std::string::size_type i;
-        int chksum;
+        std::string::size_type i = 0;
+        int chksum = 0;
 
         for (i = 0L, chksum = 0; i < str1.size(); chksum += (int)str1[i++])
         {
@@ -423,30 +423,30 @@ TEST_CASE("MessageTests")
         message.getTrailer().setField(CheckSum(132));
 
         std::stringstream stream;
-        stream << "<message>" << std::endl
-               << "  <header>" << std::endl
-               << "    <field name=\"BeginString\" number=\"8\"><![CDATA[FIX.4.2]]></field>" << std::endl
-               << "    <field name=\"MsgType\" number=\"35\" enum=\"Logon\"><![CDATA[A]]></field>" << std::endl
-               << "    <field name=\"SenderCompID\" number=\"49\"><![CDATA[SENDER]]></field>" << std::endl
-               << "    <field name=\"TargetCompID\" number=\"56\"><![CDATA[TARGET]]></field>" << std::endl
-               << "  </header>" << std::endl
-               << "  <body>" << std::endl
-               << "    <field name=\"Account\" number=\"1\"><![CDATA[ACCOUNT]]></field>" << std::endl
-               << "    <field name=\"ClOrdID\" number=\"11\"><![CDATA[CLORDID]]></field>" << std::endl
-               << "    <field name=\"IDSource\" number=\"22\" enum=\"CUSIP\"><![CDATA[1]]></field>" << std::endl
-               << "    <field name=\"NoMsgTypes\" number=\"384\"><![CDATA[2]]></field>" << std::endl
-               << "    <group>" << std::endl
-               << "      <field name=\"RefMsgType\" number=\"372\"><![CDATA[A]]></field>" << std::endl
-               << "      <field name=\"MsgDirection\" number=\"385\"><![CDATA[0]]></field>" << std::endl
-               << "    </group>" << std::endl
-               << "    <group>" << std::endl
-               << "      <field name=\"RefMsgType\" number=\"372\"><![CDATA[0]]></field>" << std::endl
-               << "      <field name=\"MsgDirection\" number=\"385\"><![CDATA[1]]></field>" << std::endl
-               << "    </group>" << std::endl
-               << "  </body>" << std::endl
-               << "  <trailer>" << std::endl
-               << "    <field name=\"CheckSum\" number=\"10\"><![CDATA[132]]></field>" << std::endl
-               << "  </trailer>" << std::endl
+        stream << "<message>" << '\n'
+               << "  <header>" << '\n'
+               << R"(    <field name="BeginString" number="8"><![CDATA[FIX.4.2]]></field>)" << '\n'
+               << R"(    <field name="MsgType" number="35" enum="Logon"><![CDATA[A]]></field>)" << '\n'
+               << R"(    <field name="SenderCompID" number="49"><![CDATA[SENDER]]></field>)" << '\n'
+               << R"(    <field name="TargetCompID" number="56"><![CDATA[TARGET]]></field>)" << '\n'
+               << "  </header>" << '\n'
+               << "  <body>" << '\n'
+               << R"(    <field name="Account" number="1"><![CDATA[ACCOUNT]]></field>)" << '\n'
+               << R"(    <field name="ClOrdID" number="11"><![CDATA[CLORDID]]></field>)" << '\n'
+               << R"(    <field name="IDSource" number="22" enum="CUSIP"><![CDATA[1]]></field>)" << '\n'
+               << R"(    <field name="NoMsgTypes" number="384"><![CDATA[2]]></field>)" << '\n'
+               << "    <group>" << '\n'
+               << R"(      <field name="RefMsgType" number="372"><![CDATA[A]]></field>)" << '\n'
+               << R"(      <field name="MsgDirection" number="385"><![CDATA[0]]></field>)" << '\n'
+               << "    </group>" << '\n'
+               << "    <group>" << '\n'
+               << R"(      <field name="RefMsgType" number="372"><![CDATA[0]]></field>)" << '\n'
+               << R"(      <field name="MsgDirection" number="385"><![CDATA[1]]></field>)" << '\n'
+               << "    </group>" << '\n'
+               << "  </body>" << '\n'
+               << "  <trailer>" << '\n'
+               << R"(    <field name="CheckSum" number="10"><![CDATA[132]]></field>)" << '\n'
+               << "  </trailer>" << '\n'
                << "</message>";
 
         CHECK(stream.str() == message.toXML());

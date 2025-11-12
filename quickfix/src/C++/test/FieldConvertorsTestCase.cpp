@@ -35,15 +35,15 @@ namespace
     const int MAX_INT = 2147483647;
     const int MIN_INT = -2147483647 - 1;
 
-    typedef IntTConvertor<int8_t> Int8Convertor;
-    typedef IntTConvertor<int16_t> Int16Convertor;
-    typedef IntTConvertor<int32_t> Int32Convertor;
-    typedef IntTConvertor<int64_t> Int64Convertor;
+    using Int8Convertor = IntTConvertor<int8_t>;
+    using Int16Convertor = IntTConvertor<int16_t>;
+    using Int32Convertor = IntTConvertor<int32_t>;
+    using Int64Convertor = IntTConvertor<int64_t>;
 
-    typedef IntTConvertor<uint8_t> UInt8Convertor;
-    typedef IntTConvertor<uint16_t> UInt16Convertor;
-    typedef IntTConvertor<uint32_t> UInt32Convertor;
-    typedef IntTConvertor<uint64_t> UInt64Convertor;
+    using UInt8Convertor = IntTConvertor<uint8_t>;
+    using UInt16Convertor = IntTConvertor<uint16_t>;
+    using UInt32Convertor = IntTConvertor<uint32_t>;
+    using UInt64Convertor = IntTConvertor<uint64_t>;
 } // namespace
 
 TEST_CASE("FieldConvertorsTests")

@@ -28,7 +28,7 @@
 #include "SessionID.h"
 #include "Utility.h"
 #include <fstream>
-#include <inttypes.h>
+#include <cinttypes>
 #include <sys/stat.h>
 
 namespace
@@ -43,10 +43,10 @@ namespace FIX
 {
     FileStore::FileStore(const UtcTimeStamp &now, std::string path, const SessionID &sessionID)
         : m_cache(now),
-          m_msgFile(0),
-          m_headerFile(0),
-          m_seqNumsFile(0),
-          m_sessionFile(0)
+          m_msgFile(nullptr),
+          m_headerFile(nullptr),
+          m_seqNumsFile(nullptr),
+          m_sessionFile(nullptr)
     {
         file_mkdir(path.c_str());
 
@@ -121,10 +121,10 @@ namespace FIX
             fclose(m_sessionFile);
         }
 
-        m_msgFile = 0;
-        m_headerFile = 0;
-        m_seqNumsFile = 0;
-        m_sessionFile = 0;
+        m_msgFile = nullptr;
+        m_headerFile = nullptr;
+        m_seqNumsFile = nullptr;
+        m_sessionFile = nullptr;
 
         if (deleteFile)
         {
@@ -199,9 +199,9 @@ namespace FIX
         FILE *headerFile = file_fopen(m_headerFileName.c_str(), "r+");
         if (headerFile)
         {
-            SEQNUM msgSeqNum;
-            long offset;
-            std::size_t size;
+            SEQNUM msgSeqNum = 0;
+            long offset = 0;
+            std::size_t size = 0;
 
             while (FILE_FSCANF(headerFile, "%" SCNu64 ",%ld,%zu ", &msgSeqNum, &offset, &size) == 3)
             {
@@ -215,14 +215,14 @@ namespace FIX
             fclose(headerFile);
         }
 
-        struct stat seqNumsFileStat;
+        struct stat seqNumsFileStat{};
         FILE *seqNumsFile = file_fopen(m_seqNumsFileName.c_str(), "r+");
 
         if (seqNumsFile && stat(m_seqNumsFileName.c_str(), &seqNumsFileStat) == 0)
         {
             if (seqNumsFileStat.st_size == sizeOf64BitSeqNumFile)
             {
-                SEQNUM sender, target;
+                SEQNUM sender = 0, target = 0;
                 if (FILE_FSCANF(seqNumsFile, "%" SCNu64 " : %" SCNu64, &sender, &target) == 2)
                 {
                     m_cache.setNextSenderMsgSeqNum(sender);
@@ -231,7 +231,7 @@ namespace FIX
             }
             else // try old int seq num file format
             {
-                int sender, target;
+                int sender = 0, target = 0;
                 if (FILE_FSCANF(seqNumsFile, "%d : %d", &sender, &target) == 2)
                 {
                     m_cache.setNextSenderMsgSeqNum(sender);
@@ -258,7 +258,7 @@ namespace FIX
         }
     }
 
-    MessageStore *FileStoreFactory::create(const UtcTimeStamp &now, const SessionID &sessionID)
+    auto FileStoreFactory::create(const UtcTimeStamp &now, const SessionID &sessionID) -> MessageStore *
     {
         if (m_path.size())
         {
@@ -273,7 +273,7 @@ namespace FIX
 
     void FileStoreFactory::destroy(MessageStore *pStore) { delete pStore; }
 
-    bool FileStore::set(SEQNUM msgSeqNum, const std::string &msg) EXCEPT(IOException)
+    auto FileStore::set(SEQNUM msgSeqNum, const std::string &msg) -> bool EXCEPT(IOException)
     {
         if (fseek(m_msgFile, 0, SEEK_END))
         {
@@ -329,9 +329,9 @@ namespace FIX
         }
     }
 
-    SEQNUM FileStore::getNextSenderMsgSeqNum() const EXCEPT(IOException) { return m_cache.getNextSenderMsgSeqNum(); }
+    auto FileStore::getNextSenderMsgSeqNum() const -> SEQNUM EXCEPT(IOException) { return m_cache.getNextSenderMsgSeqNum(); }
 
-    SEQNUM FileStore::getNextTargetMsgSeqNum() const EXCEPT(IOException) { return m_cache.getNextTargetMsgSeqNum(); }
+    auto FileStore::getNextTargetMsgSeqNum() const -> SEQNUM EXCEPT(IOException) { return m_cache.getNextTargetMsgSeqNum(); }
 
     void FileStore::setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException)
     {
@@ -357,7 +357,7 @@ namespace FIX
         setSeqNum();
     }
 
-    UtcTimeStamp FileStore::getCreationTime() const EXCEPT(IOException) { return m_cache.getCreationTime(); }
+    auto FileStore::getCreationTime() const -> UtcTimeStamp EXCEPT(IOException) { return m_cache.getCreationTime(); }
 
     void FileStore::reset(const UtcTimeStamp &now) EXCEPT(IOException)
     {
@@ -416,9 +416,9 @@ namespace FIX
         }
     }
 
-    bool FileStore::get(SEQNUM msgSeqNum, std::string &msg) const EXCEPT(IOException)
+    auto FileStore::get(SEQNUM msgSeqNum, std::string &msg) const -> bool EXCEPT(IOException)
     {
-        NumToOffset::const_iterator find = m_offsets.find(msgSeqNum);
+        auto find = m_offsets.find(msgSeqNum);
         if (find == m_offsets.end())
         {
             return false;

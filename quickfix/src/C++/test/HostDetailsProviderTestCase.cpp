@@ -65,7 +65,7 @@ TEST_CASE("HostDetailsProviderTests")
         HostDetailsProvider detailsProvider;
         HostDetails host;
         detailsProvider.getTime = []()
-        { return 0; };
+        -> int { return 0; };
 
         // First time ever should return first host
         host = detailsProvider.getHost(SessionID(), settings);
@@ -90,7 +90,7 @@ TEST_CASE("HostDetailsProviderTests")
 
         // Return top host, startOverIntervalInSeconds has elapsed
         detailsProvider.getTime = []()
-        { return 21; };
+        -> int { return 21; };
         host = detailsProvider.getHost(SessionID(), settings);
         CHECK(host.address == "127.0.0.0");
         CHECK(std::to_string(host.port) == "8000");
@@ -126,7 +126,7 @@ TEST_CASE("HostDetailsProviderTests")
 
         HostDetailsProvider detailsProvider;
         detailsProvider.getTime = []()
-        { return 0; };
+        -> int { return 0; };
 
         HostDetails host;
 
@@ -150,7 +150,7 @@ TEST_CASE("HostDetailsProviderTests")
 
         // Should return the next host regardless of interval since last connection
         detailsProvider.getTime = []()
-        { return 21; };
+        -> int { return 21; };
         host = detailsProvider.getHost(SessionID(), settings);
         CHECK(host.address == "127.0.0.3");
         CHECK(std::to_string(host.port) == "8003");

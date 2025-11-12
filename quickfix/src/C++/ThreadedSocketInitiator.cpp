@@ -88,7 +88,7 @@ namespace FIX
     {
         while (!isStopped())
         {
-            time_t now;
+            time_t now = 0;
             ::time(&now);
 
             if ((now - m_lastConnect) >= m_reconnectInterval)
@@ -102,7 +102,7 @@ namespace FIX
         }
     }
 
-    bool ThreadedSocketInitiator::onPoll() { return false; }
+    auto ThreadedSocketInitiator::onPoll() -> bool { return false; }
 
     void ThreadedSocketInitiator::onStop()
     {
@@ -176,7 +176,7 @@ namespace FIX
             log->onEvent(
                 "Connecting to " + host.address + " on port " + IntConvertor::convert((unsigned short)host.port) + " (Source " + host.sourceAddress + ":" + IntConvertor::convert((unsigned short)host.sourcePort) + ") ReconnectInterval=" + IntConvertor::convert((int)m_reconnectInterval));
 
-            ThreadedSocketConnection *pConnection = new ThreadedSocketConnection(
+            auto *pConnection = new ThreadedSocketConnection(
                 s,
                 socket,
                 host.address,
@@ -185,11 +185,11 @@ namespace FIX
                 host.sourceAddress,
                 host.sourcePort);
 
-            ThreadPair *pair = new ThreadPair(this, pConnection);
+            auto *pair = new ThreadPair(this, pConnection);
 
             {
                 Locker l(m_mutex);
-                thread_id thread;
+                thread_id thread = 0;
                 if (thread_spawn(&socketThread, pair, thread))
                 {
                     addThread(socket, thread);
@@ -218,7 +218,7 @@ namespace FIX
     void ThreadedSocketInitiator::removeThread(socket_handle s)
     {
         Locker l(m_mutex);
-        SocketToThread::iterator i = m_threads.find(s);
+        auto i = m_threads.find(s);
 
         if (i != m_threads.end())
         {
@@ -227,9 +227,9 @@ namespace FIX
         }
     }
 
-    THREAD_PROC ThreadedSocketInitiator::socketThread(void *p)
+    auto ThreadedSocketInitiator::socketThread(void *p) -> THREAD_PROC
     {
-        ThreadPair *pair = reinterpret_cast<ThreadPair *>(p);
+        auto *pair = reinterpret_cast<ThreadPair *>(p);
 
         ThreadedSocketInitiator *pInitiator = pair->first;
         ThreadedSocketConnection *pConnection = pair->second;
@@ -247,7 +247,7 @@ namespace FIX
             delete pConnection;
             pInitiator->removeThread(socket);
             pInitiator->setDisconnected(sessionID);
-            return 0;
+            return nullptr;
         }
 
         pInitiator->setConnected(sessionID);
@@ -266,6 +266,6 @@ namespace FIX
         }
 
         pInitiator->setDisconnected(sessionID);
-        return 0;
+        return nullptr;
     }
 } // namespace FIX

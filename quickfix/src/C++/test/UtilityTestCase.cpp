@@ -32,7 +32,7 @@ using namespace FIX;
 
 namespace
 {
-    THREAD_PROC startTestThread(void *p) { return 0; }
+    auto startTestThread(void *p) -> THREAD_PROC { return nullptr; }
 } // namespace
 
 TEST_CASE("UtilityTests")
@@ -216,8 +216,8 @@ TEST_CASE("UtilityTests")
 
     SECTION("threadJoinAndDetach_NoException")
     {
-        thread_id threadId;
-        CHECK_NOTHROW(thread_spawn(&startTestThread, NULL, threadId));
+        thread_id threadId = 0;
+        CHECK_NOTHROW(thread_spawn(&startTestThread, nullptr, threadId));
         CHECK_NOTHROW(thread_join(threadId));
         CHECK_NOTHROW(thread_detach(threadId));
     }

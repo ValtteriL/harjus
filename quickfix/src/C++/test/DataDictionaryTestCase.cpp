@@ -162,7 +162,7 @@ TEST_CASE("DataDictionaryTests")
         object.addGroup("A", 300, 301, group3);
 
         int delim = 0;
-        const DataDictionary *pDD = 0;
+        const DataDictionary *pDD = nullptr;
 
         CHECK(object.getGroup("A", 100, delim, pDD));
         CHECK(101 == delim);
@@ -819,7 +819,7 @@ TEST_CASE("DataDictionaryTests")
         CHECK(object.getValueName(18, "W", name));
         CHECK("PEG_TO_VWAP" == name);
 
-        const DataDictionary *pDD = 0;
+        const DataDictionary *pDD = nullptr;
         int delim = 0;
         CHECK(object.getGroup("b", 296, delim, pDD));
         CHECK(302 == delim);
@@ -868,7 +868,7 @@ TEST_CASE("DataDictionaryTests")
         CHECK(TYPE::Char == type);
         CHECK(copy.isFieldValue(FIELD::OrdType, "1"));
 
-        const DataDictionary *pDD = 0;
+        const DataDictionary *pDD = nullptr;
         CHECK(copy.getGroup("A", 10, delim, pDD));
         CHECK(pDD->getFieldType(FIELD::HeartBtInt, type));
         CHECK(TYPE::String == type);
@@ -897,7 +897,7 @@ TEST_CASE("DataDictionaryTests")
 
         int pos1 = 0, pos2 = 0, pos3 = 0;
         int iterationCount = 0;
-        for (FieldMap::iterator itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
+        for (auto itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
         {
             if (iterationCount == 0)
             {
@@ -937,7 +937,7 @@ TEST_CASE("DataDictionaryTests")
 
         int pos1 = 0, pos2 = 0, pos3 = 0;
         int iterationCount = 0;
-        for (FieldMap::iterator itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
+        for (auto itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
         {
             if (iterationCount == 0)
             {
@@ -987,7 +987,7 @@ TEST_CASE("DataDictionaryTests")
 
         int pos1 = 0, pos2 = 0, pos3 = 0;
         int iterationCount = 0;
-        for (FieldMap::iterator itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
+        for (auto itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
         {
             if (iterationCount == 0)
             {
@@ -1025,7 +1025,7 @@ TEST_CASE("DataDictionaryTests")
 
         int pos1 = 0, pos2 = 0, pos3 = 0;
         int iterationCount = 0;
-        for (FieldMap::iterator itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
+        for (auto itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
         {
             if (iterationCount == 0)
             {
@@ -1077,7 +1077,7 @@ TEST_CASE("DataDictionaryTests")
 
         int pos1 = 0, pos2 = 0, pos3 = 0;
         int iterationCount = 0;
-        for (FieldMap::iterator itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
+        for (auto itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
         {
             if (iterationCount == 0)
             {
@@ -1117,7 +1117,7 @@ TEST_CASE("DataDictionaryTests")
 
         int pos1 = 0, pos2 = 0, pos3 = 0;
         int iterationCount = 0;
-        for (FieldMap::iterator itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
+        for (auto itr = fieldMap.begin(); itr != fieldMap.end(); itr++, iterationCount++)
         {
             if (iterationCount == 0)
             {

@@ -38,7 +38,7 @@ TEST_CASE("SocketAcceptorTests")
 {
     TestApplication application;
     MemoryStoreFactory factory;
-    socket_handle socket;
+    socket_handle socket = 0;
 
     SessionSettings settings;
     std::string input = "[DEFAULT]\n"
