@@ -35,6 +35,12 @@ nix-build-fstack-tools:
 nix-build-plain-quickfix:
     nix-build -A quickfix
 
+nix-build-run-clang-tidy:
+    nix-build -A run-clang-tidy
+
+nix-build-git-clang-format:
+    nix-build -A git-clang-format
+
 helloworld: nix-build-all
     sudo ./result-2/bin/ff_start -b ./result-3/bin/helloworld -c ./config.ini
 
