@@ -131,55 +131,57 @@
 #include "SSLSocketConnection.h"
 #include "SocketServer.h"
 
-namespace FIX {
-/// Socket implementation of Acceptor.
-class SSLSocketAcceptor : public Acceptor, SocketServer::Strategy {
-  friend class SSLSocketConnection;
+namespace FIX
+{
+    /// Socket implementation of Acceptor.
+    class SSLSocketAcceptor : public Acceptor, SocketServer::Strategy
+    {
+        friend class SSLSocketConnection;
 
-public:
-  SSLSocketAcceptor(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
-  SSLSocketAcceptor(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
+    public:
+        SSLSocketAcceptor(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
+        SSLSocketAcceptor(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
 
-  virtual ~SSLSocketAcceptor();
+        virtual ~SSLSocketAcceptor();
 
-  void setPassword(const std::string &pwd) { m_password.assign(pwd); }
+        void setPassword(const std::string &pwd) { m_password.assign(pwd); }
 
-  int passwordHandleCallback(char *buf, size_t bufsize, int verify);
+        int passwordHandleCallback(char *buf, size_t bufsize, int verify);
 
-  static int passPhraseHandleCB(char *buf, int bufsize, int verify, void *instance);
+        static int passPhraseHandleCB(char *buf, int bufsize, int verify, void *instance);
 
-private:
-  bool readSettings(const SessionSettings &);
+    private:
+        bool readSettings(const SessionSettings &);
 
-  typedef std::set<SessionID> Sessions;
-  typedef std::map<int, Sessions> PortToSessions;
-  typedef std::map<socket_handle, SSLSocketConnection *> SocketConnections;
+        typedef std::set<SessionID> Sessions;
+        typedef std::map<int, Sessions> PortToSessions;
+        typedef std::map<socket_handle, SSLSocketConnection *> SocketConnections;
 
-  void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
-  void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
+        void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
+        void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
 
-  void onStart();
-  bool onPoll();
-  void onStop();
+        void onStart();
+        bool onPoll();
+        void onStop();
 
-  void onConnect(SocketServer &, socket_handle, socket_handle);
-  void onWrite(SocketServer &, socket_handle);
-  bool onData(SocketServer &, socket_handle);
-  void onDisconnect(SocketServer &, socket_handle);
-  void onError(SocketServer &);
-  void onTimeout(SocketServer &);
+        void onConnect(SocketServer &, socket_handle, socket_handle);
+        void onWrite(SocketServer &, socket_handle);
+        bool onData(SocketServer &, socket_handle);
+        void onDisconnect(SocketServer &, socket_handle);
+        void onError(SocketServer &);
+        void onTimeout(SocketServer &);
 
-  SocketServer *m_pServer;
-  PortToSessions m_portToSessions;
-  SocketConnections m_connections;
+        SocketServer *m_pServer;
+        PortToSessions m_portToSessions;
+        SocketConnections m_connections;
 
-  bool m_sslInit;
-  int m_verify;
-  SSL_CTX *m_ctx;
-  X509_STORE *m_revocationStore;
-  std::string m_password;
-};
-/*! @} */
+        bool m_sslInit;
+        int m_verify;
+        SSL_CTX *m_ctx;
+        X509_STORE *m_revocationStore;
+        std::string m_password;
+    };
+    /*! @} */
 } // namespace FIX
 
 #endif

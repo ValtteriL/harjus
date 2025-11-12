@@ -33,66 +33,72 @@
 
 using namespace FIX;
 
-TEST_CASE("SessionStateTests") {
-  class TestLog : public Log {
-  public:
-    void clear() { events = 0; }
-    void backup() { eventsBackup = events; }
-    void onIncoming(const std::string &) {}
-    void onOutgoing(const std::string &) {}
-    void onEvent(const std::string &) {}
+TEST_CASE("SessionStateTests")
+{
+    class TestLog : public Log
+    {
+    public:
+        void clear() { events = 0; }
+        void backup() { eventsBackup = events; }
+        void onIncoming(const std::string &) {}
+        void onOutgoing(const std::string &) {}
+        void onEvent(const std::string &) {}
 
-    int events = 0;
-    int eventsBackup = 0;
-  };
+        int events = 0;
+        int eventsBackup = 0;
+    };
 
-  SECTION("ClearSessionLog_StateLogNotNull_LogCleared") {
-    SessionSettings settings;
-    TestLog log;
-    log.events = 5;
+    SECTION("ClearSessionLog_StateLogNotNull_LogCleared")
+    {
+        SessionSettings settings;
+        TestLog log;
+        log.events = 5;
 
-    SessionState state(UtcTimeStamp::now());
-    state.log(&log);
+        SessionState state(UtcTimeStamp::now());
+        state.log(&log);
 
-    state.clear();
+        state.clear();
 
-    CHECK(0 == log.events);
-  }
+        CHECK(0 == log.events);
+    }
 
-  SECTION("clearSessionLog_StateLogIsNull_LogNotCleared") {
-    SessionSettings settings;
-    TestLog log;
-    log.events = 5;
+    SECTION("clearSessionLog_StateLogIsNull_LogNotCleared")
+    {
+        SessionSettings settings;
+        TestLog log;
+        log.events = 5;
 
-    SessionState state(UtcTimeStamp::now());
+        SessionState state(UtcTimeStamp::now());
 
-    state.clear();
+        state.clear();
 
-    CHECK(5 == log.events);
-  }
+        CHECK(5 == log.events);
+    }
 
-  SECTION("backupSessionLog_StateLogNotNull_LogBackedUp") {
-    SessionSettings settings;
-    TestLog log;
-    log.events = 5;
+    SECTION("backupSessionLog_StateLogNotNull_LogBackedUp")
+    {
+        SessionSettings settings;
+        TestLog log;
+        log.events = 5;
 
-    SessionState state(UtcTimeStamp::now());
-    state.log(&log);
+        SessionState state(UtcTimeStamp::now());
+        state.log(&log);
 
-    state.backup();
+        state.backup();
 
-    CHECK(5 == log.eventsBackup);
-  }
+        CHECK(5 == log.eventsBackup);
+    }
 
-  SECTION("backupSessionLog_StateLogIsNull_LogBackedUp") {
-    SessionSettings settings;
-    TestLog log;
-    log.events = 5;
+    SECTION("backupSessionLog_StateLogIsNull_LogBackedUp")
+    {
+        SessionSettings settings;
+        TestLog log;
+        log.events = 5;
 
-    SessionState state(UtcTimeStamp::now());
+        SessionState state(UtcTimeStamp::now());
 
-    state.backup();
+        state.backup();
 
-    CHECK(0 == log.eventsBackup);
-  }
+        CHECK(0 == log.eventsBackup);
+    }
 }

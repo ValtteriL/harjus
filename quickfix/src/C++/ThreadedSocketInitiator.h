@@ -31,47 +31,49 @@
 #include "ThreadedSocketConnection.h"
 #include <map>
 
-namespace FIX {
-/*! \addtogroup user
- *  @{
- */
-/// Threaded Socket implementation of Initiator.
-class ThreadedSocketInitiator : public Initiator {
-public:
-  ThreadedSocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
-  ThreadedSocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &)
-      EXCEPT(ConfigError);
+namespace FIX
+{
+    /*! \addtogroup user
+     *  @{
+     */
+    /// Threaded Socket implementation of Initiator.
+    class ThreadedSocketInitiator : public Initiator
+    {
+    public:
+        ThreadedSocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
+        ThreadedSocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &)
+            EXCEPT(ConfigError);
 
-  virtual ~ThreadedSocketInitiator();
+        virtual ~ThreadedSocketInitiator();
 
-private:
-  typedef std::map<socket_handle, thread_id> SocketToThread;
-  typedef std::pair<ThreadedSocketInitiator *, ThreadedSocketConnection *> ThreadPair;
+    private:
+        typedef std::map<socket_handle, thread_id> SocketToThread;
+        typedef std::pair<ThreadedSocketInitiator *, ThreadedSocketConnection *> ThreadPair;
 
-  void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
-  void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
+        void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
+        void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
 
-  void onStart();
-  bool onPoll();
-  void onStop();
+        void onStart();
+        bool onPoll();
+        void onStop();
 
-  void doConnect(const SessionID &s, const Dictionary &d);
+        void doConnect(const SessionID &s, const Dictionary &d);
 
-  void addThread(socket_handle s, thread_id t);
-  void removeThread(socket_handle s);
-  void lock() { Locker l(m_mutex); }
-  static THREAD_PROC socketThread(void *p);
+        void addThread(socket_handle s, thread_id t);
+        void removeThread(socket_handle s);
+        void lock() { Locker l(m_mutex); }
+        static THREAD_PROC socketThread(void *p);
 
-  HostDetailsProvider m_hostDetailsProvider;
-  time_t m_lastConnect;
-  int m_reconnectInterval;
-  bool m_noDelay;
-  int m_sendBufSize;
-  int m_rcvBufSize;
-  SocketToThread m_threads;
-  Mutex m_mutex;
-};
-/*! @} */
+        HostDetailsProvider m_hostDetailsProvider;
+        time_t m_lastConnect;
+        int m_reconnectInterval;
+        bool m_noDelay;
+        int m_sendBufSize;
+        int m_rcvBufSize;
+        SocketToThread m_threads;
+        Mutex m_mutex;
+    };
+    /*! @} */
 } // namespace FIX
 
 #endif // FIX_THREADEDSOCKETINITIATOR_H

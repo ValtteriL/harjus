@@ -38,122 +38,133 @@
 #include <fstream>
 #include <string>
 
-namespace FIX {
-/// Creates a PostgreSQL based implementation of MessageStore.
-class PostgreSQLStoreFactory : public MessageStoreFactory {
-public:
-  static const std::string DEFAULT_DATABASE;
-  static const std::string DEFAULT_USER;
-  static const std::string DEFAULT_PASSWORD;
-  static const std::string DEFAULT_HOST;
-  static const short DEFAULT_PORT;
+namespace FIX
+{
+    /// Creates a PostgreSQL based implementation of MessageStore.
+    class PostgreSQLStoreFactory : public MessageStoreFactory
+    {
+    public:
+        static const std::string DEFAULT_DATABASE;
+        static const std::string DEFAULT_USER;
+        static const std::string DEFAULT_PASSWORD;
+        static const std::string DEFAULT_HOST;
+        static const short DEFAULT_PORT;
 
-  PostgreSQLStoreFactory(const SessionSettings &settings)
-      : m_settings(settings),
-        m_useSettings(true),
-        m_useDictionary(false) {
-    bool poolConnections = false;
-    try {
-      poolConnections = settings.get().getBool(POSTGRESQL_STORE_USECONNECTIONPOOL);
-    } catch (ConfigError &) {}
+        PostgreSQLStoreFactory(const SessionSettings &settings)
+            : m_settings(settings),
+              m_useSettings(true),
+              m_useDictionary(false)
+        {
+            bool poolConnections = false;
+            try
+            {
+                poolConnections = settings.get().getBool(POSTGRESQL_STORE_USECONNECTIONPOOL);
+            }
+            catch (ConfigError &)
+            {
+            }
 
-    m_connectionPoolPtr = PostgreSQLConnectionPoolPtr(new PostgreSQLConnectionPool(poolConnections));
-  }
+            m_connectionPoolPtr = PostgreSQLConnectionPoolPtr(new PostgreSQLConnectionPool(poolConnections));
+        }
 
-  PostgreSQLStoreFactory(const Dictionary &dictionary)
-      : m_dictionary(dictionary),
-        m_useSettings(false),
-        m_useDictionary(true) {
-    m_connectionPoolPtr = PostgreSQLConnectionPoolPtr(new PostgreSQLConnectionPool(false));
-  }
+        PostgreSQLStoreFactory(const Dictionary &dictionary)
+            : m_dictionary(dictionary),
+              m_useSettings(false),
+              m_useDictionary(true)
+        {
+            m_connectionPoolPtr = PostgreSQLConnectionPoolPtr(new PostgreSQLConnectionPool(false));
+        }
 
-  PostgreSQLStoreFactory(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port)
-      : m_database(database),
-        m_user(user),
-        m_password(password),
-        m_host(host),
-        m_port(port),
-        m_useSettings(false),
-        m_useDictionary(false) {
-    m_connectionPoolPtr = PostgreSQLConnectionPoolPtr(new PostgreSQLConnectionPool(false));
-  }
+        PostgreSQLStoreFactory(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+            : m_database(database),
+              m_user(user),
+              m_password(password),
+              m_host(host),
+              m_port(port),
+              m_useSettings(false),
+              m_useDictionary(false)
+        {
+            m_connectionPoolPtr = PostgreSQLConnectionPoolPtr(new PostgreSQLConnectionPool(false));
+        }
 
-  PostgreSQLStoreFactory()
-      : m_database(DEFAULT_DATABASE),
-        m_user(DEFAULT_USER),
-        m_password(DEFAULT_PASSWORD),
-        m_host(DEFAULT_HOST),
-        m_port(DEFAULT_PORT),
-        m_useSettings(false),
-        m_useDictionary(false) {
-    m_connectionPoolPtr = PostgreSQLConnectionPoolPtr(new PostgreSQLConnectionPool(false));
-  }
+        PostgreSQLStoreFactory()
+            : m_database(DEFAULT_DATABASE),
+              m_user(DEFAULT_USER),
+              m_password(DEFAULT_PASSWORD),
+              m_host(DEFAULT_HOST),
+              m_port(DEFAULT_PORT),
+              m_useSettings(false),
+              m_useDictionary(false)
+        {
+            m_connectionPoolPtr = PostgreSQLConnectionPoolPtr(new PostgreSQLConnectionPool(false));
+        }
 
-  MessageStore *create(const UtcTimeStamp &, const SessionID &);
-  void destroy(MessageStore *);
+        MessageStore *create(const UtcTimeStamp &, const SessionID &);
+        void destroy(MessageStore *);
 
-private:
-  MessageStore *create(const UtcTimeStamp &, const SessionID &, const Dictionary &);
+    private:
+        MessageStore *create(const UtcTimeStamp &, const SessionID &, const Dictionary &);
 
-  PostgreSQLConnectionPoolPtr m_connectionPoolPtr;
-  SessionSettings m_settings;
-  Dictionary m_dictionary;
-  std::string m_database;
-  std::string m_user;
-  std::string m_password;
-  std::string m_host;
-  short m_port;
-  bool m_useSettings;
-  bool m_useDictionary;
-};
-/*! @} */
+        PostgreSQLConnectionPoolPtr m_connectionPoolPtr;
+        SessionSettings m_settings;
+        Dictionary m_dictionary;
+        std::string m_database;
+        std::string m_user;
+        std::string m_password;
+        std::string m_host;
+        short m_port;
+        bool m_useSettings;
+        bool m_useDictionary;
+    };
+    /*! @} */
 
-/// PostgreSQL based implementation of MessageStore.
-class PostgreSQLStore : public MessageStore {
-public:
-  PostgreSQLStore(
-      const UtcTimeStamp &now,
-      const SessionID &sessionID,
-      const DatabaseConnectionID &connection,
-      PostgreSQLConnectionPool *pool);
-  PostgreSQLStore(
-      const UtcTimeStamp &now,
-      const SessionID &sessionID,
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port);
-  ~PostgreSQLStore();
+    /// PostgreSQL based implementation of MessageStore.
+    class PostgreSQLStore : public MessageStore
+    {
+    public:
+        PostgreSQLStore(
+            const UtcTimeStamp &now,
+            const SessionID &sessionID,
+            const DatabaseConnectionID &connection,
+            PostgreSQLConnectionPool *pool);
+        PostgreSQLStore(
+            const UtcTimeStamp &now,
+            const SessionID &sessionID,
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port);
+        ~PostgreSQLStore();
 
-  bool set(SEQNUM, const std::string &) EXCEPT(IOException);
-  void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException);
+        bool set(SEQNUM, const std::string &) EXCEPT(IOException);
+        void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException);
 
-  SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException);
-  SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException);
-  void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException);
-  void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException);
-  void incrNextSenderMsgSeqNum() EXCEPT(IOException);
-  void incrNextTargetMsgSeqNum() EXCEPT(IOException);
+        SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException);
+        SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException);
+        void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException);
+        void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException);
+        void incrNextSenderMsgSeqNum() EXCEPT(IOException);
+        void incrNextTargetMsgSeqNum() EXCEPT(IOException);
 
-  UtcTimeStamp getCreationTime() const EXCEPT(IOException);
+        UtcTimeStamp getCreationTime() const EXCEPT(IOException);
 
-  void reset(const UtcTimeStamp &now) EXCEPT(IOException);
-  void refresh() EXCEPT(IOException);
+        void reset(const UtcTimeStamp &now) EXCEPT(IOException);
+        void refresh() EXCEPT(IOException);
 
-private:
-  void populateCache();
+    private:
+        void populateCache();
 
-  MemoryStore m_cache;
-  PostgreSQLConnection *m_pConnection;
-  PostgreSQLConnectionPool *m_pConnectionPool;
-  SessionID m_sessionID;
-};
+        MemoryStore m_cache;
+        PostgreSQLConnection *m_pConnection;
+        PostgreSQLConnectionPool *m_pConnectionPool;
+        SessionID m_sessionID;
+    };
 } // namespace FIX
 
 #endif // FIX_POSTGRESQLSTORE_H

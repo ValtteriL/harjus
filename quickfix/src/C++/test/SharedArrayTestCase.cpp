@@ -30,19 +30,22 @@
 
 using namespace FIX;
 
-TEST_CASE("SharedArrayTests") {
-  SECTION("SharedArrayEqualsOperator_SharedArraySetEqualToItself") {
-    shared_array<std::string> shared;
-    shared_array<std::string> *pShared = &shared;
+TEST_CASE("SharedArrayTests")
+{
+    SECTION("SharedArrayEqualsOperator_SharedArraySetEqualToItself")
+    {
+        shared_array<std::string> shared;
+        shared_array<std::string> *pShared = &shared;
 
-    shared = *pShared;
+        shared = *pShared;
 
-    CHECK(*pShared == shared);
-  }
+        CHECK(*pShared == shared);
+    }
 
-  SECTION("CreateSharedArray_SizeZeroArray") {
-    shared_array<std::string> shared = shared_array<std::string>::create(0);
+    SECTION("CreateSharedArray_SizeZeroArray")
+    {
+        shared_array<std::string> shared = shared_array<std::string>::create(0);
 
-    CHECK(size_t{0} == shared.size());
-  }
+        CHECK(size_t{0} == shared.size());
+    }
 }

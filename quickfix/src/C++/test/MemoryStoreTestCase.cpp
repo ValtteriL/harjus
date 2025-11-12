@@ -32,45 +32,54 @@
 
 using namespace FIX;
 
-struct memoryStoreFixture {
-  memoryStoreFixture(bool reset) {
-    SessionID sessionID(BeginString("FIX.4.2"), SenderCompID("SETGET"), TargetCompID("TEST"));
+struct memoryStoreFixture
+{
+    memoryStoreFixture(bool reset)
+    {
+        SessionID sessionID(BeginString("FIX.4.2"), SenderCompID("SETGET"), TargetCompID("TEST"));
 
-    try {
-      object = factory.create(UtcTimeStamp::now(), sessionID);
-    } catch (std::exception &e) {
-      std::cerr << e.what() << std::endl;
-      throw;
+        try
+        {
+            object = factory.create(UtcTimeStamp::now(), sessionID);
+        }
+        catch (std::exception &e)
+        {
+            std::cerr << e.what() << std::endl;
+            throw;
+        }
+
+        if (reset)
+        {
+            object->reset(UtcTimeStamp::now());
+        }
+
+        this->resetAfter = reset;
     }
 
-    if (reset) {
-      object->reset(UtcTimeStamp::now());
-    }
+    ~memoryStoreFixture() { factory.destroy(object); }
 
-    this->resetAfter = reset;
-  }
-
-  ~memoryStoreFixture() { factory.destroy(object); }
-
-  MemoryStoreFactory factory;
-  MessageStore *object;
-  bool resetAfter;
+    MemoryStoreFactory factory;
+    MessageStore *object;
+    bool resetAfter;
 };
 
-struct noResetMemoryStoreFixture : memoryStoreFixture {
-  noResetMemoryStoreFixture()
-      : memoryStoreFixture(false) {}
+struct noResetMemoryStoreFixture : memoryStoreFixture
+{
+    noResetMemoryStoreFixture()
+        : memoryStoreFixture(false) {}
 };
 
-struct resetMemoryStoreFixture : memoryStoreFixture {
-  resetMemoryStoreFixture()
-      : memoryStoreFixture(true) {}
+struct resetMemoryStoreFixture : memoryStoreFixture
+{
+    resetMemoryStoreFixture()
+        : memoryStoreFixture(true) {}
 };
 
-TEST_CASE_METHOD(resetMemoryStoreFixture, "resetMemoryStoreTests") {
-  SECTION("setGet") { CHECK_MESSAGE_STORE_SET_GET; }
+TEST_CASE_METHOD(resetMemoryStoreFixture, "resetMemoryStoreTests")
+{
+    SECTION("setGet") { CHECK_MESSAGE_STORE_SET_GET; }
 
-  SECTION("setGetWithQuote") { CHECK_MESSAGE_STORE_SET_GET_WITH_QUOTE; }
+    SECTION("setGetWithQuote") { CHECK_MESSAGE_STORE_SET_GET_WITH_QUOTE; }
 
-  SECTION("other") { CHECK_MESSAGE_STORE_OTHER }
+    SECTION("other") { CHECK_MESSAGE_STORE_OTHER }
 }

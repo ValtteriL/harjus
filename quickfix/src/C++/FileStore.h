@@ -31,101 +31,104 @@
 #include <fstream>
 #include <string>
 
-namespace FIX {
-class Session;
+namespace FIX
+{
+    class Session;
 
-/// Creates a file based implementation of MessageStore.
-class FileStoreFactory : public MessageStoreFactory {
-public:
-  FileStoreFactory(const SessionSettings &settings)
-      : m_settings(settings) {};
-  FileStoreFactory(const std::string &path)
-      : m_path(path) {};
+    /// Creates a file based implementation of MessageStore.
+    class FileStoreFactory : public MessageStoreFactory
+    {
+    public:
+        FileStoreFactory(const SessionSettings &settings)
+            : m_settings(settings) {};
+        FileStoreFactory(const std::string &path)
+            : m_path(path) {};
 
-  MessageStore *create(const UtcTimeStamp &, const SessionID &);
-  void destroy(MessageStore *);
+        MessageStore *create(const UtcTimeStamp &, const SessionID &);
+        void destroy(MessageStore *);
 
-private:
-  std::string m_path;
-  SessionSettings m_settings;
-};
-/*! @} */
+    private:
+        std::string m_path;
+        SessionSettings m_settings;
+    };
+    /*! @} */
 
-/**
- * File based implementation of MessageStore.
- *
- * Four files are created by this implementation.  One for storing outgoing
- * messages, one for indexing message locations, one for storing sequence numbers,
- * and one for storing the session creation time.
- *
- * The formats of the files are:<br>
- * &nbsp;&nbsp;
- *   [path]+[BeginString]-[SenderCompID]-[TargetCompID].body<br>
- * &nbsp;&nbsp;
- *   [path]+[BeginString]-[SenderCompID]-[TargetCompID].header<br>
- * &nbsp;&nbsp;
- *   [path]+[BeginString]-[SenderCompID]-[TargetCompID].seqnums<br>
- * &nbsp;&nbsp;
- *   [path]+[BeginString]-[SenderCompID]-[TargetCompID].session<br>
- *
- *
- * The messages file is a pure stream of %FIX messages.<br><br>
- * The sequence number file is in the format of<br>
- * &nbsp;&nbsp;
- *   [SenderMsgSeqNum] : [TargetMsgSeqNum]<br><br>
- * The session file is a UTC timestamp in the format of<br>
- * &nbsp;&nbsp;
- *   YYYYMMDD-HH:MM:SS
- */
-class FileStore : public MessageStore {
-public:
-  FileStore(const UtcTimeStamp &now, std::string, const SessionID &sessionID);
-  virtual ~FileStore();
+    /**
+     * File based implementation of MessageStore.
+     *
+     * Four files are created by this implementation.  One for storing outgoing
+     * messages, one for indexing message locations, one for storing sequence numbers,
+     * and one for storing the session creation time.
+     *
+     * The formats of the files are:<br>
+     * &nbsp;&nbsp;
+     *   [path]+[BeginString]-[SenderCompID]-[TargetCompID].body<br>
+     * &nbsp;&nbsp;
+     *   [path]+[BeginString]-[SenderCompID]-[TargetCompID].header<br>
+     * &nbsp;&nbsp;
+     *   [path]+[BeginString]-[SenderCompID]-[TargetCompID].seqnums<br>
+     * &nbsp;&nbsp;
+     *   [path]+[BeginString]-[SenderCompID]-[TargetCompID].session<br>
+     *
+     *
+     * The messages file is a pure stream of %FIX messages.<br><br>
+     * The sequence number file is in the format of<br>
+     * &nbsp;&nbsp;
+     *   [SenderMsgSeqNum] : [TargetMsgSeqNum]<br><br>
+     * The session file is a UTC timestamp in the format of<br>
+     * &nbsp;&nbsp;
+     *   YYYYMMDD-HH:MM:SS
+     */
+    class FileStore : public MessageStore
+    {
+    public:
+        FileStore(const UtcTimeStamp &now, std::string, const SessionID &sessionID);
+        virtual ~FileStore();
 
-  bool set(SEQNUM, const std::string &) EXCEPT(IOException);
-  void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException);
+        bool set(SEQNUM, const std::string &) EXCEPT(IOException);
+        void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException);
 
-  SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException);
-  SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException);
-  void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException);
-  void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException);
-  void incrNextSenderMsgSeqNum() EXCEPT(IOException);
-  void incrNextTargetMsgSeqNum() EXCEPT(IOException);
+        SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException);
+        SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException);
+        void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException);
+        void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException);
+        void incrNextSenderMsgSeqNum() EXCEPT(IOException);
+        void incrNextTargetMsgSeqNum() EXCEPT(IOException);
 
-  UtcTimeStamp getCreationTime() const EXCEPT(IOException);
+        UtcTimeStamp getCreationTime() const EXCEPT(IOException);
 
-  void reset(const UtcTimeStamp &now) EXCEPT(IOException);
-  void refresh() EXCEPT(IOException);
+        void reset(const UtcTimeStamp &now) EXCEPT(IOException);
+        void refresh() EXCEPT(IOException);
 
-private:
+    private:
 #ifdef _MSC_VER
-  typedef std::pair<long, std::size_t> OffsetSize;
+        typedef std::pair<long, std::size_t> OffsetSize;
 #else
-  typedef std::pair<long, std::size_t> OffsetSize;
+        typedef std::pair<long, std::size_t> OffsetSize;
 #endif
-  typedef std::map<SEQNUM, OffsetSize> NumToOffset;
+        typedef std::map<SEQNUM, OffsetSize> NumToOffset;
 
-  void open(bool deleteFile);
-  void populateCache();
-  bool readFromFile(int offset, int size, std::string &msg);
-  void setSeqNum();
-  void setSession();
+        void open(bool deleteFile);
+        void populateCache();
+        bool readFromFile(int offset, int size, std::string &msg);
+        void setSeqNum();
+        void setSession();
 
-  bool get(SEQNUM, std::string &) const EXCEPT(IOException);
+        bool get(SEQNUM, std::string &) const EXCEPT(IOException);
 
-  MemoryStore m_cache;
-  NumToOffset m_offsets;
+        MemoryStore m_cache;
+        NumToOffset m_offsets;
 
-  std::string m_msgFileName;
-  std::string m_headerFileName;
-  std::string m_seqNumsFileName;
-  std::string m_sessionFileName;
+        std::string m_msgFileName;
+        std::string m_headerFileName;
+        std::string m_seqNumsFileName;
+        std::string m_sessionFileName;
 
-  FILE *m_msgFile;
-  FILE *m_headerFile;
-  FILE *m_seqNumsFile;
-  FILE *m_sessionFile;
-};
+        FILE *m_msgFile;
+        FILE *m_headerFile;
+        FILE *m_seqNumsFile;
+        FILE *m_sessionFile;
+    };
 } // namespace FIX
 
 #endif // FIX_FILESTORE_H

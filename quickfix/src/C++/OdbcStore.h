@@ -37,87 +37,90 @@
 #include <fstream>
 #include <string>
 
-namespace FIX {
-/// Creates a Odbc based implementation of MessageStore.
-class OdbcStoreFactory : public MessageStoreFactory {
-public:
-  static const std::string DEFAULT_USER;
-  static const std::string DEFAULT_PASSWORD;
-  static const std::string DEFAULT_CONNECTION_STRING;
+namespace FIX
+{
+    /// Creates a Odbc based implementation of MessageStore.
+    class OdbcStoreFactory : public MessageStoreFactory
+    {
+    public:
+        static const std::string DEFAULT_USER;
+        static const std::string DEFAULT_PASSWORD;
+        static const std::string DEFAULT_CONNECTION_STRING;
 
-  OdbcStoreFactory(const SessionSettings &settings)
-      : m_settings(settings),
-        m_useSettings(true),
-        m_useDictionary(false) {}
+        OdbcStoreFactory(const SessionSettings &settings)
+            : m_settings(settings),
+              m_useSettings(true),
+              m_useDictionary(false) {}
 
-  OdbcStoreFactory(const Dictionary &dictionary)
-      : m_dictionary(dictionary),
-        m_useSettings(false),
-        m_useDictionary(true) {}
+        OdbcStoreFactory(const Dictionary &dictionary)
+            : m_dictionary(dictionary),
+              m_useSettings(false),
+              m_useDictionary(true) {}
 
-  OdbcStoreFactory(const std::string &user, const std::string &password, const std::string &connectionString)
-      : m_user(user),
-        m_password(password),
-        m_connectionString(connectionString),
-        m_useSettings(false),
-        m_useDictionary(false) {}
+        OdbcStoreFactory(const std::string &user, const std::string &password, const std::string &connectionString)
+            : m_user(user),
+              m_password(password),
+              m_connectionString(connectionString),
+              m_useSettings(false),
+              m_useDictionary(false) {}
 
-  OdbcStoreFactory()
-      : m_user(DEFAULT_USER),
-        m_password(DEFAULT_PASSWORD),
-        m_connectionString(DEFAULT_CONNECTION_STRING),
-        m_useSettings(false),
-        m_useDictionary(false) {}
+        OdbcStoreFactory()
+            : m_user(DEFAULT_USER),
+              m_password(DEFAULT_PASSWORD),
+              m_connectionString(DEFAULT_CONNECTION_STRING),
+              m_useSettings(false),
+              m_useDictionary(false) {}
 
-  MessageStore *create(const UtcTimeStamp &, const SessionID &);
-  void destroy(MessageStore *);
+        MessageStore *create(const UtcTimeStamp &, const SessionID &);
+        void destroy(MessageStore *);
 
-private:
-  MessageStore *create(const UtcTimeStamp &, const SessionID &sessionID, const Dictionary &);
+    private:
+        MessageStore *create(const UtcTimeStamp &, const SessionID &sessionID, const Dictionary &);
 
-  Dictionary m_dictionary;
-  SessionSettings m_settings;
-  std::string m_user;
-  std::string m_password;
-  std::string m_connectionString;
-  bool m_useSettings;
-  bool m_useDictionary;
-};
-/*! @} */
+        Dictionary m_dictionary;
+        SessionSettings m_settings;
+        std::string m_user;
+        std::string m_password;
+        std::string m_connectionString;
+        bool m_useSettings;
+        bool m_useDictionary;
+    };
+    /*! @} */
 
-/// Odbc based implementation of MessageStore.
-class OdbcStore : public MessageStore {
-public:
-  OdbcStore(
-      const UtcTimeStamp &now,
-      const SessionID &sessionID,
-      const std::string &user,
-      const std::string &password,
-      const std::string &connectionString);
-  ~OdbcStore();
+    /// Odbc based implementation of MessageStore.
+    class OdbcStore : public MessageStore
+    {
+    public:
+        OdbcStore(
+            const UtcTimeStamp &now,
+            const SessionID &sessionID,
+            const std::string &user,
+            const std::string &password,
+            const std::string &connectionString);
+        ~OdbcStore();
 
-  bool set(SEQNUM, const std::string &) EXCEPT(IOException);
-  void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException);
+        bool set(SEQNUM, const std::string &) EXCEPT(IOException);
+        void get(SEQNUM, SEQNUM, std::vector<std::string> &) const EXCEPT(IOException);
 
-  SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException);
-  SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException);
-  void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException);
-  void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException);
-  void incrNextSenderMsgSeqNum() EXCEPT(IOException);
-  void incrNextTargetMsgSeqNum() EXCEPT(IOException);
+        SEQNUM getNextSenderMsgSeqNum() const EXCEPT(IOException);
+        SEQNUM getNextTargetMsgSeqNum() const EXCEPT(IOException);
+        void setNextSenderMsgSeqNum(SEQNUM value) EXCEPT(IOException);
+        void setNextTargetMsgSeqNum(SEQNUM value) EXCEPT(IOException);
+        void incrNextSenderMsgSeqNum() EXCEPT(IOException);
+        void incrNextTargetMsgSeqNum() EXCEPT(IOException);
 
-  UtcTimeStamp getCreationTime() const EXCEPT(IOException);
+        UtcTimeStamp getCreationTime() const EXCEPT(IOException);
 
-  void reset(const UtcTimeStamp &now) EXCEPT(IOException);
-  void refresh() EXCEPT(IOException);
+        void reset(const UtcTimeStamp &now) EXCEPT(IOException);
+        void refresh() EXCEPT(IOException);
 
-private:
-  void populateCache();
+    private:
+        void populateCache();
 
-  MemoryStore m_cache;
-  SessionID m_sessionID;
-  OdbcConnection *m_pConnection;
-};
+        MemoryStore m_cache;
+        SessionID m_sessionID;
+        OdbcConnection *m_pConnection;
+    };
 } // namespace FIX
 
 #endif

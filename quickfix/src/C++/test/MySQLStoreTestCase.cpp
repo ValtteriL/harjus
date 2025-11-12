@@ -34,40 +34,48 @@
 
 using namespace FIX;
 
-struct mySQLStoreFixture {
-  mySQLStoreFixture(bool reset)
-      : factory(TestSettings::sessionSettings.get()) {
-    SessionID sessionID(BeginString("FIX.4.2"), SenderCompID("SETGET"), TargetCompID("TEST"));
+struct mySQLStoreFixture
+{
+    mySQLStoreFixture(bool reset)
+        : factory(TestSettings::sessionSettings.get())
+    {
+        SessionID sessionID(BeginString("FIX.4.2"), SenderCompID("SETGET"), TargetCompID("TEST"));
 
-    try {
-      object = factory.create(UtcTimeStamp::now(), sessionID);
-    } catch (std::exception &e) {
-      std::cerr << e.what() << std::endl;
-      throw;
+        try
+        {
+            object = factory.create(UtcTimeStamp::now(), sessionID);
+        }
+        catch (std::exception &e)
+        {
+            std::cerr << e.what() << std::endl;
+            throw;
+        }
+
+        if (reset)
+        {
+            object->reset(UtcTimeStamp::now());
+        }
+
+        this->resetAfter = reset;
     }
 
-    if (reset) {
-      object->reset(UtcTimeStamp::now());
-    }
+    ~mySQLStoreFixture() { factory.destroy(object); }
 
-    this->resetAfter = reset;
-  }
-
-  ~mySQLStoreFixture() { factory.destroy(object); }
-
-  MySQLStoreFactory factory;
-  MessageStore *object;
-  bool resetAfter;
+    MySQLStoreFactory factory;
+    MessageStore *object;
+    bool resetAfter;
 };
 
-struct noResetMySQLStoreFixture : mySQLStoreFixture {
-  noResetMySQLStoreFixture()
-      : mySQLStoreFixture(false) {}
+struct noResetMySQLStoreFixture : mySQLStoreFixture
+{
+    noResetMySQLStoreFixture()
+        : mySQLStoreFixture(false) {}
 };
 
-struct resetMySQLStoreFixture : mySQLStoreFixture {
-  resetMySQLStoreFixture()
-      : mySQLStoreFixture(true) {}
+struct resetMySQLStoreFixture : mySQLStoreFixture
+{
+    resetMySQLStoreFixture()
+        : mySQLStoreFixture(true) {}
 };
 
 TEST_CASE_METHOD(resetMySQLStoreFixture, "resetMySQLStoreTests"){
@@ -83,12 +91,14 @@ TEST_CASE_METHOD(resetMySQLStoreFixture, "resetMySQLStoreTests"){
 
     SET_SEQUENCE_NUMBERS}
 
-TEST_CASE_METHOD(noResetMySQLStoreFixture, "noResetMySQLStoreTests") {
-  SECTION("reload"){CHECK_MESSAGE_STORE_RELOAD}
+TEST_CASE_METHOD(noResetMySQLStoreFixture, "noResetMySQLStoreTests")
+{
+    SECTION("reload"){CHECK_MESSAGE_STORE_RELOAD}
 
-  SECTION("refresh") {
-    CHECK_MESSAGE_STORE_RELOAD
-  }
+    SECTION("refresh")
+    {
+        CHECK_MESSAGE_STORE_RELOAD
+    }
 }
 
 #endif

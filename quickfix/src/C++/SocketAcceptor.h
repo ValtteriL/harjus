@@ -30,48 +30,50 @@
 #include "SocketConnection.h"
 #include "SocketServer.h"
 
-namespace FIX {
-/// Socket implementation of Acceptor.
-class SocketAcceptor : public Acceptor, SocketServer::Strategy {
-  friend class SocketConnection;
+namespace FIX
+{
+    /// Socket implementation of Acceptor.
+    class SocketAcceptor : public Acceptor, SocketServer::Strategy
+    {
+        friend class SocketConnection;
 
-public:
-  typedef std::map<SessionID, uint16_t> SessionToPort;
+    public:
+        typedef std::map<SessionID, uint16_t> SessionToPort;
 
-  SocketAcceptor(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
-  SocketAcceptor(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
+        SocketAcceptor(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
+        SocketAcceptor(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
 
-  virtual ~SocketAcceptor();
+        virtual ~SocketAcceptor();
 
-  const SessionToPort &sessionToPort() { return m_sessionToPort; }
+        const SessionToPort &sessionToPort() { return m_sessionToPort; }
 
-private:
-  bool readSettings(const SessionSettings &);
+    private:
+        bool readSettings(const SessionSettings &);
 
-  typedef std::set<SessionID> Sessions;
-  typedef std::map<uint16_t, Sessions> PortToSessions;
-  typedef std::map<socket_handle, SocketConnection *> SocketConnections;
+        typedef std::set<SessionID> Sessions;
+        typedef std::map<uint16_t, Sessions> PortToSessions;
+        typedef std::map<socket_handle, SocketConnection *> SocketConnections;
 
-  void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
-  void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
+        void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
+        void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
 
-  void onStart();
-  bool onPoll();
-  void onStop();
+        void onStart();
+        bool onPoll();
+        void onStop();
 
-  void onConnect(SocketServer &, socket_handle, socket_handle);
-  void onWrite(SocketServer &, socket_handle);
-  bool onData(SocketServer &, socket_handle);
-  void onDisconnect(SocketServer &, socket_handle);
-  void onError(SocketServer &);
-  void onTimeout(SocketServer &);
+        void onConnect(SocketServer &, socket_handle, socket_handle);
+        void onWrite(SocketServer &, socket_handle);
+        bool onData(SocketServer &, socket_handle);
+        void onDisconnect(SocketServer &, socket_handle);
+        void onError(SocketServer &);
+        void onTimeout(SocketServer &);
 
-  SocketServer *m_pServer;
-  PortToSessions m_portToSessions;
-  SessionToPort m_sessionToPort;
-  SocketConnections m_connections;
-};
-/*! @} */
+        SocketServer *m_pServer;
+        PortToSessions m_portToSessions;
+        SessionToPort m_sessionToPort;
+        SocketConnections m_connections;
+    };
+    /*! @} */
 } // namespace FIX
 
 #endif // FIX_SOCKETACCEPTOR_H

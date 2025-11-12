@@ -30,15 +30,17 @@
 
 using namespace FIX;
 
-TEST_CASE("DataDictionaryProviderTests") {
-  SECTION("getApplicationDataDictionary_DataDictionaryNotSet") {
-    DataDictionaryProvider object;
-    DataDictionary expected;
+TEST_CASE("DataDictionaryProviderTests")
+{
+    SECTION("getApplicationDataDictionary_DataDictionaryNotSet")
+    {
+        DataDictionaryProvider object;
+        DataDictionary expected;
 
-    ApplVerID id;
-    DataDictionary actual = object.getApplicationDataDictionary(id);
+        ApplVerID id;
+        DataDictionary actual = object.getApplicationDataDictionary(id);
 
-    CHECK(expected.getVersion() == actual.getVersion());
-    CHECK(expected.getOrderedFields() == actual.getOrderedFields());
-  }
+        CHECK(expected.getVersion() == actual.getVersion());
+        CHECK(expected.getOrderedFields() == actual.getOrderedFields());
+    }
 }

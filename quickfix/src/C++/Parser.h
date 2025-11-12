@@ -30,21 +30,23 @@
 #include <iostream>
 #include <string>
 
-namespace FIX {
-/// Parses %FIX messages off an input stream.
-class Parser {
-public:
-  Parser() {}
-  ~Parser() {}
+namespace FIX
+{
+    /// Parses %FIX messages off an input stream.
+    class Parser
+    {
+    public:
+        Parser() {}
+        ~Parser() {}
 
-  bool extractLength(int &length, std::string::size_type &pos, const std::string &buffer) EXCEPT(MessageParseError);
-  bool readFixMessage(std::string &str) EXCEPT(MessageParseError);
+        bool extractLength(int &length, std::string::size_type &pos, const std::string &buffer) EXCEPT(MessageParseError);
+        bool readFixMessage(std::string &str) EXCEPT(MessageParseError);
 
-  void addToStream(const char *str, size_t len) { m_buffer.append(str, len); }
-  void addToStream(const std::string &str) { m_buffer.append(str); }
+        void addToStream(const char *str, size_t len) { m_buffer.append(str, len); }
+        void addToStream(const std::string &str) { m_buffer.append(str); }
 
-private:
-  std::string m_buffer;
-};
+    private:
+        std::string m_buffer;
+    };
 } // namespace FIX
 #endif // FIX_PARSER_H

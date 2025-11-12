@@ -25,16 +25,18 @@
 
 #include "NullStore.h"
 
-namespace FIX {
+namespace FIX
+{
 
-MessageStore *NullStoreFactory::create(const UtcTimeStamp &now, const SessionID &) { return new NullStore(now); }
+    MessageStore *NullStoreFactory::create(const UtcTimeStamp &now, const SessionID &) { return new NullStore(now); }
 
-void NullStoreFactory::destroy(MessageStore *pStore) { delete pStore; }
+    void NullStoreFactory::destroy(MessageStore *pStore) { delete pStore; }
 
-bool NullStore::set(SEQNUM msgSeqNum, const std::string &msg) EXCEPT(IOException) { return true; }
+    bool NullStore::set(SEQNUM msgSeqNum, const std::string &msg) EXCEPT(IOException) { return true; }
 
-void NullStore::get(SEQNUM begin, SEQNUM end, std::vector<std::string> &messages) const EXCEPT(IOException) {
-  messages.clear();
-}
+    void NullStore::get(SEQNUM begin, SEQNUM end, std::vector<std::string> &messages) const EXCEPT(IOException)
+    {
+        messages.clear();
+    }
 
 } // namespace FIX

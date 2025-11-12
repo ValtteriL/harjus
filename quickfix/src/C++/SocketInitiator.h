@@ -31,44 +31,46 @@
 #include "SocketConnection.h"
 #include "SocketConnector.h"
 
-namespace FIX {
-/// Socket implementation of Initiator.
-class SocketInitiator : public Initiator, SocketConnector::Strategy {
-public:
-  SocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
-  SocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
+namespace FIX
+{
+    /// Socket implementation of Initiator.
+    class SocketInitiator : public Initiator, SocketConnector::Strategy
+    {
+    public:
+        SocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
+        SocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
 
-  virtual ~SocketInitiator();
+        virtual ~SocketInitiator();
 
-private:
-  typedef std::map<socket_handle, SocketConnection *> SocketConnections;
+    private:
+        typedef std::map<socket_handle, SocketConnection *> SocketConnections;
 
-  void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
-  void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
+        void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
+        void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
 
-  void onStart();
-  bool onPoll();
-  void onStop();
+        void onStart();
+        bool onPoll();
+        void onStop();
 
-  void doConnect(const SessionID &, const Dictionary &d);
-  void onConnect(SocketConnector &, socket_handle);
-  void onWrite(SocketConnector &, socket_handle);
-  bool onData(SocketConnector &, socket_handle);
-  void onDisconnect(SocketConnector &, socket_handle);
-  void onError(SocketConnector &);
-  void onTimeout(SocketConnector &);
+        void doConnect(const SessionID &, const Dictionary &d);
+        void onConnect(SocketConnector &, socket_handle);
+        void onWrite(SocketConnector &, socket_handle);
+        bool onData(SocketConnector &, socket_handle);
+        void onDisconnect(SocketConnector &, socket_handle);
+        void onError(SocketConnector &);
+        void onTimeout(SocketConnector &);
 
-  HostDetailsProvider m_hostDetailsProvider;
-  SocketConnector m_connector;
-  SocketConnections m_pendingConnections;
-  SocketConnections m_connections;
-  time_t m_lastConnect;
-  int m_reconnectInterval;
-  bool m_noDelay;
-  int m_sendBufSize;
-  int m_rcvBufSize;
-};
-/*! @} */
+        HostDetailsProvider m_hostDetailsProvider;
+        SocketConnector m_connector;
+        SocketConnections m_pendingConnections;
+        SocketConnections m_connections;
+        time_t m_lastConnect;
+        int m_reconnectInterval;
+        bool m_noDelay;
+        int m_sendBufSize;
+        int m_rcvBufSize;
+    };
+    /*! @} */
 } // namespace FIX
 
 #endif // FIX_SOCKETINITIATOR_H

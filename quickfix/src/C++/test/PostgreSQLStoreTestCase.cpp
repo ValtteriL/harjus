@@ -34,40 +34,48 @@
 
 using namespace FIX;
 
-struct postgreSQLStoreFixture {
-  postgreSQLStoreFixture(bool reset)
-      : factory(TestSettings::sessionSettings.get()) {
-    SessionID sessionID(BeginString("FIX.4.2"), SenderCompID("SETGET"), TargetCompID("TEST"));
+struct postgreSQLStoreFixture
+{
+    postgreSQLStoreFixture(bool reset)
+        : factory(TestSettings::sessionSettings.get())
+    {
+        SessionID sessionID(BeginString("FIX.4.2"), SenderCompID("SETGET"), TargetCompID("TEST"));
 
-    try {
-      object = factory.create(UtcTimeStamp::now(), sessionID);
-    } catch (std::exception &e) {
-      std::cerr << e.what() << std::endl;
-      throw;
+        try
+        {
+            object = factory.create(UtcTimeStamp::now(), sessionID);
+        }
+        catch (std::exception &e)
+        {
+            std::cerr << e.what() << std::endl;
+            throw;
+        }
+
+        if (reset)
+        {
+            object->reset(UtcTimeStamp::now());
+        }
+
+        this->resetAfter = reset;
     }
 
-    if (reset) {
-      object->reset(UtcTimeStamp::now());
-    }
+    ~postgreSQLStoreFixture() { factory.destroy(object); }
 
-    this->resetAfter = reset;
-  }
-
-  ~postgreSQLStoreFixture() { factory.destroy(object); }
-
-  PostgreSQLStoreFactory factory;
-  MessageStore *object;
-  bool resetAfter;
+    PostgreSQLStoreFactory factory;
+    MessageStore *object;
+    bool resetAfter;
 };
 
-struct noResetPostgreSQLStoreFixture : postgreSQLStoreFixture {
-  noResetPostgreSQLStoreFixture()
-      : postgreSQLStoreFixture(false) {}
+struct noResetPostgreSQLStoreFixture : postgreSQLStoreFixture
+{
+    noResetPostgreSQLStoreFixture()
+        : postgreSQLStoreFixture(false) {}
 };
 
-struct resetPostgreSQLStoreFixture : postgreSQLStoreFixture {
-  resetPostgreSQLStoreFixture()
-      : postgreSQLStoreFixture(true) {}
+struct resetPostgreSQLStoreFixture : postgreSQLStoreFixture
+{
+    resetPostgreSQLStoreFixture()
+        : postgreSQLStoreFixture(true) {}
 };
 
 TEST_CASE_METHOD(resetPostgreSQLStoreFixture, "resetPostgreSQLStoreTests"){
@@ -83,12 +91,14 @@ TEST_CASE_METHOD(resetPostgreSQLStoreFixture, "resetPostgreSQLStoreTests"){
 
     SET_SEQUENCE_NUMBERS}
 
-TEST_CASE_METHOD(noResetPostgreSQLStoreFixture, "noResetPostgreSQLStoreTests") {
-  SECTION("reload"){CHECK_MESSAGE_STORE_RELOAD}
+TEST_CASE_METHOD(noResetPostgreSQLStoreFixture, "noResetPostgreSQLStoreTests")
+{
+    SECTION("reload"){CHECK_MESSAGE_STORE_RELOAD}
 
-  SECTION("refresh") {
-    CHECK_MESSAGE_STORE_RELOAD
-  }
+    SECTION("refresh")
+    {
+        CHECK_MESSAGE_STORE_RELOAD
+    }
 }
 
 #endif

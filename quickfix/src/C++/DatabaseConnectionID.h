@@ -29,70 +29,94 @@
 #include <map>
 #include <string>
 
-namespace FIX {
-class DatabaseConnectionID {
-public:
-  DatabaseConnectionID(
-      const std::string &database,
-      const std::string &user,
-      const std::string &password,
-      const std::string &host,
-      short port)
-      : m_database(database),
-        m_user(user),
-        m_password(password),
-        m_host(host),
-        m_port(port) {}
+namespace FIX
+{
+    class DatabaseConnectionID
+    {
+    public:
+        DatabaseConnectionID(
+            const std::string &database,
+            const std::string &user,
+            const std::string &password,
+            const std::string &host,
+            short port)
+            : m_database(database),
+              m_user(user),
+              m_password(password),
+              m_host(host),
+              m_port(port) {}
 
-  friend bool operator<(const DatabaseConnectionID &, const DatabaseConnectionID &);
-  friend bool operator==(const DatabaseConnectionID &, const DatabaseConnectionID &);
-  friend bool operator!=(const DatabaseConnectionID &, const DatabaseConnectionID &);
+        friend bool operator<(const DatabaseConnectionID &, const DatabaseConnectionID &);
+        friend bool operator==(const DatabaseConnectionID &, const DatabaseConnectionID &);
+        friend bool operator!=(const DatabaseConnectionID &, const DatabaseConnectionID &);
 
-  const std::string &getDatabase() const { return m_database; }
-  const std::string &getUser() const { return m_user; }
-  const std::string &getPassword() const { return m_password; }
-  const std::string &getHost() const { return m_host; }
-  short getPort() const { return m_port; }
+        const std::string &getDatabase() const { return m_database; }
+        const std::string &getUser() const { return m_user; }
+        const std::string &getPassword() const { return m_password; }
+        const std::string &getHost() const { return m_host; }
+        short getPort() const { return m_port; }
 
-private:
-  std::string m_database;
-  std::string m_user;
-  std::string m_password;
-  std::string m_host;
-  short m_port;
-};
+    private:
+        std::string m_database;
+        std::string m_user;
+        std::string m_password;
+        std::string m_host;
+        short m_port;
+    };
 
-inline bool operator<(const DatabaseConnectionID &lhs, const DatabaseConnectionID &rhs) {
-  if (lhs.m_database < rhs.m_database) {
-    return true;
-  } else if (rhs.m_database < lhs.m_database) {
-    return false;
-  } else if (lhs.m_user < rhs.m_user) {
-    return true;
-  } else if (rhs.m_user < lhs.m_user) {
-    return false;
-  } else if (lhs.m_password < rhs.m_password) {
-    return true;
-  } else if (rhs.m_password < lhs.m_password) {
-    return false;
-  } else if (lhs.m_host < rhs.m_host) {
-    return true;
-  } else if (rhs.m_host < lhs.m_host) {
-    return false;
-  } else if (lhs.m_port < rhs.m_port) {
-    return true;
-  } else if (rhs.m_port < lhs.m_port) {
-    return false;
-  } else {
-    return false;
-  }
-}
-inline bool operator==(const DatabaseConnectionID &lhs, const DatabaseConnectionID &rhs) {
-  return (
-      (lhs.m_database == rhs.m_database) && (lhs.m_user == rhs.m_user) && (lhs.m_password == rhs.m_password)
-      && (lhs.m_host == rhs.m_host) && (lhs.m_port == rhs.m_port));
-}
-inline bool operator!=(const DatabaseConnectionID &lhs, const DatabaseConnectionID &rhs) { return !(lhs == rhs); }
+    inline bool operator<(const DatabaseConnectionID &lhs, const DatabaseConnectionID &rhs)
+    {
+        if (lhs.m_database < rhs.m_database)
+        {
+            return true;
+        }
+        else if (rhs.m_database < lhs.m_database)
+        {
+            return false;
+        }
+        else if (lhs.m_user < rhs.m_user)
+        {
+            return true;
+        }
+        else if (rhs.m_user < lhs.m_user)
+        {
+            return false;
+        }
+        else if (lhs.m_password < rhs.m_password)
+        {
+            return true;
+        }
+        else if (rhs.m_password < lhs.m_password)
+        {
+            return false;
+        }
+        else if (lhs.m_host < rhs.m_host)
+        {
+            return true;
+        }
+        else if (rhs.m_host < lhs.m_host)
+        {
+            return false;
+        }
+        else if (lhs.m_port < rhs.m_port)
+        {
+            return true;
+        }
+        else if (rhs.m_port < lhs.m_port)
+        {
+            return false;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    inline bool operator==(const DatabaseConnectionID &lhs, const DatabaseConnectionID &rhs)
+    {
+        return (
+            (lhs.m_database == rhs.m_database) && (lhs.m_user == rhs.m_user) && (lhs.m_password == rhs.m_password) && (lhs.m_host == rhs.m_host) && (lhs.m_port == rhs.m_port));
+    }
+    inline bool operator!=(const DatabaseConnectionID &lhs, const DatabaseConnectionID &rhs) { return !(lhs == rhs); }
 } // namespace FIX
 
 #endif

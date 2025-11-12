@@ -33,128 +33,135 @@
 
 using namespace FIX;
 
-TEST_CASE("HostDetailsProviderTests") {
-  SECTION("getHost_PrioritizeTopHosts") {
-    Dictionary settings;
+TEST_CASE("HostDetailsProviderTests")
+{
+    SECTION("getHost_PrioritizeTopHosts")
+    {
+        Dictionary settings;
 
-    settings.setString("SocketConnectHost", "127.0.0.0");
-    settings.setString("SocketConnectPort", "8000");
-    settings.setString("SocketConnectSourceHost", "192.0.0.0");
-    settings.setString("SocketConnectSourcePort", "7000");
+        settings.setString("SocketConnectHost", "127.0.0.0");
+        settings.setString("SocketConnectPort", "8000");
+        settings.setString("SocketConnectSourceHost", "192.0.0.0");
+        settings.setString("SocketConnectSourcePort", "7000");
 
-    settings.setString("SocketConnectHost1", "127.0.0.1");
-    settings.setString("SocketConnectPort1", "8001");
-    settings.setString("SocketConnectSourceHost1", "192.0.0.1");
-    settings.setString("SocketConnectSourcePort1", "7001");
+        settings.setString("SocketConnectHost1", "127.0.0.1");
+        settings.setString("SocketConnectPort1", "8001");
+        settings.setString("SocketConnectSourceHost1", "192.0.0.1");
+        settings.setString("SocketConnectSourcePort1", "7001");
 
-    settings.setString("SocketConnectHost2", "127.0.0.2");
-    settings.setString("SocketConnectPort2", "8002");
-    settings.setString("SocketConnectSourceHost2", "192.0.0.2");
-    settings.setString("SocketConnectSourcePort2", "7002");
+        settings.setString("SocketConnectHost2", "127.0.0.2");
+        settings.setString("SocketConnectPort2", "8002");
+        settings.setString("SocketConnectSourceHost2", "192.0.0.2");
+        settings.setString("SocketConnectSourcePort2", "7002");
 
-    settings.setString("SocketConnectHost3", "127.0.0.3");
-    settings.setString("SocketConnectPort3", "8003");
-    settings.setString("SocketConnectSourceHost3", "192.0.0.3");
-    settings.setString("SocketConnectSourcePort3", "7003");
+        settings.setString("SocketConnectHost3", "127.0.0.3");
+        settings.setString("SocketConnectPort3", "8003");
+        settings.setString("SocketConnectSourceHost3", "192.0.0.3");
+        settings.setString("SocketConnectSourcePort3", "7003");
 
-    settings.setString(HOST_SELECTION_POLICY, HostDetailsProvider::HOST_SELECTION_POLICY_PRIORITY);
-    settings.setInt(HOST_SELECTION_POLICY_PRIORITY_START_OVER_INTERVAL, 20);
+        settings.setString(HOST_SELECTION_POLICY, HostDetailsProvider::HOST_SELECTION_POLICY_PRIORITY);
+        settings.setInt(HOST_SELECTION_POLICY_PRIORITY_START_OVER_INTERVAL, 20);
 
-    HostDetailsProvider detailsProvider;
-    HostDetails host;
-    detailsProvider.getTime = []() { return 0; };
+        HostDetailsProvider detailsProvider;
+        HostDetails host;
+        detailsProvider.getTime = []()
+        { return 0; };
 
-    // First time ever should return first host
-    host = detailsProvider.getHost(SessionID(), settings);
-    CHECK(host.address == "127.0.0.0");
-    CHECK(std::to_string(host.port) == "8000");
-    CHECK(host.sourceAddress == "192.0.0.0");
-    CHECK(std::to_string(host.sourcePort) == "7000");
+        // First time ever should return first host
+        host = detailsProvider.getHost(SessionID(), settings);
+        CHECK(host.address == "127.0.0.0");
+        CHECK(std::to_string(host.port) == "8000");
+        CHECK(host.sourceAddress == "192.0.0.0");
+        CHECK(std::to_string(host.sourcePort) == "7000");
 
-    // Second time with startOverIntervalInSeconds not reached should return second host
-    host = detailsProvider.getHost(SessionID(), settings);
-    CHECK(host.address == "127.0.0.1");
-    CHECK(std::to_string(host.port) == "8001");
-    CHECK(host.sourceAddress == "192.0.0.1");
-    CHECK(std::to_string(host.sourcePort) == "7001");
+        // Second time with startOverIntervalInSeconds not reached should return second host
+        host = detailsProvider.getHost(SessionID(), settings);
+        CHECK(host.address == "127.0.0.1");
+        CHECK(std::to_string(host.port) == "8001");
+        CHECK(host.sourceAddress == "192.0.0.1");
+        CHECK(std::to_string(host.sourcePort) == "7001");
 
-    // Third time with startOverIntervalInSeconds not reached should return third host
-    host = detailsProvider.getHost(SessionID(), settings);
-    CHECK(host.address == "127.0.0.2");
-    CHECK(std::to_string(host.port) == "8002");
-    CHECK(host.sourceAddress == "192.0.0.2");
-    CHECK(std::to_string(host.sourcePort) == "7002");
+        // Third time with startOverIntervalInSeconds not reached should return third host
+        host = detailsProvider.getHost(SessionID(), settings);
+        CHECK(host.address == "127.0.0.2");
+        CHECK(std::to_string(host.port) == "8002");
+        CHECK(host.sourceAddress == "192.0.0.2");
+        CHECK(std::to_string(host.sourcePort) == "7002");
 
-    // Return top host, startOverIntervalInSeconds has elapsed
-    detailsProvider.getTime = []() { return 21; };
-    host = detailsProvider.getHost(SessionID(), settings);
-    CHECK(host.address == "127.0.0.0");
-    CHECK(std::to_string(host.port) == "8000");
-    CHECK(host.sourceAddress == "192.0.0.0");
-    CHECK(std::to_string(host.sourcePort) == "7000");
-  }
+        // Return top host, startOverIntervalInSeconds has elapsed
+        detailsProvider.getTime = []()
+        { return 21; };
+        host = detailsProvider.getHost(SessionID(), settings);
+        CHECK(host.address == "127.0.0.0");
+        CHECK(std::to_string(host.port) == "8000");
+        CHECK(host.sourceAddress == "192.0.0.0");
+        CHECK(std::to_string(host.sourcePort) == "7000");
+    }
 
-  SECTION("getHost_RotateHosts") {
-    Dictionary settings;
+    SECTION("getHost_RotateHosts")
+    {
+        Dictionary settings;
 
-    settings.setString("SocketConnectHost", "127.0.0.0");
-    settings.setString("SocketConnectPort", "8000");
-    settings.setString("SocketConnectSourceHost", "192.0.0.0");
-    settings.setString("SocketConnectSourcePort", "7000");
+        settings.setString("SocketConnectHost", "127.0.0.0");
+        settings.setString("SocketConnectPort", "8000");
+        settings.setString("SocketConnectSourceHost", "192.0.0.0");
+        settings.setString("SocketConnectSourcePort", "7000");
 
-    settings.setString("SocketConnectHost1", "127.0.0.1");
-    settings.setString("SocketConnectPort1", "8001");
-    settings.setString("SocketConnectSourceHost1", "192.0.0.1");
-    settings.setString("SocketConnectSourcePort1", "7001");
+        settings.setString("SocketConnectHost1", "127.0.0.1");
+        settings.setString("SocketConnectPort1", "8001");
+        settings.setString("SocketConnectSourceHost1", "192.0.0.1");
+        settings.setString("SocketConnectSourcePort1", "7001");
 
-    settings.setString("SocketConnectHost2", "127.0.0.2");
-    settings.setString("SocketConnectPort2", "8002");
-    settings.setString("SocketConnectSourceHost2", "192.0.0.2");
-    settings.setString("SocketConnectSourcePort2", "7002");
+        settings.setString("SocketConnectHost2", "127.0.0.2");
+        settings.setString("SocketConnectPort2", "8002");
+        settings.setString("SocketConnectSourceHost2", "192.0.0.2");
+        settings.setString("SocketConnectSourcePort2", "7002");
 
-    settings.setString("SocketConnectHost3", "127.0.0.3");
-    settings.setString("SocketConnectPort3", "8003");
-    settings.setString("SocketConnectSourceHost3", "192.0.0.3");
-    settings.setString("SocketConnectSourcePort3", "7003");
+        settings.setString("SocketConnectHost3", "127.0.0.3");
+        settings.setString("SocketConnectPort3", "8003");
+        settings.setString("SocketConnectSourceHost3", "192.0.0.3");
+        settings.setString("SocketConnectSourcePort3", "7003");
 
-    int startOvertIntervalInSeconds = 20;
+        int startOvertIntervalInSeconds = 20;
 
-    HostDetailsProvider detailsProvider;
-    detailsProvider.getTime = []() { return 0; };
+        HostDetailsProvider detailsProvider;
+        detailsProvider.getTime = []()
+        { return 0; };
 
-    HostDetails host;
+        HostDetails host;
 
-    host = detailsProvider.getHost(SessionID(), settings);
-    CHECK(host.address == "127.0.0.0");
-    CHECK(std::to_string(host.port) == "8000");
-    CHECK(host.sourceAddress == "192.0.0.0");
-    CHECK(std::to_string(host.sourcePort) == "7000");
+        host = detailsProvider.getHost(SessionID(), settings);
+        CHECK(host.address == "127.0.0.0");
+        CHECK(std::to_string(host.port) == "8000");
+        CHECK(host.sourceAddress == "192.0.0.0");
+        CHECK(std::to_string(host.sourcePort) == "7000");
 
-    host = detailsProvider.getHost(SessionID(), settings);
-    CHECK(host.address == "127.0.0.1");
-    CHECK(std::to_string(host.port) == "8001");
-    CHECK(host.sourceAddress == "192.0.0.1");
-    CHECK(std::to_string(host.sourcePort) == "7001");
+        host = detailsProvider.getHost(SessionID(), settings);
+        CHECK(host.address == "127.0.0.1");
+        CHECK(std::to_string(host.port) == "8001");
+        CHECK(host.sourceAddress == "192.0.0.1");
+        CHECK(std::to_string(host.sourcePort) == "7001");
 
-    host = detailsProvider.getHost(SessionID(), settings);
-    CHECK(host.address == "127.0.0.2");
-    CHECK(std::to_string(host.port) == "8002");
-    CHECK(host.sourceAddress == "192.0.0.2");
-    CHECK(std::to_string(host.sourcePort) == "7002");
+        host = detailsProvider.getHost(SessionID(), settings);
+        CHECK(host.address == "127.0.0.2");
+        CHECK(std::to_string(host.port) == "8002");
+        CHECK(host.sourceAddress == "192.0.0.2");
+        CHECK(std::to_string(host.sourcePort) == "7002");
 
-    // Should return the next host regardless of interval since last connection
-    detailsProvider.getTime = []() { return 21; };
-    host = detailsProvider.getHost(SessionID(), settings);
-    CHECK(host.address == "127.0.0.3");
-    CHECK(std::to_string(host.port) == "8003");
-    CHECK(host.sourceAddress == "192.0.0.3");
-    CHECK(std::to_string(host.sourcePort) == "7003");
+        // Should return the next host regardless of interval since last connection
+        detailsProvider.getTime = []()
+        { return 21; };
+        host = detailsProvider.getHost(SessionID(), settings);
+        CHECK(host.address == "127.0.0.3");
+        CHECK(std::to_string(host.port) == "8003");
+        CHECK(host.sourceAddress == "192.0.0.3");
+        CHECK(std::to_string(host.sourcePort) == "7003");
 
-    // Return first host to complete the cycle
-    host = detailsProvider.getHost(SessionID(), settings);
-    CHECK(host.address == "127.0.0.0");
-    CHECK(std::to_string(host.port) == "8000");
-    CHECK(host.sourceAddress == "192.0.0.0");
-    CHECK(std::to_string(host.sourcePort) == "7000");
-  }
+        // Return first host to complete the cycle
+        host = detailsProvider.getHost(SessionID(), settings);
+        CHECK(host.address == "127.0.0.0");
+        CHECK(std::to_string(host.port) == "8000");
+        CHECK(host.sourceAddress == "192.0.0.0");
+        CHECK(std::to_string(host.sourcePort) == "7000");
+    }
 }

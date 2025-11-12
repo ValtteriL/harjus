@@ -31,46 +31,48 @@
 #include "SessionSettings.h"
 #include "SocketServer.h"
 
-namespace FIX {
-/// Basic HTTP Server
-class HttpServer : public SocketServer::Strategy {
-public:
-  HttpServer(const SessionSettings &) EXCEPT(ConfigError);
+namespace FIX
+{
+    /// Basic HTTP Server
+    class HttpServer : public SocketServer::Strategy
+    {
+    public:
+        HttpServer(const SessionSettings &) EXCEPT(ConfigError);
 
-  static void startGlobal(const SessionSettings &) EXCEPT(ConfigError, RuntimeError);
-  static void stopGlobal();
+        static void startGlobal(const SessionSettings &) EXCEPT(ConfigError, RuntimeError);
+        static void stopGlobal();
 
-  void start() EXCEPT(ConfigError, RuntimeError);
-  void stop();
+        void start() EXCEPT(ConfigError, RuntimeError);
+        void stop();
 
-private:
-  void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
-  void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
+    private:
+        void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
+        void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
 
-  void onStart();
-  bool onPoll();
-  void onStop();
+        void onStart();
+        bool onPoll();
+        void onStop();
 
-  void onConnect(SocketServer &, socket_handle, socket_handle);
-  void onWrite(SocketServer &, socket_handle);
-  bool onData(SocketServer &, socket_handle);
-  void onDisconnect(SocketServer &, socket_handle);
-  void onError(SocketServer &);
-  void onTimeout(SocketServer &);
+        void onConnect(SocketServer &, socket_handle, socket_handle);
+        void onWrite(SocketServer &, socket_handle);
+        bool onData(SocketServer &, socket_handle);
+        void onDisconnect(SocketServer &, socket_handle);
+        void onError(SocketServer &);
+        void onTimeout(SocketServer &);
 
-  static THREAD_PROC startThread(void *p);
+        static THREAD_PROC startThread(void *p);
 
-  SocketServer *m_pServer;
-  SessionSettings m_settings;
-  thread_id m_threadid;
-  int m_port;
-  bool m_stop;
+        SocketServer *m_pServer;
+        SessionSettings m_settings;
+        thread_id m_threadid;
+        int m_port;
+        bool m_stop;
 
-  static Mutex s_mutex;
-  static int s_count;
-  static HttpServer *s_pServer;
-};
-/*! @} */
+        static Mutex s_mutex;
+        static int s_count;
+        static HttpServer *s_pServer;
+    };
+    /*! @} */
 } // namespace FIX
 
 #endif // FIX_HTTPSERVER_H

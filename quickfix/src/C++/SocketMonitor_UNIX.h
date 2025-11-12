@@ -37,63 +37,66 @@
 
 #include "Utility.h"
 
-namespace FIX {
-/// Monitors events on a collection of sockets.
-class SocketMonitor {
-public:
-  class Strategy;
+namespace FIX
+{
+    /// Monitors events on a collection of sockets.
+    class SocketMonitor
+    {
+    public:
+        class Strategy;
 
-  SocketMonitor(int timeout = 0);
-  virtual ~SocketMonitor();
+        SocketMonitor(int timeout = 0);
+        virtual ~SocketMonitor();
 
-  bool addConnect(socket_handle socket);
-  bool addRead(socket_handle socket);
-  bool addWrite(socket_handle socket);
-  bool drop(socket_handle socket);
-  void signal(socket_handle socket);
-  void unsignal(socket_handle socket);
-  void block(Strategy &strategy, bool poll = 0, double timeout = 0.0);
+        bool addConnect(socket_handle socket);
+        bool addRead(socket_handle socket);
+        bool addWrite(socket_handle socket);
+        bool drop(socket_handle socket);
+        void signal(socket_handle socket);
+        void unsignal(socket_handle socket);
+        void block(Strategy &strategy, bool poll = 0, double timeout = 0.0);
 
-  size_t numSockets() { return m_readSockets.size() - 1; }
+        size_t numSockets() { return m_readSockets.size() - 1; }
 
-private:
-  typedef std::set<socket_handle> Sockets;
-  typedef std::queue<socket_handle> Queue;
+    private:
+        typedef std::set<socket_handle> Sockets;
+        typedef std::queue<socket_handle> Queue;
 
-  void setsockopt();
-  bool bind();
-  bool listen();
-  void buildSet(const Sockets &, struct pollfd *pfds, short events);
-  inline int getTimeval(bool poll, double timeout);
-  inline bool sleepIfEmpty(bool poll);
+        void setsockopt();
+        bool bind();
+        bool listen();
+        void buildSet(const Sockets &, struct pollfd *pfds, short events);
+        inline int getTimeval(bool poll, double timeout);
+        inline bool sleepIfEmpty(bool poll);
 
-  void processRead(Strategy &, socket_handle socket_fd);
-  void processWrite(Strategy &, socket_handle socket_fd);
-  void processError(Strategy &, socket_handle socket_fd);
-  void processPollList(Strategy &strategy, struct pollfd *pfds, unsigned pfds_size);
+        void processRead(Strategy &, socket_handle socket_fd);
+        void processWrite(Strategy &, socket_handle socket_fd);
+        void processError(Strategy &, socket_handle socket_fd);
+        void processPollList(Strategy &strategy, struct pollfd *pfds, unsigned pfds_size);
 
-  int m_timeout;
-  clock_t m_ticks;
+        int m_timeout;
+        clock_t m_ticks;
 
-  socket_handle m_signal;
-  socket_handle m_interrupt;
-  Sockets m_connectSockets;
-  Sockets m_readSockets;
-  Sockets m_writeSockets;
-  Queue m_dropped;
+        socket_handle m_signal;
+        socket_handle m_interrupt;
+        Sockets m_connectSockets;
+        Sockets m_readSockets;
+        Sockets m_writeSockets;
+        Queue m_dropped;
 
-public:
-  class Strategy {
-  public:
-    virtual ~Strategy() {}
-    virtual void onConnect(SocketMonitor &, socket_handle socket) = 0;
-    virtual void onEvent(SocketMonitor &, socket_handle socket) = 0;
-    virtual void onWrite(SocketMonitor &, socket_handle socket) = 0;
-    virtual void onError(SocketMonitor &, socket_handle socket) = 0;
-    virtual void onError(SocketMonitor &) = 0;
-    virtual void onTimeout(SocketMonitor &) {}
-  };
-};
+    public:
+        class Strategy
+        {
+        public:
+            virtual ~Strategy() {}
+            virtual void onConnect(SocketMonitor &, socket_handle socket) = 0;
+            virtual void onEvent(SocketMonitor &, socket_handle socket) = 0;
+            virtual void onWrite(SocketMonitor &, socket_handle socket) = 0;
+            virtual void onError(SocketMonitor &, socket_handle socket) = 0;
+            virtual void onError(SocketMonitor &) = 0;
+            virtual void onTimeout(SocketMonitor &) {}
+        };
+    };
 } // namespace FIX
 
 #endif //_MSC_VER

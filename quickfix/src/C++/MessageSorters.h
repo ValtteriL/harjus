@@ -34,152 +34,198 @@
 #include <stdarg.h>
 #include <vector>
 
-namespace FIX {
-/// Sorts fields in correct header order.
-struct header_order {
-  static bool compare(const int x, const int y) {
-    int orderedX = getOrderedPosition(x);
-    int orderedY = getOrderedPosition(y);
+namespace FIX
+{
+    /// Sorts fields in correct header order.
+    struct header_order
+    {
+        static bool compare(const int x, const int y)
+        {
+            int orderedX = getOrderedPosition(x);
+            int orderedY = getOrderedPosition(y);
 
-    if (orderedX && orderedY) {
-      return orderedX < orderedY;
-    } else if (orderedX) {
-      return true;
-    } else if (orderedY) {
-      return false;
-    } else {
-      return x < y;
-    }
-  }
+            if (orderedX && orderedY)
+            {
+                return orderedX < orderedY;
+            }
+            else if (orderedX)
+            {
+                return true;
+            }
+            else if (orderedY)
+            {
+                return false;
+            }
+            else
+            {
+                return x < y;
+            }
+        }
 
-  static int getOrderedPosition(const int field) {
-    switch (field) {
-    case FIELD::BeginString:
-      return 1;
-    case FIELD::BodyLength:
-      return 2;
-    case FIELD::MsgType:
-      return 3;
-    default:
-      return 0;
+        static int getOrderedPosition(const int field)
+        {
+            switch (field)
+            {
+            case FIELD::BeginString:
+                return 1;
+            case FIELD::BodyLength:
+                return 2;
+            case FIELD::MsgType:
+                return 3;
+            default:
+                return 0;
+            };
+        }
     };
-  }
-};
 
-/// Sorts fields in correct trailer order.
-struct trailer_order {
-  static bool compare(const int x, const int y) {
-    if (x == FIELD::CheckSum) {
-      return false;
-    } else if (y == FIELD::CheckSum) {
-      return true;
-    }
+    /// Sorts fields in correct trailer order.
+    struct trailer_order
+    {
+        static bool compare(const int x, const int y)
+        {
+            if (x == FIELD::CheckSum)
+            {
+                return false;
+            }
+            else if (y == FIELD::CheckSum)
+            {
+                return true;
+            }
 
-    int orderedX = getOrderedPosition(x);
-    int orderedY = getOrderedPosition(y);
+            int orderedX = getOrderedPosition(x);
+            int orderedY = getOrderedPosition(y);
 
-    if (orderedX && orderedY) {
-      return orderedX < orderedY;
-    } else if (orderedX) {
-      return true;
-    } else if (orderedY) {
-      return false;
-    } else {
-      return x < y;
-    }
-  }
+            if (orderedX && orderedY)
+            {
+                return orderedX < orderedY;
+            }
+            else if (orderedX)
+            {
+                return true;
+            }
+            else if (orderedY)
+            {
+                return false;
+            }
+            else
+            {
+                return x < y;
+            }
+        }
 
-  static int getOrderedPosition(const int field) {
-    switch (field) {
-    case FIELD::SignatureLength:
-      return 1;
-    case FIELD::Signature:
-      return 2;
-    default:
-      return 0;
+        static int getOrderedPosition(const int field)
+        {
+            switch (field)
+            {
+            case FIELD::SignatureLength:
+                return 1;
+            case FIELD::Signature:
+                return 2;
+            default:
+                return 0;
+            };
+        }
     };
-  }
-};
 
-/// Sorts fields in correct group order
-struct group_order {
-  static bool compare(const int x, const int y, int *order, int largest) {
-    if (x <= largest && y <= largest) {
-      int iX = order[x];
-      int iY = order[y];
-      if (iX == 0 && iY == 0) {
-        return x < y;
-      } else if (iX == 0) {
-        return false;
-      } else if (iY == 0) {
-        return true;
-      } else {
-        return iX < iY;
-      }
-    } else if (x <= largest) {
-      return true;
-    } else if (y <= largest) {
-      return false;
-    } else {
-      return x < y;
-    }
-  }
-};
+    /// Sorts fields in correct group order
+    struct group_order
+    {
+        static bool compare(const int x, const int y, int *order, int largest)
+        {
+            if (x <= largest && y <= largest)
+            {
+                int iX = order[x];
+                int iY = order[y];
+                if (iX == 0 && iY == 0)
+                {
+                    return x < y;
+                }
+                else if (iX == 0)
+                {
+                    return false;
+                }
+                else if (iY == 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return iX < iY;
+                }
+            }
+            else if (x <= largest)
+            {
+                return true;
+            }
+            else if (y <= largest)
+            {
+                return false;
+            }
+            else
+            {
+                return x < y;
+            }
+        }
+    };
 
-typedef std::less<int> normal_order;
+    typedef std::less<int> normal_order;
 
-/**
- * Sorts fields in header, normal, or trailer order.
- *
- * Used as a dynamic sorter to create Header, Trailer, and Message
- * FieldMaps while maintaining the same base type.
- */
-struct message_order {
-public:
-  enum cmp_mode {
-    header,
-    trailer,
-    normal,
-    group
-  };
+    /**
+     * Sorts fields in header, normal, or trailer order.
+     *
+     * Used as a dynamic sorter to create Header, Trailer, and Message
+     * FieldMaps while maintaining the same base type.
+     */
+    struct message_order
+    {
+    public:
+        enum cmp_mode
+        {
+            header,
+            trailer,
+            normal,
+            group
+        };
 
-  message_order(cmp_mode mode = normal)
-      : m_mode(mode),
-        m_delim(0),
-        m_largest(0) {}
-  message_order(int first, ...);
-  message_order(const int order[]);
-  message_order(const int order[], int size);
-  message_order(const message_order &) = default;
-  message_order(message_order &&) = default;
+        message_order(cmp_mode mode = normal)
+            : m_mode(mode),
+              m_delim(0),
+              m_largest(0) {}
+        message_order(int first, ...);
+        message_order(const int order[]);
+        message_order(const int order[], int size);
+        message_order(const message_order &) = default;
+        message_order(message_order &&) = default;
 
-  bool operator()(const int x, const int y) const {
-    switch (m_mode) {
-    case header:
-      return header_order::compare(x, y);
-    case trailer:
-      return trailer_order::compare(x, y);
-    case group:
-      return group_order::compare(x, y, m_groupOrder, m_largest);
-    case normal:
-    default:
-      return x < y;
-    }
-  }
+        bool operator()(const int x, const int y) const
+        {
+            switch (m_mode)
+            {
+            case header:
+                return header_order::compare(x, y);
+            case trailer:
+                return trailer_order::compare(x, y);
+            case group:
+                return group_order::compare(x, y, m_groupOrder, m_largest);
+            case normal:
+            default:
+                return x < y;
+            }
+        }
 
-  message_order &operator=(const message_order &) = default;
-  message_order &operator=(message_order &&) = default;
+        message_order &operator=(const message_order &) = default;
+        message_order &operator=(message_order &&) = default;
 
-  operator bool() const { return !m_groupOrder.empty(); }
+        operator bool() const { return !m_groupOrder.empty(); }
 
-private:
-  void setOrder(const int order[], int size);
+    private:
+        void setOrder(const int order[], int size);
 
-  cmp_mode m_mode;
-  int m_delim;
-  shared_array<int> m_groupOrder;
-  int m_largest;
-};
+        cmp_mode m_mode;
+        int m_delim;
+        shared_array<int> m_groupOrder;
+        int m_largest;
+    };
 } // namespace FIX
 
 #endif // FIX_MESSAGESORTERS_H

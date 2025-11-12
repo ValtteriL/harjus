@@ -132,70 +132,74 @@
 #include "SSLSocketConnection.h"
 #include "SocketConnector.h"
 
-namespace FIX {
-enum SSLHandshakeStatus {
-  SSL_HANDSHAKE_FAILED = 0,
-  SSL_HANDSHAKE_SUCCEDED = 1,
-  SSL_HANDSHAKE_IN_PROGRESS = 2
-};
-/// Socket implementation of Initiator.
-class SSLSocketInitiator : public Initiator, SocketConnector::Strategy {
-public:
-  SSLSocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
-  SSLSocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
+namespace FIX
+{
+    enum SSLHandshakeStatus
+    {
+        SSL_HANDSHAKE_FAILED = 0,
+        SSL_HANDSHAKE_SUCCEDED = 1,
+        SSL_HANDSHAKE_IN_PROGRESS = 2
+    };
+    /// Socket implementation of Initiator.
+    class SSLSocketInitiator : public Initiator, SocketConnector::Strategy
+    {
+    public:
+        SSLSocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &) EXCEPT(ConfigError);
+        SSLSocketInitiator(Application &, MessageStoreFactory &, const SessionSettings &, LogFactory &) EXCEPT(ConfigError);
 
-  virtual ~SSLSocketInitiator();
+        virtual ~SSLSocketInitiator();
 
-  void setPassword(const std::string &pwd) { m_password.assign(pwd); }
+        void setPassword(const std::string &pwd) { m_password.assign(pwd); }
 
-  void setCertAndKey(X509 *cert, RSA *key) {
-    m_cert = cert;
-    m_key = key;
-  }
+        void setCertAndKey(X509 *cert, RSA *key)
+        {
+            m_cert = cert;
+            m_key = key;
+        }
 
-  int passwordHandleCallback(char *buf, size_t bufsize, int verify);
+        int passwordHandleCallback(char *buf, size_t bufsize, int verify);
 
-  static int passwordHandleCB(char *buf, int bufsize, int verify, void *instance);
+        static int passwordHandleCB(char *buf, int bufsize, int verify, void *instance);
 
-private:
-  typedef std::map<socket_handle, SSLSocketConnection *> SocketConnections;
+    private:
+        typedef std::map<socket_handle, SSLSocketConnection *> SocketConnections;
 
-  void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
-  void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
+        void onConfigure(const SessionSettings &) EXCEPT(ConfigError);
+        void onInitialize(const SessionSettings &) EXCEPT(RuntimeError);
 
-  void onStart();
-  bool onPoll();
-  void onStop();
+        void onStart();
+        bool onPoll();
+        void onStop();
 
-  void doConnect(const SessionID &, const Dictionary &d);
-  void onConnect(SocketConnector &, socket_handle);
-  void onWrite(SocketConnector &, socket_handle);
-  bool onData(SocketConnector &, socket_handle);
-  void onDisconnect(SocketConnector &, socket_handle);
-  void onError(SocketConnector &);
-  void onTimeout(SocketConnector &);
-  void disconnectPendingSSLHandshakesThatTakeTooLong(time_t now);
-  SSLHandshakeStatus handshakeSSL(SSLSocketConnection *connection);
-  void handshakeSSLAndHandleConnection(SocketConnector &connector, socket_handle s);
+        void doConnect(const SessionID &, const Dictionary &d);
+        void onConnect(SocketConnector &, socket_handle);
+        void onWrite(SocketConnector &, socket_handle);
+        bool onData(SocketConnector &, socket_handle);
+        void onDisconnect(SocketConnector &, socket_handle);
+        void onError(SocketConnector &);
+        void onTimeout(SocketConnector &);
+        void disconnectPendingSSLHandshakesThatTakeTooLong(time_t now);
+        SSLHandshakeStatus handshakeSSL(SSLSocketConnection *connection);
+        void handshakeSSLAndHandleConnection(SocketConnector &connector, socket_handle s);
 
-  SocketConnector m_connector;
+        SocketConnector m_connector;
 
-  HostDetailsProvider m_hostDetailsProvider;
-  SocketConnections m_pendingSSLHandshakes;
-  SocketConnections m_pendingConnections;
-  SocketConnections m_connections;
-  time_t m_lastConnect;
-  int m_reconnectInterval;
-  bool m_noDelay;
-  int m_sendBufSize;
-  int m_rcvBufSize;
-  bool m_sslInit;
-  SSL_CTX *m_ctx;
-  std::string m_password;
-  X509 *m_cert;
-  RSA *m_key;
-};
-/*! @} */
+        HostDetailsProvider m_hostDetailsProvider;
+        SocketConnections m_pendingSSLHandshakes;
+        SocketConnections m_pendingConnections;
+        SocketConnections m_connections;
+        time_t m_lastConnect;
+        int m_reconnectInterval;
+        bool m_noDelay;
+        int m_sendBufSize;
+        int m_rcvBufSize;
+        bool m_sslInit;
+        SSL_CTX *m_ctx;
+        std::string m_password;
+        X509 *m_cert;
+        RSA *m_key;
+    };
+    /*! @} */
 } // namespace FIX
 
 #endif

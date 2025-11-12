@@ -40,47 +40,56 @@
 
 #include "../../src/getopt-repl.h"
 
-int main(int argc, char **argv) {
-  if (argc < 2) {
-    std::cout << "usage: " << argv[0] << " FILE." << std::endl;
-    return 0;
-  }
-  std::string file = argv[1];
+int main(int argc, char **argv)
+{
+    if (argc < 2)
+    {
+        std::cout << "usage: " << argv[0] << " FILE." << std::endl;
+        return 0;
+    }
+    std::string file = argv[1];
 
 #ifdef HAVE_SSL
-  std::string isSSL;
-  if (argc > 2) {
-    isSSL.assign(argv[2]);
-  }
+    std::string isSSL;
+    if (argc > 2)
+    {
+        isSSL.assign(argv[2]);
+    }
 #endif
 
-  try {
-    FIX::SessionSettings settings(file);
+    try
+    {
+        FIX::SessionSettings settings(file);
 
-    Application application;
-    FIX::FileStoreFactory storeFactory(settings);
-    FIX::ScreenLogFactory logFactory(settings);
+        Application application;
+        FIX::FileStoreFactory storeFactory(settings);
+        FIX::ScreenLogFactory logFactory(settings);
 
-    std::unique_ptr<FIX::Initiator> initiator;
+        std::unique_ptr<FIX::Initiator> initiator;
 #ifdef HAVE_SSL
-    if (isSSL.compare("SSL") == 0) {
-      initiator = std::unique_ptr<FIX::Initiator>(
-          new FIX::ThreadedSSLSocketInitiator(application, storeFactory, settings, logFactory));
-    } else if (isSSL.compare("SSL-ST") == 0) {
-      initiator = std::unique_ptr<FIX::Initiator>(
-          new FIX::SSLSocketInitiator(application, storeFactory, settings, logFactory));
-    } else
+        if (isSSL.compare("SSL") == 0)
+        {
+            initiator = std::unique_ptr<FIX::Initiator>(
+                new FIX::ThreadedSSLSocketInitiator(application, storeFactory, settings, logFactory));
+        }
+        else if (isSSL.compare("SSL-ST") == 0)
+        {
+            initiator = std::unique_ptr<FIX::Initiator>(
+                new FIX::SSLSocketInitiator(application, storeFactory, settings, logFactory));
+        }
+        else
 #endif
-      initiator
-          = std::unique_ptr<FIX::Initiator>(new FIX::SocketInitiator(application, storeFactory, settings, logFactory));
+            initiator = std::unique_ptr<FIX::Initiator>(new FIX::SocketInitiator(application, storeFactory, settings, logFactory));
 
-    initiator->start();
-    application.run();
-    initiator->stop();
+        initiator->start();
+        application.run();
+        initiator->stop();
 
-    return 0;
-  } catch (std::exception &e) {
-    std::cout << e.what();
-    return 1;
-  }
+        return 0;
+    }
+    catch (std::exception &e)
+    {
+        std::cout << e.what();
+        return 1;
+    }
 }

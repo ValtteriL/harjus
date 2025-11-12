@@ -30,18 +30,21 @@
 
 using namespace FIX;
 
-TEST_CASE("FileUtilitiesTests") {
-  SECTION("separator") {
+TEST_CASE("FileUtilitiesTests")
+{
+    SECTION("separator")
+    {
 #ifdef _MSC_VER
-    CHECK("\\" == file_separator());
+        CHECK("\\" == file_separator());
 #else
-    CHECK("/" == file_separator());
+        CHECK("/" == file_separator());
 #endif
-  }
+    }
 
-  SECTION("appendpath") {
-    CHECK(("path" + file_separator() + "file") == file_appendpath("path", "file"));
-    CHECK("path/file" == file_appendpath("path/", "file"));
-    CHECK("path\\file" == file_appendpath("path\\", "file"));
-  }
+    SECTION("appendpath")
+    {
+        CHECK(("path" + file_separator() + "file") == file_appendpath("path", "file"));
+        CHECK("path/file" == file_appendpath("path/", "file"));
+        CHECK("path\\file" == file_appendpath("path\\", "file"));
+    }
 }

@@ -30,60 +30,62 @@
 #include <map>
 #include <string>
 
-namespace FIX {
-/// For storage and retrieval of key/value pairs.
-class Dictionary {
-public:
-  Dictionary(const std::string &name)
-      : m_name(name) {}
-  Dictionary() {}
-  virtual ~Dictionary() {}
+namespace FIX
+{
+    /// For storage and retrieval of key/value pairs.
+    class Dictionary
+    {
+    public:
+        Dictionary(const std::string &name)
+            : m_name(name) {}
+        Dictionary() {}
+        virtual ~Dictionary() {}
 
-  typedef std::map<std::string, std::string> Data;
-  typedef Data::const_iterator iterator;
-  typedef iterator const_iterator;
-  typedef Data::value_type value_type;
+        typedef std::map<std::string, std::string> Data;
+        typedef Data::const_iterator iterator;
+        typedef iterator const_iterator;
+        typedef Data::value_type value_type;
 
-  /// Get the name of the dictionary.
-  std::string getName() const { return m_name; }
-  /// Return the number of key/value pairs.
-  size_t size() const { return m_data.size(); }
+        /// Get the name of the dictionary.
+        std::string getName() const { return m_name; }
+        /// Return the number of key/value pairs.
+        size_t size() const { return m_data.size(); }
 
-  /// Get a value as a string.
-  std::string getString(const std::string &, bool capitalize = false) const EXCEPT(ConfigError, FieldConvertError);
-  /// Get a value as a int.
-  int getInt(const std::string &) const EXCEPT(ConfigError, FieldConvertError);
-  /// Get a value as a double.
-  double getDouble(const std::string &) const EXCEPT(ConfigError, FieldConvertError);
-  /// Get a value as a bool
-  bool getBool(const std::string &) const EXCEPT(ConfigError, FieldConvertError);
-  /// Get a value as a day of week
-  int getDay(const std::string &) const EXCEPT(ConfigError, FieldConvertError);
+        /// Get a value as a string.
+        std::string getString(const std::string &, bool capitalize = false) const EXCEPT(ConfigError, FieldConvertError);
+        /// Get a value as a int.
+        int getInt(const std::string &) const EXCEPT(ConfigError, FieldConvertError);
+        /// Get a value as a double.
+        double getDouble(const std::string &) const EXCEPT(ConfigError, FieldConvertError);
+        /// Get a value as a bool
+        bool getBool(const std::string &) const EXCEPT(ConfigError, FieldConvertError);
+        /// Get a value as a day of week
+        int getDay(const std::string &) const EXCEPT(ConfigError, FieldConvertError);
 
-  /// Set a value from a string.
-  void setString(const std::string &, const std::string &);
-  /// Set a value from a int.
-  void setInt(const std::string &, int);
-  /// Set a value from a double.
-  void setDouble(const std::string &, double);
-  /// Set a value from a bool
-  void setBool(const std::string &, bool);
-  /// Set a value from a day
-  void setDay(const std::string &, int);
+        /// Set a value from a string.
+        void setString(const std::string &, const std::string &);
+        /// Set a value from a int.
+        void setInt(const std::string &, int);
+        /// Set a value from a double.
+        void setDouble(const std::string &, double);
+        /// Set a value from a bool
+        void setBool(const std::string &, bool);
+        /// Set a value from a day
+        void setDay(const std::string &, int);
 
-  /// Check if the dictionary contains a value for key.
-  bool has(const std::string &) const;
-  /// Merge two dictionaries.
-  void merge(const Dictionary &);
+        /// Check if the dictionary contains a value for key.
+        bool has(const std::string &) const;
+        /// Merge two dictionaries.
+        void merge(const Dictionary &);
 
-  iterator begin() const { return m_data.begin(); }
-  iterator end() const { return m_data.end(); }
+        iterator begin() const { return m_data.begin(); }
+        iterator end() const { return m_data.end(); }
 
-private:
-  Data m_data;
-  std::string m_name;
-};
-/*! @} */
+    private:
+        Data m_data;
+        std::string m_name;
+    };
+    /*! @} */
 } // namespace FIX
 
 #endif // FIX_DICTIONARY_H

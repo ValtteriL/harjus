@@ -30,48 +30,55 @@
 
 using namespace FIX;
 
-TEST_CASE("FieldBaseTests") {
-  SECTION("set") {
-    FieldBase object(12, "VALUE");
-    object.setString("VALUE");
-    CHECK("12=VALUE\001" == object.getFixString());
-    CHECK(542 == object.getTotal());
-    CHECK(9 == object.getLength());
-    object.setString("VALUF");
-    CHECK("12=VALUF\001" == object.getFixString());
-    CHECK(543 == object.getTotal());
-    CHECK(9 == object.getLength());
-    object.setTag(13);
-    CHECK("13=VALUF\001" == object.getFixString());
-    CHECK(544 == object.getTotal());
-    CHECK(9 == object.getLength());
-  }
+TEST_CASE("FieldBaseTests")
+{
+    SECTION("set")
+    {
+        FieldBase object(12, "VALUE");
+        object.setString("VALUE");
+        CHECK("12=VALUE\001" == object.getFixString());
+        CHECK(542 == object.getTotal());
+        CHECK(9 == object.getLength());
+        object.setString("VALUF");
+        CHECK("12=VALUF\001" == object.getFixString());
+        CHECK(543 == object.getTotal());
+        CHECK(9 == object.getLength());
+        object.setTag(13);
+        CHECK("13=VALUF\001" == object.getFixString());
+        CHECK(544 == object.getTotal());
+        CHECK(9 == object.getLength());
+    }
 
-  SECTION("CharField_getValue_FieldConvertError") {
-    CharField charField(1);
-    CHECK_THROWS_AS(charField.getValue(), IncorrectDataFormat);
-  }
+    SECTION("CharField_getValue_FieldConvertError")
+    {
+        CharField charField(1);
+        CHECK_THROWS_AS(charField.getValue(), IncorrectDataFormat);
+    }
 
-  SECTION("DoubleField_getValue_FieldConvertError") {
-    DoubleField doubleField(1);
-    CHECK_THROWS_AS(doubleField.getValue(), IncorrectDataFormat);
-  }
+    SECTION("DoubleField_getValue_FieldConvertError")
+    {
+        DoubleField doubleField(1);
+        CHECK_THROWS_AS(doubleField.getValue(), IncorrectDataFormat);
+    }
 
-  SECTION("BoolField_getValue_FieldConvertError") {
-    BoolField boolField(1);
-    CHECK_THROWS_AS(boolField.getValue(), IncorrectDataFormat);
-  }
+    SECTION("BoolField_getValue_FieldConvertError")
+    {
+        BoolField boolField(1);
+        CHECK_THROWS_AS(boolField.getValue(), IncorrectDataFormat);
+    }
 
-  SECTION("UtcTimeStampField_getValue_FieldConvertError") {
-    UtcTimeStampField utcTimeStampField(1, UtcTimeStamp::now());
-    utcTimeStampField.setString("1");
-    CHECK_THROWS_AS(utcTimeStampField.getValue(), IncorrectDataFormat);
-  }
+    SECTION("UtcTimeStampField_getValue_FieldConvertError")
+    {
+        UtcTimeStampField utcTimeStampField(1, UtcTimeStamp::now());
+        utcTimeStampField.setString("1");
+        CHECK_THROWS_AS(utcTimeStampField.getValue(), IncorrectDataFormat);
+    }
 
-  SECTION("StringField_ComparisonIsLessThanOrEqualTo") {
-    StringField stringField(1, "string");
-    CHECK(stringField <= "string");
-    CHECK(stringField <= "string_long");
-    CHECK(!(stringField <= "str"));
-  }
+    SECTION("StringField_ComparisonIsLessThanOrEqualTo")
+    {
+        StringField stringField(1, "string");
+        CHECK(stringField <= "string");
+        CHECK(stringField <= "string_long");
+        CHECK(!(stringField <= "str"));
+    }
 }

@@ -30,38 +30,42 @@
 #include "Exceptions.h"
 #include "Utility.h"
 
-namespace FIX {
-class BeginString;
-class ApplVerID;
+namespace FIX
+{
+    class BeginString;
+    class ApplVerID;
 
-/**
- * Queries for DataDictionary based on appropriate version of %FIX.
- */
+    /**
+     * Queries for DataDictionary based on appropriate version of %FIX.
+     */
 
-class DataDictionaryProvider {
-public:
-  DataDictionaryProvider() {}
-  DataDictionaryProvider(const DataDictionaryProvider &copy);
+    class DataDictionaryProvider
+    {
+    public:
+        DataDictionaryProvider() {}
+        DataDictionaryProvider(const DataDictionaryProvider &copy);
 
-  const DataDictionary &getSessionDataDictionary(const BeginString &beginString) const EXCEPT(DataDictionaryNotFound);
+        const DataDictionary &getSessionDataDictionary(const BeginString &beginString) const EXCEPT(DataDictionaryNotFound);
 
-  const DataDictionary &getApplicationDataDictionary(const ApplVerID &applVerID) const EXCEPT(DataDictionaryNotFound);
+        const DataDictionary &getApplicationDataDictionary(const ApplVerID &applVerID) const EXCEPT(DataDictionaryNotFound);
 
-  void addTransportDataDictionary(const BeginString &beginString, std::shared_ptr<DataDictionary>);
-  void addApplicationDataDictionary(const ApplVerID &applVerID, std::shared_ptr<DataDictionary>);
+        void addTransportDataDictionary(const BeginString &beginString, std::shared_ptr<DataDictionary>);
+        void addApplicationDataDictionary(const ApplVerID &applVerID, std::shared_ptr<DataDictionary>);
 
-  void addTransportDataDictionary(const BeginString &beginString, const std::string &path) {
-    addTransportDataDictionary(beginString, std::shared_ptr<DataDictionary>(new DataDictionary(path)));
-  }
-  void addApplicationDataDictionary(const ApplVerID &applVerID, const std::string &path) {
-    addApplicationDataDictionary(applVerID, std::shared_ptr<DataDictionary>(new DataDictionary(path)));
-  }
+        void addTransportDataDictionary(const BeginString &beginString, const std::string &path)
+        {
+            addTransportDataDictionary(beginString, std::shared_ptr<DataDictionary>(new DataDictionary(path)));
+        }
+        void addApplicationDataDictionary(const ApplVerID &applVerID, const std::string &path)
+        {
+            addApplicationDataDictionary(applVerID, std::shared_ptr<DataDictionary>(new DataDictionary(path)));
+        }
 
-private:
-  std::map<std::string, std::shared_ptr<DataDictionary>> m_transportDictionaries;
-  std::map<std::string, std::shared_ptr<DataDictionary>> m_applicationDictionaries;
-  DataDictionary emptyDataDictionary;
-};
+    private:
+        std::map<std::string, std::shared_ptr<DataDictionary>> m_transportDictionaries;
+        std::map<std::string, std::shared_ptr<DataDictionary>> m_applicationDictionaries;
+        DataDictionary emptyDataDictionary;
+    };
 } // namespace FIX
 
 #endif // FIX_DATADICTIONARYPROVIDER_H

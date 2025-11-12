@@ -27,23 +27,28 @@
 #include "Utility.h"
 #include <algorithm>
 
-namespace FIX {
-bool HttpParser::readHttpMessage(std::string &str) EXCEPT(MessageParseError) {
-  std::string::size_type pos = 0;
+namespace FIX
+{
+    bool HttpParser::readHttpMessage(std::string &str) EXCEPT(MessageParseError)
+    {
+        std::string::size_type pos = 0;
 
-  if (m_buffer.length() < 4) {
-    return false;
-  }
-  pos = m_buffer.find("\r\n\r\n");
-  if (m_buffer.length() > 2048) {
-    throw MessageParseError();
-  }
-  if (pos == std::string::npos) {
-    return false;
-  }
-  str.assign(m_buffer, 0, pos + 4);
-  m_buffer.erase(0, pos + 4);
+        if (m_buffer.length() < 4)
+        {
+            return false;
+        }
+        pos = m_buffer.find("\r\n\r\n");
+        if (m_buffer.length() > 2048)
+        {
+            throw MessageParseError();
+        }
+        if (pos == std::string::npos)
+        {
+            return false;
+        }
+        str.assign(m_buffer, 0, pos + 4);
+        m_buffer.erase(0, pos + 4);
 
-  return true;
-}
+        return true;
+    }
 } // namespace FIX

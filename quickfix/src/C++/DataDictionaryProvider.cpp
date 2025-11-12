@@ -27,40 +27,45 @@
 #include "DataDictionaryProvider.h"
 #include "Fields.h"
 
-namespace FIX {
-DataDictionaryProvider::DataDictionaryProvider(const DataDictionaryProvider &copy) { *this = copy; }
+namespace FIX
+{
+    DataDictionaryProvider::DataDictionaryProvider(const DataDictionaryProvider &copy) { *this = copy; }
 
-const DataDictionary &DataDictionaryProvider::getSessionDataDictionary(const BeginString &beginString) const
-    EXCEPT(DataDictionaryNotFound) {
-  std::map<std::string, std::shared_ptr<DataDictionary>>::const_iterator find
-      = m_transportDictionaries.find(beginString);
-  if (find != m_transportDictionaries.end()) {
-    return *find->second;
-  }
+    const DataDictionary &DataDictionaryProvider::getSessionDataDictionary(const BeginString &beginString) const
+        EXCEPT(DataDictionaryNotFound)
+    {
+        std::map<std::string, std::shared_ptr<DataDictionary>>::const_iterator find = m_transportDictionaries.find(beginString);
+        if (find != m_transportDictionaries.end())
+        {
+            return *find->second;
+        }
 
-  return emptyDataDictionary;
-}
+        return emptyDataDictionary;
+    }
 
-const DataDictionary &DataDictionaryProvider::getApplicationDataDictionary(const ApplVerID &applVerID) const
-    EXCEPT(DataDictionaryNotFound) {
-  std::map<std::string, std::shared_ptr<DataDictionary>>::const_iterator find
-      = m_applicationDictionaries.find(applVerID);
-  if (find != m_applicationDictionaries.end()) {
-    return *find->second;
-  }
+    const DataDictionary &DataDictionaryProvider::getApplicationDataDictionary(const ApplVerID &applVerID) const
+        EXCEPT(DataDictionaryNotFound)
+    {
+        std::map<std::string, std::shared_ptr<DataDictionary>>::const_iterator find = m_applicationDictionaries.find(applVerID);
+        if (find != m_applicationDictionaries.end())
+        {
+            return *find->second;
+        }
 
-  return emptyDataDictionary;
-}
+        return emptyDataDictionary;
+    }
 
-void DataDictionaryProvider::addTransportDataDictionary(
-    const BeginString &beginString,
-    std::shared_ptr<DataDictionary> pDD) {
-  m_transportDictionaries[beginString.getValue()] = pDD;
-}
+    void DataDictionaryProvider::addTransportDataDictionary(
+        const BeginString &beginString,
+        std::shared_ptr<DataDictionary> pDD)
+    {
+        m_transportDictionaries[beginString.getValue()] = pDD;
+    }
 
-void DataDictionaryProvider::addApplicationDataDictionary(
-    const ApplVerID &applVerID,
-    std::shared_ptr<DataDictionary> pDD) {
-  m_applicationDictionaries[applVerID.getValue()] = pDD;
-}
+    void DataDictionaryProvider::addApplicationDataDictionary(
+        const ApplVerID &applVerID,
+        std::shared_ptr<DataDictionary> pDD)
+    {
+        m_applicationDictionaries[applVerID.getValue()] = pDD;
+    }
 } // namespace FIX

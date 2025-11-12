@@ -30,60 +30,66 @@
 #include <pthread.h>
 #endif
 
-namespace FIX {
-/// Portable implementation of an event/conditional mutex
-class Event {
-public:
-  Event() {
+namespace FIX
+{
+    /// Portable implementation of an event/conditional mutex
+    class Event
+    {
+    public:
+        Event()
+        {
 #ifdef _MSC_VER
-    m_event = CreateEvent(0, false, false, 0);
+            m_event = CreateEvent(0, false, false, 0);
 #else
-    pthread_mutex_init(&m_mutex, 0);
-    pthread_cond_init(&m_event, 0);
+            pthread_mutex_init(&m_mutex, 0);
+            pthread_cond_init(&m_event, 0);
 #endif
-  }
+        }
 
-  ~Event() {
+        ~Event()
+        {
 #ifdef _MSC_VER
-    CloseHandle(m_event);
+            CloseHandle(m_event);
 #else
-    pthread_cond_destroy(&m_event);
-    pthread_mutex_destroy(&m_mutex);
+            pthread_cond_destroy(&m_event);
+            pthread_mutex_destroy(&m_mutex);
 #endif
-  }
+        }
 
-  void signal() {
+        void signal()
+        {
 #ifdef _MSC_VER
-    SetEvent(m_event);
+            SetEvent(m_event);
 #else
-    pthread_mutex_lock(&m_mutex);
-    pthread_cond_broadcast(&m_event);
-    pthread_mutex_unlock(&m_mutex);
+            pthread_mutex_lock(&m_mutex);
+            pthread_cond_broadcast(&m_event);
+            pthread_mutex_unlock(&m_mutex);
 #endif
-  }
+        }
 
-  void wait(double s) {
+        void wait(double s)
+        {
 #ifdef _MSC_VER
-    WaitForSingleObject(m_event, (long)(s * 1000));
+            WaitForSingleObject(m_event, (long)(s * 1000));
 #else
-    pthread_mutex_lock(&m_mutex);
-    timespec time, remainder;
-    double intpart;
-    time.tv_nsec = (long)(modf(s, &intpart) * 1e9);
-    time.tv_sec = (int)intpart;
-    pthread_cond_timedwait(&m_event, &m_mutex, &time);
-    pthread_mutex_unlock(&m_mutex);
+            pthread_mutex_lock(&m_mutex);
+            timespec time, remainder;
+            double intpart;
+            time.tv_nsec = (long)(modf(s, &intpart) * 1e9);
+            time.tv_sec = (int)intpart;
+            pthread_cond_timedwait(&m_event, &m_mutex, &time);
+            pthread_mutex_unlock(&m_mutex);
 #endif
-  }
+        }
 
-private:
+    private:
 #ifdef _MSC_VER
-  HANDLE m_event;
+        HANDLE m_event;
 #else
-  pthread_cond_t m_event;
-  pthread_mutex_t m_mutex;
+        pthread_cond_t m_event;
+        pthread_mutex_t m_mutex;
 #endif
-};
+    };
 } // namespace FIX
 
 #endif

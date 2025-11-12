@@ -32,58 +32,60 @@
 #include <map>
 #include <set>
 
-namespace FIX {
-class ThreadedSocketAcceptor;
-class ThreadedSocketInitiator;
-class Session;
-class Application;
-class Log;
+namespace FIX
+{
+    class ThreadedSocketAcceptor;
+    class ThreadedSocketInitiator;
+    class Session;
+    class Application;
+    class Log;
 
-/// Encapsulates a socket file descriptor (multi-threaded).
-class ThreadedSocketConnection : Responder {
-public:
-  typedef std::set<SessionID> Sessions;
+    /// Encapsulates a socket file descriptor (multi-threaded).
+    class ThreadedSocketConnection : Responder
+    {
+    public:
+        typedef std::set<SessionID> Sessions;
 
-  ThreadedSocketConnection(socket_handle s, Sessions sessions, Log *pLog);
-  ThreadedSocketConnection(
-      const SessionID &,
-      socket_handle s,
-      const std::string &address,
-      short port,
-      Log *pLog,
-      const std::string &sourceAddress = "",
-      short sourcePort = 0);
-  virtual ~ThreadedSocketConnection();
+        ThreadedSocketConnection(socket_handle s, Sessions sessions, Log *pLog);
+        ThreadedSocketConnection(
+            const SessionID &,
+            socket_handle s,
+            const std::string &address,
+            short port,
+            Log *pLog,
+            const std::string &sourceAddress = "",
+            short sourcePort = 0);
+        virtual ~ThreadedSocketConnection();
 
-  Session *getSession() const { return m_pSession; }
-  socket_handle getSocket() const { return m_socket; }
-  bool connect();
-  void disconnect();
-  bool read();
+        Session *getSession() const { return m_pSession; }
+        socket_handle getSocket() const { return m_socket; }
+        bool connect();
+        void disconnect();
+        bool read();
 
-private:
-  bool readMessage(std::string &msg) EXCEPT(SocketRecvFailed);
-  void processStream();
-  bool send(const std::string &);
-  bool setSession(const std::string &msg);
+    private:
+        bool readMessage(std::string &msg) EXCEPT(SocketRecvFailed);
+        void processStream();
+        bool send(const std::string &);
+        bool setSession(const std::string &msg);
 
-  socket_handle m_socket;
-  char m_buffer[BUFSIZ];
+        socket_handle m_socket;
+        char m_buffer[BUFSIZ];
 
-  std::string m_address;
-  int m_port;
-  std::string m_sourceAddress;
-  int m_sourcePort;
+        std::string m_address;
+        int m_port;
+        std::string m_sourceAddress;
+        int m_sourcePort;
 
-  Log *m_pLog;
-  Parser m_parser;
-  Sessions m_sessions;
-  Session *m_pSession;
-  bool m_disconnect;
+        Log *m_pLog;
+        Parser m_parser;
+        Sessions m_sessions;
+        Session *m_pSession;
+        bool m_disconnect;
 #if _MSC_VER
-  fd_set m_fds;
+        fd_set m_fds;
 #endif
-};
+    };
 } // namespace FIX
 
 #endif // FIX_THREADEDSOCKETCONNECTION_H
