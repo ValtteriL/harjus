@@ -15,11 +15,13 @@ in rec {
   fstack-mt = pkgs.callPackage ./fstack-mt.nix { fstack = fstack; };
   fstack-tools = pkgs.callPackage ./fstack-tools.nix { fstack = fstack; };
   run-clang-tidy = pkgs.callPackage ./run-clang-tidy.nix { };
+  git-clang-format = pkgs.callPackage ./git-clang-format.nix { };
   devshell = pkgs.callPackage ./devshell.nix {
     fstack = fstack;
     fstack-examples = fstack-examples;
     fstack-mt = fstack-mt;
     fstack-tools = fstack-tools;
     run-clang-tidy = run-clang-tidy;
+    git-clang-format = git-clang-format;
   };
 }

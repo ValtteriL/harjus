@@ -1,4 +1,5 @@
-{ pkgs, fstack, fstack-examples, fstack-mt, fstack-tools, run-clang-tidy }:
+{ pkgs, fstack, fstack-examples, fstack-mt, fstack-tools, run-clang-tidy
+, git-clang-format }:
 
 let
 
@@ -25,7 +26,7 @@ in pkgs.mkShell {
 
     cmake
     ninja
-    clang-tools
+    llvmPackages_21.clang-tools
 
     # f-stack
     fstack
@@ -35,6 +36,7 @@ in pkgs.mkShell {
 
     # code quality
     run-clang-tidy
+    git-clang-format
   ];
 
   nativeBuildInputs = [ pkgs.pkg-config ];
