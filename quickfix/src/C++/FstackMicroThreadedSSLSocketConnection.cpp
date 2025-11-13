@@ -3,11 +3,7 @@
 #if (HAVE_SSL > 0)
 
 #include "Session.h"
-// #include "ThreadedSSLSocketAcceptor.h"
 #include "FstackMicroThreadedSSLSocketConnection.h"
-
-#include <utility>
-
 #include <utility>
 #include "FstackMicroThreadedSSLSocketInitiator.h"
 #include "Utility.h"
