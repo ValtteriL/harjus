@@ -36,8 +36,10 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 | `just debug` | Builds with Debug configuration. |
 | `just test` | Runs unit tests via CTest. |
 | `just clean` | Removes build artifacts. |
-| `just fmt` | Applies clang-format to the codebase. |
-| `just lint` | Runs clang-tidy checks. |
+| `just fmt` | Applies clang-format to files modified after branching off main. |
+| `just fmt-full` | Applies clang-format to all C/C++ files in the codebase. |
+| `just lint` | Runs essential clang-tidy checks. |
+| `just lint-full` | Runs full clang-tidy checks. |
 | `just doc` | Generates Doxygen documentation. |
 
 ## Coding Guidelines (Latency Sensitive)

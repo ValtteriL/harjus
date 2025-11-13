@@ -56,16 +56,22 @@ echo: nix-build-all
 stop-echo:
     sudo kill $(pidof fstack-mt-echo) || echo "fstack-mt-echo is not running"
 
-# Format tracked C/C++ sources with clang-format
+# Format modified C/C++ sources on current branch with clang-format
 fmt:
-	@echo "Running clang-format on tracked C/C++ files..."
-	git-clang-format -f
+	@echo "Running clang-format on modified C/C++ files..."
+	git-clang-format -f main
 
-fmt-all:
+# Format all C/C++ sources in the quickfix directory with clang-format
+fmt-full:
     @echo "Running clang-format on all C/C++ files..."
-    clang-format -i `find quickfix -name "*.cpp" -or -name "*.hpp" -or -name "*.c" -or -name "*.h"`
+    clang-format -i `find . -name "*.cpp" -or -name "*.hpp" -or -name "*.c" -or -name "*.h"`
 
-# Lint built C/C++ sources with clang-tidy
+# Lint C/C++ sources with essential rules
 lint:
-    echo "Running clang-tidy on tracked C/C++ files..."
-    run-clang-tidy -p build -use-color -fix -quiet -j$(nproc)
+    echo "Running clang-tidy with essential rules..."
+    run-clang-tidy -p build -fix -quiet -j$(nproc)
+
+# Lint C/C++ sources with comprehensive rules
+lint-full:
+    echo "Running clang-tidy with .clang-tidy.full..."
+    run-clang-tidy -p build -config-file .clang-tidy.full -fix -quiet -j$(nproc)
