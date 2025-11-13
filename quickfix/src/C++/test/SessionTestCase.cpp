@@ -526,9 +526,9 @@ namespace
 
     struct sessionFixture : public TestCallback
     {
-        sessionFixture() : object(0) { }
+        sessionFixture() : object(nullptr) { }
 
-        sessionFixture(int heartBtInt) : object(0)
+        sessionFixture(int heartBtInt) : object(nullptr)
         {
             
             createSession(heartBtInt);
@@ -565,9 +565,9 @@ namespace
 
     struct sessionT11Fixture : public TestCallback
     {
-        sessionT11Fixture() : object(0) { }
+        sessionT11Fixture() : object(nullptr) { }
 
-        sessionT11Fixture(int heartBtInt) : object(0)
+        sessionT11Fixture(int heartBtInt) : object(nullptr)
         {
             
             createSession(heartBtInt);
@@ -609,9 +609,9 @@ namespace
 
     struct sessionFIX40Fixture : public TestCallback
     {
-        sessionFIX40Fixture() : object(0) { }
+        sessionFIX40Fixture() : object(nullptr) { }
 
-        sessionFIX40Fixture(int heartBtInt) : object(0)
+        sessionFIX40Fixture(int heartBtInt) : object(nullptr)
         {
             
             createSession(heartBtInt);

@@ -37,8 +37,8 @@ namespace FIX
     std::unique_ptr<DataDictionary> Message::s_dataDictionary;
 
     Message::Message()
-        : m_validStructure(true),
-          m_tag(0) {}
+        : m_validStructure(true)
+          {}
 
     Message::Message(const message_order &headerOrder, const message_order &trailerOrder, const message_order &order)
         : FieldMap(order),
@@ -47,15 +47,15 @@ namespace FIX
           m_validStructure(true) {}
 
     Message::Message(const std::string &string, bool validate) EXCEPT(InvalidMessage)
-        : m_validStructure(true),
-          m_tag(0)
+        : m_validStructure(true)
+          
     {
         setString(string, validate);
     }
 
     Message::Message(const std::string &string, const DataDictionary &dataDictionary, bool validate) EXCEPT(InvalidMessage)
-        : m_validStructure(true),
-          m_tag(0)
+        : m_validStructure(true)
+          
     {
         setString(string, validate, &dataDictionary, &dataDictionary);
     }
@@ -65,8 +65,8 @@ namespace FIX
         const DataDictionary &sessionDataDictionary,
         const DataDictionary &applicationDataDictionary,
         bool validate) EXCEPT(InvalidMessage)
-        : m_validStructure(true),
-          m_tag(0)
+        : m_validStructure(true)
+          
     {
         setString(string, validate, &sessionDataDictionary, &applicationDataDictionary);
     }
@@ -111,8 +111,8 @@ namespace FIX
     }
 
     Message::Message(const BeginString &beginString, const MsgType &msgType)
-        : m_validStructure(true),
-          m_tag(0)
+        : m_validStructure(true)
+          
     {
         m_header.setField(beginString);
         m_header.setField(msgType);
