@@ -46,6 +46,10 @@ pkg_check_modules(LIBDPDK REQUIRED libdpdk)
 pkg_check_modules(LIBFSTACK REQUIRED libfstack)
 pkg_check_modules(LIBMT REQUIRED libmt)
 
+# Add DPDK, F-Stack, and libmt to include directories and link libraries
+include_directories(${LIBDPDK_INCLUDE_DIRS} ${LIBFSTACK_INCLUDE_DIRS} ${LIBMT_INCLUDE_DIRS})
+link_directories(${LIBDPDK_LIBRARY_DIRS} ${LIBFSTACK_LIBRARY_DIRS} ${LIBMT_LIBRARY_DIRS})
+
 #Make sure that a previous config.h has not undefined HAVE_SSL
 if(HAVE_SSL)
 # Can set location explicitly, example, cmake -DOPENSSL_ROOT_DIR=/usr/local/ssl -DOPENSSL_LIBRARIES=/usr/local/ssl/lib
@@ -110,4 +114,3 @@ file(REMOVE config.h)
 configure_file(cmake_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/quickfix/config.h @ONLY)
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/spec/ DESTINATION share/quickfix FILES_MATCHING PATTERN "FIX*.xml")
- 
