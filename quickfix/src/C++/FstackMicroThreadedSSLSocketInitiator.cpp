@@ -1,3 +1,4 @@
+#include "FStackSSLBIO.h"
 #include "config.h"
 #include <mt_api.h>
 
@@ -14,9 +15,9 @@ namespace FIX
 {
 
     auto FstackMicroThreadedSSLSocketInitiator::passwordHandleCB(char *buf,
-                                                                int bufsize,
-                                                                int verify,
-                                                                void *instance) -> int
+                                                                 int bufsize,
+                                                                 int verify,
+                                                                 void *instance) -> int
     {
         return reinterpret_cast<FstackMicroThreadedSSLSocketInitiator *>(instance)
             ->passwordHandleCallback(buf, bufsize, verify);
@@ -235,8 +236,9 @@ namespace FIX
                 return;
             }
             SSL_clear(ssl);
-            BIO *sbio = BIO_new_socket(
-                socket, BIO_CLOSE); // unfortunately OpenSSL uses int for socket handles
+
+            BIO *sbio = BIO_new_ff_socket(socket, BIO_CLOSE);
+
             SSL_set_bio(ssl, sbio, sbio);
 
             auto *pConnection =
