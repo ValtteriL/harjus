@@ -26,14 +26,8 @@ set(quickfix_SOURCES
   Message.cpp
   MessageSorters.cpp
   MessageStore.cpp
-  MySQLLog.cpp
-  MySQLStore.cpp
   NullStore.cpp
-  OdbcLog.cpp
-  OdbcStore.cpp
   Parser.cpp
-  PostgreSQLLog.cpp
-  PostgreSQLStore.cpp
   pugixml.cpp
   PUGIXML_DOMDocument.cpp
   Session.cpp
