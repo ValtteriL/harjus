@@ -1,7 +1,6 @@
 dirent_windows.h
 index.h
 pugixml.cpp
-stdint_msvc.h
 strptime.c
 strptime.h
 PUGIXML_DOMDocument.h

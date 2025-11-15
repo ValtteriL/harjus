@@ -27,11 +27,7 @@
 #pragma warning(disable : 4503 4355 4786 4290)
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER < 1600)
-#include "stdint_msvc.h"
-#else
 #include <stdint.h> /* integer types int8_t .. uint64_t, intptr_t */
-#endif
 
 #include "Utility.h"
 #include <string>

@@ -10,13 +10,6 @@ message("-- Project name ${CMAKE_PROJECT_NAME}")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 
-if( MSVC AND STATIC_RUNTIME )
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-  set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /MT")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MT")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-endif()
-
 if( CMAKE_CXX_STANDARD EQUAL 17 )
   option( HAVE_CXX17 "Using C++17" ON)
 endif()
@@ -64,12 +57,6 @@ add_subdirectory(src)
 
 if (QUICKFIX_EXAMPLES)
   add_subdirectory(examples)
-endif()
-
-if (QUICKFIX_TESTS)
-  if( WIN32)
-    add_subdirectory(test)
-  endif()
 endif()
 
 configure_file(cmake_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/C++/config.h @ONLY)

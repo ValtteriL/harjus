@@ -53,11 +53,7 @@ set(quickfix_SOURCES
   Utility.cpp
 )
 
-if (WIN32)
-  list(APPEND quickfix_SOURCES SocketMonitor_WIN32.cpp)
-else()
-  list(APPEND quickfix_SOURCES SocketMonitor_UNIX.cpp)
-endif()
+list(APPEND quickfix_SOURCES SocketMonitor_UNIX.cpp)
 
 if (HAVE_SSL)
   set (quickfix_SOURCES ${quickfix_SOURCES}
@@ -73,18 +69,14 @@ if (HAVE_SSL)
     UtilitySSL.cpp)
 endif()
 
-if (WIN32)
-  add_library(${PROJECT_NAME} STATIC  ${quickfix_SOURCES})
-  set_target_properties (${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX d)
-  target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES} ${MYSQL_CLIENT_LIBS} ${PostgreSQL_LIBRARIES} ws2_32 crypt32 ${LIBFSTACK_LIBRARIES} ${LIBMT_LIBRARIES} ${LIBDPDK_LIBRARIES} rte_net_bond)
+
+if (QUICKFIX_SHARED_LIBS)
+	add_library(${PROJECT_NAME} SHARED  ${quickfix_SOURCES})
 else()
-   if (QUICKFIX_SHARED_LIBS)
-	   add_library(${PROJECT_NAME} SHARED  ${quickfix_SOURCES})
-   else()
-	   add_library(${PROJECT_NAME} STATIC  ${quickfix_SOURCES})
-  endif()
-  target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES} ${MYSQL_CLIENT_LIBS} ${PostgreSQL_LIBRARIES} pthread ${LIBFSTACK_LIBRARIES} ${LIBMT_LIBRARIES} ${LIBDPDK_LIBRARIES} rte_net_bond)
+	add_library(${PROJECT_NAME} STATIC  ${quickfix_SOURCES})
 endif()
+target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES} ${MYSQL_CLIENT_LIBS} ${PostgreSQL_LIBRARIES} pthread ${LIBFSTACK_LIBRARIES} ${LIBMT_LIBRARIES} ${LIBDPDK_LIBRARIES} rte_net_bond)
+
 
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_11)
 target_include_directories(${PROJECT_NAME}

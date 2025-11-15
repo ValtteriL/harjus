@@ -52,13 +52,7 @@ if (QUICKFIX_TESTS)
     
   target_link_libraries(ut ${PROJECT_NAME})
   
-  if (NOT WIN32)
   ADD_CUSTOM_TARGET(ut_target ALL
                     COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:ut> ${PROJECT_SOURCE_DIR}/test/ut)
-  else()
-  set_target_properties(ut PROPERTIES
-                        RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/test/debug/ut/
-                        RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/test/release/ut/
-                        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${PROJECT_SOURCE_DIR}/test/release/ut/)
-  endif()  
+
 endif()  

@@ -19,8 +19,4 @@
 **
 ****************************************************************************/
 
-#ifdef _MSC_VER
-#include "SocketMonitor_WIN32.h"
-#else
 #include "SocketMonitor_UNIX.h"
-#endif
