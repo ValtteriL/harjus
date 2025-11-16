@@ -80,8 +80,6 @@ namespace std
 #include <SocketAcceptor.h>
 #include <DataDictionary.h>
 #include <SocketMonitor.h>
-#include <DatabaseConnectionID.h>
-#include <DatabaseConnectionPool.h>
 #include <ThreadedSocketAcceptor.h>
 #include <ThreadedSocketInitiator.h>
 #include <ThreadedSocketConnection.h>
@@ -558,8 +556,6 @@ typedef FIX::SessionSettings SessionSettings;
 %include "../C++/SocketMonitor.h"
 %include "../C++/SSLSocketAcceptor.h"
 %include "../C++/SSLSocketInitiator.h"
-%include "../C++/DatabaseConnectionID.h"
-%include "../C++/DatabaseConnectionPool.h"
 %include "../C++/MySQLConnection.h"
 %include "../C++/MySQLStore.h"
 %include "../C++/MySQLLog.h"

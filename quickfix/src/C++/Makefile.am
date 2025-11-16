@@ -64,8 +64,6 @@ libquickfix_la_SOURCES = \
 	OdbcStore.h \
 	OdbcLog.cpp \
 	OdbcLog.h \
-	DatabaseConnectionID.h \
-	DatabaseConnectionPool.h \
 	Dictionary.cpp \
 	Dictionary.h \
 	DataDictionary.cpp \
