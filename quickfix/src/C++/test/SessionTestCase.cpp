@@ -25,7 +25,6 @@
 #endif
 
 #include "TestHelper.h"
-#include <Acceptor.h>
 #include <DataDictionary.h>
 #include <DataDictionaryProvider.h>
 #include <FileLog.h>
@@ -526,11 +525,11 @@ namespace
 
     struct sessionFixture : public TestCallback
     {
-        sessionFixture() : object(nullptr) { }
+        sessionFixture() : object(nullptr) {}
 
         sessionFixture(int heartBtInt) : object(nullptr)
         {
-            
+
             createSession(heartBtInt);
         }
 
@@ -555,7 +554,9 @@ namespace
             DataDictionaryProvider provider;
             provider.addTransportDataDictionary(sessionID.getBeginString(), FIX::TestSettings::pathForSpec("FIX42"));
             object = new Session([this]()
-                                 -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, heartBtInt, nullptr);
+                                     -> UtcTimeStamp
+                                 { return now; },
+                                 *this, factory, sessionID, provider, sessionTime, heartBtInt, nullptr);
             object->setResponder(this);
         }
 
@@ -565,11 +566,11 @@ namespace
 
     struct sessionT11Fixture : public TestCallback
     {
-        sessionT11Fixture() : object(nullptr) { }
+        sessionT11Fixture() : object(nullptr) {}
 
         sessionT11Fixture(int heartBtInt) : object(nullptr)
         {
-            
+
             createSession(heartBtInt);
         }
 
@@ -598,7 +599,9 @@ namespace
             provider.addApplicationDataDictionary(ApplVerID(ApplVerID_FIX40), FIX::TestSettings::pathForSpec("FIX40"));
 
             object = new Session([this]()
-                                 -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, heartBtInt, nullptr);
+                                     -> UtcTimeStamp
+                                 { return now; },
+                                 *this, factory, sessionID, provider, sessionTime, heartBtInt, nullptr);
             object->setSenderDefaultApplVerID(FIX::Message::toApplVerID(BeginString("FIX.5.0")));
             object->setResponder(this);
         }
@@ -609,11 +612,11 @@ namespace
 
     struct sessionFIX40Fixture : public TestCallback
     {
-        sessionFIX40Fixture() : object(nullptr) { }
+        sessionFIX40Fixture() : object(nullptr) {}
 
         sessionFIX40Fixture(int heartBtInt) : object(nullptr)
         {
-            
+
             createSession(heartBtInt);
         }
 
@@ -639,7 +642,9 @@ namespace
             provider.addTransportDataDictionary(sessionID.getBeginString(), FIX::TestSettings::pathForSpec("FIX40"));
 
             object = new Session([this]()
-                                 -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, heartBtInt, nullptr);
+                                     -> UtcTimeStamp
+                                 { return now; },
+                                 *this, factory, sessionID, provider, sessionTime, heartBtInt, nullptr);
             object->setResponder(this);
         }
 
@@ -750,10 +755,12 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
         DataDictionaryProvider provider;
         provider.addTransportDataDictionary(BeginString("FIX.4.2"), std::make_shared<DataDictionary>());
         auto const timestamper = [this]()
-        -> UtcTimeStamp { return now; };
+            -> UtcTimeStamp
+        { return now; };
 
-        auto createSession = [&](const SenderCompID& senderCompID, const TargetCompID& targetCompID)
-        -> Session * {
+        auto createSession = [&](const SenderCompID &senderCompID, const TargetCompID &targetCompID)
+            -> Session *
+        {
             return new Session(
                 timestamper,
                 *this,
@@ -807,10 +814,12 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
         DataDictionaryProvider provider;
         provider.addTransportDataDictionary(BeginString("FIX.4.2"), std::make_shared<DataDictionary>());
         auto const timestamper = [this]()
-        -> UtcTimeStamp { return now; };
+            -> UtcTimeStamp
+        { return now; };
 
-        auto createSession = [&](const SenderCompID& senderCompID, const TargetCompID& targetCompID)
-        -> Session {
+        auto createSession = [&](const SenderCompID &senderCompID, const TargetCompID &targetCompID)
+            -> Session
+        {
             return Session(
                 timestamper,
                 *this,
@@ -854,7 +863,8 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
 
         auto *pSession = new Session(
             [this]()
-            -> UtcTimeStamp { return now; },
+                -> UtcTimeStamp
+            { return now; },
             *this,
             factory,
             SessionID(BeginString("FIX.4.2"), SenderCompID("TW"), TargetCompID("ISLD")),
@@ -1148,7 +1158,8 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
 
         Session sessionObject = Session(
             [this]()
-            -> UtcTimeStamp { return now; },
+                -> UtcTimeStamp
+            { return now; },
             *this,
             factory,
             sessionIDCustom,
@@ -1203,7 +1214,8 @@ TEST_CASE_METHOD(sessionFixture, "SessionTestCase")
         ExceptionMessageStoreFactory exceptionFactory(settings);
         Session sessionObject = Session(
             [this]()
-            -> UtcTimeStamp { return now; },
+                -> UtcTimeStamp
+            { return now; },
             *this,
             exceptionFactory,
             sessionIDCustom,
@@ -1435,7 +1447,9 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addTransportDataDictionary(sessionID.getBeginString(), pDataDictionary);
 
         object = new Session([this]()
-                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
+                                 -> UtcTimeStamp
+                             { return now; },
+                             *this, factory, sessionID, provider, sessionTime, 1, nullptr);
 
         FIX::Message sentLogon = createLogon("TW", "ISLD", 1);
         object->send(sentLogon);
@@ -1473,7 +1487,9 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addApplicationDataDictionary(ApplVerID("20"), pDataDictionary);
 
         object = new Session([this]()
-                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
+                                 -> UtcTimeStamp
+                             { return now; },
+                             *this, factory, sessionID, provider, sessionTime, 1, nullptr);
         object->setSenderDefaultApplVerID(ApplVerID("20"));
         object->setTargetDefaultApplVerID(ApplVerID("20"));
 
@@ -1547,7 +1563,9 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addApplicationDataDictionary(ApplVerID("20"), pDataDictionary);
 
         object = new Session([this]()
-                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
+                                 -> UtcTimeStamp
+                             { return now; },
+                             *this, factory, sessionID, provider, sessionTime, 1, nullptr);
         object->setSenderDefaultApplVerID(ApplVerID("20"));
         object->setTargetDefaultApplVerID(ApplVerID("20"));
 
@@ -1603,7 +1621,9 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addApplicationDataDictionary(ApplVerID("20"), pDataDictionary);
 
         object = new Session([this]()
-                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
+                                 -> UtcTimeStamp
+                             { return now; },
+                             *this, factory, sessionID, provider, sessionTime, 1, nullptr);
         object->setSenderDefaultApplVerID(ApplVerID("20"));
         object->setTargetDefaultApplVerID(ApplVerID("20"));
 
@@ -1699,7 +1719,9 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addTransportDataDictionary(sessionID.getBeginString(), pDataDictionary);
 
         object = new Session([this]()
-                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
+                                 -> UtcTimeStamp
+                             { return now; },
+                             *this, factory, sessionID, provider, sessionTime, 1, nullptr);
 
         FIX::Message sentLogon = createLogon("TW", "ISLD", 1);
         object->send(sentLogon);
@@ -1831,7 +1853,9 @@ TEST_CASE_METHOD(initiatorFixture, "InitiatorSessionTestCase")
         provider.addApplicationDataDictionary(ApplVerID("20"), pDataDictionary);
 
         object = new Session([this]()
-                             -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
+                                 -> UtcTimeStamp
+                             { return now; },
+                             *this, factory, sessionID, provider, sessionTime, 1, nullptr);
         object->setSenderDefaultApplVerID(ApplVerID("20"));
         object->setTargetDefaultApplVerID(ApplVerID("20"));
 
@@ -2763,8 +2787,7 @@ struct initiatorCreatedBeforeStartTimeFixture : public TestCallback
     MemoryStoreFactory messageStoreFactory;
 
     initiatorCreatedBeforeStartTimeFixture()
-        
-          
+
     {
         now.setCurrent();
         startTime = now;
@@ -2781,7 +2804,8 @@ struct initiatorCreatedBeforeStartTimeFixture : public TestCallback
         provider.addTransportDataDictionary(sessionID.getBeginString(), FIX::TestSettings::pathForSpec("FIX42"));
         object = new Session(
             [this]()
-            -> UtcTimeStamp { return now; },
+                -> UtcTimeStamp
+            { return now; },
             *this,
             messageStoreFactory,
             sessionID,
@@ -2893,7 +2917,9 @@ TEST_CASE_METHOD(initiatorFIX40Fixture, "customFIX40_UnsupportedMessageType_ERRe
     provider.addTransportDataDictionary(sessionID.getBeginString(), pDataDictionary);
 
     object = new Session([this]()
-                         -> UtcTimeStamp { return now; }, *this, factory, sessionID, provider, sessionTime, 1, nullptr);
+                             -> UtcTimeStamp
+                         { return now; },
+                         *this, factory, sessionID, provider, sessionTime, 1, nullptr);
     object->setResponder(this);
 
     FIX::Message sentLogon = createFIX40Logon("TW", "ISLD", 1);

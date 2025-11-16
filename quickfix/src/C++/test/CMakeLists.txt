@@ -16,8 +16,6 @@ if (QUICKFIX_TESTS)
   ${PROJECT_SOURCE_DIR}/src/C++/test/FileUtilitiesTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/GroupTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/HostDetailsProviderTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/HttpMessageTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/HttpParserTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/MemoryStoreTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/MessageSortersTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/MessagesTestCase.cpp
@@ -33,11 +31,7 @@ if (QUICKFIX_TESTS)
   ${PROJECT_SOURCE_DIR}/src/C++/test/SessionTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/SettingsTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/SharedArrayTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SocketAcceptorTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SocketConnectionTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SocketConnectorTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/SocketMonitorTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SocketServerTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/StringUtilitiesTestCase.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/TestHelper.cpp
   ${PROJECT_SOURCE_DIR}/src/C++/test/TimeRangeTestCase.cpp

@@ -28,7 +28,6 @@ option(HAVE_SSL "Build with SSL")
 # add option to build shared or static
 option(QUICKFIX_SHARED_LIBS "Build using shared libraries" ON)
 # add option to build other targets
-option(QUICKFIX_EXAMPLES "Build quickfix examples" ON)
 option(QUICKFIX_TESTS "Build quickfix tests" ON)
 
 # add libdpdk, libfstack, libmt dependencies
@@ -57,10 +56,6 @@ endif()
 
 
 add_subdirectory(src)
-
-if (QUICKFIX_EXAMPLES)
-  add_subdirectory(examples)
-endif()
 
 configure_file(cmake_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/C++/config.h @ONLY)
 configure_file(cmake_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/quickfix/config.h @ONLY)

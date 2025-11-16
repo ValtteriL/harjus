@@ -23,7 +23,6 @@
 #include "config.h"
 #endif
 
-#include "HttpServer.h"
 #include "Initiator.h"
 #include "Session.h"
 #include "SessionFactory.h"
@@ -224,8 +223,6 @@ namespace FIX
         {
             onConfigure(m_settings);
             onInitialize(m_settings);
-
-            HttpServer::startGlobal(m_settings);
         }
         catch (...)
         {
@@ -248,7 +245,8 @@ namespace FIX
         }
 
         auto guard = sg::make_scope_guard([this]()
-                                          -> void { m_processing = false; });
+                                              -> void
+                                          { m_processing = false; });
 
         m_processing = true;
         m_stop = false;
@@ -267,7 +265,8 @@ namespace FIX
         }
 
         auto guard = sg::make_scope_guard([this]()
-                                          -> void { m_processing = false; });
+                                              -> void
+                                          { m_processing = false; });
 
         m_processing = true;
         if (m_firstPoll)
@@ -288,8 +287,6 @@ namespace FIX
         {
             return;
         }
-
-        HttpServer::stopGlobal();
 
         std::vector<Session *> enabledSessions;
 
@@ -361,7 +358,8 @@ namespace FIX
     {
         auto *pInitiator = static_cast<Initiator *>(p);
         auto guard = sg::make_scope_guard([pInitiator]()
-                                          -> void { pInitiator->m_processing = false; });
+                                              -> void
+                                          { pInitiator->m_processing = false; });
         pInitiator->onStart();
         return nullptr;
     }

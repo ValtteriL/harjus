@@ -6,7 +6,6 @@ set(quickfix_VERSION_PATCH 0)
 set(quickfix_VERSION ${quickfix_VERSION_MAJOR}.${quickfix_VERSION_MINOR}.${quickfix_VERSION_PATCH} )
 
 set(quickfix_SOURCES
-  Acceptor.cpp
   DataDictionary.cpp
   DataDictionaryProvider.cpp
   Dictionary.cpp
@@ -17,10 +16,6 @@ set(quickfix_SOURCES
   FileStore.cpp
   Group.cpp
   HostDetailsProvider.cpp
-  HttpConnection.cpp
-  HttpMessage.cpp
-  HttpParser.cpp
-  HttpServer.cpp
   Initiator.cpp
   Log.cpp
   Message.cpp
@@ -34,15 +29,7 @@ set(quickfix_SOURCES
   SessionFactory.cpp
   SessionSettings.cpp
   Settings.cpp
-  SocketAcceptor.cpp
-  SocketConnection.cpp
-  SocketConnector.cpp
-  SocketInitiator.cpp
-  SocketServer.cpp
   stdafx.cpp
-  ThreadedSocketAcceptor.cpp
-  ThreadedSocketConnection.cpp
-  ThreadedSocketInitiator.cpp
   TimeRange.cpp
   Utility.cpp
 )
@@ -51,12 +38,6 @@ list(APPEND quickfix_SOURCES SocketMonitor_UNIX.cpp)
 
 if (HAVE_SSL)
   set (quickfix_SOURCES ${quickfix_SOURCES}
-    SSLSocketAcceptor.cpp
-    SSLSocketConnection.cpp
-    SSLSocketInitiator.cpp
-    ThreadedSSLSocketAcceptor.cpp
-    ThreadedSSLSocketConnection.cpp
-    ThreadedSSLSocketInitiator.cpp
     FstackMicroThreadedSSLSocketInitiator.cpp
     FstackMicroThreadedSSLSocketConnection.cpp
     FStackSSLBIO.cpp
