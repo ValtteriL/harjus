@@ -14,6 +14,9 @@ if( CMAKE_CXX_STANDARD EQUAL 17 )
   option( HAVE_CXX17 "Using C++17" ON)
 endif()
 
+# Optimize debug builds for build speed
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 include(QuickfixPlatformSettings)

@@ -9,7 +9,7 @@ initialize:
 
 # Build Fast-QuickFIX
 build:
-    cmake quickfix -G Ninja -DHAVE_SSL=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+    cmake quickfix -G Ninja -DHAVE_SSL=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
     ninja -C quickfix
 
 # Clean build artifacts
