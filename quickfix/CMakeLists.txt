@@ -22,9 +22,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 include(QuickfixPlatformSettings)
 include(QuickfixPrebuildSetup)
 
-# Call cmake with-DHAVE_SSL=ON to compile with SSL.
-option(HAVE_SSL "Build with SSL")
-
 # add option to build shared or static
 option(QUICKFIX_SHARED_LIBS "Build using shared libraries" ON)
 # add option to build other targets
@@ -40,20 +37,8 @@ pkg_check_modules(LIBMT REQUIRED libmt)
 include_directories(${LIBDPDK_INCLUDE_DIRS} ${LIBFSTACK_INCLUDE_DIRS} ${LIBMT_INCLUDE_DIRS})
 link_directories(${LIBDPDK_LIBRARY_DIRS} ${LIBFSTACK_LIBRARY_DIRS} ${LIBMT_LIBRARY_DIRS})
 
-#Make sure that a previous config.h has not undefined HAVE_SSL
-if(HAVE_SSL)
-# Can set location explicitly, example, cmake -DOPENSSL_ROOT_DIR=/usr/local/ssl -DOPENSSL_LIBRARIES=/usr/local/ssl/lib
-
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
-
-message("-- OPENSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
-message("-- OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
-message("-- OPENSSL_ROOT_DIR: ${OPENSSL_ROOT_DIR}")
-
-message("-- Building with SSL")
-endif()
-
 
 add_subdirectory(src)
 

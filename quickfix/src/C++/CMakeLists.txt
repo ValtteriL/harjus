@@ -36,13 +36,13 @@ set(quickfix_SOURCES
 
 list(APPEND quickfix_SOURCES SocketMonitor_UNIX.cpp)
 
-if (HAVE_SSL)
-  set (quickfix_SOURCES ${quickfix_SOURCES}
-    FstackMicroThreadedSSLSocketInitiator.cpp
-    FstackMicroThreadedSSLSocketConnection.cpp
-    FStackSSLBIO.cpp
-    UtilitySSL.cpp)
-endif()
+
+set (quickfix_SOURCES ${quickfix_SOURCES}
+  FstackMicroThreadedSSLSocketInitiator.cpp
+  FstackMicroThreadedSSLSocketConnection.cpp
+  FStackSSLBIO.cpp
+  UtilitySSL.cpp)
+
 
 
 if (QUICKFIX_SHARED_LIBS)

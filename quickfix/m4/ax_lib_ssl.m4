@@ -3,7 +3,7 @@ AC_DEFUN([AX_LIB_SSL],
 ########################################
 # openssl 
 ########################################
-have_ssl=false
+have_ssl=true
 AC_MSG_CHECKING([for SSL support (openssl)])
 AC_ARG_WITH(openssl, [  --with-openssl=<path>   enable openssl])
 

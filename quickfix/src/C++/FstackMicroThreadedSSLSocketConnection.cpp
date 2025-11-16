@@ -1,12 +1,10 @@
 #include "config.h"
 
-#if (HAVE_SSL > 0)
-
-#include "Session.h"
 #include "FstackMicroThreadedSSLSocketConnection.h"
-#include <utility>
 #include "FstackMicroThreadedSSLSocketInitiator.h"
+#include "Session.h"
 #include "Utility.h"
+#include <utility>
 
 namespace FIX
 {
@@ -217,8 +215,7 @@ namespace FIX
         }
     }
 
-    auto FstackMicroThreadedSSLSocketConnection::readMessage(std::string &message) -> bool
-        EXCEPT(SocketRecvFailed)
+    auto FstackMicroThreadedSSLSocketConnection::readMessage(std::string &message) -> bool EXCEPT(SocketRecvFailed)
     {
         try
         {
@@ -303,5 +300,3 @@ namespace FIX
     }
 
 } // namespace FIX
-
-#endif

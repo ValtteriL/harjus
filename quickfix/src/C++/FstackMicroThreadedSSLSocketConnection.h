@@ -1,7 +1,5 @@
 #pragma once
 
-#if (HAVE_SSL > 0)
-
 #include "Mutex.h"
 #include "Parser.h"
 #include "Responder.h"
@@ -66,5 +64,3 @@ namespace FIX
         Mutex m_mutex;
     };
 } // namespace FIX
-
-#endif

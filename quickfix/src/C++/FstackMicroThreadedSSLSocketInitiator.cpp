@@ -2,8 +2,6 @@
 #include "config.h"
 #include <mt_api.h>
 
-#if (HAVE_SSL > 0)
-
 #include "FstackMicroThreadedSSLSocketInitiator.h"
 #include "Session.h"
 #include "Settings.h"
@@ -363,5 +361,3 @@ namespace FIX
         return m_password.length();
     }
 } // namespace FIX
-
-#endif

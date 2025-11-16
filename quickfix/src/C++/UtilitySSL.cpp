@@ -109,13 +109,7 @@
  * ====================================================================
  */
 
-#ifdef _MSC_VER
-#include "stdafx.h"
-#else
 #include "config.h"
-#endif
-
-#if (HAVE_SSL > 0)
 
 #include <vector>
 
@@ -131,22 +125,6 @@
 #include "openssl/rand.h"
 #ifndef OPENSSL_NO_DH
 #include "openssl/dh.h"
-#endif
-
-#ifdef _MSC_VER
-
-#if !defined(snprintf)
-#define snprintf _snprintf
-#endif
-
-#if !defined(strcasecmp)
-#define strcasecmp _stricmp
-#endif
-
-#if !defined(strncasecmp)
-#define strncasecmp _strnicmp
-#endif
-
 #endif
 
 namespace FIX
@@ -753,8 +731,8 @@ namespace FIX
 
     auto findCAList(const char *cpCAfile, const char *cpCApath) -> STACK_OF(X509_NAME) *
     {
-        STACK_OF(X509_NAME) * skCAList = nullptr;
-        STACK_OF(X509_NAME) * sk = nullptr;
+        STACK_OF(X509_NAME) *skCAList = nullptr;
+        STACK_OF(X509_NAME) *sk = nullptr;
 #ifndef HAVE_ACE_DIRENT
         DIR *dir = nullptr;
         struct dirent *direntry = nullptr;
@@ -1526,7 +1504,7 @@ namespace FIX
             return false;
         }
 
-        STACK_OF(X509_NAME) * caList = nullptr;
+        STACK_OF(X509_NAME) *caList = nullptr;
         if ((caList = findCAList(caFile.empty() ? nullptr : caFile.c_str(), caDir.empty() ? nullptr : caDir.c_str())) == nullptr)
         {
             errStr.assign("Unable to determine list of available CA certificates "
@@ -1858,5 +1836,3 @@ namespace FIX
         return result;
     }
 } // namespace FIX
-
-#endif

@@ -112,8 +112,6 @@
 #ifndef FIX_UTILITY_SSL_H
 #define FIX_UTILITY_SSL_H
 
-#if (HAVE_SSL > 0)
-
 #include "Log.h"
 #include "SessionSettings.h"
 #include "Utility.h"
@@ -265,7 +263,5 @@ namespace FIX
 
     int acceptSSLConnection(socket_handle socket, SSL *ssl, Log *log, int verify);
 } // namespace FIX
-
-#endif
 
 #endif

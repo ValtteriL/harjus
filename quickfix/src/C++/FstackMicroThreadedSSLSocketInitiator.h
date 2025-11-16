@@ -1,7 +1,5 @@
 #pragma once
 
-#if (HAVE_SSL > 0)
-
 #include "FstackMicroThreadedSSLSocketConnection.h"
 #include "HostDetailsProvider.h"
 #include "Initiator.h"
@@ -74,5 +72,3 @@ namespace FIX
     };
     /*! @} */
 } // namespace FIX
-
-#endif
