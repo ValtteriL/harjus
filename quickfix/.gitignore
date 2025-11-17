@@ -41,7 +41,6 @@ src/ut
 src/C++/Allocator.h
 test/ut
 test/ut_debug
-test/cfg
 test/store
 autom4te.cache/
 lib/python3
