@@ -57,7 +57,6 @@ core
 build*
 CMakeFiles
 CMakeCache.txt
-*.cmake
 .vscode
 .cache
 compile_commands.json
