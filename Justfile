@@ -9,16 +9,16 @@ initialize:
 
 # Build Fast-QuickFIX
 build:
-    cmake quickfix -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
-    ninja -C quickfix
+    cmake -B build quickfix -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+    ninja -C build
 
 # Clean build artifacts
 clean:
-    ninja -C quickfix clean
+    ninja -C build clean
 
 # Run unit tests
 test:
-    ./quickfix/src/C++/test/ut --quickfix-config-file ./quickfix/test/cfg/ut.cfg --quickfix-spec-path ./quickfix/spec
+    ./build/src/C++/test/ut --quickfix-config-file ./quickfix/test/cfg/ut.cfg --quickfix-spec-path ./quickfix/spec
 
 nix-build-all:
     nix-build
