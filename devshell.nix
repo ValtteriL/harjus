@@ -2,9 +2,6 @@
 , git-clang-format }:
 
 let
-
-in pkgs.mkShell {
-
   buildInputs = with pkgs; [
 
     # for working with nix
@@ -38,10 +35,15 @@ in pkgs.mkShell {
     run-clang-tidy
     git-clang-format
   ];
+in pkgs.mkShell {
+
+  inherit buildInputs;
 
   nativeBuildInputs = [ pkgs.pkg-config ];
 
   shellHook = ''
-    export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:/usr/lib/x86_64-linux-gnu/pkgconfig"
+    export LD_LIBRARY_PATH="${
+      pkgs.lib.makeLibraryPath buildInputs
+    }:$LD_LIBRARY_PATH"
   '';
 }
