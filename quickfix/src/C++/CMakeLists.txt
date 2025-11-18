@@ -77,7 +77,7 @@ endif()
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${PROJECT_NAME}${debug_postfix}.pdb:${PROJECT_NAME} DESTINATION lib OPTIONAL)
 
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/C++/ DESTINATION include/quickfix
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/C++/ DESTINATION ${CMAKE_BINARY_DIR}/include/quickfix
         FILES_MATCHING PATTERN "*.h"
         PATTERN double-conversion EXCLUDE
         PATTERN test EXCLUDE)
