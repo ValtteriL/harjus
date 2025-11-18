@@ -18,7 +18,7 @@ clean:
 
 # Run unit tests
 test:
-    ./build/bin/ut --quickfix-config-file ./quickfix/test/cfg/ut.cfg --quickfix-spec-path ./quickfix/spec
+    ./build/test/ut --quickfix-config-file ./quickfix/test-util/cfg/ut.cfg --quickfix-spec-path ./quickfix/spec
 
 nix-build-all:
     nix-build

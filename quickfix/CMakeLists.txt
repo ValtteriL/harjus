@@ -29,7 +29,6 @@ link_directories(${LIBDPDK_LIBRARY_DIRS} ${LIBFSTACK_LIBRARY_DIRS} ${LIBMT_LIBRA
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-############################## add_subdirectory(src)
 set(quickfix_SOURCES
   src/DataDictionary.cpp
   src/DataDictionaryProvider.cpp
@@ -75,25 +74,32 @@ target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES} pthread ${LIBFSTACK_L
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
 target_include_directories(${PROJECT_NAME}
-  INTERFACE $<BUILD_INTERFACE:include>
+  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   INTERFACE $<INSTALL_INTERFACE:include>
   PRIVATE include include/double-conversion
 )
 
 include(GNUInstallDirs)
 
-# Install librar
+# Install library
 install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  
 )
 
 # install headers
 install(DIRECTORY include/
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  )
+)
 
 # Install FIX specification files to /share
 install(DIRECTORY spec 
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}
   FILES_MATCHING PATTERN "FIX*.xml"
-  )
+)
+
+
+# TESTS
+if (QUICKFIX_TESTS)
+    add_subdirectory(test)
+endif()

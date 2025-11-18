@@ -1,52 +1,46 @@
 add_definitions(-DCATCH_AMALGAMATED_CUSTOM_MAIN)
 
-if (QUICKFIX_TESTS)
-  set (ut_SOURCES 
-  ${PROJECT_SOURCE_DIR}/src/C++/test/catch_amalgamated.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/DataDictionaryTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/DataDictionaryTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/DictionaryTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/FieldBaseTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/FieldConvertorsTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/FieldMapTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/FieldTypesTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/FileLogTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/FileStoreFactoryTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/FileStoreTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/FileUtilitiesTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/GroupTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/HostDetailsProviderTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/MemoryStoreTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/MessageSortersTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/MessagesTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/MySQLStoreTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/NullStoreTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/OdbcStoreTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/ParserTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/PostgreSQLStoreTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SessionFactoryTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SessionIDTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SessionSettingsTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SessionStateTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SessionTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SettingsTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SharedArrayTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/SocketMonitorTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/StringUtilitiesTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/TestHelper.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/TimeRangeTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/UtcTimeOnlyTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/UtcTimeStampTestCase.cpp
-  ${PROJECT_SOURCE_DIR}/src/C++/test/UtilityTestCase.cpp)
+set (ut_SOURCES
+  catch_amalgamated.cpp
+  ut.cpp
+  DataDictionaryTestCase.cpp
+  DataDictionaryTestCase.cpp
+  DictionaryTestCase.cpp
+  FieldBaseTestCase.cpp
+  FieldConvertorsTestCase.cpp
+  FieldMapTestCase.cpp
+  FieldTypesTestCase.cpp
+  FileLogTestCase.cpp
+  FileStoreFactoryTestCase.cpp
+  FileStoreTestCase.cpp
+  FileUtilitiesTestCase.cpp
+  GroupTestCase.cpp
+  HostDetailsProviderTestCase.cpp
+  MemoryStoreTestCase.cpp
+  MessageSortersTestCase.cpp
+  MessagesTestCase.cpp
+  NullStoreTestCase.cpp
+  ParserTestCase.cpp
+  SessionFactoryTestCase.cpp
+  SessionIDTestCase.cpp
+  SessionSettingsTestCase.cpp
+  SessionStateTestCase.cpp
+  SessionTestCase.cpp
+  SettingsTestCase.cpp
+  SharedArrayTestCase.cpp
+  SocketMonitorTestCase.cpp
+  StringUtilitiesTestCase.cpp
+  TestHelper.cpp
+  TimeRangeTestCase.cpp
+  UtcTimeOnlyTestCase.cpp
+  UtcTimeStampTestCase.cpp
+  UtilityTestCase.cpp
+)
   
-  add_executable(ut ut.cpp ${ut_SOURCES})
+add_executable(ut ${ut_SOURCES})
   
-  target_include_directories(ut PRIVATE ${PROJECT_SOURCE_DIR} 
-    ${PROJECT_SOURCE_DIR}/src/C++)
-    
-  target_link_libraries(ut ${PROJECT_NAME})
-  
-  ADD_CUSTOM_TARGET(ut_target ALL
-                    COMMAND ${CMAKE_COMMAND} -E create_symlink $<TARGET_FILE:ut> ${PROJECT_SOURCE_DIR}/test/ut)
+target_include_directories(ut 
+  PRIVATE include
+)
 
-endif()  
+target_link_libraries(ut ${PROJECT_NAME})
