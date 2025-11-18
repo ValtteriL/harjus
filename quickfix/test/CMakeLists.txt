@@ -28,7 +28,6 @@ set (ut_SOURCES
   SessionTestCase.cpp
   SettingsTestCase.cpp
   SharedArrayTestCase.cpp
-  SocketMonitorTestCase.cpp
   StringUtilitiesTestCase.cpp
   TestHelper.cpp
   TimeRangeTestCase.cpp

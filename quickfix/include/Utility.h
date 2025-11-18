@@ -19,12 +19,7 @@
 **
 ****************************************************************************/
 
-#ifndef FIX_UTILITY_H
-#define FIX_UTILITY_H
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4503 4355 4786 4290)
-#endif
+#pragma once
 
 #ifdef _MSC_VER
 #define PRAGMA_PUSH(x) __pragma(warning(push)) __pragma(warning(disable : x))
@@ -68,21 +63,8 @@
 #define ALLOCATOR std::allocator
 #endif
 
-#ifdef _MSC_VER
-/////////////////////////////////////////////
-#include <Winsock2.h>
-#include <direct.h>
-#include <process.h>
-#include <time.h>
-#define INVALID_SOCKET_HANDLE INVALID_SOCKET
-#define BIND_SOCKET_ERROR SOCKET_ERROR
-#define LISTEN_SOCKET_ERROR SOCKET_ERROR
-#define SET_SOCK_OPT_ERROR SOCKET_ERROR
-/////////////////////////////////////////////
-#else
 /////////////////////////////////////////////
 #include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <sys/types.h>
 #if defined(__SUNPRO_CC)
 #include <sys/filio.h>
@@ -105,7 +87,6 @@
 #define LISTEN_SOCKET_ERROR -1
 #define SET_SOCK_OPT_ERROR -1
 /////////////////////////////////////////////
-#endif
 
 #include <cctype>
 #include <cstdio>
@@ -118,21 +99,11 @@
 
 namespace FIX
 {
-#ifdef _MSC_VER
-    typedef int socklen_t;
-    typedef SSIZE_T ssize_t;
-    typedef SOCKET socket_handle;
-#else
+
     typedef int socket_handle;
-#endif
 
     std::string error_strerror(decltype(errno) error_number);
     std::string error_strerror();
-
-#ifdef _MSC_VER
-    std::string error_wsaerror(int wsa_error_number);
-    std::string error_wsaerror();
-#endif
 
     void string_replace(const std::string &oldValue, const std::string &newValue, std::string &value);
 
@@ -253,6 +224,4 @@ using std::strftime;
 using std::strlen;
 using std::strtod;
 using std::strtol;
-#endif
-
 #endif

@@ -56,7 +56,6 @@ set(quickfix_SOURCES
   src/stdafx.cpp
   src/TimeRange.cpp
   src/Utility.cpp
-  src/SocketMonitor_UNIX.cpp
   src/FstackMicroThreadedSSLSocketInitiator.cpp
   src/FstackMicroThreadedSSLSocketConnection.cpp
   src/FStackSSLBIO.cpp
