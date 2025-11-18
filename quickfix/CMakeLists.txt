@@ -98,6 +98,9 @@ install(DIRECTORY spec
   FILES_MATCHING PATTERN "FIX*.xml"
 )
 
+# Generate and install pkg-config file
+configure_file(quickfix.pc.in quickfix.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/quickfix.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 # TESTS
 if (QUICKFIX_TESTS)
