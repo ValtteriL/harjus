@@ -10,12 +10,6 @@ set(CMAKE_CXX_STANDARD 17)
 # Optimize debug builds for build speed
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 # add option to build shared or static
 option(QUICKFIX_SHARED_LIBS "Build using shared libraries" ON)
 
@@ -79,20 +73,24 @@ endif()
 target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES} pthread ${LIBFSTACK_LIBRARIES} ${LIBMT_LIBRARIES} ${LIBDPDK_LIBRARIES} rte_net_bond)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
-set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER include/quickfix/quickfix.h)
 
 target_include_directories(${PROJECT_NAME}
+  INTERFACE $<BUILD_INTERFACE:include>
   INTERFACE $<INSTALL_INTERFACE:include>
   PRIVATE include include/double-conversion
 )
 
 include(GNUInstallDirs)
 
-# Install library and headers to /lib and /include
+# Install librar
 install(TARGETS ${PROJECT_NAME}
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+
+# install headers
+install(DIRECTORY include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  )
 
 # Install FIX specification files to /share
 install(DIRECTORY spec 
