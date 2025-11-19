@@ -145,32 +145,6 @@ namespace FIX
         return (ret);
     }
 
-#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
-    /* OpenSSL Pre-1.1.0 compatibility */
-    /* Taken from OpenSSL 1.1.0 snapshot 20160410 */
-    static int DH_set0_pqg(DH *dh, BIGNUM *p, BIGNUM *q, BIGNUM *g)
-    {
-        /* q is optional */
-        if (p == NULL || g == NULL)
-        {
-            return 0;
-        }
-        BN_free(dh->p);
-        BN_free(dh->q);
-        BN_free(dh->g);
-        dh->p = p;
-        dh->q = q;
-        dh->g = g;
-
-        if (q != NULL)
-        {
-            dh->length = BN_num_bits(q);
-        }
-
-        return 1;
-    }
-#endif
-
     /*
      * Grab well-defined DH parameters from OpenSSL, see the BN_get_rfc*
      * functions in <openssl/bn.h> for all available primes.
@@ -268,11 +242,7 @@ namespace FIX
         int type = 0;
 
         pkey = SSL_get_privatekey(ssl);
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-        type = pkey ? EVP_PKEY_type(pkey->type) : EVP_PKEY_NONE;
-#else
         type = pkey ? EVP_PKEY_base_id(pkey) : EVP_PKEY_NONE;
-#endif
 
         /*
          * OpenSSL will call us with either keylen == 512 or keylen == 1024
@@ -300,12 +270,9 @@ namespace FIX
     /* Reference count of ssl users. Should always call ssl_init/ssl_term */
     static int ssl_users = 0;
     static int ssl_initialized = 0;
-/* This array will store all of the mutexes available to OpenSSL. */
-#ifdef _MSC_VER
-    static HANDLE *lock_cs = 0;
-#else
+    /* This array will store all of the mutexes available to OpenSSL. */
+
     static pthread_mutex_t *lock_cs = nullptr;
-#endif
 
     static void thread_setup(); // For thread safety.
     static void thread_cleanup();
@@ -324,15 +291,8 @@ namespace FIX
             return;
         }
 
-#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
-        CRYPTO_malloc_init(); // Initialize malloc, free, etc for OpenSSL's use
-#else
-        OPENSSL_malloc_init();
-#endif
-        SSL_library_init();           // Initialize OpenSSL's SSL libraries
-        SSL_load_error_strings();     // Load SSL error strings
-        ERR_load_BIO_strings();       // Load BIO error strings
-        OpenSSL_add_all_algorithms(); // Load all available encryption algorithms
+        OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS | OPENSSL_INIT_LOAD_CRYPTO_STRINGS, nullptr);
+        OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS | OPENSSL_INIT_ADD_ALL_DIGESTS, nullptr);
 
         ssl_rand_seed();
 
@@ -393,19 +353,12 @@ namespace FIX
         }
 
         int i = 0;
-#ifdef _MSC_VER
-        lock_cs = (HANDLE *)OPENSSL_malloc(CRYPTO_num_locks() * sizeof(HANDLE));
-        for (i = 0; i < CRYPTO_num_locks(); i++)
-        {
-            lock_cs[i] = CreateMutex(0, FALSE, 0);
-        }
-#else
+
         lock_cs = (pthread_mutex_t *)OPENSSL_malloc(CRYPTO_num_locks() * sizeof(pthread_mutex_t));
         for (i = 0; i < CRYPTO_num_locks(); i++)
         {
             pthread_mutex_init(&(lock_cs[i]), nullptr);
         }
-#endif
 
 #ifndef _MSC_VER
         CRYPTO_set_id_callback((unsigned long (*)(void))thread_id_func);
@@ -427,19 +380,12 @@ namespace FIX
         CRYPTO_set_locking_callback(0);
 
         int i = 0;
-#ifdef _MSC_VER
-        for (i = 0; i < CRYPTO_num_locks(); i++)
-        {
-            CloseHandle(lock_cs[i]);
-        }
-        OPENSSL_free(lock_cs);
-#else
+
         for (i = 0; i < CRYPTO_num_locks(); i++)
         {
             pthread_mutex_destroy(&(lock_cs[i]));
         }
         OPENSSL_free(lock_cs);
-#endif
 
         lock_cs = nullptr;
     }
@@ -495,139 +441,6 @@ namespace FIX
 
     auto caListX509NameCmp(const X509_NAME *const *a, const X509_NAME *const *b) -> int { return (X509_NAME_cmp(*a, *b)); }
 
-#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
-    int lookupX509Store(X509_STORE *pStore, int nType, X509_NAME *pName, X509_OBJECT *pObj)
-    {
-        X509_STORE_CTX pStoreCtx;
-        int rc;
-
-        X509_STORE_CTX_init(&pStoreCtx, pStore, 0, 0);
-        rc = X509_STORE_get_by_subject(&pStoreCtx, nType, pName, pObj);
-        X509_STORE_CTX_cleanup(&pStoreCtx);
-        return rc;
-    }
-
-    int callbackVerifyCRL(int ok, X509_STORE_CTX *ctx, X509_STORE *revStore)
-    {
-        X509_OBJECT obj;
-        X509_NAME *subject;
-        X509_NAME *issuer;
-        X509 *xs;
-        X509_CRL *crl;
-        X509_REVOKED *revoked;
-        long serial;
-        BIO *bio;
-        int i, n, rc;
-        char *cp;
-        char *cp2;
-
-        if (revStore == 0)
-        {
-            return ok;
-        }
-
-        /*
-         * Determine certificate ingredients in advance
-         */
-        xs = X509_STORE_CTX_get_current_cert(ctx);
-        subject = X509_get_subject_name(xs);
-        issuer = X509_get_issuer_name(xs);
-
-        /*
-         * Try to retrieve a CRL corresponding to the _subject_ of
-         * the current certificate in order to verify it's integrity.
-         */
-        memset((char *)&obj, 0, sizeof(obj));
-        rc = lookupX509Store(revStore, X509_LU_CRL, subject, &obj);
-        crl = obj.data.crl;
-        if (rc > 0 && crl != 0)
-        {
-            bio = BIO_new(BIO_s_mem());
-            BIO_printf(bio, "lastUpdate: ");
-            ASN1_UTCTIME_print(bio, X509_CRL_get_lastUpdate(crl));
-            BIO_printf(bio, ", nextUpdate: ");
-            ASN1_UTCTIME_print(bio, X509_CRL_get_nextUpdate(crl));
-            n = BIO_pending(bio);
-            cp = (char *)malloc(n + 1);
-            n = BIO_read(bio, cp, n);
-            cp[n] = 0;
-            BIO_free(bio);
-            cp2 = X509_NAME_oneline(subject, NULL, 0);
-            printf("CA CRL: Issuer: %s, %s\n", cp2, cp);
-            free(cp2);
-            free(cp);
-
-            /*
-             * Verify the signature on this CRL
-             */
-            if (X509_CRL_verify(crl, X509_get_pubkey(xs)) <= 0)
-            {
-                printf("Invalid signature on CRL\n");
-                X509_STORE_CTX_set_error(ctx, X509_V_ERR_CRL_SIGNATURE_FAILURE);
-                X509_OBJECT_free_contents(&obj);
-                return 0;
-            }
-
-            /*
-             * Check date of CRL to make sure it's not expired
-             */
-            i = X509_cmp_current_time(X509_CRL_get_nextUpdate(crl));
-            if (i == 0)
-            {
-                printf("Found CRL has invalid nextUpdate field\n");
-                X509_STORE_CTX_set_error(ctx, X509_V_ERR_ERROR_IN_CRL_NEXT_UPDATE_FIELD);
-                X509_OBJECT_free_contents(&obj);
-                return 0;
-            }
-            if (i < 0)
-            {
-                printf("Found CRL is expired - revoking all certificates until you get "
-                       "updated CRL\n");
-                X509_STORE_CTX_set_error(ctx, X509_V_ERR_CRL_HAS_EXPIRED);
-                X509_OBJECT_free_contents(&obj);
-                return false;
-            }
-            X509_OBJECT_free_contents(&obj);
-        }
-
-        /*
-         * Try to retrieve a CRL corresponding to the _issuer_ of
-         * the current certificate in order to check for revocation.
-         */
-        memset((char *)&obj, 0, sizeof(obj));
-        rc = lookupX509Store(revStore, X509_LU_CRL, issuer, &obj);
-        crl = obj.data.crl;
-        if (rc > 0 && crl != NULL)
-        {
-            /*
-             * Check if the current certificate is revoked by this CRL
-             */
-            n = sk_X509_REVOKED_num(X509_CRL_get_REVOKED(crl));
-            for (i = 0; i < n; i++)
-            {
-                revoked = sk_X509_REVOKED_value(X509_CRL_get_REVOKED(crl), i);
-                if (ASN1_INTEGER_cmp(revoked->serialNumber, X509_get_serialNumber(xs)) == 0)
-                {
-                    serial = ASN1_INTEGER_get(revoked->serialNumber);
-                    cp = X509_NAME_oneline(issuer, NULL, 0);
-                    printf(
-                        "Certificate with serial %ld (0x%lX) revoked per CRL from "
-                        "issuer %s\n",
-                        serial,
-                        serial,
-                        cp);
-                    free(cp);
-                    X509_STORE_CTX_set_error(ctx, X509_V_ERR_CERT_REVOKED);
-                    X509_OBJECT_free_contents(&obj);
-                    return 0;
-                }
-            }
-            X509_OBJECT_free_contents(&obj);
-        }
-        return ok;
-    }
-#endif
-
     auto callbackVerify(int ok, X509_STORE_CTX *ctx) -> int
     {
         X509 *xs = nullptr;
@@ -662,22 +475,6 @@ namespace FIX
         {
             free(cp2);
         }
-
-#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
-        /*
-         * Additionally perform CRL-based revocation checks
-         */
-        if (ok)
-        {
-            SSL *ssl = (SSL *)X509_STORE_CTX_get_app_data(ctx);
-            X509_STORE *revStore = (X509_STORE *)SSL_get_app_data(ssl);
-            ok = callbackVerifyCRL(ok, ctx, revStore);
-            if (!ok)
-            {
-                errnum = X509_STORE_CTX_get_error(ctx);
-            }
-        }
-#endif
 
         /*
          * If we already know it's not ok, log the real reason
@@ -1568,13 +1365,6 @@ namespace FIX
             return revocationStore;
         }
 
-#if (OPENSSL_VERSION_NUMBER < 0x10100000L)
-        revocationStore = createX509Store(crlFile.c_str(), crlDir.empty() ? 0 : crlDir.c_str());
-        if (revocationStore == 0)
-        {
-            errStr.assign("Unable to create revocation store");
-        }
-#else
         X509_STORE *store = SSL_CTX_get_cert_store(ctx);
         if (!store || !X509_STORE_load_locations(store, crlFile.c_str(), crlDir.c_str()))
         {
@@ -1582,7 +1372,6 @@ namespace FIX
             return nullptr;
         }
         X509_STORE_set_flags(store, X509_V_FLAG_CRL_CHECK | X509_V_FLAG_CRL_CHECK_ALL);
-#endif
 
         return revocationStore;
     }
@@ -1673,68 +1462,22 @@ namespace FIX
                 }
                 else if (result == SSL_ERROR_SYSCALL)
                 {
-#ifdef __TOS_AIX__
+
                     if (errno == EINTR)
                     {
                         continue;
-                    }
-                    else if (errno == EAGAIN)
-                    {
-                        // Please refer:
-                        // http://community.emailogy.com/scripts/wa-COMMUNITY.exe?A2=ind0303&L=lstsrv-l&O=A&P=19558
-                        // http://mirt.net/pipermail/stunnel-users/2007-May/001570.html
-                        ++retries;
-                        if (retries <= 100)
-                        {
-                            if (log)
-                            {
-                                log->onEvent("EAGAIN received during SSL handshake, trying again");
-                            }
-                            process_sleep(0.005);
-                            continue;
-                        }
                     }
                     if (errno > 0)
                     {
                         if (log)
                         {
-                            log->onEvent(std::string("SSL handshake interrupted by system, errno " + IntConvertor::convert(errno)));
+                            log->onEvent(std::string("SSL handshake interrupted by system, errno ") + IntConvertor::convert(errno));
                         }
                     }
                     else if (log)
                     {
                         log->onEvent("Spurious SSL handshake interrupt");
                     }
-#elif defined(_MSC_VER)
-                    // MS Windows will not set errno, but WSEGetLastError() must be queried
-                    int lastSocketError = WSAGetLastError();
-                    if ((lastSocketError == WSAEINTR) || (lastSocketError == WSAEWOULDBLOCK))
-                    {
-                        continue;
-                    }
-                    if (log)
-                    {
-                        log->onEvent(
-                            std::string("SSL handshake interrupted by system, system error ") + IntConvertor::convert(lastSocketError) + " socket " + std::to_string(socket));
-                    }
-
-#else
-                if (errno == EINTR)
-                {
-                    continue;
-                }
-                if (errno > 0)
-                {
-                    if (log)
-                    {
-                        log->onEvent(std::string("SSL handshake interrupted by system, errno ") + IntConvertor::convert(errno));
-                    }
-                }
-                else if (log)
-                {
-                    log->onEvent("Spurious SSL handshake interrupt");
-                }
-#endif
                     SSL_set_shutdown(ssl, SSL_RECEIVED_SHUTDOWN);
                     ssl_socket_close(socket, ssl);
                     return result;
