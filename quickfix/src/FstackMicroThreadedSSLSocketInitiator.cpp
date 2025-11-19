@@ -179,7 +179,6 @@ namespace FIX
 
         for (i = threads.begin(); i != threads.end(); ++i)
         {
-            thread_join(i->second);
             if (i->first.second != 0)
             {
                 SSL_free(i->first.second);

@@ -274,10 +274,6 @@ namespace FIX
 
         m_stop = true;
         onStop();
-        if (m_threadid)
-        {
-            thread_join(m_threadid);
-        }
         m_threadid = 0;
 
         for (Session *session : enabledSessions)

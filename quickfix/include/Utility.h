@@ -173,8 +173,6 @@ namespace FIX
     typedef pthread_t thread_id;
 #endif
 
-    void thread_join(thread_id thread);
-    void thread_detach(thread_id thread);
     thread_id thread_self();
 
     void process_sleep(double s);

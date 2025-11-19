@@ -547,26 +547,6 @@ namespace FIX
 #endif
     }
 
-    void thread_join(thread_id thread)
-    {
-#ifdef _MSC_VER
-        WaitForSingleObject((void *)thread, INFINITE);
-        CloseHandle(thread);
-#else
-        pthread_join((pthread_t)thread, nullptr);
-#endif
-    }
-
-    void thread_detach(thread_id thread)
-    {
-#ifdef _MSC_VER
-        CloseHandle(thread);
-#else
-        pthread_t t = thread;
-        pthread_detach(t);
-#endif
-    }
-
     auto thread_self() -> thread_id
     {
 #ifdef _MSC_VER
