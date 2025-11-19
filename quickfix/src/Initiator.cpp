@@ -209,34 +209,6 @@ namespace FIX
         return m_disconnected.find(sessionID) != m_disconnected.end();
     }
 
-    void Initiator::start() EXCEPT(ConfigError, RuntimeError)
-    {
-        if (m_processing)
-        {
-            throw RuntimeError("Initiator::start called when already processing messages");
-        }
-
-        m_processing = true;
-        m_stop = false;
-
-        try
-        {
-            onConfigure(m_settings);
-            onInitialize(m_settings);
-        }
-        catch (...)
-        {
-            m_processing = false;
-            throw;
-        }
-
-        if (!thread_spawn(&startThread, this, m_threadid))
-        {
-            m_processing = false;
-            throw RuntimeError("Unable to spawn thread");
-        }
-    }
-
     void Initiator::block() EXCEPT(ConfigError, RuntimeError)
     {
         if (m_processing)
@@ -255,30 +227,6 @@ namespace FIX
         onInitialize(m_settings);
 
         startThread(this);
-    }
-
-    auto Initiator::poll() -> bool EXCEPT(ConfigError, RuntimeError)
-    {
-        if (m_processing)
-        {
-            throw RuntimeError("Initiator::poll called when already processing messages");
-        }
-
-        auto guard = sg::make_scope_guard([this]()
-                                              -> void
-                                          { m_processing = false; });
-
-        m_processing = true;
-        if (m_firstPoll)
-        {
-            m_stop = false;
-            onConfigure(m_settings);
-            onInitialize(m_settings);
-            connect();
-            m_firstPoll = false;
-        }
-
-        return onPoll();
     }
 
     void Initiator::stop(bool force)

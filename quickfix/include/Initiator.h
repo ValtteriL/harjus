@@ -53,17 +53,13 @@ namespace FIX
     class Initiator
     {
     public:
-        Initiator(Application &, MessageStoreFactory &, SessionSettings ) EXCEPT(ConfigError);
-        Initiator(Application &, MessageStoreFactory &, SessionSettings , LogFactory &) EXCEPT(ConfigError);
+        Initiator(Application &, MessageStoreFactory &, SessionSettings) EXCEPT(ConfigError);
+        Initiator(Application &, MessageStoreFactory &, SessionSettings, LogFactory &) EXCEPT(ConfigError);
 
         virtual ~Initiator();
 
-        /// Start initiator.
-        void start() EXCEPT(ConfigError, RuntimeError);
         /// Block on the initiator
         void block() EXCEPT(ConfigError, RuntimeError);
-        /// Poll the initiator
-        bool poll() EXCEPT(ConfigError, RuntimeError);
 
         /// Stop initiator.
         void stop(bool force = false);
