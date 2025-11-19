@@ -1,0 +1,10 @@
+---
+Checks: >
+  -*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  bugprone-*
+UseColor: true
+FormatStyle: file

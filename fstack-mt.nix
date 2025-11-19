@@ -26,7 +26,7 @@ in stdenv.mkDerivation {
 
   # Make the fstack library available when building the examples.
   nativeBuildInputs = [ pkg-config gawk pinnedNixpkgs.dpdk ];
-  buildInputs = [
+  propagatedBuildInputs = [
     openssl
     numactl
     pcre

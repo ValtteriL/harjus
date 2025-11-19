@@ -1,43 +1,19 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
 set (quickfix_PROJECT_NAME quickfix)
-
-add_definitions(-DNOMINMAX)
 
 project(${quickfix_PROJECT_NAME} VERSION 0.1 LANGUAGES CXX C)
 message("-- Project name ${CMAKE_PROJECT_NAME}")
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED OFF)
 
-if( MSVC AND STATIC_RUNTIME )
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-  set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /MT")
-  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MT")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-endif()
-
-if( CMAKE_CXX_STANDARD EQUAL 17 )
-  option( HAVE_CXX17 "Using C++17" ON)
-endif()
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
-
-include(QuickfixPlatformSettings)
-include(QuickfixPrebuildSetup)
-
-# Call cmake with-DHAVE_SSL=ON to compile with SSL. Similarly for others.
-option(HAVE_SSL "Build with SSL")
-option(HAVE_MYSQL "Build with MySQL")
-option(HAVE_POSTGRESQL "Build with PostgreSQL")
-option(HAVE_ODBC "Build with ODBC")
-option(HAVE_PYTHON "Build with default Python version")
-option(HAVE_PYTHON3 "Build with default Python3 version")
+# Optimize debug builds for build speed
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 # add option to build shared or static
 option(QUICKFIX_SHARED_LIBS "Build using shared libraries" ON)
+
 # add option to build other targets
-option(QUICKFIX_EXAMPLES "Build quickfix examples" ON)
 option(QUICKFIX_TESTS "Build quickfix tests" ON)
 
 # add libdpdk, libfstack, libmt dependencies
@@ -46,68 +22,86 @@ pkg_check_modules(LIBDPDK REQUIRED libdpdk)
 pkg_check_modules(LIBFSTACK REQUIRED libfstack)
 pkg_check_modules(LIBMT REQUIRED libmt)
 
-#Make sure that a previous config.h has not undefined HAVE_SSL
-if(HAVE_SSL)
-# Can set location explicitly, example, cmake -DOPENSSL_ROOT_DIR=/usr/local/ssl -DOPENSSL_LIBRARIES=/usr/local/ssl/lib
+# Add DPDK, F-Stack, and libmt to include directories and link libraries
+include_directories(${LIBDPDK_INCLUDE_DIRS} ${LIBFSTACK_INCLUDE_DIRS} ${LIBMT_INCLUDE_DIRS})
+link_directories(${LIBDPDK_LIBRARY_DIRS} ${LIBFSTACK_LIBRARY_DIRS} ${LIBMT_LIBRARY_DIRS})
 
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-message("-- OPENSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
-message("-- OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
-message("-- OPENSSL_ROOT_DIR: ${OPENSSL_ROOT_DIR}")
+set(quickfix_SOURCES
+  src/DataDictionary.cpp
+  src/DataDictionaryProvider.cpp
+  src/Dictionary.cpp
+  src/FieldConvertors.cpp
+  src/FieldMap.cpp
+  src/FieldTypes.cpp
+  src/FileLog.cpp
+  src/FileStore.cpp
+  src/Group.cpp
+  src/HostDetailsProvider.cpp
+  src/Initiator.cpp
+  src/Log.cpp
+  src/Message.cpp
+  src/MessageSorters.cpp
+  src/MessageStore.cpp
+  src/NullStore.cpp
+  src/Parser.cpp
+  src/pugixml.cpp
+  src/PUGIXML_DOMDocument.cpp
+  src/Session.cpp
+  src/SessionFactory.cpp
+  src/SessionSettings.cpp
+  src/Settings.cpp
+  src/stdafx.cpp
+  src/TimeRange.cpp
+  src/Utility.cpp
+  src/FstackMicroThreadedSSLSocketInitiator.cpp
+  src/FstackMicroThreadedSSLSocketConnection.cpp
+  src/FStackSSLBIO.cpp
+  src/UtilitySSL.cpp
+)
 
-message("-- Building with SSL")
+
+if (QUICKFIX_SHARED_LIBS)
+	add_library(${PROJECT_NAME} SHARED  ${quickfix_SOURCES})
+else()
+	add_library(${PROJECT_NAME} STATIC  ${quickfix_SOURCES})
 endif()
+target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES} pthread ${LIBFSTACK_LIBRARIES} ${LIBMT_LIBRARIES} ${LIBDPDK_LIBRARIES} rte_net_bond)
 
-if(HAVE_MYSQL)
-find_package(MySQL REQUIRED)
-include_directories(${MYSQL_INCLUDE_DIR})
+set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
-message("-- Building with MySQL")
-endif()
+target_include_directories(${PROJECT_NAME}
+  INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  INTERFACE $<INSTALL_INTERFACE:include>
+  PRIVATE include include/double-conversion
+)
 
-if(HAVE_POSTGRESQL)
-find_package(PostgreSQL REQUIRED)
-include_directories(${PostgreSQL_INCLUDE_DIRS})
+include(GNUInstallDirs)
 
-message("-- Building with POSTGRESQL")
-endif()
+# Install library
+install(TARGETS ${PROJECT_NAME}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  
+)
 
-if(HAVE_ODBC)
-find_package(ODBC REQUIRED)
-add_definitions(-DHAVE_ODBC)
-include_directories(SYSTEM ${ODBC_INCLUDE_DIRS})
+# install headers
+install(DIRECTORY include/
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
-message("-- Building with ODBC")
-endif()
+# Install FIX specification files to /share
+install(DIRECTORY spec 
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}
+  FILES_MATCHING PATTERN "FIX*.xml"
+)
 
-if (HAVE_PYTHON)
-  find_package(PythonLibs REQUIRED)
-  include_directories(${PYTHON_INCLUDE_DIRS})
-elseif (HAVE_PYTHON3)
-  find_package(PythonLibs 3 REQUIRED)
-  include_directories(${PYTHON_INCLUDE_DIRS})
-endif ()
+# Generate and install pkg-config file
+configure_file(quickfix.pc.in quickfix.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/quickfix.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
-add_subdirectory(src)
-
-if (QUICKFIX_EXAMPLES)
-  add_subdirectory(examples)
-endif()
-
+# TESTS
 if (QUICKFIX_TESTS)
-  if( WIN32)
     add_subdirectory(test)
-  endif()
 endif()
-
-configure_file(cmake_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/C++/config.h @ONLY)
-configure_file(cmake_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/quickfix/config.h @ONLY)
-file(REMOVE config.h)
-
-
-configure_file(cmake_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/include/quickfix/config.h @ONLY)
-
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/spec/ DESTINATION share/quickfix FILES_MATCHING PATTERN "FIX*.xml")
- 
