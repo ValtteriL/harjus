@@ -5,7 +5,7 @@
 namespace FIX
 {
 
-    static int bio_ff_create(BIO *b)
+    static auto bio_ff_create(BIO *b) -> int
     {
         // Initialize BIO state.
         // OpenSSL stores the file descriptor in b->num usually.
@@ -14,7 +14,7 @@ namespace FIX
         return 1;
     }
 
-    static int bio_ff_destroy(BIO *b)
+    static auto bio_ff_destroy(BIO *b) -> int
     {
         if (b == nullptr)
             return 0;
@@ -31,7 +31,7 @@ namespace FIX
 
         return 1;
     }
-    static int bio_ff_read(BIO *b, char *out, int outl)
+    static auto bio_ff_read(BIO *b, char *out, int outl) -> int
     {
         int fd = BIO_get_fd(b, nullptr);
         if (out == nullptr || outl == 0)
@@ -53,7 +53,7 @@ namespace FIX
         return static_cast<int>(r);
     }
 
-    static int bio_ff_write(BIO *b, const char *in, int inl)
+    static auto bio_ff_write(BIO *b, const char *in, int inl) -> int
     {
         int fd = BIO_get_fd(b, nullptr);
         if (in == nullptr || inl == 0)
@@ -75,10 +75,10 @@ namespace FIX
         return static_cast<int>(r);
     }
 
-    static long bio_ff_ctrl(BIO *b, int cmd, long num, void *ptr)
+    static auto bio_ff_ctrl(BIO *b, int cmd, long num, void *ptr) -> long
     {
         long ret = 1;
-        int *ip;
+        int *ip = nullptr;
 
         int fd = BIO_get_fd(b, nullptr);
 
@@ -130,12 +130,12 @@ namespace FIX
         return ret;
     }
 
-    static int bio_ff_puts(BIO *b, const char *str)
+    static auto bio_ff_puts(BIO *b, const char *str) -> int
     {
         return bio_ff_write(b, str, strlen(str));
     }
 
-    BIO_METHOD *BIO_s_ff_socket(void)
+    auto BIO_s_ff_socket() -> BIO_METHOD *
     {
         if (method_ff_socket == nullptr)
         {
@@ -154,7 +154,7 @@ namespace FIX
         return method_ff_socket;
     }
 
-    BIO *BIO_new_ff_socket(int fd, int close_flag)
+    auto BIO_new_ff_socket(int fd, int close_flag) -> BIO *
     {
         BIO *ret = BIO_new(BIO_s_ff_socket());
         if (ret == nullptr)

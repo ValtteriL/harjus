@@ -33,36 +33,35 @@
 #ifdef _MSC_VER
 #define RESET_AUTO_PTR(OLD, NEW) OLD = NEW;
 #else
-#define RESET_AUTO_PTR(OLD, NEW) OLD.reset(NEW.release());
+#define RESET_AUTO_PTR(OLD, NEW) OLD.reset((NEW).release());
 #endif
 
 namespace FIX
 {
     DataDictionary::DataDictionary()
-        : m_hasVersion(false),
+        : 
           m_checkFieldsOutOfOrder(true),
           m_checkFieldsHaveValues(true),
-          m_checkUserDefinedFields(true),
-          m_allowUnknownMessageFields(false),
-          m_storeMsgFieldsOrder(false) {}
+          m_checkUserDefinedFields(true)
+          {}
 
     DataDictionary::DataDictionary(std::istream &stream, bool preserveMsgFldsOrder) EXCEPT(ConfigError)
-        : m_hasVersion(false),
+        : 
           m_checkFieldsOutOfOrder(true),
           m_checkFieldsHaveValues(true),
           m_checkUserDefinedFields(true),
-          m_allowUnknownMessageFields(false),
+          
           m_storeMsgFieldsOrder(preserveMsgFldsOrder)
     {
         readFromStream(stream);
     }
 
     DataDictionary::DataDictionary(const std::string &url, bool preserveMsgFldsOrder) EXCEPT(ConfigError)
-        : m_hasVersion(false),
+        : 
           m_checkFieldsOutOfOrder(true),
           m_checkFieldsHaveValues(true),
           m_checkUserDefinedFields(true),
-          m_allowUnknownMessageFields(false),
+          
           m_storeMsgFieldsOrder(preserveMsgFldsOrder),
           m_orderedFieldsArray(0)
     {
