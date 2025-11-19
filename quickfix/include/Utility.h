@@ -173,8 +173,6 @@ namespace FIX
     typedef pthread_t thread_id;
 #endif
 
-    bool thread_spawn(THREAD_START_ROUTINE func, void *var, thread_id &thread);
-    bool thread_spawn(THREAD_START_ROUTINE func, void *var);
     void thread_join(thread_id thread);
     void thread_detach(thread_id thread);
     thread_id thread_self();

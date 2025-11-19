@@ -547,34 +547,6 @@ namespace FIX
 #endif
     }
 
-    auto thread_spawn(THREAD_START_ROUTINE func, void *var, thread_id &thread) -> bool
-    {
-#ifdef _MSC_VER
-        thread_id result = 0;
-        unsigned int id = 0;
-        result =
-            reinterpret_cast<thread_id>(_beginthreadex(NULL, 0, func, var, 0, &id));
-        if (result == 0)
-        {
-            return false;
-        }
-#else
-        thread_id result = 0;
-        if (pthread_create(&result, nullptr, func, var) != 0)
-        {
-            return false;
-        }
-#endif
-        thread = result;
-        return true;
-    }
-
-    auto thread_spawn(THREAD_START_ROUTINE func, void *var) -> bool
-    {
-        thread_id thread = 0;
-        return thread_spawn(func, var, thread);
-    }
-
     void thread_join(thread_id thread)
     {
 #ifdef _MSC_VER

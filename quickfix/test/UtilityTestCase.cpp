@@ -170,20 +170,6 @@ TEST_CASE("UtilityTests")
         CHECK(std::string("UNKNOWN") == socket_peername(1000));
     }
 
-    SECTION("spawnThread_True")
-    {
-        std::string test = "test";
-        CHECK(thread_spawn(&startTestThread, &test));
-    }
-
-    SECTION("threadJoinAndDetach_NoException")
-    {
-        thread_id threadId = 0;
-        CHECK_NOTHROW(thread_spawn(&startTestThread, nullptr, threadId));
-        CHECK_NOTHROW(thread_join(threadId));
-        CHECK_NOTHROW(thread_detach(threadId));
-    }
-
     SECTION("fileExists_FileDoesNotExist")
     {
         std::string unknownFile = "unknownfile.txt";
