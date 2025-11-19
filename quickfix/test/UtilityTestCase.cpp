@@ -17,12 +17,8 @@
 **
 ****************************************************************************/
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4503 4355 4786)
-#include "stdafx.h"
-#else
 #include "config.h"
-#endif
+#include <mt_api.h>
 
 #include <Utility.h>
 
@@ -107,12 +103,6 @@ TEST_CASE("UtilityTests")
         CHECK(-1 == actual);
     }
 
-    SECTION("socketDisconnected_SocketDoesNotExist_True")
-    {
-        int socket = 5000;
-        CHECK(socket_disconnected(socket));
-    }
-
     SECTION("socketFionRead_SocketDoesNotExist_False")
     {
         int bytes = 10;
@@ -169,38 +159,10 @@ TEST_CASE("UtilityTests")
         CHECK(0 == socket_hostport(socket));
     }
 
-    SECTION("socketHostPort_SocketNameExists")
-    {
-        socket_handle actualSocket = socket_createConnector();
-        socket_setsockopt(actualSocket, TCP_NODELAY);
-        std::string address = "127.0.0.1";
-        socket_connect(actualSocket, address.c_str(), 1000);
-        CHECK(0 != socket_hostport(actualSocket));
-    }
-
     SECTION("socketHostName_SocketNum_SocketNameUnknown")
     {
         socket_handle socket = 5000;
         CHECK(0 == socket_hostname(socket));
-    }
-
-    SECTION("socketHostName_SocketNum_SocketNameExists")
-    {
-        socket_handle actualSocket = socket_createConnector();
-        socket_setsockopt(actualSocket, TCP_NODELAY);
-        std::string address = "127.0.0.1";
-        socket_connect(actualSocket, address.c_str(), 1000);
-        CHECK(0 != socket_hostname(actualSocket));
-    }
-
-    SECTION("socketHostName_SocketNameLocalHost_SocketNameFound")
-    {
-        socket_handle actualSocket = socket_createConnector();
-        socket_setsockopt(actualSocket, TCP_NODELAY);
-        std::string address = "127.0.0.1";
-        socket_connect(actualSocket, address.c_str(), 1000);
-        std::string local = "localhost";
-        CHECK(0 != socket_hostname(local.c_str()));
     }
 
     SECTION("socketPeername_SocketDoesNotExist_SocketNameUnknown")

@@ -24,6 +24,7 @@ let
     cmake
     ninja
     llvmPackages_21.clang-tools
+    gdb
 
     # f-stack
     fstack

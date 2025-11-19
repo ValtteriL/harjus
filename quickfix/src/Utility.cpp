@@ -330,12 +330,6 @@ namespace FIX
 #endif
     }
 
-    auto socket_disconnected(socket_handle s) -> bool
-    {
-        char byte = 0;
-        return ::mt_recv(s, &byte, sizeof(byte), MSG_PEEK, -1) <= 0;
-    }
-
     auto socket_setsockopt(socket_handle s, int opt) -> int
     {
 #ifdef _MSC_VER

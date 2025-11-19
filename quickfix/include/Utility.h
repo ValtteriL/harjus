@@ -130,7 +130,6 @@ namespace FIX
     void socket_close(socket_handle s);
     std::string socket_get_last_error();
     bool socket_fionread(socket_handle s, int &bytes);
-    bool socket_disconnected(socket_handle s);
     int socket_setsockopt(socket_handle s, int opt);
     int socket_setsockopt(socket_handle s, int opt, int optval);
     int socket_getsockopt(socket_handle s, int opt, int &optval);
