@@ -1,10 +1,9 @@
-#include "config.h"
-
 #include "FstackMicroThreadedSSLSocketConnection.h"
-#include "FstackMicroThreadedSSLSocketInitiator.h"
 #include "Session.h"
 #include "Utility.h"
-#include <utility>
+#include "UtilitySSL.h"
+#include <mt_api.h>
+#include <sys/poll.h>
 
 namespace FIX
 {
@@ -110,8 +109,8 @@ namespace FIX
 
         try
         {
-            // Wait for input (1 second timeout)
-            int result = select(1 + m_socket, &readset, nullptr, nullptr, &timeout);
+            // Wait for input forever
+            int result = NS_MICRO_THREAD::mt_wait_events(m_socket, POLLIN, -1);
 
             if (result > 0) // Something to read
             {

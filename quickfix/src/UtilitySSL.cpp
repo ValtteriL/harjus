@@ -109,14 +109,8 @@
  * ====================================================================
  */
 
-#include "config.h"
-
-#include <vector>
-
-#include "Mutex.h"
 #include "UtilitySSL.h"
-
-// #include "openssl/applink.c" // To prevent crashing (see the OpenSSL FAQ)
+#include "Mutex.h"
 
 #include "openssl/bio.h" // BIO objects for I/O
 #include "openssl/bn.h"
@@ -126,6 +120,8 @@
 #ifndef OPENSSL_NO_DH
 #include "openssl/dh.h"
 #endif
+
+#include "mt_api.h"
 
 namespace FIX
 {
@@ -1664,17 +1660,10 @@ namespace FIX
                     /* first: skip the remaining bytes of the request line */
                     do
                     {
-#ifndef _MSC_VER // Unix
                         do
                         {
-                            rv = read(socket, ca, 1);
+                            rv = NS_MICRO_THREAD::mt_read(socket, ca, 1, -1);
                         } while (rv == -1 && errno == EINTR);
-#else // Windows
-                        do
-                        {
-                            rv = recv(socket, ca, 1, 0);
-                        } while (rv == -1 && errno == EINTR);
-#endif
                     } while (rv > 0 && ca[0] != '\012' /*LF*/);
 
                     SSL_set_shutdown(ssl, SSL_SENT_SHUTDOWN | SSL_RECEIVED_SHUTDOWN);

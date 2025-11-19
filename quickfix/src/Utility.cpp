@@ -17,27 +17,18 @@
 **
 ****************************************************************************/
 
-#ifdef _MSC_VER
-#include "stdafx.h"
-#else
-#include "config.h"
-#endif
-
 #include "Utility.h"
+#include "config.h"
 
-#ifdef USING_STREAMS
-#include <stropts.h>
-#include <sys/conf.h>
-#endif
 #include <algorithm>
 #include <cctype>
-#include <cstdarg>
-#include <fstream>
-#include <iostream>
 #include <cmath>
-#include <sstream>
+#include <cstdarg>
 #include <cstdio>
 #include <cstring>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 #include <micro_thread.h>
 #include <mt_incl.h>
@@ -131,15 +122,15 @@ namespace FIX
     auto string_toUpper(const std::string &value) -> std::string
     {
         std::string copy = value;
-        std::transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c)
-                       -> char { return static_cast<char>(std::toupper(c)); });
+        std::transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c) -> char
+                       { return static_cast<char>(std::toupper(c)); });
         return copy;
     }
     auto string_toLower(const std::string &value) -> std::string
     {
         std::string copy = value;
-        std::transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c)
-                       -> char { return static_cast<char>(std::tolower(c)); });
+        std::transform(copy.begin(), copy.end(), copy.begin(), [](unsigned char c) -> char
+                       { return static_cast<char>(std::tolower(c)); });
         return copy;
     }
 
@@ -162,7 +153,7 @@ namespace FIX
     }
 
     auto string_split(const std::string &value,
-                                       const char delimiter) -> std::set<std::string>
+                      const char delimiter) -> std::set<std::string>
     {
         std::set<std::string> subStrings;
         std::size_t start = 0;
@@ -279,17 +270,7 @@ namespace FIX
         const char *hostname = socket_hostname(address);
         if (hostname == nullptr)
         {
-#ifdef _MSC_VER
-            // In a case of Windows + MSVC, select() does not fire a write event for
-            // a bare socket (no connection ever attempted). Therefore the later
-            // logic, which is based on unconditional continuation with select(),
-            // leads to a deadlock (the select never gets back) for the connecting
-            // session. So keep going ahead with a bad address to issue a faulty
-            // connect.
-            hostname = address;
-#else
             return -1;
-#endif
         }
 
         sockaddr_in addr{};
@@ -309,55 +290,31 @@ namespace FIX
         {
             return INVALID_SOCKET_HANDLE;
         }
-        return accept(s, nullptr, nullptr);
+        return mt_accept(s, nullptr, nullptr, -1);
     }
 
     auto socket_recv(socket_handle s, char *buf, size_t length) -> ssize_t
     {
-#ifdef _MSC_VER
-        return recv(s, buf, static_cast<int>(length), 0);
-#else
-        return recv(s, buf, length, 0);
-#endif
+        return mt_recv(s, buf, length, 0, -1);
     }
 
     auto socket_send(socket_handle s, const char *msg, size_t length) -> ssize_t
     {
-#ifdef _MSC_VER
-        return send(s, msg, static_cast<int>(length), 0);
-#else
-        return send(s, msg, length, 0);
-#endif
+        return mt_send(s, msg, length, 0, 1000);
     }
 
     void socket_close(socket_handle s)
     {
         ff_shutdown(s, 2);
-#ifdef _MSC_VER
-        closesocket(s);
-#else
         close(s);
-#endif
     }
 
     auto socket_get_last_error() -> std::string
     {
         std::stringstream errorMessage;
-#ifdef _MSC_VER
-        int winsockErrorCode = WSAGetLastError();
-
-        char *s = NULL;
-        FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
-                           FORMAT_MESSAGE_IGNORE_INSERTS,
-                       NULL, winsockErrorCode,
-                       MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&s, 0, NULL);
-        errorMessage << "Winsock error " << winsockErrorCode << ": " << s;
-        LocalFree(s);
-#else
         int errorNumber = errno;
         errorMessage << "Winsock error " << errorNumber << ": "
                      << strerror(errorNumber);
-#endif
         return errorMessage.str();
     }
 
@@ -376,7 +333,7 @@ namespace FIX
     auto socket_disconnected(socket_handle s) -> bool
     {
         char byte = 0;
-        return ::recv(s, &byte, sizeof(byte), MSG_PEEK) <= 0;
+        return ::mt_recv(s, &byte, sizeof(byte), MSG_PEEK, -1) <= 0;
     }
 
     auto socket_setsockopt(socket_handle s, int opt) -> int
@@ -655,18 +612,7 @@ namespace FIX
 
     void process_sleep(double s)
     {
-#ifdef _MSC_VER
-        Sleep((long)(s * 1000));
-#else
-        timespec time{}, remainder{};
-        double intpart = NAN;
-        time.tv_nsec = (long)(modf(s, &intpart) * 1e9);
-        time.tv_sec = (int)intpart;
-        while (nanosleep(&time, &remainder) == -1)
-        {
-            time = remainder;
-        }
-#endif
+        mt_sleep(static_cast<int>(s * 1000));
     }
 
     auto file_separator() -> std::string
