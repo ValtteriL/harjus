@@ -47,3 +47,7 @@ nc -v 172.16.1.22 80
 # stop echo
 just stop-echo
 ```
+
+## Misc
+
+This product includes software developed by quickfixengine.org (<http://www.quickfixengine.org/>).
