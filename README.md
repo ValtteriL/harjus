@@ -1,4 +1,4 @@
-# Fast-QuickFix
+# Flashfix
 
 ## Setup
 

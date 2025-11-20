@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
-set (quickfix_PROJECT_NAME quickfix)
+set (flashfix_PROJECT_NAME flashfix)
 
-project(${quickfix_PROJECT_NAME} VERSION 0.1 LANGUAGES CXX C)
+project(${flashfix_PROJECT_NAME} VERSION 0.1 LANGUAGES CXX C)
 message("-- Project name ${CMAKE_PROJECT_NAME}")
 
 set(CMAKE_CXX_STANDARD 17)
@@ -11,10 +11,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 # add option to build shared or static
-option(QUICKFIX_SHARED_LIBS "Build using shared libraries" ON)
+option(flashfix_SHARED_LIBS "Build using shared libraries" ON)
 
 # add option to build other targets
-option(QUICKFIX_TESTS "Build quickfix tests" ON)
+option(flashfix_TESTS "Build flashfix tests" ON)
 
 # add libdpdk, libfstack, libmt dependencies
 find_package(PkgConfig REQUIRED)
@@ -29,7 +29,7 @@ link_directories(${LIBDPDK_LIBRARY_DIRS} ${LIBFSTACK_LIBRARY_DIRS} ${LIBMT_LIBRA
 find_package(OpenSSL REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIR})
 
-set(quickfix_SOURCES
+set(flashfix_SOURCES
   src/DataDictionary.cpp
   src/DataDictionaryProvider.cpp
   src/Dictionary.cpp
@@ -63,10 +63,10 @@ set(quickfix_SOURCES
 )
 
 
-if (QUICKFIX_SHARED_LIBS)
-	add_library(${PROJECT_NAME} SHARED  ${quickfix_SOURCES})
+if (flashfix_SHARED_LIBS)
+	add_library(${PROJECT_NAME} SHARED  ${flashfix_SOURCES})
 else()
-	add_library(${PROJECT_NAME} STATIC  ${quickfix_SOURCES})
+	add_library(${PROJECT_NAME} STATIC  ${flashfix_SOURCES})
 endif()
 target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES} pthread ${LIBFSTACK_LIBRARIES} ${LIBMT_LIBRARIES} ${LIBDPDK_LIBRARIES} rte_net_bond)
 
@@ -98,10 +98,10 @@ install(DIRECTORY spec
 )
 
 # Generate and install pkg-config file
-configure_file(quickfix.pc.in quickfix.pc @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/quickfix.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+configure_file(flashfix.pc.in flashfix.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/flashfix.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 # TESTS
-if (QUICKFIX_TESTS)
+if (flashfix_TESTS)
     add_subdirectory(test)
 endif()

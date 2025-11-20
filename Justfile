@@ -7,9 +7,9 @@ provision:
 initialize:
     sudo ./scripts/initialize.sh
 
-# Build Fast-QuickFIX
+# Build Fastfix
 build:
-    cmake -B build quickfix -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+    cmake -B build flashfix -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
     ninja -C build
 
 # Clean build artifacts
@@ -18,7 +18,7 @@ clean:
 
 # Run unit tests
 test:
-    ./build/test/ut --quickfix-config-file ./quickfix/test-util/cfg/ut.cfg --quickfix-spec-path ./quickfix/spec
+    ./build/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
 
 nix-build-all:
     nix-build
@@ -61,7 +61,7 @@ fmt:
 	@echo "Running clang-format on modified C/C++ files..."
 	git-clang-format -f main
 
-# Format all C/C++ sources in the quickfix directory with clang-format
+# Format all C/C++ sources in the flashfix directory with clang-format
 fmt-full:
     @echo "Running clang-format on all C/C++ files..."
     clang-format -i `find . -name "*.cpp" -or -name "*.hpp" -or -name "*.c" -or -name "*.h"`
