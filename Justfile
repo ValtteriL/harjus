@@ -2,9 +2,11 @@
 default:
     just --list
 
+# Install build and runtime dependencies
 provision:
     sudo ./scripts/provision.sh
 
+# Initialize system for kernel bypass
 initialize:
     sudo ./scripts/initialize.sh
 
@@ -21,6 +23,7 @@ clean:
 test:
     ./build/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
 
+# Build all nix derivations
 nix-build-all:
     nix-build
 
@@ -45,15 +48,19 @@ nix-build-run-clang-tidy:
 nix-build-git-clang-format:
     nix-build -A git-clang-format
 
+# Run helloworld kernel bypass example server
 helloworld: nix-build-all
     sudo ./result-2/bin/ff_start -b ./result-3/bin/helloworld -c ./config.ini
 
+# Stop helloworld example
 stop-helloworld:
     sudo kill $(pidof helloworld) || echo "helloworld is not running"
 
+# Run echo kernel bypass + microthreading example server
 echo: nix-build-all
     sudo ./result-2/bin/ff_start -b ./result-4/bin/fstack-mt-echo -c ./config.ini
 
+# Stop echo example
 stop-echo:
     sudo kill $(pidof fstack-mt-echo) || echo "fstack-mt-echo is not running"
 
