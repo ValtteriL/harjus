@@ -1,5 +1,5 @@
 { pkgs, fstack, fstack-examples, fstack-mt, fstack-tools, run-clang-tidy
-, git-clang-format }:
+, git-clang-format, flashfix }:
 
 let
   buildInputs = with pkgs; [
@@ -31,6 +31,9 @@ let
     fstack-examples
     fstack-mt
     fstack-tools
+
+    # flashfix
+    flashfix
 
     # code quality
     run-clang-tidy

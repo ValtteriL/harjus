@@ -1,3 +1,4 @@
+# Default task: list all available tasks
 default:
     just --list
 
@@ -35,8 +36,8 @@ nix-build-fstack-examples:
 nix-build-fstack-tools:
     nix-build -A fstack-tools
 
-nix-build-plain-quickfix:
-    nix-build -A quickfix
+nix-build-flashfix:
+    nix-build -A flashfix
 
 nix-build-run-clang-tidy:
     nix-build -A run-clang-tidy
