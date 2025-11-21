@@ -12,8 +12,7 @@ This is a latency-sensitive Linux C++ project. We prioritize runtime performance
 - **Task Runner**: just (All entry points are defined here)
 - **Environment**: Nix Shell + Direnv
 - **Linting/Formatting**: clang-tidy, clang-format
-- **Testing**: Google Test (gtest) managed via CTest
-- **Documentation**: Doxygen
+- **Testing**: Google Test (gtest) managed via CTest. Flashfix library uses Catch2
 - **CI/CD**: Jenkins
 - **IDE**: VSCode (recommended) with clangd
 
@@ -40,7 +39,6 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 | `just fmt-full` | Applies clang-format to all C/C++ files in the codebase. |
 | `just lint` | Runs essential clang-tidy checks. |
 | `just lint-full` | Runs full clang-tidy checks. |
-| `just doc` | Generates Doxygen documentation. |
 
 ## Coding Guidelines (Latency Sensitive)
 
@@ -68,15 +66,15 @@ Performance is a critical feature. Adhere to these strict guidelines:
 - src/: Implementation files (.cpp).
 - include/: Public header files (.hpp).
 - tests/: GTest unit tests.
+- deploy/: Deployment files
 - nix/: Nix flake and derivation logic.
+- flashfix/: Flashfix library sources.
 - Jenkinsfile: CI pipeline definition.
 - Justfile: Task definitions.
 
 ## Testing Strategy
 
 - **Unit Tests**: Must cover all business logic. Mocks are allowed but prefer testing state changes.
-- **Benchmarks**: Any change to a hot path requires a micro-benchmark (Google Benchmark) to verify no regression.
-- **Sanitizers**: CI runs builds with ASAN (AddressSanitizer) and TSAN (ThreadSanitizer). Ensure your local dev environment supports running these via just test-asan (if configured).
 
 ## VSCode Configuration
 
