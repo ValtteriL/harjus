@@ -23,7 +23,10 @@ let
     [ "fortify" "stackprotector" "pic" "pie" "relro" "bindnow" ];
 
 in rec {
-  myQuickfix = pkgs.callPackage ./myquickfix.nix { hardeningDisable = hardeningDisable; enableParallelBuilding = enableParallelBuilding; };
+  myQuickfix = pkgs.callPackage ./nix/myquickfix.nix {
+    hardeningDisable = hardeningDisable;
+    enableParallelBuilding = enableParallelBuilding;
+  };
 
   myQuickfixOptimized = myQuickfix.overrideAttrs (finalAttrs: {
     # override compile flags to optimize for performance
@@ -32,16 +35,19 @@ in rec {
 
   run-clang-tidy = pkgs.callPackage ./flashfix/run-clang-tidy.nix { };
 
-  devEnv = pkgs.callPackage ./devEnv.nix { myQuickfix = myQuickfix; runClangTidy = run-clang-tidy; };
+  devEnv = pkgs.callPackage ./nix/devEnv.nix {
+    myQuickfix = myQuickfix;
+    runClangTidy = run-clang-tidy;
+  };
 
-  harjusbuild = pkgs.callPackage ./harjusbuild.nix {
+  harjusbuild = pkgs.callPackage ./nix/harjusbuild.nix {
     hardeningDisable = hardeningDisable;
     enableParallelBuilding = enableParallelBuilding;
     gccFlags = gccFlags;
     myQuickfixOptimized = myQuickfixOptimized;
   };
 
-  harjus = pkgs.callPackage ./harjus.nix {
+  harjus = pkgs.callPackage ./nix/harjus.nix {
     harjusbuild = harjusbuild;
     pname = pname;
     version = version;

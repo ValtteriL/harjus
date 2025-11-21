@@ -1,4 +1,5 @@
-{ stdenv, fetchFromGitHub, fetchpatch, enableParallelBuilding, hardeningDisable, cmake, ninja, openssl}:
+{ stdenv, fetchFromGitHub, fetchpatch, enableParallelBuilding, hardeningDisable
+, cmake, ninja, openssl }:
 
 let
   pname = "quickfix";
@@ -13,14 +14,14 @@ let
   };
 
   patches = [
-        # Improved C++17 compatibility
-        (fetchpatch {
-          url =
-            "https://patch-diff.githubusercontent.com/raw/quickfix/quickfix/pull/625.diff";
-          hash = "sha256-J4Sw7lPS6gv9gkSn3kAM8RTdoBvpgLeOR4qeXtkjVao=";
-        })
-        ./quickfix/00001-fix-build.patch
-      ];
+    # Improved C++17 compatibility
+    (fetchpatch {
+      url =
+        "https://patch-diff.githubusercontent.com/raw/quickfix/quickfix/pull/625.diff";
+      hash = "sha256-J4Sw7lPS6gv9gkSn3kAM8RTdoBvpgLeOR4qeXtkjVao=";
+    })
+    ./patch/00001-fix-build.patch
+  ];
 
 in stdenv.mkDerivation {
   inherit pname version src patches enableParallelBuilding hardeningDisable;
