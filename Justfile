@@ -1,14 +1,14 @@
 # Default task: list all available tasks
 default:
-    just --list
+    just --list --unsorted
 
 # Install build and runtime dependencies
 provision:
-    sudo ./scripts/provision.sh
+    sudo ./deploy/scripts/provision.sh
 
 # Initialize system for kernel bypass
 initialize:
-    sudo ./scripts/initialize.sh
+    sudo ./deploy/scripts/initialize.sh
 
 # Build Fastfix
 build:

@@ -1,2 +1,7 @@
 ---
-Checks: '-*,cppcoreguidelines-*,modernize-*,boost-*,performance-*'
+Checks: >
+  -*,
+  clang-analyzer-*,
+  bugprone-*
+UseColor: true
+FormatStyle: file

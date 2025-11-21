@@ -1,49 +1,80 @@
-{ pkgs, myQuickfix, runClangTidy }:
+{ pkgs, myQuickfix, run-clang-tidy, fstack, fstack-examples, fstack-mt
+, fstack-tools, git-clang-format, flashfix }:
 
 let
 
   buildInputs = with pkgs; [
-        # for working with nix
-        glibcLocales
-        nixpkgs-fmt
-        nixfmt-classic
+    # for working with nix
+    glibcLocales
+    nixpkgs-fmt
+    nixfmt-classic
 
-        # C++
-        cmake
-        ninja
-        gdb
-        clang-tools
-        ccache
-        gtest
-        boost
-        openssl
-        libcpr
-        pkg-config
-        libsodium
-        gmp
-        myQuickfix
-        runClangTidy
+    # interfacing
+    just
 
-        # deployment
-        terraform
-        ansible
-        ansible-lint
-        awscli2
-        python3
-        python3Packages.boto3
-        python3Packages.botocore
+    # C++
+    git
+    gcc
+    cmake
+    ninja
+    gdb
+    ccache
+    gtest
+    boost
+    openssl
+    libcpr
+    pkg-config
+    libsodium
+    gmp
+    bc
+    pcre
+    zlib
+    numactl
+    gawk
+    libbsd
+    llvmPackages_21.clang-tools
+
+    myQuickfix
+
+    # deployment
+    terraform
+    ansible
+    ansible-lint
+    awscli2
+    python3
+    python3Packages.boto3
+    python3Packages.botocore
+
+    # f-stack
+    fstack
+    fstack-examples
+    fstack-mt
+    fstack-tools
+
+    # flashfix
+    flashfix
+
+    # code quality
+    run-clang-tidy
+    git-clang-format
   ];
 in pkgs.mkShell {
 
-      # disable hardenings (for better debugging experience)
-      hardeningDisable = [ "all" ];
+  # disable hardenings (for better debugging experience)
+  hardeningDisable = [ "all" ];
 
   inherit buildInputs;
 
-      # this is executed when shell entered
-      shellHook = ''
-        export USE_CCACHE=1
-        export CCACHE_COMPRESS=1
-        export CCACHE_MAXSIZE=10G
-      '';
+  # this is executed when shell entered
+  shellHook = ''
+    export USE_CCACHE=1
+    export CCACHE_COMPRESS=1
+    export CCACHE_MAXSIZE=10G
+
+    export LD_LIBRARY_PATH="${
+      pkgs.lib.makeLibraryPath buildInputs
+    }:$LD_LIBRARY_PATH"
+  '';
+
+  nativeBuildInputs = [ pkgs.pkg-config ];
 }

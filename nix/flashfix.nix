@@ -5,8 +5,8 @@
 let
   fs = lib.fileset;
   src = fs.toSource {
-    root = ./.;
-    fileset = ./flashfix;
+    root = ./..;
+    fileset = ../flashfix;
   };
 
 in stdenv.mkDerivation {

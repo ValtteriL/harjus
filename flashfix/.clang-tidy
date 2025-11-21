@@ -1,7 +1,0 @@
----
-Checks: >
-  -*,
-  clang-analyzer-*,
-  bugprone-*
-UseColor: true
-FormatStyle: file
