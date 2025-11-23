@@ -1,17 +1,9 @@
 cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
-set (flashfix_PROJECT_NAME flashfix)
+project(Flashfix LANGUAGES CXX C)
 
-project(${flashfix_PROJECT_NAME} VERSION 0.1 LANGUAGES CXX C)
-message("-- Project name ${CMAKE_PROJECT_NAME}")
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for clangd
 set(CMAKE_CXX_STANDARD 17)
-
-# Optimize debug builds for build speed
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
-
-# add option to build shared or static
-option(flashfix_SHARED_LIBS "Build using shared libraries" ON)
 
 # add option to build other targets
 option(flashfix_TESTS "Build flashfix tests" ON)
@@ -22,14 +14,10 @@ pkg_check_modules(LIBDPDK REQUIRED libdpdk)
 pkg_check_modules(LIBFSTACK REQUIRED libfstack)
 pkg_check_modules(LIBMT REQUIRED libmt)
 
-# Add DPDK, F-Stack, and libmt to include directories and link libraries
-include_directories(${LIBDPDK_INCLUDE_DIRS} ${LIBFSTACK_INCLUDE_DIRS} ${LIBMT_INCLUDE_DIRS})
-link_directories(${LIBDPDK_LIBRARY_DIRS} ${LIBFSTACK_LIBRARY_DIRS} ${LIBMT_LIBRARY_DIRS})
-
 find_package(OpenSSL REQUIRED)
-include_directories(${OPENSSL_INCLUDE_DIR})
 
-set(flashfix_SOURCES
+
+add_library(${PROJECT_NAME} SHARED
   src/DataDictionary.cpp
   src/DataDictionaryProvider.cpp
   src/Dictionary.cpp
@@ -61,14 +49,11 @@ set(flashfix_SOURCES
   src/FStackSSLBIO.cpp
   src/UtilitySSL.cpp
 )
-
-
-if (flashfix_SHARED_LIBS)
-	add_library(${PROJECT_NAME} SHARED  ${flashfix_SOURCES})
-else()
-	add_library(${PROJECT_NAME} STATIC  ${flashfix_SOURCES})
-endif()
 target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES} pthread ${LIBFSTACK_LIBRARIES} ${LIBMT_LIBRARIES} ${LIBDPDK_LIBRARIES} rte_net_bond)
+target_include_directories(${PROJECT_NAME} PRIVATE ${LIBDPDK_INCLUDE_DIRS} ${LIBFSTACK_INCLUDE_DIRS} ${LIBMT_INCLUDE_DIRS})
+target_link_directories(${PROJECT_NAME} PRIVATE ${LIBDPDK_LIBRARY_DIRS} ${LIBFSTACK_LIBRARY_DIRS} ${LIBMT_LIBRARY_DIRS})
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${OPENSSL_INCLUDE_DIR})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 

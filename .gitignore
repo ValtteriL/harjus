@@ -144,3 +144,6 @@ build/.cmake/
 
 .ansible_vault_password
 exchangeinfo.json
+
+
+CMakeFiles

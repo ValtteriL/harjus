@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.31)
 
 project(harjus LANGUAGES CXX)
 
@@ -33,24 +33,12 @@ pkg_check_modules(GMP REQUIRED gmp)
 # quickfix
 find_package(quickfix REQUIRED)
 
-# Enable all warnings
-add_compile_options(-Wall -Wextra -Wpedantic -Werror)
-
-# Optimize debug builds for speed
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-
-# Optimize release builds for performance
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-
 # add ccache for faster builds
 if(DEFINED ENV{USE_CCACHE})
   set(CMAKE_CXX_COMPILER_LAUNCHER ccache)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
 endif()
-
-include_directories(include)
 
 add_executable(harjus
   src/Main.cpp
@@ -70,6 +58,10 @@ add_executable(harjus
   src/StaticTrade.cpp
   src/FixConfig.cpp
   src/PreciseNumber.cpp
+)
+target_include_directories(harjus 
+  PRIVATE
+  	include
 )
 target_link_libraries(harjus PRIVATE OpenSSL::SSL OpenSSL::Crypto Boost::url Boost::json Boost::graph Boost::log ${LIBSODIUM_LIBRARIES} ${GMP_LIBRARIES} cpr::cpr quickfix)
 
