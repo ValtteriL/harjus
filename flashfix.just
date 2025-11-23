@@ -1,5 +1,6 @@
 # Build Flashfix
 build:
+    uv run conan install flashfix --output-folder=flashfix-build --build=missing
     cmake -B flashfix-build flashfix -G Ninja -DCMAKE_BUILD_TYPE=Debug
     ninja -C flashfix-build
 

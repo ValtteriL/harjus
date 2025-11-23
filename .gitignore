@@ -141,9 +141,11 @@ fix-file-dir/
 
 
 build/.cmake/
+flashfix-build/
 
 .ansible_vault_password
 exchangeinfo.json
 
 
 CMakeFiles
+CMakeUserPresets.json

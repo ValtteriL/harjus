@@ -21,14 +21,12 @@ let
     ccache
     gtest
     boost
-    openssl
     libcpr
     pkg-config
     libsodium
     gmp
     bc
     pcre
-    zlib
     numactl
     gawk
     libbsd
