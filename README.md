@@ -88,18 +88,18 @@ terraform -chdir=deploy/backend apply
 terraform -chdir=deploy init
 terraform -chdir=deploy apply
 
-(cd deploy/playbooks && ansible-playbook setup.yml)
+(cd deploy/playbooks && uv run ansible-playbook setup.yml)
 ```
 
 ### Deploy
 
 ```bash
 # QA (testnet)
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa") # defaults to 'latest' version
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "version=your-semver-or-git-hash-or-latest")
+(cd deploy/playbooks && uv run ansible-playbook deploy.yml -e "env=qa") # defaults to 'latest' version
+(cd deploy/playbooks && uv run ansible-playbook deploy.yml -e "env=qa" -e "version=your-semver-or-git-hash-or-latest")
 
 # Prod
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod")
+(cd deploy/playbooks && uv run ansible-playbook deploy.yml -e "env=prod")
 ```
 
 ## Debugging
