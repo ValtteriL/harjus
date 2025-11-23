@@ -1,3 +1,6 @@
+# Justfile for Flashfix project
+mod flashfix
+
 # Default task: list all available tasks
 default:
     just --list --unsorted
@@ -10,9 +13,9 @@ provision:
 initialize:
     sudo ./deploy/scripts/initialize.sh
 
-# Build Fastfix
+# Build Flashfix
 build:
-    cmake -B build flashfix -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+    cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
     ninja -C build
 
 # Clean build artifacts
@@ -20,49 +23,20 @@ clean:
     ninja -C build clean
 
 # Run unit tests
-test:
-    ./build/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
+test: build
+    ctest --test-dir build/
+
+# Build harjus derivation
+nix-build:
+    nix-build -A harjus
 
 # Build all nix derivations
 nix-build-all:
     nix-build
 
-nix-build-fstack:
-    nix-build -A fstack
-
-nix-build-fstack-mt:
-    nix-build -A fstack-mt
-
-nix-build-fstack-examples:
-    nix-build -A fstack-examples
-
-nix-build-fstack-tools:
-    nix-build -A fstack-tools
-
-nix-build-flashfix:
-    nix-build -A flashfix
-
-nix-build-run-clang-tidy:
-    nix-build -A run-clang-tidy
-
-nix-build-git-clang-format:
-    nix-build -A git-clang-format
-
-# Run helloworld kernel bypass example server
-helloworld: nix-build-all
-    sudo ./result-2/bin/ff_start -b ./result-3/bin/helloworld -c ./config.ini
-
-# Stop helloworld example
-stop-helloworld:
-    sudo kill $(pidof helloworld) || echo "helloworld is not running"
-
-# Run echo kernel bypass + microthreading example server
-echo: nix-build-all
-    sudo ./result-2/bin/ff_start -b ./result-4/bin/fstack-mt-echo -c ./config.ini
-
-# Stop echo example
-stop-echo:
-    sudo kill $(pidof fstack-mt-echo) || echo "fstack-mt-echo is not running"
+# Build harjus release
+release version:
+    nix-build -A harjus --argstr version {{version}}
 
 # Format modified C/C++ sources on current branch with clang-format
 fmt:

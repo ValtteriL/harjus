@@ -31,14 +31,19 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 
 | Command | Description |
 |---|---|
-| `just build` | Configures and builds the project (Release/RelWithDebInfo). |
-| `just debug` | Builds with Debug configuration. |
-| `just test` | Runs unit tests via CTest. |
-| `just clean` | Removes build artifacts. |
+| `just build` | Configures and builds Harjus (Debug). |
+| `just clean` | Removes Harjus build artifacts. |
+| `just test` | Runs Harjus unit tests. |
+| `just nix-build` | Builds Harjus release as a Nix derivation. |
+| `just nix-build-all` | Builds all Nix derivations. |
+| `just release <version>` | Builds harjus release as a Nix derivation with given version. |
 | `just fmt` | Applies clang-format to files modified after branching off main. |
 | `just fmt-full` | Applies clang-format to all C/C++ files in the codebase. |
 | `just lint` | Runs essential clang-tidy checks. |
 | `just lint-full` | Runs full clang-tidy checks. |
+| `just flashfix build` | Configures and build Flashfix (Debug). |
+| `just flashfix clean` | Removes Flashfix build artifacts. |
+| `just flashfix test` | Runs Flashfix unit tests. |
 
 ## Coding Guidelines (Latency Sensitive)
 
