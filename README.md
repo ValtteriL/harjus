@@ -37,9 +37,7 @@ nix-shell -A devEnv
 Run unit tests
 
 ```bash
-cmake -B build -G Ninja
-ninja -C build -j$(nproc)
-ctest --test-dir build/
+just test
 ```
 
 ### Automatic tests
@@ -51,7 +49,7 @@ The unit tests are run by CI/CD on push to any branch.
 Build harjus
 
 ```bash
-nix-build -A harjus
+just nix-build
 
 # harjus executable available at ./result/bin/harjus
 ```

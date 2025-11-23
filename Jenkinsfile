@@ -19,9 +19,8 @@ pipeline {
                   nix-shell -A devEnv --run "
                     set -e
                     
-                    cmake -B build -G Ninja
-                    ninja -C build -j$(nproc)
-                    ctest -j$(nproc) -C Debug -T test --output-on-failure --test-dir build/
+                    just test
+                    just flashfix test
                     "
                 '''
             }
@@ -35,7 +34,13 @@ pipeline {
                 }
             }
             steps {
-                sh 'nix-build -A harjus'
+                sh '''
+                  nix-shell -A devEnv --run "
+                    set -e
+                    
+                    just nix-build
+                    "
+                '''
             }
         }
         stage('Push') {
@@ -76,7 +81,7 @@ pipeline {
                         set -e
 
                         SEMVER_TAG=$(echo ${TAG_NAME} | sed "s/releases\\///")
-                        nix-build -A harjus --argstr version ${SEMVER_TAG}
+                        just release ${SEMVER_TAG}
                         nix-store --export $(nix-store --query --requisites ./result) | gzip > harjus-${SEMVER_TAG}.nar.gzip
                         aws s3 cp harjus-${SEMVER_TAG}.nar.gzip s3://${S3_BUCKET}/ --quiet
                     '
