@@ -56,12 +56,6 @@ in rec {
     dpdk = pinnedNixpkgs.dpdk;
   };
 
-  flashfix = pkgs.callPackage ./nix/flashfix.nix {
-    fstack = fstack;
-    fstack-mt = fstack-mt;
-    dpdk = pinnedNixpkgs.dpdk;
-  };
-
   run-clang-tidy = pkgs.callPackage ./nix/run-clang-tidy.nix { };
   git-clang-format = pkgs.callPackage ./nix/git-clang-format.nix { };
 
@@ -73,7 +67,6 @@ in rec {
     fstack-tools = fstack-tools;
     run-clang-tidy = run-clang-tidy;
     git-clang-format = git-clang-format;
-    flashfix = flashfix;
   };
 
   harjusbuild = pkgs.callPackage ./nix/harjusbuild.nix {

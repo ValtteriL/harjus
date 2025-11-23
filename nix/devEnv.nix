@@ -1,5 +1,5 @@
 { pkgs, myQuickfix, run-clang-tidy, fstack, fstack-examples, fstack-mt
-, fstack-tools, git-clang-format, flashfix }:
+, fstack-tools, git-clang-format }:
 
 let
 
@@ -44,9 +44,6 @@ let
     fstack-examples
     fstack-mt
     fstack-tools
-
-    # flashfix
-    flashfix
 
     # code quality
     run-clang-tidy

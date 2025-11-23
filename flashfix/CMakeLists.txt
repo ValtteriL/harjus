@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
 
-project(Flashfix LANGUAGES CXX C)
+project(flashfix LANGUAGES CXX C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for clangd
 set(CMAKE_CXX_STANDARD 17)
@@ -59,7 +59,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
 target_include_directories(${PROJECT_NAME}
   INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  INTERFACE $<INSTALL_INTERFACE:include>
+  PUBLIC $<INSTALL_INTERFACE:include>
   PRIVATE include include/double-conversion
 )
 
@@ -71,9 +71,9 @@ install(TARGETS ${PROJECT_NAME}
   
 )
 
-# install headers
+# install headers under include/flashfix/
 install(DIRECTORY include/
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/flashfix
 )
 
 # Install FIX specification files to /share
@@ -83,8 +83,8 @@ install(DIRECTORY spec
 )
 
 # Generate and install pkg-config file
-configure_file(flashfix.pc.in flashfix.pc @ONLY)
-install(FILES ${CMAKE_BINARY_DIR}/flashfix.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+#configure_file(flashfix.pc.in flashfix.pc @ONLY)
+#install(FILES ${CMAKE_BINARY_DIR}/flashfix.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 # TESTS
 if (flashfix_TESTS)

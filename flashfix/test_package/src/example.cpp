@@ -1,12 +1,7 @@
-#include "flashfix.h"
-#include <vector>
-#include <string>
+#include <flashfix/FstackMicroThreadedSSLSocketInitiator.h>
+#include <flashfix/MessageStore.h>
 
-int main() {
-    flashfix();
-
-    std::vector<std::string> vec;
-    vec.push_back("test_package");
-
-    flashfix_print_vector(vec);
+int main()
+{
+    FIX::MemoryStoreFactory storeFactory{};
 }
