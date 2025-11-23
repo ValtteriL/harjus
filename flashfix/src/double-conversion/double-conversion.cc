@@ -397,7 +397,7 @@ void DoubleToStringConverter::DoubleToAscii(double v,
                              vector, length, point);
       break;
     case FIXED:
-      fast_worked = FastFixedDtoa(v, requested_digits, vector, length, point);
+      fast_worked = FlashfixedDtoa(v, requested_digits, vector, length, point);
       break;
     case PRECISION:
       fast_worked = FastDtoa(v, FAST_DTOA_PRECISION, requested_digits,
