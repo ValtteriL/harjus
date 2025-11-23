@@ -13,7 +13,7 @@
     harjus_dir: /opt/harjus
 
     # Mandatory: User must specify 'qa' or 'prod' when running the playbook
-    # e.g., ansible-playbook ... -e "env=prod"
+    # e.g., uv run ansible-playbook ... -e "env=prod"
     # Set a default or leave empty to force user input. An empty string will fail the pre_task check.
     env: ""
     service_override_dir: "/etc/systemd/system/{{ service_name }}.service.d"
