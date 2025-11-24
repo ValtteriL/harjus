@@ -34,15 +34,15 @@ in stdenv.mkDerivation {
         mkdir -p "$out/lib/pkgconfig"
       cat > "$out/lib/pkgconfig/libfstack.pc" <<EOF
     prefix=$out
-    exec_prefix=$''${prefix}
-    libdir=$''${exec_prefix}/lib
-    includedir=$''${prefix}/include
+    exec_prefix=\''${prefix}
+    libdir=\''${exec_prefix}/lib
+    includedir=\''${prefix}/include
 
     Name: libfstack
     Description: F-Stack user-space network stack
     Version: ${pkgVersion}
-    Libs: -L$''${libdir} -lfstack
-    Cflags: -I$''${includedir}
+    Libs: -L\''${libdir} -lfstack
+    Cflags: -I\''${includedir}
     EOF
         runHook postInstall
   '';

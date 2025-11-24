@@ -42,4 +42,4 @@ target_include_directories(ut
   PRIVATE include
 )
 
-target_link_libraries(ut ${PROJECT_NAME})
+target_link_libraries(ut ${PROJECT_NAME} ${LIBFSTACK_LIBRARIES} ${LIBMT_LIBRARIES} ${LIBDPDK_LIBRARIES} rte_net_bond)

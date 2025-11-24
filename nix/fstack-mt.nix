@@ -46,16 +46,16 @@ in stdenv.mkDerivation {
         mkdir -p "$out/lib/pkgconfig"
         cat > "$out/lib/pkgconfig/libmt.pc" <<EOF
     prefix=$out
-    exec_prefix=$''${prefix}
-    libdir=$''${exec_prefix}/lib
-    includedir=$''${prefix}/include
+    exec_prefix=\''${prefix}
+    libdir=\''${exec_prefix}/lib
+    includedir=\''${prefix}/include
 
     Name: libmt
     Description: F-Stack multi-threading adapter library
     Version: ${pkgVersion}
-    Libs: -L$''${libdir} -lmt
-    Libs.private: -L$''${libdir} -lfstack
-    Cflags: -I$''${includedir}
+    Libs: -L\''${libdir} -lmt
+    Libs.private: -L\''${libdir} -lfstack
+    Cflags: -I\''${includedir}
     EOF
 
         runHook postInstall
