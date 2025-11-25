@@ -1,0 +1,5 @@
+CompileFlags:
+    Add:
+        - -W
+        - -Wall
+        - -std=c++23
