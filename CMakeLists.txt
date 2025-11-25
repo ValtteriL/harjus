@@ -2,16 +2,13 @@ cmake_minimum_required(VERSION 3.31)
 
 project(harjus LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for clangd
 
 option(HARJUS_TESTS "Build Harjus tests" ON)
 
 # Boost
-if(POLICY CMP0167)
-  cmake_policy(SET CMP0167 NEW)
-endif()
 find_package(Boost REQUIRED COMPONENTS url system thread json graph log)
 
 # Google Test
@@ -21,14 +18,13 @@ find_package(GTest REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 # Sodium
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBSODIUM REQUIRED libsodium)
+find_package(LibSodium REQUIRED)
 
 # cpr https://github.com/libcpr/cpr
 find_package(cpr REQUIRED)
 
 # GMP
-pkg_check_modules(GMP REQUIRED gmp)
+find_package(GMP REQUIRED)
 
 # quickfix
 find_package(quickfix REQUIRED)

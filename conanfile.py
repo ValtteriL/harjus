@@ -18,7 +18,7 @@ class harjusRecipe(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
 
     # Sources are located in the same place as this recipe, copy them to the recipe
-    exports_sources = "CMakeLists.txt", "src/*"
+    exports_sources = ("CMakeLists.txt", "src/*", "include/*", "tests/*")
 
     def requirements(self):
         self.requires("openssl/3.6.0")
@@ -28,6 +28,7 @@ class harjusRecipe(ConanFile):
         self.requires("libsodium/1.0.20")
         self.requires("gmp/6.3.0")
         self.requires("pcre/8.45")
+        self.requires("flashfix/1.0")
 
     def layout(self):
         cmake_layout(self)
@@ -36,6 +37,7 @@ class harjusRecipe(ConanFile):
         deps = CMakeDeps(self)
         deps.generate()
         tc = CMakeToolchain(self)
+        tc.variables["CMAKE_CXX_STANDARD"] = "23"
         tc.generate()
 
     def build(self):

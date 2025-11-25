@@ -19,14 +19,8 @@ let
     ninja
     gdb
     ccache
-    gtest
-    boost
-    libcpr
     pkg-config
-    libsodium
-    gmp
     bc
-    pcre
     numactl
     gawk
     libbsd
