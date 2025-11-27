@@ -13,8 +13,11 @@ provision:
 initialize:
     sudo ./deploy/scripts/initialize.sh
 
-# Build Flashfix
-build:
+configure:
+    uv run conan install . --output-folder=build --build=missing
+
+# Build Harjus
+build: configure
     cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
     ninja -C build
 
@@ -26,17 +29,13 @@ clean:
 test: build
     ctest --test-dir build/
 
-# Build harjus derivation
-nix-build:
-    nix-build -A harjus
-
 # Build all nix derivations
 nix-build-all:
     nix-build
 
 # Build harjus release
 release version:
-    nix-build -A harjus --argstr version {{version}}
+    uv run conan create . --version={{version}} --output-folder=build --build=missing
 
 # Format modified C/C++ sources on current branch with clang-format
 fmt:

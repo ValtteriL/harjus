@@ -68,17 +68,4 @@ in rec {
     run-clang-tidy = run-clang-tidy;
     git-clang-format = git-clang-format;
   };
-
-  harjusbuild = pkgs.callPackage ./nix/harjusbuild.nix {
-    hardeningDisable = hardeningDisable;
-    enableParallelBuilding = enableParallelBuilding;
-    gccFlags = gccFlags;
-    myQuickfixOptimized = myQuickfixOptimized;
-  };
-
-  harjus = pkgs.callPackage ./nix/harjus.nix {
-    harjusbuild = harjusbuild;
-    pname = pname;
-    version = version;
-  };
 }
