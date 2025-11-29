@@ -28,7 +28,7 @@ full-build: configure
 
 # Run unit tests
 test: build
-    ctest --test-dir build/
+    ctest --preset conan-release
 
 # Build all nix derivations
 nix-build-all:

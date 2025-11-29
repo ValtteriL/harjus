@@ -16,7 +16,7 @@ full-build: configure
 
 # Run unit tests
 test:
-    ./flashfix-build/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
+    ./flashfix/build/Release/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
 
 # Build all nix derivations
 nix-build-all:
