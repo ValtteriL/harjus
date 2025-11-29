@@ -40,8 +40,8 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 | `just fmt-full` | Applies clang-format to all C/C++ files in the codebase. |
 | `just lint` | Runs essential clang-tidy checks. |
 | `just lint-full` | Runs full clang-tidy checks. |
-| `just flashfix build` | Configures and build Flashfix (Debug). |
-| `just flashfix clean` | Removes Flashfix build artifacts. |
+| `just flashfix build` | Configures and build Flashfix (Incremental). |
+| `just flashfix full-build` | Configures and builds Flashfix from scratch. |
 | `just flashfix test` | Runs Flashfix unit tests. |
 
 ## Coding Guidelines (Latency Sensitive)

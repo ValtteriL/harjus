@@ -1,12 +1,18 @@
-# Build Flashfix
-build:
-    uv run conan install flashfix --output-folder=flashfix-build --build=missing
-    cmake -B flashfix-build flashfix -G Ninja -DCMAKE_BUILD_TYPE=Debug
-    ninja -C flashfix-build
+# Configure Flashfix
+configure:
+    uv run conan install flashfix --build=missing
 
-# Clean build artifacts
-clean:
-    ninja -C flashfix-build clean
+# Build Flashfix
+build: configure
+    cd flashfix && \
+        cmake --preset conan-release -G Ninja && \
+        cmake --build --preset conan-release
+
+# Rebuild Flashfix from scratch
+full-build: configure
+    cd flashfix && \
+        cmake --preset conan-release -G Ninja --fresh && \
+        cmake --build --preset conan-release
 
 # Run unit tests
 test:
