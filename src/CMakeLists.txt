@@ -39,6 +39,10 @@ target_link_libraries(harjus_objs
     quickfix
 )
 
+target_compile_options(harjus_objs PRIVATE
+  -Wall -Wextra -Wpedantic -Werror
+)
+
 # harjus executable
 add_executable(harjus
   Main.cpp
@@ -51,6 +55,10 @@ target_include_directories(harjus
 target_link_libraries(harjus
   PRIVATE
     harjus_objs
+)
+
+target_compile_options(harjus PRIVATE
+  -Wall -Wextra -Wpedantic -Werror
 )
 
 include(GNUInstallDirs)
