@@ -31,10 +31,9 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 
 | Command | Description |
 |---|---|
-| `just build` | Configures and builds Harjus (Debug). |
-| `just clean` | Removes Harjus build artifacts. |
+| `just build` | Configures and builds Harjus (Incremental). |
+| `just full-build` | Configures and builds Harjus from scratch. |
 | `just test` | Runs Harjus unit tests. |
-| `just nix-build` | Builds Harjus release as a Nix derivation. |
 | `just nix-build-all` | Builds all Nix derivations. |
 | `just release <version>` | Builds harjus release as a Nix derivation with given version. |
 | `just fmt` | Applies clang-format to files modified after branching off main. |

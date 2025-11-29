@@ -14,16 +14,17 @@ initialize:
     sudo ./deploy/scripts/initialize.sh
 
 configure:
-    uv run conan install . --output-folder=build --build=missing
+    uv run conan install . --build=missing
 
 # Build Harjus
 build: configure
-    cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
-    ninja -C build
+    cmake --preset conan-release -G Ninja
+    cmake --build --preset conan-release
 
-# Clean build artifacts
-clean:
-    ninja -C build clean
+# Rebuild Harjus from scratch
+full-build: configure
+    cmake --preset conan-release -G Ninja --fresh
+    cmake --build --preset conan-release
 
 # Run unit tests
 test: build
@@ -35,7 +36,7 @@ nix-build-all:
 
 # Build harjus release
 release version:
-    uv run conan create . --version={{version}} --output-folder=build --build=missing
+    uv run conan create . --version={{version}} --build=missing
 
 # Format modified C/C++ sources on current branch with clang-format
 fmt:
