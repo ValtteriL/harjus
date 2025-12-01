@@ -1,8 +1,6 @@
 include(CTest)
 include(GoogleTest)
 
-enable_testing()
-
 add_executable(MainTest MainTest.cpp)
 target_include_directories(MainTest 
 PRIVATE
