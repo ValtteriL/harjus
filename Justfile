@@ -17,12 +17,12 @@ configure:
     uv run conan install . --build=missing
 
 # Build Harjus
-build: configure
+build:
     cmake --preset conan-release -G Ninja
     cmake --build --preset conan-release
 
 # Rebuild Harjus from scratch
-full-build: configure
+full-build:
     cmake --preset conan-release -G Ninja --fresh
     cmake --build --preset conan-release
 
