@@ -20,7 +20,7 @@ add_library(harjus_objs OBJECT
 )
 
 target_include_directories(harjus_objs
-  PRIVATE
+  PUBLIC
     ${CMAKE_SOURCE_DIR}/include
 )
 
