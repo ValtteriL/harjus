@@ -1,5 +1,6 @@
-# Justfile for Flashfix project
+# Justfile for dependencies
 mod flashfix
+mod fstack
 
 # Default task: list all available tasks
 default:
