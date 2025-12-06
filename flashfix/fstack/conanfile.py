@@ -46,7 +46,15 @@ class BasicConanfile(ConanFile):
     # Using the copy() method from tools.files, artifacts are copied
     # from the build folder to the package folder
     def package(self):
+
+        # Create necessary directories
+        self.run(f"mkdir -p {self.package_folder}/include")
+        self.run(f"mkdir -p {self.package_folder}/lib")
+        self.run(f"mkdir -p {self.package_folder}/bin")
+        self.run(f"mkdir -p {self.package_folder}/etc")
+
+        # Install artifacts
         self.run(
-            "make install PREFIX={}".format(self.package_folder),
+            f"make install PREFIX={self.package_folder} F-STACK_CONF={self.package_folder}/etc/f-stack.conf",
             cwd=f"{self.source_folder}/lib",
         )
