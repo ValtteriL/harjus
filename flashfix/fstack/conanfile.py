@@ -1,5 +1,5 @@
 from conan import ConanFile
-from conan.tools.files import get
+from conan.tools.scm import Git
 
 
 class BasicConanfile(ConanFile):
@@ -12,12 +12,9 @@ class BasicConanfile(ConanFile):
     # Check the documentation for the rest of the available attributes
 
     def source(self):
-        get(
-            self,
-            "https://github.com/F-Stack/f-stack/archive/refs/tags/v1.25.zip",
-            strip_root=True,
-            sha256="ad7292d7156fbe37493face33df149e508915a3289b957133921173bec671d79",
-        )
+        git = Git(self)
+        git.clone(url="https://github.com/F-Stack/f-stack.git", target=".")
+        git.checkout("v1.25")
 
     # The requirements method allows you to define the dependencies of your recipe
     def requirements(self):
