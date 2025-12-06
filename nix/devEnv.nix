@@ -1,5 +1,4 @@
-{ pkgs, myQuickfix, run-clang-tidy, fstack, fstack-examples, fstack-mt
-, fstack-tools, git-clang-format }:
+{ pkgs, myQuickfix, run-clang-tidy, git-clang-format }:
 
 let
 
@@ -20,8 +19,8 @@ let
     gdb
     ccache
     pkg-config
+    dpdk
     bc
-    numactl
     gawk
     libbsd
     llvmPackages_21.clang-tools
@@ -32,12 +31,6 @@ let
     terraform
     awscli2
     uv
-
-    # f-stack
-    fstack
-    fstack-examples
-    fstack-mt
-    fstack-tools
 
     # code quality
     run-clang-tidy

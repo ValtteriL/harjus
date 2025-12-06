@@ -22,14 +22,6 @@ test:
 nix-build-all:
     nix-build
 
-# Run helloworld kernel bypass example server
-helloworld: nix-build-all
-    sudo ./result-2/bin/ff_start -b ./result-3/bin/helloworld -c ./config.ini
-
-# Stop helloworld example
-stop-helloworld:
-    sudo kill $(pidof helloworld) || echo "helloworld is not running"
-
 # Run echo kernel bypass + microthreading example server
 echo: nix-build-all
     sudo ./result-2/bin/ff_start -b ./result-4/bin/fstack-mt-echo -c ./config.ini

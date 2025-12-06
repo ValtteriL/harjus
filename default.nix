@@ -40,31 +40,11 @@ in rec {
     NIX_CFLAGS_COMPILE = gccFlags;
   });
 
-  fstack = pkgs.callPackage ./nix/fstack.nix { dpdk = pinnedNixpkgs.dpdk; };
-  fstack-examples = pkgs.callPackage ./nix/fstack-examples.nix {
-    fstack = fstack;
-    dpdk = pinnedNixpkgs.dpdk;
-  };
-
-  fstack-mt = pkgs.callPackage ./nix/fstack-mt.nix {
-    fstack = fstack;
-    dpdk = pinnedNixpkgs.dpdk;
-  };
-
-  fstack-tools = pkgs.callPackage ./nix/fstack-tools.nix {
-    fstack = fstack;
-    dpdk = pinnedNixpkgs.dpdk;
-  };
-
   run-clang-tidy = pkgs.callPackage ./nix/run-clang-tidy.nix { };
   git-clang-format = pkgs.callPackage ./nix/git-clang-format.nix { };
 
   devEnv = pkgs.callPackage ./nix/devEnv.nix {
     myQuickfix = myQuickfix;
-    fstack = fstack;
-    fstack-examples = fstack-examples;
-    fstack-mt = fstack-mt;
-    fstack-tools = fstack-tools;
     run-clang-tidy = run-clang-tidy;
     git-clang-format = git-clang-format;
   };
