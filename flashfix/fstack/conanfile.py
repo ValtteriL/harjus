@@ -9,7 +9,10 @@ class BasicConanfile(ConanFile):
     license = "<Your project license goes here>"
     homepage = "http://www.f-stack.org/"
 
-    # Check the documentation for the rest of the available attributes
+    # build directories
+    fstack_build_dir = f"lib"
+    mt_build_dir = f"adapter/micro_thread"
+    tools_build_dir = f"tools"
 
     def source(self):
         git = Git(self)
@@ -23,36 +26,22 @@ class BasicConanfile(ConanFile):
         self.requires("zlib/1.3.1")
         self.requires("libnuma/2.0.19")
 
-    # The build_requirements() method is functionally equivalent to the requirements() one,
-    # being executed just after it. It's a good place to define tool requirements,
-    # dependencies necessary at build time, not at application runtime
-    def build_requirements(self):
-        # Each call to self.tool_requires() will add the corresponding build requirement
-        # Uncommenting this line will add the cmake >=3.15 build dependency to your project
-        # self.requires("cmake/[>=3.15]")
-        pass
-
-    # The purpose of generate() is to prepare the build, generating the necessary files, such as
-    # Files containing information to locate the dependencies, environment activation scripts,
-    # and specific build system files among others
-    def generate(self):
-        pass
-
     # This method is used to build the source code of the recipe using the desired commands.
     def build(self):
 
         # build f-stack library
-        self.run("make", cwd=f"{self.source_folder}/lib")
+        self.run("make", cwd=self.fstack_build_dir)
 
         # build f-stack-mt lib and echo example
-        self.run("make echo", cwd=f"{self.source_folder}/adapter/micro_thread")
+        self.run("make echo", cwd=self.mt_build_dir)
+
+        # build f-stack tools
+        self.run("make", cwd=self.tools_build_dir)
 
     # The actual creation of the package, once it's built, is done in the package() method.
     # Using the copy() method from tools.files, artifacts are copied
     # from the build folder to the package folder
     def package(self):
-
-        fstack_build_dir = f"{self.source_folder}/lib"
 
         include_dir = f"{self.package_folder}/include"
         lib_dir = f"{self.package_folder}/lib"
@@ -68,12 +57,14 @@ class BasicConanfile(ConanFile):
         # Install f-stack
         self.run(
             f"make install PREFIX={self.package_folder} F-STACK_CONF={self.package_folder}/etc/f-stack.conf",
-            cwd=f"{fstack_build_dir}",
+            cwd=self.fstack_build_dir,
         )
 
-        mt_build_dir = f"{self.source_folder}/adapter/micro_thread"
-
         # Install f-stack-mt artifacts
-        self.run(f"cp echo {bin_dir}/", cwd=mt_build_dir)
-        self.run(f"cp libmt.a {lib_dir}/", cwd=mt_build_dir)
-        self.run(f"cp -r *.h {include_dir}/", cwd=mt_build_dir)
+        self.run(f"cp echo {bin_dir}/", cwd=self.mt_build_dir)
+        self.run(f"cp libmt.a {lib_dir}/", cwd=self.mt_build_dir)
+        self.run(f"cp -r *.h {include_dir}/", cwd=self.mt_build_dir)
+
+        # Install f-stack tools
+        self.run(f"mkdir -p {bin_dir}/f-stack")
+        self.run(f"make install PREFIX_BIN={bin_dir}", cwd=self.tools_build_dir)
