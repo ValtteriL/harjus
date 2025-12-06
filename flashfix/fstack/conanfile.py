@@ -68,3 +68,7 @@ class BasicConanfile(ConanFile):
         # Install f-stack tools
         self.run(f"mkdir -p {bin_dir}/f-stack")
         self.run(f"make install PREFIX_BIN={bin_dir}", cwd=self.tools_build_dir)
+
+    def package_info(self):
+        self.cpp_info.libs = ["fstack", "mt"]
+        self.cpp_info.resdirs = ["etc"]
