@@ -40,21 +40,40 @@ class BasicConanfile(ConanFile):
 
     # This method is used to build the source code of the recipe using the desired commands.
     def build(self):
+
+        # build f-stack library
         self.run("make", cwd=f"{self.source_folder}/lib")
+
+        # build f-stack-mt lib and echo example
+        self.run("make echo", cwd=f"{self.source_folder}/adapter/micro_thread")
 
     # The actual creation of the package, once it's built, is done in the package() method.
     # Using the copy() method from tools.files, artifacts are copied
     # from the build folder to the package folder
     def package(self):
 
-        # Create necessary directories
-        self.run(f"mkdir -p {self.package_folder}/include")
-        self.run(f"mkdir -p {self.package_folder}/lib")
-        self.run(f"mkdir -p {self.package_folder}/bin")
-        self.run(f"mkdir -p {self.package_folder}/etc")
+        fstack_build_dir = f"{self.source_folder}/lib"
 
-        # Install artifacts
+        include_dir = f"{self.package_folder}/include"
+        lib_dir = f"{self.package_folder}/lib"
+        bin_dir = f"{self.package_folder}/bin"
+        etc_dir = f"{self.package_folder}/etc"
+
+        # Create necessary directories
+        self.run(f"mkdir -p {include_dir}")
+        self.run(f"mkdir -p {lib_dir}")
+        self.run(f"mkdir -p {bin_dir}")
+        self.run(f"mkdir -p {etc_dir}")
+
+        # Install f-stack
         self.run(
             f"make install PREFIX={self.package_folder} F-STACK_CONF={self.package_folder}/etc/f-stack.conf",
-            cwd=f"{self.source_folder}/lib",
+            cwd=f"{fstack_build_dir}",
         )
+
+        mt_build_dir = f"{self.source_folder}/adapter/micro_thread"
+
+        # Install f-stack-mt artifacts
+        self.run(f"cp echo {bin_dir}/", cwd=mt_build_dir)
+        self.run(f"cp libmt.a {lib_dir}/", cwd=mt_build_dir)
+        self.run(f"cp -r *.h {include_dir}/", cwd=mt_build_dir)
