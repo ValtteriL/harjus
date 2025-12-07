@@ -1,5 +1,6 @@
-# Justfile for Flashfix project
+# Justfile for dependencies
 mod flashfix
+mod fstack
 
 # Default task: list all available tasks
 default:
@@ -13,22 +14,22 @@ provision:
 initialize:
     sudo ./deploy/scripts/initialize.sh
 
-# Build Flashfix
-build:
-    cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
-    ninja -C build
+configure:
+    uv run conan install . --build=missing
 
-# Clean build artifacts
-clean:
-    ninja -C build clean
+# Build Harjus
+build:
+    cmake --preset conan-release -G Ninja
+    cmake --build --preset conan-release
+
+# Rebuild Harjus from scratch
+full-build:
+    cmake --preset conan-release -G Ninja --fresh
+    cmake --build --preset conan-release
 
 # Run unit tests
 test: build
-    ctest --test-dir build/
-
-# Build harjus derivation
-nix-build:
-    nix-build -A harjus
+    ctest --preset conan-release
 
 # Build all nix derivations
 nix-build-all:
@@ -36,7 +37,7 @@ nix-build-all:
 
 # Build harjus release
 release version:
-    nix-build -A harjus --argstr version {{version}}
+    uv run conan create . --version={{version}} --build=missing
 
 # Format modified C/C++ sources on current branch with clang-format
 fmt:

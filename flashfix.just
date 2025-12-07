@@ -1,27 +1,26 @@
-# Build Flashfix
-build:
-    cmake -B flashfix-build flashfix -G Ninja -DCMAKE_BUILD_TYPE=Debug
-    ninja -C flashfix-build
+# Configure Flashfix
+configure:
+    uv run conan install flashfix --build=missing
 
-# Clean build artifacts
-clean:
-    ninja -C flashfix-build clean
+# Build Flashfix
+build: configure
+    cd flashfix && \
+        cmake --preset conan-release -G Ninja && \
+        cmake --build --preset conan-release
+
+# Rebuild Flashfix from scratch
+full-build: configure
+    cd flashfix && \
+        cmake --preset conan-release -G Ninja --fresh && \
+        cmake --build --preset conan-release
 
 # Run unit tests
 test:
-    ./flashfix-build/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
+    ./flashfix/build/Release/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
 
 # Build all nix derivations
 nix-build-all:
     nix-build
-
-# Run helloworld kernel bypass example server
-helloworld: nix-build-all
-    sudo ./result-2/bin/ff_start -b ./result-3/bin/helloworld -c ./config.ini
-
-# Stop helloworld example
-stop-helloworld:
-    sudo kill $(pidof helloworld) || echo "helloworld is not running"
 
 # Run echo kernel bypass + microthreading example server
 echo: nix-build-all

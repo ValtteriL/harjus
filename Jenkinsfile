@@ -38,7 +38,7 @@ pipeline {
                   nix-shell -A devEnv --run "
                     set -e
                     
-                    just nix-build
+                    just build
                     "
                 '''
             }

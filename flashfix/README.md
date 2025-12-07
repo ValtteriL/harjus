@@ -22,19 +22,6 @@ just provision
 just initialize
 ```
 
-### Hello world webserver
-
-```bash
-# launch helloworld http server
-just helloworld
-
-# get served page
-curl -v http://172.16.1.22
-
-# stop helloworld
-just stop-helloworld
-```
-
 ### Echo server
 
 ```bash
