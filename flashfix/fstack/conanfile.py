@@ -29,14 +29,37 @@ class BasicConanfile(ConanFile):
     # This method is used to build the source code of the recipe using the desired commands.
     def build(self):
 
-        # build f-stack library
-        self.run("make", cwd=self.fstack_build_dir)
+        # Collect all dependency include/lib paths
+        incs = []
+        libs = []
+        for dep in self.dependencies.values():
+            incs += dep.cpp_info.includedirs
+            libs += dep.cpp_info.libdirs
+
+        inc_flags = " ".join(f"-I{p}" for p in incs)
+        lib_flags = " ".join(f"-L{p}" for p in libs)
+
+        inc_flags += " -Wno-unused-result"
+
+        print(f"Using include flags: {inc_flags}")
+        print(f"Using lib flags: {lib_flags}")
+
+        self.run(
+            f"make CONF_CFLAGS='{inc_flags}'",
+            cwd=self.fstack_build_dir,
+        )
 
         # build f-stack-mt lib and echo example
-        self.run("make echo", cwd=self.mt_build_dir)
+        # self.run(f"make FF_PATH=../.. C_ARGS='{inc_flags}'", cwd=self.mt_build_dir)
+
+        inc_flags += f" -I{self.source_folder}/lib"
+        lib_flags += f" -L{self.source_folder}/lib"
 
         # build f-stack tools
-        self.run("make", cwd=self.tools_build_dir)
+        self.run(
+            f"make CFLAGS='{inc_flags}' LDFLAGS='{lib_flags}'",
+            cwd=self.tools_build_dir,
+        )
 
     # The actual creation of the package, once it's built, is done in the package() method.
     # Using the copy() method from tools.files, artifacts are copied
