@@ -1,5 +1,6 @@
 from conan import ConanFile
 from conan.tools.scm import Git
+from conan.tools.gnu import PkgConfigDeps
 
 
 class BasicConanfile(ConanFile):
@@ -19,12 +20,20 @@ class BasicConanfile(ConanFile):
         git.clone(url="https://github.com/F-Stack/f-stack.git", target=".")
         git.checkout("v1.25")
 
+    def generate(self):
+        pkg_config = PkgConfigDeps(self)
+        pkg_config.generate()
+
     # The requirements method allows you to define the dependencies of your recipe
     def requirements(self):
         self.requires("openssl/3.6.0")
         self.requires("pcre/8.45")
         self.requires("zlib/1.3.1")
         self.requires("libnuma/2.0.19")
+        self.requires("jansson/2.14")
+        self.requires("libnl/3.9.0")
+        self.requires("elfutils/0.190")
+        self.requires("libpcap/1.10.5")
 
     # This method is used to build the source code of the recipe using the desired commands.
     def build(self):
@@ -33,31 +42,28 @@ class BasicConanfile(ConanFile):
         incs = []
         libs = []
         for dep in self.dependencies.values():
-            incs += dep.cpp_info.includedirs
-            libs += dep.cpp_info.libdirs
+            incs.extend(dep.cpp_info.includedirs)
+            libs.extend(dep.cpp_info.libdirs)
 
         inc_flags = " ".join(f"-I{p}" for p in incs)
         lib_flags = " ".join(f"-L{p}" for p in libs)
 
         inc_flags += " -Wno-unused-result"
 
-        print(f"Using include flags: {inc_flags}")
-        print(f"Using lib flags: {lib_flags}")
-
         self.run(
             f"make CONF_CFLAGS='{inc_flags}'",
             cwd=self.fstack_build_dir,
         )
 
-        # build f-stack-mt lib and echo example
-        # self.run(f"make FF_PATH=../.. C_ARGS='{inc_flags}'", cwd=self.mt_build_dir)
-
-        inc_flags += f" -I{self.source_folder}/lib"
-        lib_flags += f" -L{self.source_folder}/lib"
+        # build f-stack-mt lib
+        self.run(
+            f"make FF_PATH=../..",
+            cwd=self.mt_build_dir,
+        )
 
         # build f-stack tools
         self.run(
-            f"make CFLAGS='{inc_flags}' LDFLAGS='{lib_flags}'",
+            f"PKG_CONFIG_PATH={self.source_folder}:$PKG_CONFIG_PATH make DEBUG_FLAGS='{inc_flags} {lib_flags}'",
             cwd=self.tools_build_dir,
         )
 
@@ -84,7 +90,6 @@ class BasicConanfile(ConanFile):
         )
 
         # Install f-stack-mt artifacts
-        self.run(f"cp echo {bin_dir}/", cwd=self.mt_build_dir)
         self.run(f"cp libmt.a {lib_dir}/", cwd=self.mt_build_dir)
         self.run(f"cp -r *.h {include_dir}/", cwd=self.mt_build_dir)
 
