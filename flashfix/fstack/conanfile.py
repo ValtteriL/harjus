@@ -49,6 +49,7 @@ class BasicConanfile(ConanFile):
         lib_flags = " ".join(f"-L{p}" for p in libs)
 
         inc_flags += " -Wno-unused-result"
+        inc_flags += " -fPIC"
 
         self.run(
             f"make CONF_CFLAGS='{inc_flags}'",

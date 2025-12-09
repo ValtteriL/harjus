@@ -32,11 +32,10 @@ class flashfixRecipe(ConanFile):
     def requirements(self):
         self.requires("zlib/1.3.1")
         self.requires("openssl/3.6.0")
+        self.requires("jansson/2.14")
         self.requires("fstack/1.25")
-
-    def configure(self):
-        if self.options.shared:
-            self.options.rm_safe("fPIC")
+        self.requires("libpcap/1.10.5")
+        self.requires("elfutils/0.190")
 
     def layout(self):
         cmake_layout(self)

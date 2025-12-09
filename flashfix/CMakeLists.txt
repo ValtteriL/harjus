@@ -9,12 +9,12 @@ set(CMAKE_CXX_STANDARD 17)
 option(flashfix_TESTS "Build flashfix tests" ON)
 
 # add libdpdk, libfstack, libmt dependencies
+find_package(OpenSSL REQUIRED)
+find_package(jansson REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBDPDK REQUIRED libdpdk)
-pkg_check_modules(LIBFSTACK REQUIRED libfstack)
-pkg_check_modules(LIBMT REQUIRED libmt)
+find_package(fstack REQUIRED)
 
-find_package(OpenSSL REQUIRED)
 
 
 add_library(${PROJECT_NAME} SHARED
@@ -794,7 +794,7 @@ target_sources(${PROJECT_NAME}
     include/Except.h
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENSSL_LIBRARIES} pthread ${LIBFSTACK_LIBRARIES} ${LIBMT_LIBRARIES} ${LIBDPDK_LIBRARIES} rte_net_bond)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENSSL_LIBRARIES} pthread fstack::fstack jansson::jansson libpcap::libpcap ${LIBDPDK_LIBRARIES} rte_net_bond)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
 
