@@ -1,5 +1,6 @@
 {
   "files.autoSave": "afterDelay",
   "editor.formatOnSave": true,
-  "editor.tabSize": 2
+  "editor.tabSize": 2,
+  "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
 }
