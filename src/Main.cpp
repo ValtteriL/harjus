@@ -6,7 +6,6 @@
 #include "HarjusApplication.h"
 #include "PriceUpdate.h"
 #include "Trade.h"
-#include "Worker.h"
 #include <FileStore.h>
 #include <FstackMicroThreadedSSLSocketInitiator.h>
 #include <Log.h>
@@ -19,6 +18,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <unordered_set>
 #include <vector>
 
 void banner()
@@ -117,7 +117,7 @@ auto main() -> int
     auto fixConfig = FixConfig(config);
     auto settings = fixConfig.sessionSettings();
 
-    Application application{config, priceUpdateQueue, reportQueue, symbolMap};
+    Application application{config, priceUpdateQueue, reportQueue, symbolMap, symbols};
     FIX::MemoryStoreFactory storeFactory{};
     FIX::ScreenLogFactory logFactory{settings};
 
@@ -125,38 +125,11 @@ auto main() -> int
         FIX::FstackMicroThreadedSSLSocketInitiator{application, storeFactory, settings, logFactory};
 
     // create a jthread to run the application
-    std::jthread j_thread_application([&initiator, &application, symbols]()
+    std::jthread j_thread_application([&initiator, symbols]()
                                       {
-    BOOST_LOG_TRIVIAL(debug) << "Starting QuickFIX initiator";
+    BOOST_LOG_TRIVIAL(debug) << "Starting worker thread";
 
-    initiator.block();
-
-    // Wait for the session to be established
-    constexpr int SESSION_ESTABLISH_WAIT_MS = 100;
-    while (!initiator.isLoggedOn()) {
-      std::this_thread::sleep_for(
-          std::chrono::milliseconds(SESSION_ESTABLISH_WAIT_MS));
-    }
-
-    // Subscribe to market data for all symbols
-    if (application.subscribeToSymbols(symbols)) {
-      BOOST_LOG_TRIVIAL(debug)
-          << "Subscribed to " << symbols.size() << " symbols";
-    } else {
-      std::cerr << "Failed to subscribe to market data." << std::endl;
-      BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
-    } });
-
-    // Create the worker
-
-    Worker worker{tradingPaths, priceUpdateQueue, reportQueue,
-                  application, relativeValueMap, *balance,
-                  config.getCommission()};
-
-    // create a jthread to run worker
-    std::jthread j_thread_worker(
-        [&worker](const std::stop_token &stoken)
-        { worker.run(stoken); });
+    initiator.block(); });
 
     // Start processing execiutions
     BOOST_LOG_TRIVIAL(info) << "Worker thread started. Press Ctrl+C to exit.";
@@ -180,9 +153,6 @@ auto main() -> int
 
     BOOST_LOG_TRIVIAL(info)
         << "Stopping threads... Press Ctrl+C to exit immediately.";
-    // Stop the engine
-    j_thread_worker.request_stop();
-    j_thread_worker.join();
 
     // Stop the application
     isShuttingDown = true;

@@ -1,6 +1,6 @@
+#include "HarjusApplication.h"
 #include "Ed25519.h"
 #include "Globals.h"
-#include "HarjusApplication.h"
 #include "Position.h"
 #include "PriceUpdate.h"
 #include <Field.h>
@@ -20,10 +20,19 @@ extern std::atomic<bool> isShuttingDown;
 Application::Application(
     const IConfiguration &conf, boost::lockfree::spsc_queue<PriceUpdate> &queue,
     boost::lockfree::spsc_queue<ExecutionReport> &reportQueue,
-    std::unordered_map<std::string, Symbol> &symbolMap)
+    std::unordered_map<std::string, Symbol> &symbolMap,
+    const std::vector<std::string> &symbols)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
       priceUpdateQueue(&queue), executionReportQueue(&reportQueue),
-      symbolMap(&symbolMap) {}
+      symbolMap(&symbolMap), symbols(symbols)
+{
+    if (symbols.size() > 1000)
+    {
+        // currently can only subscribe to upto 1000 symbols as there is only one hardcoded market data session
+        throw std::runtime_error(
+            "Not enough market data sessions available for subscription");
+    }
+}
 
 void Application::onCreate(const FIX::SessionID &sessionID)
 {
@@ -42,6 +51,23 @@ void Application::onCreate(const FIX::SessionID &sessionID)
 void Application::onLogon(const FIX::SessionID &sessionID)
 {
     BOOST_LOG_TRIVIAL(debug) << "FIX logon - " << sessionID;
+
+    // subscribe to symbols if market data session
+    if (sessionID.getSessionQualifier().starts_with("MARKETDATA"))
+    {
+
+        // Subscribe to market data for all symbols
+        if (subscribeToSymbols(symbols))
+        {
+            BOOST_LOG_TRIVIAL(debug)
+                << "Subscribed to " << symbols.size() << " symbols";
+        }
+        else
+        {
+            std::cerr << "Failed to subscribe to market data." << std::endl;
+            BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
+        }
+    }
 }
 
 void Application::onLogout(const FIX::SessionID &sessionID)
