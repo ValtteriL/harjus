@@ -11,40 +11,11 @@ let
     overlays = [ ];
   };
 
-  pname = "harjus";
-  version = "latest";
-
-  gccFlags =
-    "-O3 -march=icelake-server -mtune=icelake-server -pipe -fsemantic-interposition";
-
-  enableParallelBuilding = true;
-
-  # disable performance affecting hardenings
-  hardeningDisable =
-    [ "fortify" "stackprotector" "pic" "pie" "relro" "bindnow" ];
-
-  # commit where dpdk is at version 23.11 (close to the f-stack 1.25 supported 23.11.5)
-  pinnedNixpkgs = import (fetchTarball {
-    url =
-      "https://github.com/NixOS/nixpkgs/archive/571c71e6f73af34a229414f51585738894211408.tar.gz";
-    sha256 = "sha256:0fgp5sqfmh5zgx75rs5101ywkz0fkjff67abms0kc8hyaxmlc7js";
-  }) { };
 in rec {
-  myQuickfix = pkgs.callPackage ./nix/myquickfix.nix {
-    hardeningDisable = hardeningDisable;
-    enableParallelBuilding = enableParallelBuilding;
-  };
-
-  myQuickfixOptimized = myQuickfix.overrideAttrs (finalAttrs: {
-    # override compile flags to optimize for performance
-    NIX_CFLAGS_COMPILE = gccFlags;
-  });
-
   run-clang-tidy = pkgs.callPackage ./nix/run-clang-tidy.nix { };
   git-clang-format = pkgs.callPackage ./nix/git-clang-format.nix { };
 
   devEnv = pkgs.callPackage ./nix/devEnv.nix {
-    myQuickfix = myQuickfix;
     run-clang-tidy = run-clang-tidy;
     git-clang-format = git-clang-format;
   };

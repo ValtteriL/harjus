@@ -1,4 +1,4 @@
-{ pkgs, myQuickfix, run-clang-tidy, git-clang-format }:
+{ pkgs, run-clang-tidy, git-clang-format }:
 
 let
 
@@ -24,8 +24,6 @@ let
     gawk
     libbsd
     llvmPackages_21.clang-tools
-
-    myQuickfix
 
     # deployment
     terraform
