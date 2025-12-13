@@ -28,8 +28,9 @@ find_package(cpr REQUIRED)
 # GMP
 find_package(GMP REQUIRED)
 
-# quickfix
-find_package(quickfix REQUIRED)
+# flashfix
+find_package(flashfix REQUIRED)
+find_package(fstack REQUIRED)
 
 # add ccache for faster builds
 if(DEFINED ENV{USE_CCACHE})

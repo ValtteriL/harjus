@@ -1,6 +1,6 @@
 # internal library
 add_library(harjus_objs OBJECT
-  Application.cpp
+  HarjusApplication.cpp
   Configuration.cpp
   Globals.cpp
   Exchange.cpp
@@ -36,7 +36,8 @@ target_link_libraries(harjus_objs
     libsodium::libsodium
     gmp::gmp
     cpr::cpr
-    quickfix
+    flashfix::flashfix
+    fstack::fstack
 )
 
 target_compile_options(harjus_objs PRIVATE

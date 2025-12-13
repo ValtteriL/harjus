@@ -1,19 +1,19 @@
-#include "Application.h"
 #include "Ed25519.h"
 #include "Globals.h"
+#include "HarjusApplication.h"
 #include "Position.h"
 #include "PriceUpdate.h"
+#include <Field.h>
+#include <FieldTypes.h>
+#include <FixFields.h>
+#include <FixValues.h>
+#include <Session.h>
 #include <atomic>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include <quickfix/Field.h>
-#include <quickfix/FieldTypes.h>
-#include <quickfix/FixFields.h>
-#include <quickfix/FixValues.h>
-#include <quickfix/Session.h>
-#include <quickfix/fix44/MarketDataRequestReject.h>
-#include <quickfix/fix44/Reject.h>
+#include <fix44/MarketDataRequestReject.h>
+#include <fix44/Reject.h>
 
 extern std::atomic<bool> isShuttingDown;
 

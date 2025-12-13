@@ -28,6 +28,7 @@ class harjusRecipe(ConanFile):
         self.requires("libsodium/1.0.20")
         self.requires("gmp/6.3.0")
         self.requires("pcre/8.45")
+        self.requires("fstack/1.25")
         self.requires("flashfix/1.0")
 
     def layout(self):
@@ -36,7 +37,7 @@ class harjusRecipe(ConanFile):
     def generate(self):
         deps = CMakeDeps(self)
         deps.generate()
-        tc = CMakeToolchain(self)
+        tc = CMakeToolchain(self, generator="Ninja")
         tc.variables["CMAKE_CXX_STANDARD"] = "23"
         tc.generate()
 

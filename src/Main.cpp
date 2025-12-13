@@ -1,25 +1,22 @@
-#include "Application.h"
 #include "Arbmapper.h"
 #include "Configuration.h"
 #include "Exchange.h"
 #include "FixConfig.h"
 #include "Globals.h"
+#include "HarjusApplication.h"
 #include "PriceUpdate.h"
 #include "Trade.h"
 #include "Worker.h"
+#include <FileStore.h>
+#include <FstackMicroThreadedSSLSocketInitiator.h>
+#include <Log.h>
 #include <MessageStore.h>
+#include <SessionSettings.h>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
-#include <chrono>
 #include <iostream>
-#include <quickfix/FileStore.h>
-#include <quickfix/Log.h>
-#include <quickfix/SSLSocketInitiator.h>
-#include <quickfix/SessionSettings.h>
-#include <quickfix/SocketInitiator.h>
-#include <quickfix/ThreadedSSLSocketInitiator.h>
 #include <string>
 #include <thread>
 #include <vector>
@@ -125,14 +122,14 @@ auto main() -> int
     FIX::ScreenLogFactory logFactory{settings};
 
     auto initiator =
-        FIX::SSLSocketInitiator{application, storeFactory, settings, logFactory};
+        FIX::FstackMicroThreadedSSLSocketInitiator{application, storeFactory, settings, logFactory};
 
     // create a jthread to run the application
     std::jthread j_thread_application([&initiator, &application, symbols]()
                                       {
     BOOST_LOG_TRIVIAL(debug) << "Starting QuickFIX initiator";
 
-    initiator.start();
+    initiator.block();
 
     // Wait for the session to be established
     constexpr int SESSION_ESTABLISH_WAIT_MS = 100;
