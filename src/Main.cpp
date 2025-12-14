@@ -6,6 +6,7 @@
 #include "HarjusApplication.h"
 #include "PriceUpdate.h"
 #include "Trade.h"
+#include "Worker.h"
 #include <FileStore.h>
 #include <FstackMicroThreadedSSLSocketInitiator.h>
 #include <Log.h>
@@ -90,13 +91,6 @@ auto main() -> int
     BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
     auto tradingPaths = getTradingPaths(symbolMap, config);
 
-    // Define a named constant for the queue size
-    constexpr std::size_t QUEUE_SIZE = 1000;
-
-    // Create queues for price updates & executions
-    boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{QUEUE_SIZE};
-    boost::lockfree::spsc_queue<ExecutionReport> reportQueue{QUEUE_SIZE};
-
     // Extract the list of symbols for subscription
     auto symbols = getUniqueSymbolsForTradingPaths(tradingPaths);
 
@@ -117,7 +111,9 @@ auto main() -> int
     auto fixConfig = FixConfig(config);
     auto settings = fixConfig.sessionSettings();
 
-    Application application{config, priceUpdateQueue, reportQueue, symbolMap, symbols};
+    // Create the worker
+    Worker worker{tradingPaths, relativeValueMap, *balance, config.getCommission()};
+    Application application{config, symbolMap, symbols, worker};
     FIX::MemoryStoreFactory storeFactory{};
     FIX::ScreenLogFactory logFactory{settings};
 

@@ -1,5 +1,6 @@
 #include "HarjusApplication.h"
 #include "Ed25519.h"
+#include "ExecutionReport.h"
 #include "Globals.h"
 #include "Position.h"
 #include "PriceUpdate.h"
@@ -12,19 +13,19 @@
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
+#include <cstddef>
 #include <fix44/MarketDataRequestReject.h>
 #include <fix44/Reject.h>
+#include <vector>
 
 extern std::atomic<bool> isShuttingDown;
 
 Application::Application(
-    const IConfiguration &conf, boost::lockfree::spsc_queue<PriceUpdate> &queue,
-    boost::lockfree::spsc_queue<ExecutionReport> &reportQueue,
+    const IConfiguration &conf,
     std::unordered_map<std::string, Symbol> &symbolMap,
-    const std::vector<std::string> &symbols)
+    const std::vector<std::string> &symbols, const Worker &worker)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
-      priceUpdateQueue(&queue), executionReportQueue(&reportQueue),
-      symbolMap(&symbolMap), symbols(symbols)
+      symbolMap(&symbolMap), symbols(symbols), worker(worker)
 {
     if (symbols.size() > 1000)
     {
@@ -246,129 +247,126 @@ auto Application::subscribeToSymbols(const std::vector<std::string> &symbols)
     }
 }
 
+auto parseExecutionReport(const FIX44::ExecutionReport &execReport)
+    -> ExecutionReport
+{
+
+    // Extract the ClOrdID
+    FIX::ClOrdID clOrdID;
+    execReport.get(clOrdID);
+    std::string id = clOrdID.getValue();
+
+    // Get execution type
+    FIX::ExecType execType;
+    execReport.get(execType);
+    char execTypeValue = execType.getValue();
+
+    // Determine the execution status based on ExecType
+    TradeExecutionStatus status{};
+    switch (execTypeValue)
+    {
+    case FIX::ExecType_NEW:
+        status = TradeExecutionStatus::NEW;
+        break;
+    case FIX::ExecType_TRADE:
+        status = TradeExecutionStatus::FILLED;
+        break;
+    case FIX::ExecType_EXPIRED:
+        status = TradeExecutionStatus::EXPIRED;
+        break;
+    case FIX::ExecType_REJECTED:
+    {
+        status = TradeExecutionStatus::REJECTED;
+        // Extract the human readable error message (Text field)
+        FIX::Text textField;
+        std::string errorMsg;
+        if (execReport.isSetField(FIX::FIELD::Text))
+        {
+            execReport.get(textField);
+            errorMsg = textField.getValue();
+        }
+        else
+        {
+            errorMsg = "Unknown error (Text field not set)";
+        }
+
+        // if doesnt contain "insufficient balance"
+        if (errorMsg.find("insufficient balance") == std::string::npos)
+        {
+            throw std::runtime_error("Order rejected for unexpected reason: " +
+                                     errorMsg);
+        }
+        break;
+    }
+    default:
+        // For other cases, just log and return without creating execution report
+
+        throw std::runtime_error(
+            "Received ExecutionReport with unhandled ExecType: " +
+            std::to_string(execTypeValue));
+    }
+
+    // Extract the used and received quantities
+    FIX::CumQty cumQty; // Total number of base asset traded on this order.
+    execReport.get(cumQty);
+    PreciseNumber qtyBase = PreciseNumber{cumQty.getString()};
+
+    FIX::QtyField cumQuoteQty(
+        25017); // Total number of quote asset traded on this order.
+    execReport.getField(cumQuoteQty);
+    PreciseNumber qtyQuote = PreciseNumber{cumQuoteQty.getString()};
+
+    FIX::Side side;
+    execReport.get(side);
+    Position position =
+        (side == FIX::Side_BUY) ? Position::LONG : Position::SHORT;
+
+    auto usedQty = position == Position::LONG ? qtyQuote : qtyBase;
+    auto recvQty = position == Position::LONG ? qtyBase : qtyQuote;
+
+    // Create asset delta map
+    std::unordered_map<std::string, PreciseNumber> feeDelta;
+
+    // Extract the fees from the message into the asset delta map
+    int numMiscFees = 0;
+    if (FIX::NoMiscFees noMiscFees;
+        execReport.isSetField(FIX::FIELD::NoMiscFees))
+    {
+        execReport.get(noMiscFees);
+        numMiscFees = noMiscFees.getValue();
+    }
+
+    for (int i = 1; i <= numMiscFees; i++)
+    {
+        FIX44::ExecutionReport::NoMiscFees group;
+        execReport.getGroup(i, group);
+
+        FIX::MiscFeeType feeType;
+        group.get(feeType);
+
+        // Only process fees of type "Exchange Fees" (4)
+        if (feeType == FIX::MiscFeeType_EXCHANGE_FEES)
+        {
+            FIX::MiscFeeCurr feeCurrency;
+            group.get(feeCurrency);
+            std::string currency = feeCurrency.getValue();
+
+            FIX::MiscFeeAmt feeAmount;
+            group.get(feeAmount);
+
+            // Add the fee amount to the asset delta map
+            feeDelta[currency] -= PreciseNumber{feeAmount.getString()};
+        }
+    }
+
+    return ExecutionReport{id, status, usedQty, recvQty, feeDelta};
+}
+
 void Application::onMessage(const FIX44::ExecutionReport &message,
                             const FIX::SessionID &)
 {
-    try
-    {
-
-        // Extract the ClOrdID
-        FIX::ClOrdID clOrdID;
-        message.get(clOrdID);
-        std::string id = clOrdID.getValue();
-
-        // Get execution type
-        FIX::ExecType execType;
-        message.get(execType);
-        char execTypeValue = execType.getValue();
-
-        // Determine the execution status based on ExecType
-        TradeExecutionStatus status{};
-        switch (execTypeValue)
-        {
-        case FIX::ExecType_NEW:
-            return; // Ignore notification of new order
-        case FIX::ExecType_TRADE:
-            status = TradeExecutionStatus::FILLED;
-            break;
-        case FIX::ExecType_EXPIRED:
-            status = TradeExecutionStatus::EXPIRED;
-            break;
-        case FIX::ExecType_REJECTED:
-        {
-            status = TradeExecutionStatus::REJECTED;
-            // Extract the human readable error message (Text field)
-            FIX::Text textField;
-            std::string errorMsg;
-            if (message.isSetField(FIX::FIELD::Text))
-            {
-                message.get(textField);
-                errorMsg = textField.getValue();
-            }
-            else
-            {
-                errorMsg = "Unknown error (Text field not set)";
-            }
-
-            // if doesnt contain "insufficient balance"
-            if (errorMsg.find("insufficient balance") == std::string::npos)
-            {
-                throw std::runtime_error("Order rejected for unexpected reason: " +
-                                         errorMsg);
-            }
-            break;
-        }
-        default:
-            // For other cases, just log and return without creating execution report
-
-            throw std::runtime_error(
-                "Received ExecutionReport with unhandled ExecType: " +
-                std::to_string(execTypeValue));
-        }
-
-        // Extract the used and received quantities
-        FIX::CumQty cumQty; // Total number of base asset traded on this order.
-        message.get(cumQty);
-        PreciseNumber qtyBase = PreciseNumber{cumQty.getString()};
-
-        FIX::QtyField cumQuoteQty(
-            25017); // Total number of quote asset traded on this order.
-        message.getField(cumQuoteQty);
-        PreciseNumber qtyQuote = PreciseNumber{cumQuoteQty.getString()};
-
-        FIX::Side side;
-        message.get(side);
-        Position position =
-            (side == FIX::Side_BUY) ? Position::LONG : Position::SHORT;
-
-        auto usedQty = position == Position::LONG ? qtyQuote : qtyBase;
-        auto recvQty = position == Position::LONG ? qtyBase : qtyQuote;
-
-        // Create asset delta map
-        std::unordered_map<std::string, PreciseNumber> feeDelta;
-
-        // Extract the fees from the message into the asset delta map
-        int numMiscFees = 0;
-        if (FIX::NoMiscFees noMiscFees;
-            message.isSetField(FIX::FIELD::NoMiscFees))
-        {
-            message.get(noMiscFees);
-            numMiscFees = noMiscFees.getValue();
-        }
-
-        for (int i = 1; i <= numMiscFees; i++)
-        {
-            FIX44::ExecutionReport::NoMiscFees group;
-            message.getGroup(i, group);
-
-            FIX::MiscFeeType feeType;
-            group.get(feeType);
-
-            // Only process fees of type "Exchange Fees" (4)
-            if (feeType == FIX::MiscFeeType_EXCHANGE_FEES)
-            {
-                FIX::MiscFeeCurr feeCurrency;
-                group.get(feeCurrency);
-                std::string currency = feeCurrency.getValue();
-
-                FIX::MiscFeeAmt feeAmount;
-                group.get(feeAmount);
-
-                // Add the fee amount to the asset delta map
-                feeDelta[currency] -= PreciseNumber{feeAmount.getString()};
-            }
-        }
-
-        // Create execution report & push to the queue
-        executionReportQueue->push(
-            ExecutionReport{id, status, usedQty, recvQty, feeDelta});
-    }
-    catch (const std::exception &e)
-    {
-
-        throw std::runtime_error("Error processing execution report: " +
-                                 std::string(e.what()));
-    }
+    auto execReport = parseExecutionReport(message);
+    worker.processReport(&execReport);
 }
 
 void Application::onMessage(const FIX44::MarketDataRequestReject &message,
@@ -378,159 +376,160 @@ void Application::onMessage(const FIX44::MarketDataRequestReject &message,
                              message.toString());
 }
 
+auto Application::parsePriceUpdateFromMarketDataSnapshotFullRefresh(
+    const FIX44::MarketDataSnapshotFullRefresh &message)
+    -> PriceUpdate
+{
+
+    FIX::Symbol symbol;
+
+    message.get(symbol);
+
+    std::string symbolValue = symbol.getValue();
+
+    // We need variables to store best bid/ask data
+    PreciseNumber bidPrice{};
+    PreciseNumber bidQuantity{};
+    PreciseNumber askPrice{};
+    PreciseNumber askQuantity{};
+
+    FIX::NoMDEntries noMDEntries;
+    message.get(noMDEntries);
+    int numEntries = noMDEntries.getValue();
+
+    for (int i = 1; i <= numEntries; i++)
+    {
+        FIX44::MarketDataSnapshotFullRefresh::NoMDEntries group;
+        message.getGroup(i, group);
+
+        FIX::MDEntryType entryType;
+        group.get(entryType);
+
+        // Process bid (0) or ask (1) entries
+        if (entryType == FIX::MDEntryType_BID)
+        {
+            FIX::MDEntryPx entryPrice;
+            FIX::MDEntrySize entrySize;
+
+            group.get(entryPrice);
+            group.get(entrySize);
+
+            bidPrice = PreciseNumber{entryPrice.getString()};
+            bidQuantity = PreciseNumber{entrySize.getString()};
+        }
+        else if (entryType == FIX::MDEntryType_OFFER)
+        {
+            FIX::MDEntryPx entryPrice;
+            FIX::MDEntrySize entrySize;
+
+            group.get(entryPrice);
+            group.get(entrySize);
+
+            askPrice = PreciseNumber{entryPrice.getString()};
+            askQuantity = PreciseNumber{entrySize.getString()};
+        }
+    }
+
+    return PriceUpdate{&symbolMap->at(symbolValue), bidPrice,
+                       askPrice, bidQuantity, askQuantity};
+}
+
 void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
                             const FIX::SessionID &)
 {
-    try
-    {
-        FIX::Symbol symbol;
+    auto priceUpdate =
+        parsePriceUpdateFromMarketDataSnapshotFullRefresh(message);
+    worker.processPriceUpdate(priceUpdate, *this);
+}
 
-        message.get(symbol);
+auto Application::parsePriceUpdateFromMarketDataIncrementalRefresh(
+    const FIX44::MarketDataIncrementalRefresh &message)
+    -> std::vector<PriceUpdate>
+{
+
+    // Check if we have any MD entries
+    FIX::NoMDEntries noMDEntries;
+    message.get(noMDEntries);
+    int numEntries = noMDEntries.getValue();
+
+    std::vector<PriceUpdate> priceUpdates{};
+
+    // We may get updates for multiple symbols in a single message
+    std::map<std::string, size_t> updates;
+
+    // symbol may be skipped in which case we need to use the last one
+    FIX::Symbol symbol;
+
+    for (int i = 1; i <= numEntries; i++)
+    {
+        FIX44::MarketDataIncrementalRefresh::NoMDEntries group;
+        message.getGroup(i, group);
+
+        FIX::MDEntryType entryType;
+        group.get(entryType);
+
+        // symbol is the same as previous group if not set
+        if (group.isSetField(FIX::FIELD::Symbol))
+        {
+            group.get(symbol);
+        }
 
         std::string symbolValue = symbol.getValue();
 
-        // We need variables to store best bid/ask data
-        PreciseNumber bidPrice{};
-        PreciseNumber bidQuantity{};
-        PreciseNumber askPrice{};
-        PreciseNumber askQuantity{};
-
-        FIX::NoMDEntries noMDEntries;
-        message.get(noMDEntries);
-        int numEntries = noMDEntries.getValue();
-
-        for (int i = 1; i <= numEntries; i++)
+        // Check if we already have an update for this symbol
+        if (updates.find(symbolValue) == updates.end())
         {
-            FIX44::MarketDataSnapshotFullRefresh::NoMDEntries group;
-            message.getGroup(i, group);
-
-            FIX::MDEntryType entryType;
-            group.get(entryType);
-
-            // Process bid (0) or ask (1) entries
-            if (entryType == FIX::MDEntryType_BID)
-            {
-                FIX::MDEntryPx entryPrice;
-                FIX::MDEntrySize entrySize;
-
-                group.get(entryPrice);
-                group.get(entrySize);
-
-                bidPrice = PreciseNumber{entryPrice.getString()};
-                bidQuantity = PreciseNumber{entrySize.getString()};
-            }
-            else if (entryType == FIX::MDEntryType_OFFER)
-            {
-                FIX::MDEntryPx entryPrice;
-                FIX::MDEntrySize entrySize;
-
-                group.get(entryPrice);
-                group.get(entrySize);
-
-                askPrice = PreciseNumber{entryPrice.getString()};
-                askQuantity = PreciseNumber{entrySize.getString()};
-            }
+            // Create a new update, store its index
+            priceUpdates.push_back(PriceUpdate{});
+            updates[symbolValue] = priceUpdates.size() - 1;
         }
 
-        priceUpdateQueue->push(PriceUpdate{&symbolMap->at(symbolValue), bidPrice,
-                                           askPrice, bidQuantity, askQuantity});
+        // Process update based on entry type (bid or ask)
+        FIX::MDUpdateAction action;
+        group.get(action);
+
+        // Only process "New" or "Change" actions (0 or 1)
+        if (action.getValue() == FIX::MDUpdateAction_NEW ||
+            action.getValue() == FIX::MDUpdateAction_CHANGE)
+        {
+            FIX::MDEntryPx entryPrice;
+            group.get(entryPrice);
+
+            if (group.isSetField(FIX::FIELD::MDEntrySize))
+            {
+                FIX::MDEntrySize entrySize;
+                group.get(entrySize);
+
+                if (entryType == FIX::MDEntryType_BID)
+                {
+                    priceUpdates[updates[symbolValue]].bidPrice =
+                        PreciseNumber{entryPrice.getString()};
+
+                    priceUpdates[updates[symbolValue]].bidQty = PreciseNumber{entrySize.getString()};
+                }
+                else if (entryType == FIX::MDEntryType_OFFER)
+                {
+                    priceUpdates[updates[symbolValue]].askPrice =
+                        PreciseNumber{entryPrice.getString()};
+                    priceUpdates[updates[symbolValue]].askQty = PreciseNumber{entrySize.getString()};
+                }
+            }
+        }
     }
-    catch (const std::exception &e)
-    {
-        throw std::runtime_error("Error processing market data snapshot: " +
-                                 std::string(e.what()));
-    }
+
+    return priceUpdates;
 }
 
 void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
                             const FIX::SessionID &)
 {
-    try
+
+    auto priceUpdates =
+        parsePriceUpdateFromMarketDataIncrementalRefresh(message);
+    for (auto &update : priceUpdates)
     {
-        // Check if we have any MD entries
-        FIX::NoMDEntries noMDEntries;
-        message.get(noMDEntries);
-        int numEntries = noMDEntries.getValue();
-
-        // We may get updates for multiple symbols in a single message
-        std::map<std::string, PriceUpdate> updates;
-
-        // symbol may be skipped in which case we need to use the last one
-        FIX::Symbol symbol;
-
-        for (int i = 1; i <= numEntries; i++)
-        {
-            FIX44::MarketDataIncrementalRefresh::NoMDEntries group;
-            message.getGroup(i, group);
-
-            FIX::MDEntryType entryType;
-            group.get(entryType);
-
-            // symbol is the same as previous group if not set
-            if (group.isSetField(FIX::FIELD::Symbol))
-            {
-                group.get(symbol);
-            }
-
-            std::string symbolValue = symbol.getValue();
-
-            // Check if we already have an update for this symbol
-            if (updates.find(symbolValue) == updates.end())
-            {
-                // Create a new update
-                updates[symbolValue].symbol = &symbolMap->at(symbolValue);
-            }
-
-            // Process update based on entry type (bid or ask)
-            FIX::MDUpdateAction action;
-            group.get(action);
-
-            // Only process "New" or "Change" actions (0 or 1)
-            if (action.getValue() == FIX::MDUpdateAction_NEW ||
-                action.getValue() == FIX::MDUpdateAction_CHANGE)
-            {
-                FIX::MDEntryPx entryPrice;
-                group.get(entryPrice);
-
-                if (group.isSetField(FIX::FIELD::MDEntrySize))
-                {
-                    FIX::MDEntrySize entrySize;
-                    group.get(entrySize);
-
-                    if (entryType == FIX::MDEntryType_BID)
-                    {
-                        updates[symbolValue].bidPrice =
-                            PreciseNumber{entryPrice.getString()};
-                        updates[symbolValue].bidQty = PreciseNumber{entrySize.getString()};
-                    }
-                    else if (entryType == FIX::MDEntryType_OFFER)
-                    {
-                        updates[symbolValue].askPrice =
-                            PreciseNumber{entryPrice.getString()};
-                        updates[symbolValue].askQty = PreciseNumber{entrySize.getString()};
-                    }
-                }
-            }
-        }
-
-        // Add all updates to the queue
-        for (const auto &[symbol, update] : updates)
-        {
-            priceUpdateQueue->push(update);
-        }
+        worker.processPriceUpdate(update, *this);
     }
-    catch (const std::exception &e)
-    {
-        throw std::runtime_error("Error processing incremental refresh: " +
-                                 std::string(e.what()));
-    }
-}
-
-void onMessage(const FIX::Message &message, const FIX::SessionID &)
-{
-    // Handle all unhandled message types
-    throw std::runtime_error("Received unexpected message: " +
-                             message.toString());
 }
 
 void Application::submitOrder(const std::string &id, const std::string &symbol,

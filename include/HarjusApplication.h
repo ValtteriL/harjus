@@ -1,7 +1,7 @@
 #pragma once
 
 /**
- * @file HarjusApplication.h
+ * @file Application.h
  * @brief Header file for the FIX Application class.
  * @details This file contains the definition of the Application class, which
  * implements the FIX::Application interface and handles FIX messages.
@@ -11,6 +11,7 @@
 #include "IApplication.h"
 #include "IConfiguration.h"
 #include "PriceUpdate.h"
+#include "Worker.h"
 
 #include <Field.h>
 
@@ -29,8 +30,6 @@
 #include <fix44/OrderCancelReplaceRequest.h>
 #include <fix44/OrderCancelRequest.h>
 
-#include <boost/lockfree/spsc_queue.hpp>
-
 #include <vector>
 
 class Application : public FIX::Application,
@@ -41,12 +40,11 @@ class Application : public FIX::Application,
 private:
     std::string username;
     std::string privateKeySeed;
-    boost::lockfree::spsc_queue<PriceUpdate> *priceUpdateQueue;
-    boost::lockfree::spsc_queue<ExecutionReport> *executionReportQueue;
     std::vector<FIX::SessionID> marketDataSessionIDs{};
     FIX::SessionID orderEntrySessionID{};
     std::unordered_map<std::string, Symbol> *symbolMap;
     std::vector<std::string> symbols{};
+    Worker worker;
 
     /**
      * Called when quickfix creates a new session.
@@ -137,12 +135,18 @@ private:
     void onMessage(const FIX44::MarketDataRequestReject &message,
                    const FIX::SessionID &) override;
 
+    // parsing helpers
+    auto parsePriceUpdateFromMarketDataSnapshotFullRefresh(
+        const FIX44::MarketDataSnapshotFullRefresh &message)
+        -> PriceUpdate;
+    auto parsePriceUpdateFromMarketDataIncrementalRefresh(
+        const FIX44::MarketDataIncrementalRefresh &message)
+        -> std::vector<PriceUpdate>;
+
 public:
     Application(const IConfiguration &conf,
-                boost::lockfree::spsc_queue<PriceUpdate> &queue,
-                boost::lockfree::spsc_queue<ExecutionReport> &reportQueue,
                 std::unordered_map<std::string, Symbol> &symbolMap,
-                const std::vector<std::string> &symbols);
+                const std::vector<std::string> &symbols, const Worker &worker);
 
     void submitOrder(const std::string &id, const std::string &symbol,
                      PreciseNumber qty, PreciseNumber price,
