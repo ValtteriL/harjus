@@ -19,8 +19,13 @@ pipeline {
                   nix-shell -A devEnv --run "
                     set -e
                     
+                    just fstack::build
+                    
+                    just flashfix::configure
+                    just flashfix::test
+                    
+                    just configure
                     just test
-                    just flashfix test
                     "
                 '''
             }
