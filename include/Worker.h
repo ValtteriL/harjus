@@ -26,7 +26,6 @@
 #include <unordered_map>
 
 #include "PreciseNumber.h"
-#include <boost/lockfree/spsc_queue.hpp>
 #include <vector>
 
 using entry =
