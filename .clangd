@@ -3,3 +3,5 @@ CompileFlags:
         - -W
         - -Wall
         - -std=c++23
+        - -Wno-unknown-warning-option
+    Remove: [-m*, -f*]
