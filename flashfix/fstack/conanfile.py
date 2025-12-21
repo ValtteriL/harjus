@@ -26,6 +26,7 @@ class BasicConanfile(ConanFile):
 
     # The requirements method allows you to define the dependencies of your recipe
     def requirements(self):
+        self.requires("gcc/15.1.0")
         self.requires("openssl/3.6.0")
         self.requires("pcre/8.45")
         self.requires("zlib/1.3.1")

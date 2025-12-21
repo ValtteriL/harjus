@@ -30,6 +30,7 @@ class flashfixRecipe(ConanFile):
     )
 
     def requirements(self):
+        self.requires("gcc/15.1.0")
         self.requires("zlib/1.3.1")
         self.requires("openssl/3.6.0")
         self.requires("jansson/2.14")
@@ -37,13 +38,17 @@ class flashfixRecipe(ConanFile):
         self.requires("libpcap/1.10.5")
         self.requires("elfutils/0.190")
 
+    def tool_requirements(self):
+        self.tool_requires("cmake/4.2.1")
+        self.tool_requires("ninja/1.13.2")
+
     def layout(self):
         cmake_layout(self)
 
     def generate(self):
         deps = CMakeDeps(self)
         deps.generate()
-        tc = CMakeToolchain(self)
+        tc = CMakeToolchain(self, generator="Ninja")
         tc.generate()
 
     def build(self):

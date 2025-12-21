@@ -13,9 +13,6 @@ let
 
     # C++
     git
-    gcc
-    cmake
-    ninja
     gdb
     ccache
     pkg-config
