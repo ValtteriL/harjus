@@ -19,6 +19,12 @@ class BasicConanfile(ConanFile):
         git = Git(self)
         git.clone(url="https://github.com/F-Stack/f-stack.git", target=".")
         git.checkout("v1.25")
+        
+        # Patch Makefile to exclude __STDC_EMBED_* macros from filtered_predefined_macros.h
+        # This is needed for GCC 15+ which defines these C23 macros as built-ins
+        self.run(
+            "sed -i 's/__STDC__ __STDC_HOSTED__ __STDC_VERSION__/__STDC__ __STDC_HOSTED__ __STDC_VERSION__ __STDC_EMBED_EMPTY__ __STDC_EMBED_FOUND__ __STDC_EMBED_NOT_FOUND__/' mk/kern.pre.mk"
+        )
 
     def generate(self):
         pkg_config = PkgConfigDeps(self)

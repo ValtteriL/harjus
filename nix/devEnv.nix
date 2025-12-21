@@ -21,6 +21,7 @@ let
     gawk
     libbsd
     llvmPackages_21.clang-tools
+    cmake # required to install conan dependencies
 
     # deployment
     terraform

@@ -5,12 +5,14 @@ configure:
 # Build Flashfix
 build: configure
     cd flashfix && \
+        source build/Release/generators/conanbuild.sh && \
         cmake --preset conan-release -G Ninja && \
         cmake --build --preset conan-release
 
 # Rebuild Flashfix from scratch
 full-build: configure
     cd flashfix && \
+        source build/Release/generators/conanbuild.sh && \
         cmake --preset conan-release -G Ninja --fresh && \
         cmake --build --preset conan-release
 

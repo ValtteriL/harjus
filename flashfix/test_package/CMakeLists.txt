@@ -6,12 +6,7 @@ set(CMAKE_CXX_EXTENSIONS  OFF)
 project(PackageTest CXX)
 
 find_package(flashfix CONFIG REQUIRED)
-
-# Add system dependencies
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBDPDK REQUIRED libdpdk IMPORTED_TARGET)
-pkg_check_modules(LIBFSTACK REQUIRED libfstack IMPORTED_TARGET)
-pkg_check_modules(LIBMT REQUIRED libmt IMPORTED_TARGET)
+find_package(fstack REQUIRED)
 
 add_executable(example src/example.cpp)
-target_link_libraries(example flashfix::flashfix PkgConfig::LIBDPDK PkgConfig::LIBFSTACK PkgConfig::LIBMT)
+target_link_libraries(example flashfix::flashfix fstack::fstack)

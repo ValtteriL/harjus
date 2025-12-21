@@ -15,7 +15,7 @@ initialize:
     sudo ./deploy/scripts/initialize.sh
 
 configure:
-    uv run conan install . --build=missing
+    uv run conan install . --build=missing -o boost/*:without_stacktrace=True
 
 # Build Harjus
 build:

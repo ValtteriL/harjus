@@ -14,6 +14,8 @@ class flashfixRecipe(ConanFile):
     description = "<Description of flashfix package here>"
     topics = ("<Put some tag here>", "<here>", "<and here>")
 
+    tool_requires = ("cmake/4.2.1", "ninja/1.13.2")
+
     # Binary configuration
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False], "fPIC": [True, False]}
@@ -37,10 +39,6 @@ class flashfixRecipe(ConanFile):
         self.requires("fstack/1.25")
         self.requires("libpcap/1.10.5")
         self.requires("elfutils/0.190")
-
-    def tool_requirements(self):
-        self.tool_requires("cmake/4.2.1")
-        self.tool_requires("ninja/1.13.2")
 
     def layout(self):
         cmake_layout(self)

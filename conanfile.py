@@ -20,6 +20,8 @@ class harjusRecipe(ConanFile):
     # Sources are located in the same place as this recipe, copy them to the recipe
     exports_sources = ("CMakeLists.txt", "src/*", "include/*", "tests/*")
 
+    tool_requires = ("cmake/4.2.1", "ninja/1.13.2")
+
     def requirements(self):
         self.requires("gcc/15.1.0")
         self.requires("openssl/3.6.0")
@@ -31,10 +33,6 @@ class harjusRecipe(ConanFile):
         self.requires("pcre/8.45")
         self.requires("fstack/1.25")
         self.requires("flashfix/1.0")
-
-    def tool_requirements(self):
-        self.tool_requires("cmake/4.2.1")
-        self.tool_requires("ninja/1.13.2")
 
     def layout(self):
         cmake_layout(self)
