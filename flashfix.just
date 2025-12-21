@@ -14,6 +14,11 @@ full-build: configure
         cmake --preset conan-release -G Ninja --fresh && \
         cmake --build --preset conan-release
 
+# Build Flashfix release
+release:
+    cd flashfix && \
+        conan create . --build=missing
+
 # Run unit tests
 test:
     ./flashfix/build/Release/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec

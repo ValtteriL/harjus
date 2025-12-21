@@ -31,6 +31,7 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 
 | Command | Description |
 |---|---|
+| `just configure` | Configures Harjus for building. |
 | `just build` | Configures and builds Harjus (Incremental). |
 | `just full-build` | Configures and builds Harjus from scratch. |
 | `just test` | Runs Harjus unit tests. |
@@ -40,9 +41,12 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 | `just fmt-full` | Applies clang-format to all C/C++ files in the codebase. |
 | `just lint` | Runs essential clang-tidy checks. |
 | `just lint-full` | Runs full clang-tidy checks. |
+| `just flashfix configure` | Configures Flashfix for building. |
 | `just flashfix build` | Configures and build Flashfix (Incremental). |
 | `just flashfix full-build` | Configures and builds Flashfix from scratch. |
+| `just flashfix release` | Configures and builds Flashfix to be used as a dependency. |
 | `just flashfix test` | Runs Flashfix unit tests. |
+| `just fstack release` | Configures and builds F-Stack to be used as a dependency. |
 
 ## Coding Guidelines (Latency Sensitive)
 
