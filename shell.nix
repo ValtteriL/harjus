@@ -1,5 +1,5 @@
-# default.nix
 let
+
   nixpkgs = fetchTarball {
     url =
       "https://github.com/NixOS/nixpkgs/archive/c2448301fb856e351aab33e64c33a3fc8bcf637d.tar.gz";
@@ -11,12 +11,21 @@ let
     overlays = [ ];
   };
 
-in rec {
-  run-clang-tidy = pkgs.callPackage ./nix/run-clang-tidy.nix { };
-  git-clang-format = pkgs.callPackage ./nix/git-clang-format.nix { };
+  nativeBuildInputs = with pkgs; [
+      # for working with nix
+      nixpkgs-fmt
+      nixfmt-classic
 
-  devEnv = pkgs.callPackage ./nix/devEnv.nix {
-    run-clang-tidy = run-clang-tidy;
-    git-clang-format = git-clang-format;
-  };
+      # development
+      just
+      cmake
+      llvmPackages_21.clang-tools
+      uv
+
+      # deployment
+      terraform
+      awscli2
+  ];
+in pkgs.mkShell {
+  inherit nativeBuildInputs;
 }

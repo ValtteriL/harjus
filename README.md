@@ -24,12 +24,12 @@ Exploiting triangular arbitrage opportunities in Binance testnet
 ## Requirements
 
 - nix
-- aws-cli configured (for deployment)
+- libdpdk-dev
 
 ## Development
 
 ```bash
-nix-shell -A devEnv
+nix-shell
 ```
 
 ### Test
@@ -49,9 +49,7 @@ The unit tests are run by CI/CD on push to any branch.
 Build harjus
 
 ```bash
-just nix-build
-
-# harjus executable available at ./result/bin/harjus
+just build
 ```
 
 ### Automatic builds

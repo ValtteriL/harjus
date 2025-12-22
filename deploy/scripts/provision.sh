@@ -13,11 +13,4 @@ apt-get install -y \
     dpdk-dev \
     libdpdk-dev \
     net-tools \
-    direnv \
     pkg-config
-
-# Install nix if not already installed
-if ! ls /etc/bashrc.backup-before-nix >/dev/null 2>&1
-then
-    curl -L https://nixos.org/nix/install | sh -s -- --daemon
-fi

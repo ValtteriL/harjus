@@ -16,15 +16,13 @@ pipeline {
         stage('Quality') {
             steps {
                 sh '''
-                  nix-shell -A devEnv --run "
+                  nix-shell --run "
                     set -e
-                    
-                    just fstack::build
-                    
-                    just flashfix::configure
+
+                    just fstack::release
+                    just flashfix::release
                     just flashfix::test
-                    
-                    just configure
+                    just build
                     just test
                     "
                 '''
@@ -40,7 +38,7 @@ pipeline {
             }
             steps {
                 sh '''
-                  nix-shell -A devEnv --run "
+                  nix-shell --run "
                     set -e
                     
                     just build
@@ -59,7 +57,7 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
                                   credentialsId: 'aws-credentials']]) {
                   sh '''
-                    nix-shell -A devEnv --run '
+                    nix-shell --run '
                         set -e
 
                         # Tag and push with commit hash and latest
@@ -82,7 +80,7 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
                                   credentialsId: 'aws-credentials']]) {
                   sh '''
-                    nix-shell -A devEnv --run '
+                    nix-shell --run '
                         set -e
 
                         SEMVER_TAG=$(echo ${TAG_NAME} | sed "s/releases\\///")

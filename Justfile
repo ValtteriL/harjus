@@ -14,47 +14,18 @@ provision:
 initialize:
     sudo ./deploy/scripts/initialize.sh
 
-configure:
-    uv run conan install . --build=missing -o boost/*:without_stacktrace=True
-
 # Build Harjus
 build:
-    cmake --preset conan-release -G Ninja
-    cmake --build --preset conan-release
+    uv run conan build --build=missing -o boost/*:without_stacktrace=True
 
-# Rebuild Harjus from scratch
-full-build:
-    cmake --preset conan-release -G Ninja --fresh
-    cmake --build --preset conan-release
+# Clean Harjus from conan cache
+clean:
+    uv run conan cache clean
 
 # Run unit tests
-test: build
+test:
     ctest --preset conan-release
-
-# Build all nix derivations
-nix-build-all:
-    nix-build
 
 # Build harjus release
 release version:
-    uv run conan create . --version={{version}} --build=missing
-
-# Format modified C/C++ sources on current branch with clang-format
-fmt:
-	@echo "Running clang-format on modified C/C++ files..."
-	git-clang-format -f main
-
-# Format all C/C++ sources in the flashfix directory with clang-format
-fmt-full:
-    @echo "Running clang-format on all C/C++ files..."
-    clang-format -i `find . -name "*.cpp" -or -name "*.hpp" -or -name "*.c" -or -name "*.h"`
-
-# Lint C/C++ sources with essential rules
-lint:
-    echo "Running clang-tidy with essential rules..."
-    run-clang-tidy -p build -fix -quiet -j$(nproc)
-
-# Lint C/C++ sources with comprehensive rules
-lint-full:
-    echo "Running clang-tidy with .clang-tidy.full..."
-    run-clang-tidy -p build -config-file .clang-tidy.full -fix -quiet -j$(nproc)
+    uv run conan create . --version={{version}} --build=missing -o boost/*:without_stacktrace=True
