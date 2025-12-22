@@ -16,7 +16,7 @@ initialize:
 
 # Build Harjus
 build:
-    uv run conan build --build=missing -o boost/*:without_stacktrace=True --profile:all conan-profile
+    uv run conan build --build=missing --profile:all conan-profile
 
 # Clean Harjus from conan cache
 clean:
@@ -28,4 +28,4 @@ test:
 
 # Build harjus release
 release version:
-    uv run conan create . --version={{version}} --build=missing -o boost/*:without_stacktrace=True
+    uv run conan create . --version={{version}} --build=missing --profile:all conan-profile
