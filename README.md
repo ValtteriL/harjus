@@ -23,13 +23,14 @@ Exploiting triangular arbitrage opportunities in Binance testnet
 
 ## Requirements
 
-- nix
+- cmake
+- gcc
 - libdpdk-dev
 
 ## Development
 
 ```bash
-nix-shell
+just
 ```
 
 ### Test

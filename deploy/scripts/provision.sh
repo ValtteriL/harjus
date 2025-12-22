@@ -13,4 +13,5 @@ apt-get install -y \
     dpdk-dev \
     libdpdk-dev \
     net-tools \
-    pkg-config
+    pkg-config \
+    cmake

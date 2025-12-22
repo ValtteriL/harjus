@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a latency-sensitive Linux C++ project. We prioritize runtime performance, deterministic execution, and memory safety. The development environment is strictly managed via Nix to ensure reproducibility.
+This is a latency-sensitive Linux C++ project. We prioritize runtime performance, deterministic execution, and memory safety.
 
 ## Tech Stack & Tooling
 
@@ -18,7 +18,7 @@ This is a latency-sensitive Linux C++ project. We prioritize runtime performance
 
 Ensure the following are installed
 
-1. nix
+1. cmake
 2. libdpdk-dev
 
 
@@ -73,5 +73,5 @@ Performance is a critical feature. Adhere to these strict guidelines:
 
 ## VSCode Configuration
 
-- The project includes .vscode/settings.json which is auto-configured by Nix/Direnv to point clangd to the correct compilation database (compile_commands.json).
+- The project includes .vscode/settings.json which points clangd to the correct compilation database (compile_commands.json).
 - Ensure the clangd extension is installed and the C/C++ extension (IntelliSense) is disabled to avoid conflicts.
