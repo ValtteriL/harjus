@@ -1,12 +1,12 @@
 # Build Flashfix
 build:
     cd flashfix && \
-        uv run conan build --build=missing
+        uv run conan build --build=missing --profile:all ../conan-profile
 
 # Build Flashfix release
 release:
     cd flashfix && \
-        uv run conan create . --build=missing
+        uv run conan create . --build=missing --profile:all ../conan-profile
 
 # Clean Flashfix from conan cache
 clean:
