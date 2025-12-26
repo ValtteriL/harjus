@@ -32,9 +32,11 @@ find_package(cpr REQUIRED)
 # GMP
 find_package(GMP REQUIRED)
 
-# flashfix
-find_package(flashfix REQUIRED)
+# fstack
 find_package(fstack REQUIRED)
+
+# flashfix
+add_subdirectory(flashfix)
 
 # add ccache for faster builds
 if(DEFINED ENV{USE_CCACHE})

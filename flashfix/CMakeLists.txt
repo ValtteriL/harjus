@@ -1,16 +1,5 @@
 cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
-
-project(flashfix LANGUAGES CXX C)
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for clangd
 set(CMAKE_CXX_STANDARD 17)
-
-# Add sanitizers + other helpful flags in debug builds
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wextra -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer")
-set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -fsanitize=undefined")
-
-# add option to build other targets
-option(flashfix_TESTS "Build flashfix tests" ON)
 
 # add libdpdk, libfstack, libmt dependencies
 find_package(OpenSSL REQUIRED)
@@ -19,9 +8,8 @@ find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBDPDK REQUIRED libdpdk)
 find_package(fstack REQUIRED)
 
-
-
-add_library(${PROJECT_NAME} SHARED
+# internal library
+add_library(flashfix_objs OBJECT
   src/DataDictionary.cpp
   src/DataDictionaryProvider.cpp
   src/Dictionary.cpp
@@ -62,7 +50,7 @@ add_library(${PROJECT_NAME} SHARED
   src/double-conversion/fixed-dtoa.cc
 )
 
-target_sources(${PROJECT_NAME}
+target_sources(flashfix_objs
   PRIVATE
   FILE_SET private_headers
   TYPE HEADERS
@@ -79,7 +67,7 @@ target_sources(${PROJECT_NAME}
     include/double-conversion/double-conversion.h
     include/double-conversion/bignum.h
 )
-target_sources(${PROJECT_NAME}
+target_sources(flashfix_objs
   PUBLIC 
   FILE_SET public_headers
   TYPE HEADERS
@@ -798,34 +786,37 @@ target_sources(${PROJECT_NAME}
     include/Except.h
 )
 
-target_link_libraries(${PROJECT_NAME} PUBLIC ${OPENSSL_LIBRARIES} pthread fstack::fstack jansson::jansson libpcap::libpcap ${LIBDPDK_LIBRARIES} rte_net_bond)
-
-set_target_properties(${PROJECT_NAME} PROPERTIES VERSION 1.0.0 SOVERSION 1)
+target_link_libraries(flashfix_objs
+  PUBLIC
+    ${OPENSSL_LIBRARIES}
+    pthread
+    fstack::fstack
+    jansson::jansson
+    libpcap::libpcap
+    ${LIBDPDK_LIBRARIES}
+    rte_net_bond
+)
 
 # include standard installation variables
 include(GNUInstallDirs)
 
 # Install library
-install(TARGETS ${PROJECT_NAME}
-  EXPORT ${PROJECT_NAME}Targets
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+#install(TARGETS flashfix_objs
+#  EXPORT flashfixTargets
+  #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  #LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  #ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 
   # install headers
-  FILE_SET public_headers
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+  #FILE_SET public_headers
+  #  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+#)
 
 # Install FIX specification files to /share
 install(DIRECTORY spec 
   DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}
   FILES_MATCHING PATTERN "FIX*.xml"
 )
-
-# Generate and install pkg-config file
-#configure_file(flashfix.pc.in flashfix.pc @ONLY)
-#install(FILES ${CMAKE_BINARY_DIR}/flashfix.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 # TESTS
 if (flashfix_TESTS)

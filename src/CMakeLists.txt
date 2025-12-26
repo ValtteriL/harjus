@@ -36,7 +36,7 @@ target_link_libraries(harjus_objs
     libsodium::libsodium
     gmp::gmp
     cpr::cpr
-    flashfix::flashfix
+    flashfix_objs
     fstack::fstack
 )
 

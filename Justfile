@@ -1,5 +1,4 @@
 # Justfile for dependencies
-mod flashfix
 mod fstack
 
 # Default task: list all available tasks
@@ -25,6 +24,10 @@ clean:
 # Run unit tests
 test:
     ctest --preset conan-release
+
+# Run flashfix unit tests
+test-flashfix:
+    ./build/Debug/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
 
 # Build harjus release
 release version:

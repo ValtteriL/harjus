@@ -31,9 +31,7 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 | `just build` | Configures and builds Harjus (Incremental). |
 | `just test` | Runs Harjus unit tests. |
 | `just release <version>` | Builds harjus release with given version. |
-| `just flashfix build` | Configures and build Flashfix (Incremental). |
-| `just flashfix release` | Configures and builds Flashfix to be used as a dependency. |
-| `just flashfix test` | Runs Flashfix unit tests. |
+| `just test-flashfix` | Runs Flashfix unit tests. |
 | `just fstack release` | Configures and builds F-Stack to be used as a dependency. |
 
 ## Coding Guidelines (Latency Sensitive)
