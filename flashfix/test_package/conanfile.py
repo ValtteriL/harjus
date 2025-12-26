@@ -16,8 +16,7 @@ class flashfixTestConan(ConanFile):
         self.requires(self.tested_reference_str)
 
     def generate(self):
-        tc = CMakeToolchain(self, generator="Ninja")
-        tc.variables["CMAKE_CXX_STANDARD"] = "23"
+        tc = CMakeToolchain(self)
         tc.generate()
 
     def build(self):

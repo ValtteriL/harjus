@@ -56,3 +56,6 @@ gmp/6.3.0:compiler.cppstd=gnu17
 
 libbacktrace/*:build_type=Release
 libbacktrace/*:compiler.version=14
+
+[conf]
+tools.cmake.cmaketoolchain:generator=Ninja
