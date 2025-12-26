@@ -57,6 +57,8 @@ class BasicConanfile(ConanFile):
 
         inc_flags += " -Wno-unused-result"
         inc_flags += " -fPIC"
+        inc_flags += " -fno-lto"
+        lib_flags += " -fno-lto"
 
         self.run(
             f"make CONF_CFLAGS='{inc_flags}'",

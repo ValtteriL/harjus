@@ -16,17 +16,13 @@ pipeline {
         stage('Quality') {
             steps {
                 sh '''
-                  nix-shell -A devEnv --run "
                     set -e
-                    
-                    just fstack::build
-                    
-                    just flashfix::configure
+
+                    just fstack::release
+                    just flashfix::release
                     just flashfix::test
-                    
-                    just configure
+                    just build
                     just test
-                    "
                 '''
             }
         }
@@ -39,13 +35,7 @@ pipeline {
                 }
             }
             steps {
-                sh '''
-                  nix-shell -A devEnv --run "
-                    set -e
-                    
-                    just build
-                    "
-                '''
+                sh 'just build'
             }
         }
         stage('Push') {
@@ -59,7 +49,6 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
                                   credentialsId: 'aws-credentials']]) {
                   sh '''
-                    nix-shell -A devEnv --run '
                         set -e
 
                         # Tag and push with commit hash and latest
@@ -69,7 +58,6 @@ pipeline {
                         nix-build -A harjus --argstr version ${GIT_COMMIT}
                         nix-store --export $(nix-store --query --requisites ./result) | gzip > harjus-${GIT_COMMIT}.nar.gzip
                         aws s3 cp harjus-${GIT_COMMIT}.nar.gzip s3://${S3_BUCKET}/ --quiet
-                    '
                   '''
                 }
             }
@@ -82,14 +70,12 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
                                   credentialsId: 'aws-credentials']]) {
                   sh '''
-                    nix-shell -A devEnv --run '
                         set -e
 
                         SEMVER_TAG=$(echo ${TAG_NAME} | sed "s/releases\\///")
                         just release ${SEMVER_TAG}
                         nix-store --export $(nix-store --query --requisites ./result) | gzip > harjus-${SEMVER_TAG}.nar.gzip
                         aws s3 cp harjus-${SEMVER_TAG}.nar.gzip s3://${S3_BUCKET}/ --quiet
-                    '
                   '''
                 }
             }

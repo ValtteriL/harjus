@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a latency-sensitive Linux C++ project. We prioritize runtime performance, deterministic execution, and memory safety. The development environment is strictly managed via Nix to ensure reproducibility.
+This is a latency-sensitive Linux C++ project. We prioritize runtime performance, deterministic execution, and memory safety.
 
 ## Tech Stack & Tooling
 
@@ -10,20 +10,17 @@ This is a latency-sensitive Linux C++ project. We prioritize runtime performance
 - **Build System**: CMake
 - **Compiler**: GCC (primary), Clang (used for tools/verification)
 - **Task Runner**: just (All entry points are defined here)
-- **Environment**: Nix Shell + Direnv
-- **Linting/Formatting**: clang-tidy, clang-format
 - **Testing**: Google Test (gtest) managed via CTest. Flashfix library uses Catch2
 - **CI/CD**: Jenkins
 - **IDE**: VSCode (recommended) with clangd
 
 ## Development Environment Setup
 
-This project uses a hermetic environment. Do not rely on system-installed packages.
+Ensure the following are installed
 
-1. Ensure **Nix** is installed (without flake support).
-2. Ensure **Direnv** is installed and hooked into your shell.
-3. Run direnv allow in the root directory.
-    Note: This will automatically bootstrap the environment with gcc, cmake, ninja, and other tools.
+1. cmake
+2. libdpdk-dev
+
 
 ## Workflow & Commands
 
@@ -31,19 +28,10 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 
 | Command | Description |
 |---|---|
-| `just configure` | Configures Harjus for building. |
 | `just build` | Configures and builds Harjus (Incremental). |
-| `just full-build` | Configures and builds Harjus from scratch. |
 | `just test` | Runs Harjus unit tests. |
-| `just nix-build-all` | Builds all Nix derivations. |
-| `just release <version>` | Builds harjus release as a Nix derivation with given version. |
-| `just fmt` | Applies clang-format to files modified after branching off main. |
-| `just fmt-full` | Applies clang-format to all C/C++ files in the codebase. |
-| `just lint` | Runs essential clang-tidy checks. |
-| `just lint-full` | Runs full clang-tidy checks. |
-| `just flashfix configure` | Configures Flashfix for building. |
+| `just release <version>` | Builds harjus release with given version. |
 | `just flashfix build` | Configures and build Flashfix (Incremental). |
-| `just flashfix full-build` | Configures and builds Flashfix from scratch. |
 | `just flashfix release` | Configures and builds Flashfix to be used as a dependency. |
 | `just flashfix test` | Runs Flashfix unit tests. |
 | `just fstack release` | Configures and builds F-Stack to be used as a dependency. |
@@ -75,7 +63,6 @@ Performance is a critical feature. Adhere to these strict guidelines:
 - include/: Public header files (.hpp).
 - tests/: GTest unit tests.
 - deploy/: Deployment files
-- nix/: Nix flake and derivation logic.
 - flashfix/: Flashfix library sources.
 - Jenkinsfile: CI pipeline definition.
 - Justfile: Task definitions.
@@ -86,5 +73,5 @@ Performance is a critical feature. Adhere to these strict guidelines:
 
 ## VSCode Configuration
 
-- The project includes .vscode/settings.json which is auto-configured by Nix/Direnv to point clangd to the correct compilation database (compile_commands.json).
+- The project includes .vscode/settings.json which points clangd to the correct compilation database (compile_commands.json).
 - Ensure the clangd extension is installed and the C/C++ extension (IntelliSense) is disabled to avoid conflicts.

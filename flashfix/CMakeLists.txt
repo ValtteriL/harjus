@@ -5,6 +5,10 @@ project(flashfix LANGUAGES CXX C)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # for clangd
 set(CMAKE_CXX_STANDARD 17)
 
+# Add sanitizers + other helpful flags in debug builds
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Wextra -fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer")
+set(CMAKE_LINKER_FLAGS_DEBUG "${CMAKE_LINKER_FLAGS_DEBUG} -fsanitize=address -fsanitize=undefined")
+
 # add option to build other targets
 option(flashfix_TESTS "Build flashfix tests" ON)
 

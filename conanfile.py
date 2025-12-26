@@ -40,8 +40,7 @@ class harjusRecipe(ConanFile):
     def generate(self):
         deps = CMakeDeps(self)
         deps.generate()
-        tc = CMakeToolchain(self, generator="Ninja")
-        tc.variables["CMAKE_CXX_STANDARD"] = "23"
+        tc = CMakeToolchain(self)
         tc.generate()
 
     def build(self):
