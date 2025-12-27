@@ -248,7 +248,7 @@ namespace FIX
         SessionSettings(const std::string &file, bool resolveEnvVars = false) EXCEPT(ConfigError);
 
         /// Check if session setings are present
-        const bool has(const SessionID &) const;
+        bool has(const SessionID &) const;
 
         /// Get a dictionary for a session.
         const Dictionary &get(const SessionID &) const EXCEPT(ConfigError);

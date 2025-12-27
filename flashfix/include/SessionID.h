@@ -54,7 +54,7 @@ namespace FIX
         const SenderCompID &getSenderCompID() const { return m_senderCompID; }
         const TargetCompID &getTargetCompID() const { return m_targetCompID; }
         const std::string &getSessionQualifier() const { return m_sessionQualifier; }
-        const bool isFIXT() const { return m_isFIXT; }
+        bool isFIXT() const { return m_isFIXT; }
 
         /// Get a string representation of the SessionID
         std::string toString() const { return m_frozenString; }

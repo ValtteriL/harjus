@@ -47,7 +47,7 @@ namespace FIX
         fstream >> *this;
     }
 
-    auto operator>>(std::istream &stream, SessionSettings &s) -> std::istream & EXCEPT(ConfigError)
+    auto operator>>(std::istream &stream, SessionSettings &s) -> std::istream &EXCEPT(ConfigError)
     {
         Settings settings(s.m_resolveEnvVars);
         stream >> settings;
@@ -122,12 +122,12 @@ namespace FIX
         return stream;
     }
 
-    auto SessionSettings::has(const SessionID &sessionID) const -> const bool
+    auto SessionSettings::has(const SessionID &sessionID) const -> bool
     {
         return m_settings.find(sessionID) != m_settings.end();
     }
 
-    auto SessionSettings::get(const SessionID &sessionID) const -> const Dictionary & EXCEPT(ConfigError)
+    auto SessionSettings::get(const SessionID &sessionID) const -> const Dictionary &EXCEPT(ConfigError)
     {
         Dictionaries::const_iterator i;
         i = m_settings.find(sessionID);

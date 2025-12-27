@@ -71,7 +71,7 @@ namespace FIX
 
         const std::set<SessionID> &getSessions() const { return m_sessionIDs; }
         Session *getSession(const SessionID &sessionID) const;
-        const Dictionary *const getSessionSettings(const SessionID &sessionID) const;
+        const Dictionary *getSessionSettings(const SessionID &sessionID) const;
 
         bool has(const SessionID &id) const { return m_sessions.find(id) != m_sessions.end(); }
 

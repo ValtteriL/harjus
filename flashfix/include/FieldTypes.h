@@ -235,7 +235,7 @@ namespace FIX
         {
             int year, month, day;
             int hour, minute, second, millis;
-            tm result = {0};
+            tm result = {};
 
             getYMD(year, month, day);
             getHMS(hour, minute, second, millis);
