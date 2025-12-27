@@ -37,11 +37,7 @@ target_link_libraries(harjus_objs
     gmp::gmp
     cpr::cpr
     flashfix_objs
-    fstack::fstack
-)
-
-target_compile_options(harjus_objs PRIVATE
-  -Wall -Wextra -Wpedantic -Werror
+    "$<TARGET_OBJECTS:flashfix_objs>"
 )
 
 # harjus executable
@@ -56,10 +52,6 @@ target_include_directories(harjus
 target_link_libraries(harjus
   PRIVATE
     harjus_objs
-)
-
-target_compile_options(harjus PRIVATE
-  -Wall -Wextra -Wpedantic -Werror
 )
 
 include(GNUInstallDirs)
