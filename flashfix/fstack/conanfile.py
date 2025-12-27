@@ -108,5 +108,5 @@ class BasicConanfile(ConanFile):
         self.run(f"make install PREFIX_BIN={bin_dir}", cwd=self.tools_build_dir)
 
     def package_info(self):
-        self.cpp_info.libs = ["fstack", "mt"]
+        self.cpp_info.libs = ["mt", "fstack"]
         self.cpp_info.resdirs = ["etc"]
