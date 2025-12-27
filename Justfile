@@ -23,7 +23,7 @@ clean:
 
 # Run unit tests
 test:
-    ctest --preset conan-release
+    ctest --preset conan-debug
 
 # Run flashfix unit tests
 test-flashfix:
