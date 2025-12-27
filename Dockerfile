@@ -10,9 +10,10 @@ RUN apt-get update && \
     git \
     just \
     libdpdk-dev \
-    curl \
+    wget \
     ca-certificates
 
-# Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-
+# Install conan
+RUN wget https://github.com/conan-io/conan/releases/download/2.23.0/conan-2.23.0-amd64.deb && \
+    dpkg -i conan-2.23.0-amd64.deb && \
+    rm conan-2.23.0-amd64.deb
