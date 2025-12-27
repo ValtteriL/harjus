@@ -1,7 +1,7 @@
 // Description: Jenkinsfile for building and testing Harjus
 pipeline {
     agent { dockerfile {
-        args '-v $HOME/.conan2:/root/.conan2'
+        args '-v $HOME/.harjus-conan2:/root/.conan2 -u root'
     } }
     stages {
         stage('Checkout') {
