@@ -10,7 +10,8 @@ RUN apt-get update && \
     git \
     just \
     libdpdk-dev \
-    curl
+    curl \
+    ca-certificates
 
 # Install uv
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
