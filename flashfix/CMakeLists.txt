@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.31 FATAL_ERROR)
-set(CMAKE_CXX_STANDARD 17)
-
 # add libdpdk, libfstack, libmt dependencies
 find_package(OpenSSL REQUIRED)
 find_package(jansson REQUIRED)
@@ -790,27 +787,15 @@ target_link_libraries(flashfix_objs
   PUBLIC
     ${OPENSSL_LIBRARIES}
     pthread
-    fstack::fstack
     jansson::jansson
     libpcap::libpcap
-    ${LIBDPDK_LIBRARIES}
     rte_net_bond
+    ${LIBDPDK_LIBRARIES}
+    fstack::fstack
 )
 
 # include standard installation variables
 include(GNUInstallDirs)
-
-# Install library
-#install(TARGETS flashfix_objs
-#  EXPORT flashfixTargets
-  #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  #LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  #ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-
-  # install headers
-  #FILE_SET public_headers
-  #  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-#)
 
 # Install FIX specification files to /share
 install(DIRECTORY spec 
@@ -819,6 +804,6 @@ install(DIRECTORY spec
 )
 
 # TESTS
-if (flashfix_TESTS)
+if(HARJUS_TESTS)
     add_subdirectory(test)
 endif()
