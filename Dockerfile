@@ -12,7 +12,9 @@ RUN apt-get update && \
     just \
     libdpdk-dev \
     wget \
-    ca-certificates
+    ca-certificates \
+    python3 \
+    python-is-python3
 
 # Install conan
 RUN wget https://github.com/conan-io/conan/releases/download/2.23.0/conan-2.23.0-amd64.deb && \
