@@ -25,6 +25,10 @@ clean:
 test:
     ctest --preset conan-debug
 
+# Run debug build
+run-debug:
+    ./flashfix/start.sh -b ./build/Debug/src/harjus -c ./flashfix/config.ini
+
 # Run flashfix unit tests
 test-flashfix:
     ./build/Debug/flashfix/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
