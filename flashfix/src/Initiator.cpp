@@ -136,7 +136,7 @@ namespace FIX
         }
     }
 
-    auto Initiator::getSessionSettings(const SessionID &sessionID) const -> const Dictionary *const
+    auto Initiator::getSessionSettings(const SessionID &sessionID) const -> const Dictionary *
     {
         try
         {

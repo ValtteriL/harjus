@@ -44,6 +44,7 @@ namespace FIX
     public:
         DataDictionaryProvider() {}
         DataDictionaryProvider(const DataDictionaryProvider &copy);
+        DataDictionaryProvider &operator=(const DataDictionaryProvider &) = default;
 
         const DataDictionary &getSessionDataDictionary(const BeginString &beginString) const EXCEPT(DataDictionaryNotFound);
 

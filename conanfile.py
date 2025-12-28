@@ -32,7 +32,6 @@ class harjusRecipe(ConanFile):
         self.requires("gmp/6.3.0")
         self.requires("pcre/8.45")
         self.requires("fstack/1.25")
-        self.requires("flashfix/1.0")
 
     def layout(self):
         cmake_layout(self)

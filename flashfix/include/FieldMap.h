@@ -179,7 +179,7 @@ namespace FIX
         }
 
         /// Get direct access to a field through a pointer
-        const FieldBase *const getFieldPtr(int tag) const EXCEPT(FieldNotFound) { return &getFieldRef(tag); }
+        const FieldBase *getFieldPtr(int tag) const EXCEPT(FieldNotFound) { return &getFieldRef(tag); }
 
         /// Check to see if a field is set
         bool isSetField(const FieldBase &field) const { return isSetField(field.getTag()); }
