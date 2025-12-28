@@ -89,7 +89,16 @@ auto main() -> int
 
     // calculate trading paths
     BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
+#ifdef NDEBUG
     auto tradingPaths = getTradingPaths(symbolMap, config);
+#else
+    // speedup sanitized builds by hardcoding trading paths
+    std::vector<std::vector<Trade>> tradingPaths = {{
+        Trade{&symbolMap.at("BTCUSDT"), Position::LONG},
+        Trade{&symbolMap.at("ETHBTC"), Position::LONG},
+        Trade{&symbolMap.at("ETHUSDT"), Position::SHORT},
+    }};
+#endif
 
     // Extract the list of symbols for subscription
     auto symbols = getUniqueSymbolsForTradingPaths(tradingPaths);
