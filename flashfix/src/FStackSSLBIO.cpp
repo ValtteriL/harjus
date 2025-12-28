@@ -22,7 +22,7 @@ namespace FIX
         // If the BIO owns the socket (shutdown flag is set), close it using ff_close
         if (BIO_get_shutdown(b))
         {
-            int fd = BIO_get_fd(b, nullptr);
+            int fd = (int)(long)BIO_get_data(b);
             if (fd != -1)
             {
                 ff_close(fd);
@@ -33,7 +33,7 @@ namespace FIX
     }
     static auto bio_ff_read(BIO *b, char *out, int outl) -> int
     {
-        int fd = BIO_get_fd(b, nullptr);
+        int fd = (int)(long)BIO_get_data(b);
         if (out == nullptr || outl == 0)
             return 0;
 
@@ -55,7 +55,7 @@ namespace FIX
 
     static auto bio_ff_write(BIO *b, const char *in, int inl) -> int
     {
-        int fd = BIO_get_fd(b, nullptr);
+        int fd = (int)(long)BIO_get_data(b);
         if (in == nullptr || inl == 0)
             return 0;
 
@@ -77,25 +77,32 @@ namespace FIX
 
     static auto bio_ff_ctrl(BIO *b, int cmd, long num, void *ptr) -> long
     {
+        // mb rm
+        if (b == nullptr)
+            return 0;
+
         long ret = 1;
         int *ip = nullptr;
-
-        int fd = BIO_get_fd(b, nullptr);
 
         switch (cmd)
         {
         case BIO_C_SET_FD:
             // Store the FD in the BIO structure
-            bio_ff_destroy(b); // Close old one if exists and we own it
+            if (BIO_get_init(b))
+            {
+                bio_ff_destroy(b); // Close old one if exists and we own it
+            }
+            // Store fd in BIO data pointer (cast int to void*)
+            BIO_set_data(b, (void *)(long)num);
             BIO_set_init(b, 1);
-            BIO_set_fd(b, (int)num, BIO_CLOSE); // Store in b->num
-            BIO_set_shutdown(b, (int)num);      // Default to closing on destroy
+            BIO_set_shutdown(b, (int)((long)ptr)); // ptr contains the close flag
             break;
 
         case BIO_C_GET_FD:
             // Retrieve the FD
             if (BIO_get_init(b))
             {
+                int fd = (int)(long)BIO_get_data(b);
                 ip = (int *)ptr;
                 if (ip != nullptr)
                     *ip = fd;

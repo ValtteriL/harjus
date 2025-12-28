@@ -1,10 +1,8 @@
-#include "Arbmapper.h"
 #include "Configuration.h"
 #include "Exchange.h"
 #include "FixConfig.h"
 #include "Globals.h"
 #include "HarjusApplication.h"
-#include "PriceUpdate.h"
 #include "Trade.h"
 #include "Worker.h"
 #include <FileStore.h>
