@@ -23,21 +23,23 @@ namespace FIX
 
     FstackMicroThreadedSSLSocketInitiator::FstackMicroThreadedSSLSocketInitiator(
         Application &application, MessageStoreFactory &factory,
-        const SessionSettings &settings) EXCEPT(ConfigError)
+        const SessionSettings &settings, int argc, char *argv[]) EXCEPT(ConfigError)
         : Initiator(application, factory, settings), m_lastConnect(0),
           m_reconnectInterval(30), m_noDelay(false), m_sendBufSize(0),
           m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr)
     {
+        mt_init_frame(argc, argv);
         socket_init();
     }
 
     FstackMicroThreadedSSLSocketInitiator::FstackMicroThreadedSSLSocketInitiator(
         Application &application, MessageStoreFactory &factory,
-        const SessionSettings &settings, LogFactory &logFactory) EXCEPT(ConfigError)
+        const SessionSettings &settings, LogFactory &logFactory, int argc, char *argv[]) EXCEPT(ConfigError)
         : Initiator(application, factory, settings, logFactory), m_lastConnect(0),
           m_reconnectInterval(30), m_noDelay(false), m_sendBufSize(0),
           m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr)
     {
+        mt_init_frame(argc, argv);
         socket_init();
     }
 
@@ -80,6 +82,7 @@ namespace FIX
     void FstackMicroThreadedSSLSocketInitiator::onInitialize(
         const SessionSettings &s) EXCEPT(RuntimeError)
     {
+
         if (m_sslInit)
         {
             return;

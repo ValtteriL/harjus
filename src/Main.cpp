@@ -65,7 +65,7 @@ auto getUniqueSymbolsForTradingPaths(
     return {uniqueSymbols.begin(), uniqueSymbols.end()};
 }
 
-auto main() -> int
+auto main(int argc, char *argv[]) -> int
 {
     banner();
     Configuration config;
@@ -125,7 +125,7 @@ auto main() -> int
     FIX::ScreenLogFactory logFactory{settings};
 
     auto initiator =
-        FIX::FstackMicroThreadedSSLSocketInitiator{application, storeFactory, settings, logFactory};
+        FIX::FstackMicroThreadedSSLSocketInitiator{application, storeFactory, settings, logFactory, argc, argv};
 
     // create a jthread to run the application
     std::jthread j_thread_application([&initiator, symbols]()

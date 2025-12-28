@@ -15,9 +15,9 @@ namespace FIX
     {
     public:
         FstackMicroThreadedSSLSocketInitiator(Application &, MessageStoreFactory &,
-                                              const SessionSettings &) EXCEPT(ConfigError);
+                                              const SessionSettings &, int argc, char *argv[]) EXCEPT(ConfigError);
         FstackMicroThreadedSSLSocketInitiator(Application &, MessageStoreFactory &,
-                                              const SessionSettings &, LogFactory &)
+                                              const SessionSettings &, LogFactory &, int argc, char *argv[])
             EXCEPT(ConfigError);
 
         virtual ~FstackMicroThreadedSSLSocketInitiator();
