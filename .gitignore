@@ -153,3 +153,6 @@ store
 log
 CMakeCache.txt
 compile_commands.json
+
+# vagrant files
+.vagrant/
