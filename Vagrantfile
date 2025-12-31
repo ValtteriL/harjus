@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.provider "virtualbox" do |vb|
 
-    vb.cpus = 12          # 12 CPU cores
+    vb.cpus = 22          # 22 CPU cores
     vb.memory = 1024 * 16  # 16 GB RAM
     
     # Enable promiscuous mode on second NIC for DPDK
@@ -31,5 +31,8 @@ Vagrant.configure("2") do |config|
 
     # Enable nested virtualization
     vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
+
+    # Enable IO-APIC to allow multi-core support
+    vb.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 end
