@@ -17,14 +17,16 @@ modprobe uio
 modprobe hwmon
 modprobe igb_uio
 
-# take over enp0s8 for f-stack
-if [ -d /sys/class/net/enp0s8 ]; then
-    ifconfig enp0s8 down
-    dpdk-devbind.py --bind=igb_uio enp0s8
+# Bind second NIC to DPDK (auto-detect interface name)
+# Look for the second ethernet device (not enp0s3 which is the control interface)
+DPDK_IFACE=$(ip link show | grep -E '^[0-9]+: enp0s' | grep -v enp0s3 | awk -F': ' '{print $2}' | head -n1)
 
-    # to undo, run:
-    # dpdk-devbind.py --bind=virtio-pci 00:03.0
-    # ifconfig enp0s8 up
+if [ -n "$DPDK_IFACE" ] && [ -d "/sys/class/net/$DPDK_IFACE" ]; then
+    echo "Binding $DPDK_IFACE to DPDK..."
+    ifconfig "$DPDK_IFACE" down
+    dpdk-devbind.py --bind=igb_uio "$DPDK_IFACE"
+else
+    echo "Warning: No second network interface found for DPDK"
 fi
 
 # show status

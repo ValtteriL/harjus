@@ -39,4 +39,4 @@ release version:
 
 # Run on-demand vagrant provision script
 vagrant-debug:
-    vagrant ssh -- 'cd harjus && just run-debug'
+    vagrant ssh -- 'cd harjus && sudo just run-debug'

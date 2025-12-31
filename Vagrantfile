@@ -26,6 +26,9 @@ Vagrant.configure("2") do |config|
     vb.cpus = 22          # 22 CPU cores
     vb.memory = 1024 * 16  # 16 GB RAM
     
+    # Set second NIC to Intel E1000 (DPDK-compatible, unlike default PCnet32)
+    vb.customize ["modifyvm", :id, "--nictype2", "82540EM"]
+    
     # Enable promiscuous mode on second NIC for DPDK
     vb.customize ["modifyvm", :id, "--nicpromisc2", "allow-all"]
 
