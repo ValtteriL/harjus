@@ -26,9 +26,9 @@ namespace FIX
         const SessionSettings &settings, int argc, char *argv[]) EXCEPT(ConfigError)
         : Initiator(application, factory, settings), m_lastConnect(0),
           m_reconnectInterval(30), m_noDelay(false), m_sendBufSize(0),
-          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr)
+          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr),
+          m_argc(argc), m_argv(argv)
     {
-        mt_init_frame(argc, argv);
         socket_init();
     }
 
@@ -37,9 +37,9 @@ namespace FIX
         const SessionSettings &settings, LogFactory &logFactory, int argc, char *argv[]) EXCEPT(ConfigError)
         : Initiator(application, factory, settings, logFactory), m_lastConnect(0),
           m_reconnectInterval(30), m_noDelay(false), m_sendBufSize(0),
-          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr)
+          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr),
+          m_argc(argc), m_argv(argv)
     {
-        mt_init_frame(argc, argv);
         socket_init();
     }
 
@@ -133,6 +133,11 @@ namespace FIX
 
     void FstackMicroThreadedSSLSocketInitiator::onStart()
     {
+        // Initialize F-Stack microthread frame on the worker thread
+        // This must be done here, not in constructor, because socket operations
+        // require F-Stack's thread-local state to be initialized on this thread
+        mt_init_frame(m_argc, m_argv);
+
         while (!isStopped())
         {
             time_t now = 0;
