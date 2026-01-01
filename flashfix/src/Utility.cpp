@@ -30,6 +30,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <ff_api.h>
 #include <micro_thread.h>
 #include <mt_incl.h>
 
@@ -223,12 +224,12 @@ namespace FIX
         }
         socklen = sizeof(address);
 
-        return bind(socket, reinterpret_cast<sockaddr *>(&address), socklen);
+        return ff_bind(socket, reinterpret_cast<linux_sockaddr *>(&address), socklen);
     }
 
     auto socket_createAcceptor(int port, bool reuse) -> socket_handle
     {
-        socket_handle socket = ::socket(PF_INET, SOCK_STREAM, 0);
+        socket_handle socket = ff_socket(AF_INET, SOCK_STREAM, 0);
         if (socket == INVALID_SOCKET_HANDLE)
         {
             return INVALID_SOCKET_HANDLE;
@@ -246,13 +247,13 @@ namespace FIX
             socket_setsockopt(socket, SO_REUSEADDR);
         }
 
-        int result = bind(socket, reinterpret_cast<sockaddr *>(&address), socklen);
+        int result = ff_bind(socket, reinterpret_cast<linux_sockaddr *>(&address), socklen);
 
         if (result == BIND_SOCKET_ERROR)
         {
             return INVALID_SOCKET_HANDLE;
         }
-        result = listen(socket, SOMAXCONN);
+        result = ff_listen(socket, SOMAXCONN);
         if (result == LISTEN_SOCKET_ERROR)
         {
             return INVALID_SOCKET_HANDLE;
@@ -262,7 +263,7 @@ namespace FIX
 
     auto socket_createConnector() -> socket_handle
     {
-        return ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        return ff_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     }
 
     auto socket_connect(socket_handle socket, const char *address, int port) -> int
@@ -306,7 +307,7 @@ namespace FIX
     void socket_close(socket_handle s)
     {
         ff_shutdown(s, 2);
-        close(s);
+        ff_close(s);
     }
 
     auto socket_get_last_error() -> std::string

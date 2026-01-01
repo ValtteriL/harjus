@@ -167,7 +167,13 @@ namespace FIX
         if (ret == nullptr)
             return nullptr;
 
-        BIO_set_fd(ret, fd, close_flag);
+        // Set fd and close_flag directly instead of using BIO_set_fd
+        // BIO_set_fd uses BIO_int_ctrl which passes a pointer to a stack variable,
+        // but our ctrl handler was interpreting the arguments incorrectly.
+        // Setting directly is simpler and avoids the issue.
+        BIO_set_data(ret, (void *)(long)fd);
+        BIO_set_init(ret, 1);
+        BIO_set_shutdown(ret, close_flag);
         return ret;
     }
 }
