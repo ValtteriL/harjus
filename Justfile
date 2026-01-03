@@ -27,6 +27,7 @@ test:
 
 # Run debug build
 run-debug:
+    pkill harjus || true
     ./flashfix/start.sh -b ./build/Debug/src/harjus -c ./flashfix/config.ini
 
 # Run flashfix unit tests
