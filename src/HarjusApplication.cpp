@@ -480,7 +480,7 @@ auto Application::parsePriceUpdateFromMarketDataIncrementalRefresh(
         if (updates.find(symbolValue) == updates.end())
         {
             // Create a new update, store its index
-            priceUpdates.push_back(PriceUpdate{});
+            priceUpdates.push_back(PriceUpdate{&symbolMap->at(symbolValue), {}, {}, {}, {}});
             updates[symbolValue] = priceUpdates.size() - 1;
         }
 
