@@ -215,6 +215,10 @@ namespace FIX
             }
 
             socket_handle socket = socket_createConnector();
+
+            // Set socket to non-blocking mode for microthread I/O
+            socket_setnonblock(socket);
+
             if (m_noDelay)
             {
                 socket_setsockopt(socket, TCP_NODELAY);
@@ -310,9 +314,12 @@ namespace FIX
 
         pInitiator->lock();
 
+        pInitiator->getLog()->onEvent("socket fd=" + IntConvertor::convert(socket));
+
         if (!pConnection->connect())
         {
-            pInitiator->getLog()->onEvent("Connection failed");
+            pInitiator->getLog()->onEvent("Connection failed, errno=" +
+                                          IntConvertor::convert(errno));
             pConnection->disconnect();
             SSL *ssl = pConnection->sslObject();
             delete pConnection;
@@ -322,10 +329,20 @@ namespace FIX
         }
 
         // Do the SSL handshake.
-        int rc = SSL_connect(pConnection->sslObject());
-        if (rc <= 0)
+        while (true)
         {
+            int rc = SSL_connect(pConnection->sslObject());
+            if (rc == 1)
+            {
+                break;
+            }
+
             int err = SSL_get_error(pConnection->sslObject(), rc);
+            if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
+            {
+                continue;
+            }
+
             pInitiator->getLog()->onEvent("SSL_connect failed with SSL error " +
                                           IntConvertor::convert(err));
             pConnection->disconnect();

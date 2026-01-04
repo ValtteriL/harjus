@@ -451,7 +451,7 @@ namespace FIX
 
         Locker l(m_mutex);
 
-        const auto& beginSeqNo = resendRequest.getField<BeginSeqNo>();
+        const auto &beginSeqNo = resendRequest.getField<BeginSeqNo>();
         auto endSeqNo = resendRequest.getField<EndSeqNo>();
 
         m_state.onEvent(
@@ -808,7 +808,8 @@ namespace FIX
 
     void Session::persist(const Message &message, const std::string &messageString) EXCEPT(IOException)
     {
-        auto const &msgSeqNum = message.getHeader().getField<MsgSeqNum>();
+        MsgSeqNum msgSeqNum;
+        message.getHeader().getField(msgSeqNum);
         if (m_persistMessages)
         {
             m_state.set(msgSeqNum, messageString);
