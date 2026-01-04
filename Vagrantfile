@@ -15,7 +15,7 @@ Vagrant.configure("2") do |config|
 
   # Primary network interface (NAT) for control traffic (SSH, etc.) - created by default
   # Second network interface for DPDK
-  config.vm.network "public_network", auto_config: false
+  config.vm.network "public_network", auto_config: false, bridge: "enx806d97438530"
 
   # Prepare host for kernel bypass via f-stack
   config.vm.provision "initialize", type: "shell",  
