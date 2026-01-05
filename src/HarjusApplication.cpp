@@ -27,12 +27,6 @@ Application::Application(
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
       symbolMap(&symbolMap), symbols(symbols), worker(worker)
 {
-    if (symbols.size() > 1000)
-    {
-        // currently can only subscribe to upto 1000 symbols as there is only one hardcoded market data session
-        throw std::runtime_error(
-            "Not enough market data sessions available for subscription");
-    }
 }
 
 void Application::onCreate(const FIX::SessionID &sessionID)

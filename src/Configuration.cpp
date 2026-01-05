@@ -42,8 +42,7 @@ Configuration::Configuration()
                                              BINANCE_FIX_API_HOSTNAME_ORDERENTRY,
                                              BINANCE_FIX_API_HOSTNAME_MARKETDATA,
                                              BINANCE_ED25519_SEED,
-                                             BINANCE_ED25519_API_KEY,
-                                             ASSETS};
+                                             BINANCE_ED25519_API_KEY};
     std::string missingVars;
 
     for (const auto &var : requiredVars)

@@ -839,7 +839,124 @@ FixConfig::FixConfig(const IConfiguration &config)
   # sessions
   [SESSION]
   SenderCompID=HARJUSM1
-  SessionQualifier=MARKETDATA
+  SessionQualifier=MARKETDATA1
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM2
+  SessionQualifier=MARKETDATA2
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM3
+  SessionQualifier=MARKETDATA3
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM4
+  SessionQualifier=MARKETDATA4
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM5
+  SessionQualifier=MARKETDATA5
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM6
+  SessionQualifier=MARKETDATA6
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM7
+  SessionQualifier=MARKETDATA7
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM8
+  SessionQualifier=MARKETDATA8
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM9
+  SessionQualifier=MARKETDATA9
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM10
+  SessionQualifier=MARKETDATA10
   DataDictionary=)" +
                   tmpMd +
                   R"(
