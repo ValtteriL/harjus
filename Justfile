@@ -36,3 +36,7 @@ test-flashfix:
 # Build harjus release
 release version:
     conan create . --version={{version}} --build=missing --profile:all conan-profile
+
+# Run on-demand vagrant provision script
+vagrant-debug:
+    vagrant ssh -- 'cd harjus && sudo just run-debug'

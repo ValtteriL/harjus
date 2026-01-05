@@ -13,6 +13,7 @@ This is a latency-sensitive Linux C++ project. We prioritize runtime performance
 - **Testing**: Google Test (gtest) managed via CTest. Flashfix library uses Catch2
 - **CI/CD**: Jenkins
 - **IDE**: VSCode (recommended) with clangd
+- **Development VM**: Vagrant (for isolated development environment)
 
 ## Development Environment Setup
 
@@ -20,7 +21,9 @@ Ensure the following are installed
 
 1. cmake
 2. libdpdk-dev
+3. dpdk
 
+For Vagrant-based development, ensure VirtualBox and Vagrant are installed.
 
 ## Workflow & Commands
 
@@ -33,6 +36,7 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 | `just release <version>` | Builds harjus release with given version. |
 | `just test-flashfix` | Runs Flashfix unit tests. |
 | `just fstack release` | Configures and builds F-Stack to be used as a dependency. |
+| `just vagrant-debug` | Runs Debug build of Harjus in Vagrant. |
 
 ## Coding Guidelines (Latency Sensitive)
 

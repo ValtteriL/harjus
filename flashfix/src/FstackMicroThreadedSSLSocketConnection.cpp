@@ -109,79 +109,90 @@ namespace FIX
 
         try
         {
-            // Wait for input forever
-            int result = NS_MICRO_THREAD::mt_wait_events(m_socket, POLLIN, -1);
 
-            if (result > 0) // Something to read
+            bool pending = false;
+            int size = 0;
+            int errCodeSSL = 0;
+            ERR_clear_error();
+
             {
-                bool pending = false;
+                Locker locker(m_mutex);
+                // This will block in BIO_read (which calls mt_recv) until data is available or timeout
+                size = SSL_read(m_ssl, m_buffer, sizeof(m_buffer));
+                if (size <= 0)
+                {
+                    errCodeSSL = SSL_get_error(m_ssl, size);
+                }
+                else if (SSL_pending(m_ssl) > 0)
+                {
+                    pending = true;
+                }
+            }
 
+            if (size > 0)
+            {
                 do
                 {
-                    pending = false;
-                    errno = 0;
-                    int size = 0;
-                    int errCodeSSL = 0;
-                    ERR_clear_error();
-
-                    // Cannot do concurrent SSL write and read as ssl context has to be
-                    // protected.
-                    {
-                        Locker locker(m_mutex);
-
-                        size = SSL_read(m_ssl, m_buffer, sizeof(m_buffer));
-                        if (size <= 0)
-                        {
-                            errCodeSSL = SSL_get_error(m_ssl, size);
-                        }
-                        else if (SSL_pending(m_ssl) > 0)
-                        {
-                            pending = true;
-                        }
-                    }
-
-                    if (size <= 0)
-                    {
-                        if ((errCodeSSL == SSL_ERROR_WANT_READ) ||
-                            (errCodeSSL == SSL_ERROR_WANT_WRITE))
-                        {
-                            errno = EINTR;
-                            size = 0;
-
-                            return true;
-                        }
-                        else
-                        {
-                            std::string error = socket_error();
-
-                            if (m_pSession)
-                            {
-                                m_pSession->getLog()->onEvent("SSL read error <" +
-                                                              IntConvertor::convert(errCodeSSL) +
-                                                              "> " + error);
-                            }
-                            else
-                            {
-                                std::cerr << UtcTimeStampConvertor::convert(UtcTimeStamp::now())
-                                          << "SSL read error <"
-                                          << IntConvertor::convert(errCodeSSL) << "> " << error
-                                          << '\n';
-                            }
-
-                            throw SocketRecvFailed(size);
-                        }
-                    }
-
                     m_parser.addToStream(m_buffer, size);
-                } while (pending);
+
+                    if (pending)
+                    {
+                        pending = false;
+                        ERR_clear_error();
+                        {
+                            Locker locker(m_mutex);
+                            size = SSL_read(m_ssl, m_buffer, sizeof(m_buffer));
+                            if (size <= 0)
+                            {
+                                errCodeSSL = SSL_get_error(m_ssl, size);
+                            }
+                            else if (SSL_pending(m_ssl) > 0)
+                            {
+                                pending = true;
+                            }
+                        }
+                        if (size <= 0)
+                            break; // Handle error/eof in next loop or here?
+                    }
+                    else
+                    {
+                        break;
+                    }
+                } while (true);
             }
-            else if (result == 0 && m_pSession) // Timeout
+
+            if (size <= 0)
             {
-                m_pSession->next(UtcTimeStamp::now());
-            }
-            else if (result < 0) // Error
-            {
-                throw SocketRecvFailed(result);
+                if ((errCodeSSL == SSL_ERROR_WANT_READ) ||
+                    (errCodeSSL == SSL_ERROR_WANT_WRITE))
+                {
+                    // Timeout or needs more data
+                    if (m_pSession)
+                    {
+                        m_pSession->next(UtcTimeStamp::now());
+                    }
+                    return true;
+                }
+                else
+                {
+                    std::string error = socket_error();
+
+                    if (m_pSession)
+                    {
+                        m_pSession->getLog()->onEvent("SSL read error <" +
+                                                      IntConvertor::convert(errCodeSSL) +
+                                                      "> " + error);
+                    }
+                    else
+                    {
+                        std::cerr << UtcTimeStampConvertor::convert(UtcTimeStamp::now())
+                                  << "SSL read error <"
+                                  << IntConvertor::convert(errCodeSSL) << "> " << error
+                                  << '\n';
+                    }
+
+                    throw SocketRecvFailed(size);
+                }
             }
 
             processStream();

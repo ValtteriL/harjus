@@ -69,6 +69,8 @@ namespace FIX
         std::string m_password;
         X509 *m_cert;
         RSA *m_key;
+        int m_argc;
+        char **m_argv;
     };
     /*! @} */
 } // namespace FIX

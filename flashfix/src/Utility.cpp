@@ -30,6 +30,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <ff_api.h>
 #include <micro_thread.h>
 #include <mt_incl.h>
 
@@ -223,12 +224,12 @@ namespace FIX
         }
         socklen = sizeof(address);
 
-        return bind(socket, reinterpret_cast<sockaddr *>(&address), socklen);
+        return ff_bind(socket, reinterpret_cast<linux_sockaddr *>(&address), socklen);
     }
 
     auto socket_createAcceptor(int port, bool reuse) -> socket_handle
     {
-        socket_handle socket = ::socket(PF_INET, SOCK_STREAM, 0);
+        socket_handle socket = ff_socket(AF_INET, SOCK_STREAM, 0);
         if (socket == INVALID_SOCKET_HANDLE)
         {
             return INVALID_SOCKET_HANDLE;
@@ -246,13 +247,13 @@ namespace FIX
             socket_setsockopt(socket, SO_REUSEADDR);
         }
 
-        int result = bind(socket, reinterpret_cast<sockaddr *>(&address), socklen);
+        int result = ff_bind(socket, reinterpret_cast<linux_sockaddr *>(&address), socklen);
 
         if (result == BIND_SOCKET_ERROR)
         {
             return INVALID_SOCKET_HANDLE;
         }
-        result = listen(socket, SOMAXCONN);
+        result = ff_listen(socket, SOMAXCONN);
         if (result == LISTEN_SOCKET_ERROR)
         {
             return INVALID_SOCKET_HANDLE;
@@ -262,7 +263,7 @@ namespace FIX
 
     auto socket_createConnector() -> socket_handle
     {
-        return ::socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        return ff_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     }
 
     auto socket_connect(socket_handle socket, const char *address, int port) -> int
@@ -279,7 +280,7 @@ namespace FIX
         addr.sin_addr.s_addr = inet_addr(hostname);
 
         int result = mt_connect(socket, reinterpret_cast<sockaddr *>(&addr),
-                                sizeof(addr), 3000);
+                                sizeof(addr), 10000);
 
         return result;
     }
@@ -306,7 +307,7 @@ namespace FIX
     void socket_close(socket_handle s)
     {
         ff_shutdown(s, 2);
-        close(s);
+        ff_close(s);
     }
 
     auto socket_get_last_error() -> std::string
@@ -348,11 +349,8 @@ namespace FIX
             level = IPPROTO_TCP;
         }
 
-#ifdef _MSC_VER
-        return ::setsockopt(s, level, opt, (char *)&optval, sizeof(optval));
-#else
-        return ::setsockopt(s, level, opt, &optval, sizeof(optval));
-#endif
+        // Use F-Stack's setsockopt for F-Stack sockets
+        return ff_setsockopt(s, level, opt, &optval, sizeof(optval));
     }
 
     auto socket_getsockopt(socket_handle s, int opt, int &optval) -> int
@@ -363,17 +361,14 @@ namespace FIX
             level = IPPROTO_TCP;
         }
 
-#ifdef _MSC_VER
-        int length = sizeof(int);
-#else
-        socklen_t length = sizeof(socklen_t);
-#endif
+        socklen_t length = sizeof(int);
 
-        return ::getsockopt(s, level, opt, (char *)&optval, &length);
+        // Use F-Stack's getsockopt for F-Stack sockets
+        return ff_getsockopt(s, level, opt, &optval, &length);
     }
 
 #ifndef _MSC_VER
-    auto socket_fcntl(int s, int opt, int arg) -> int { return ::fcntl(s, opt, arg); }
+    auto socket_fcntl(int s, int opt, int arg) -> int { return ff_fcntl(s, opt, arg); }
 
     auto socket_getfcntlflag(int s, int arg) -> int
     {
@@ -388,13 +383,9 @@ namespace FIX
 
     void socket_setnonblock(socket_handle socket)
     {
-#ifdef _MSC_VER
-        u_long opt = 1;
-        ::ioctlsocket(socket, FIONBIO, &opt);
-#else
+        // Use F-Stack's ioctl for F-Stack sockets
         int on = 1;
-        ::ioctl(socket, FIONBIO, &on);
-#endif
+        ff_ioctl(socket, FIONBIO, &on);
     }
     auto socket_isValid(socket_handle socket) -> bool
     {

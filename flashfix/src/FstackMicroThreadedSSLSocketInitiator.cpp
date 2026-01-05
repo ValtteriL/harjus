@@ -26,9 +26,9 @@ namespace FIX
         const SessionSettings &settings, int argc, char *argv[]) EXCEPT(ConfigError)
         : Initiator(application, factory, settings), m_lastConnect(0),
           m_reconnectInterval(30), m_noDelay(false), m_sendBufSize(0),
-          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr)
+          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr),
+          m_argc(argc), m_argv(argv)
     {
-        mt_init_frame(argc, argv);
         socket_init();
     }
 
@@ -37,9 +37,9 @@ namespace FIX
         const SessionSettings &settings, LogFactory &logFactory, int argc, char *argv[]) EXCEPT(ConfigError)
         : Initiator(application, factory, settings, logFactory), m_lastConnect(0),
           m_reconnectInterval(30), m_noDelay(false), m_sendBufSize(0),
-          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr)
+          m_rcvBufSize(0), m_sslInit(false), m_ctx(nullptr), m_cert(nullptr), m_key(nullptr),
+          m_argc(argc), m_argv(argv)
     {
-        mt_init_frame(argc, argv);
         socket_init();
     }
 
@@ -133,6 +133,11 @@ namespace FIX
 
     void FstackMicroThreadedSSLSocketInitiator::onStart()
     {
+        // Initialize F-Stack microthread frame on the worker thread
+        // This must be done here, not in constructor, because socket operations
+        // require F-Stack's thread-local state to be initialized on this thread
+        mt_init_frame(m_argc, m_argv);
+
         while (!isStopped())
         {
             time_t now = 0;
@@ -210,6 +215,10 @@ namespace FIX
             }
 
             socket_handle socket = socket_createConnector();
+
+            // Set socket to non-blocking mode for microthread I/O
+            socket_setnonblock(socket);
+
             if (m_noDelay)
             {
                 socket_setsockopt(socket, TCP_NODELAY);
@@ -305,9 +314,12 @@ namespace FIX
 
         pInitiator->lock();
 
+        pInitiator->getLog()->onEvent("socket fd=" + IntConvertor::convert(socket));
+
         if (!pConnection->connect())
         {
-            pInitiator->getLog()->onEvent("Connection failed");
+            pInitiator->getLog()->onEvent("Connection failed, errno=" +
+                                          IntConvertor::convert(errno));
             pConnection->disconnect();
             SSL *ssl = pConnection->sslObject();
             delete pConnection;
@@ -317,10 +329,20 @@ namespace FIX
         }
 
         // Do the SSL handshake.
-        int rc = SSL_connect(pConnection->sslObject());
-        if (rc <= 0)
+        while (true)
         {
+            int rc = SSL_connect(pConnection->sslObject());
+            if (rc == 1)
+            {
+                break;
+            }
+
             int err = SSL_get_error(pConnection->sslObject(), rc);
+            if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
+            {
+                continue;
+            }
+
             pInitiator->getLog()->onEvent("SSL_connect failed with SSL error " +
                                           IntConvertor::convert(err));
             pConnection->disconnect();

@@ -1,5 +1,7 @@
 #include "FStackSSLBIO.h"
+#include <cerrno>
 #include <climits>
+#include <cstring>
 #include <unistd.h>
 
 namespace FIX
@@ -38,10 +40,13 @@ namespace FIX
             return 0;
 
         // infinite timeout https://deepwiki.com/F-Stack/f-stack/4.2-micro-thread-integration#timeout-strategy
-        ssize_t r = NS_MICRO_THREAD::mt_read(fd, out, outl, -1);
+        // Use a large timeout instead of -1 to avoid potential issues with infinite timeout implementation
+        // Use mt_recv instead of mt_read as it might be more reliable for sockets
+        ssize_t r = NS_MICRO_THREAD::mt_recv(fd, out, outl, 0, 1000);
+        int saved_errno = errno;
 
         BIO_clear_retry_flags(b);
-        if (r <= 0 && errno == EAGAIN)
+        if (r <= 0 && (saved_errno == EAGAIN || saved_errno == ETIME))
         {
             BIO_set_retry_read(b);
         }
@@ -59,11 +64,13 @@ namespace FIX
         if (in == nullptr || inl == 0)
             return 0;
 
-        // 1s timeout https://deepwiki.com/F-Stack/f-stack/4.2-micro-thread-integration#timeout-strategy
-        ssize_t r = NS_MICRO_THREAD::mt_write(fd, in, inl, 1000);
+        // 30s timeout https://deepwiki.com/F-Stack/f-stack/4.2-micro-thread-integration#timeout-strategy
+        // Use mt_send instead of mt_write
+        ssize_t r = NS_MICRO_THREAD::mt_send(fd, in, inl, 0, 30000);
+        int saved_errno = errno;
 
         BIO_clear_retry_flags(b);
-        if (r <= 0 && errno == EAGAIN)
+        if (r <= 0 && (saved_errno == EAGAIN || saved_errno == ETIME))
         {
             BIO_set_retry_write(b);
         }
@@ -167,7 +174,13 @@ namespace FIX
         if (ret == nullptr)
             return nullptr;
 
-        BIO_set_fd(ret, fd, close_flag);
+        // Set fd and close_flag directly instead of using BIO_set_fd
+        // BIO_set_fd uses BIO_int_ctrl which passes a pointer to a stack variable,
+        // but our ctrl handler was interpreting the arguments incorrectly.
+        // Setting directly is simpler and avoids the issue.
+        BIO_set_data(ret, (void *)(long)fd);
+        BIO_set_init(ret, 1);
+        BIO_set_shutdown(ret, close_flag);
         return ret;
     }
 }

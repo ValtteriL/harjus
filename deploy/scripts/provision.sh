@@ -3,8 +3,22 @@
 
 set -e
 
+# Set shell to bash
+sudo chsh -s /bin/bash vagrant
+
 # Install dependencies
-apt-get install -y \
+sudo apt-get update && \
+    sudo apt-get install -y --no-install-recommends \
+    build-essential \
+    cmake \
+    ninja-build \
+    git \
+    just \
+    libdpdk-dev \
+    wget \
+    ca-certificates \
+    python3 \
+    python-is-python3 \
     linux-headers-$(uname -r) \
     curl \
     dpdk \
@@ -13,5 +27,4 @@ apt-get install -y \
     dpdk-dev \
     libdpdk-dev \
     net-tools \
-    pkg-config \
-    cmake
+    bc
