@@ -51,6 +51,24 @@ if ! type "bc" > /dev/null 2>&1; then
     exit
 fi
 
+# Cleanup previous instances
+app_name=$(basename ${bin})
+echo "Cleaning up previous instances of ${app_name}..."
+pkill -x ${app_name} || true
+sleep 2
+pkill -9 -x ${app_name} || true
+
+# Clean up DPDK/F-Stack artifacts
+echo "Cleaning up DPDK/F-Stack artifacts..."
+rm -rf /var/run/dpdk/*
+rm -f /var/run/.rte_config
+rm -f /var/run/.rte_hugepage_info
+# Clean hugepages
+rm -f /mnt/huge/*
+
+# Kill all child processes on SIGINT or SIGTERM
+trap 'pkill -P $$; exit' SIGINT SIGTERM
+
 allcmask0x=`cat ${conf}|grep lcore_mask|awk -F '=' '{print $2}'`
 ((allcmask=16#$allcmask0x))
 
@@ -78,3 +96,6 @@ do
         ${bin} --conf ${conf} --proc-type=secondary --proc-id=${proc_id} ${others} &
     fi
 done
+
+# wait for all background processes to finish
+wait
