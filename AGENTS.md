@@ -12,31 +12,51 @@ This is a latency-sensitive Linux C++ project. We prioritize runtime performance
 - **Task Runner**: just (All entry points are defined here)
 - **Testing**: Google Test (gtest) managed via CTest. Flashfix library uses Catch2
 - **CI/CD**: Jenkins
-- **IDE**: VSCode (recommended) with clangd
-- **Development VM**: Vagrant (for isolated development environment)
+- **IDE**: VSCode (recommended) with clangd, connected via Remote SSH
+- **Development Environment**: Vagrant VM (required for DPDK support)
 
 ## Development Environment Setup
 
-Ensure the following are installed
+Development is done inside a Vagrant VM accessed via VSCode Remote SSH. This ensures a consistent environment with all dependencies (including DPDK for kernel bypass networking) pre-installed.
 
-1. cmake
-2. libdpdk-dev
-3. dpdk
+### Prerequisites (Host Machine)
 
-For Vagrant-based development, ensure VirtualBox and Vagrant are installed.
+1. VirtualBox
+2. Vagrant
+3. VSCode with Remote - SSH extension
+
+### Setting Up
+
+```bash
+vagrant up
+```
+
+By default, the VM is allocated 50% of your host's CPU and RAM. Override with environment variables:
+
+```bash
+VM_CPUS=8 VM_RAM_GB=16 vagrant up
+```
+
+### VM Resource Configuration
+
+| Environment Variable | Description         | Default          |
+| -------------------- | ------------------- | ---------------- |
+| `VM_CPUS`            | Number of CPU cores | 50% of host CPUs |
+| `VM_RAM_GB`          | RAM in GB           | 50% of host RAM  |
 
 ## Workflow & Commands
 
 We use just as the standard command runner. Do not run raw CMake commands unless debugging the build system itself.
 
-| Command | Description |
-|---|---|
-| `just build` | Configures and builds Harjus (Incremental). |
-| `just test` | Runs Harjus unit tests. |
-| `just release <version>` | Builds harjus release with given version. |
-| `just test-flashfix` | Runs Flashfix unit tests. |
-| `just fstack release` | Configures and builds F-Stack to be used as a dependency. |
-| `just vagrant-debug` | Runs Debug build of Harjus in Vagrant. |
+### Build Commands
+
+| Command                  | Description                                               |
+| ------------------------ | --------------------------------------------------------- |
+| `just build`             | Configures and builds Harjus (Incremental).               |
+| `just test`              | Runs Harjus unit tests.                                   |
+| `just release <version>` | Builds harjus release with given version.                 |
+| `just test-flashfix`     | Runs Flashfix unit tests.                                 |
+| `just fstack release`    | Configures and builds F-Stack to be used as a dependency. |
 
 ## Coding Guidelines (Latency Sensitive)
 
@@ -44,20 +64,20 @@ Performance is a critical feature. Adhere to these strict guidelines:
 
 1. **Hot Paths**: Identify critical paths marked with // HOT PATH.
 
-    - **No Heap Allocations**: Avoid new, malloc, std::shared_ptr, std::vector resizing, or std::string creation in the hot path. Use pre-allocated pools or stack memory.
-    - **No Exceptions**: Exceptions are for fatal startup/config errors only. Use error codes or std::expected/std::optional for runtime flow control.
-    - **No Blocking I/O**: All I/O must be non-blocking (io_uring/epoll) or offloaded to dedicated threads.
-    - **No Locking**: Avoid std::mutex in hot paths. Use lock-free structures or single-writer/single-reader ring buffers if thread synchronization is required.
+   - **No Heap Allocations**: Avoid new, malloc, std::shared_ptr, std::vector resizing, or std::string creation in the hot path. Use pre-allocated pools or stack memory.
+   - **No Exceptions**: Exceptions are for fatal startup/config errors only. Use error codes or std::expected/std::optional for runtime flow control.
+   - **No Blocking I/O**: All I/O must be non-blocking (io_uring/epoll) or offloaded to dedicated threads.
+   - **No Locking**: Avoid std::mutex in hot paths. Use lock-free structures or single-writer/single-reader ring buffers if thread synchronization is required.
 
 2. **Memory Management**:
 
-    - Prefer std::unique_ptr over raw pointers.
-    - Use std::span or std::string_view for passing buffers to avoid copies.
-    - Cache locality is key; prefer "Structure of Arrays" (SoA) or flat data structures over pointer chasing.
+   - Prefer std::unique_ptr over raw pointers.
+   - Use std::span or std::string_view for passing buffers to avoid copies.
+   - Cache locality is key; prefer "Structure of Arrays" (SoA) or flat data structures over pointer chasing.
 
 3. **Style**:
-    - Code must be formatted via clang-format before commit.
-    - All clang-tidy warnings are treated as errors in CI.
+   - Code must be formatted via clang-format before commit.
+   - All clang-tidy warnings are treated as errors in CI.
 
 ## Project Structure
 

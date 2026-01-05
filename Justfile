@@ -5,21 +5,9 @@ mod fstack
 default:
     just --list --unsorted
 
-# Install build and runtime dependencies
-provision:
-    sudo ./deploy/scripts/provision.sh
-
-# Initialize system for kernel bypass
-initialize:
-    sudo ./deploy/scripts/initialize.sh
-
 # Build Harjus
 build:
     conan build --build=missing --profile:all conan-profile
-
-# Clean Harjus from conan cache
-clean:
-    conan cache clean
 
 # Run unit tests
 test:
@@ -29,6 +17,9 @@ test:
 run-debug:
     ./flashfix/start.sh -b ./build/Debug/src/harjus -c ./flashfix/config.ini
 
+run-release:
+    ./flashfix/start.sh -b ./build/Release/src/harjus -c ./flashfix/config.ini
+
 # Run flashfix unit tests
 test-flashfix:
     ./build/Debug/flashfix/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
@@ -36,7 +27,3 @@ test-flashfix:
 # Build harjus release
 release version:
     conan create . --version={{version}} --build=missing --profile:all conan-profile
-
-# Run on-demand vagrant provision script
-vagrant-debug:
-    vagrant ssh -- 'cd harjus && sudo just run-debug'

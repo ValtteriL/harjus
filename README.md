@@ -23,17 +23,33 @@ Exploiting triangular arbitrage opportunities in Binance testnet
 
 ## Requirements
 
-- cmake
-- gcc
-- libdpdk-dev
+- VirtualBox
+- Vagrant
+- VSCode with Remote - SSH extension
 
 ## Development
 
+Development is done inside a Vagrant VM accessed via VSCode Remote SSH. The VM provides a consistent development environment with all necessary dependencies pre-installed.
+
 ```bash
-just
+vagrant up
 ```
 
-### Test
+By default, the VM is allocated 50% of your host's CPU and RAM. You can override this with environment variables:
+
+```bash
+# Allocate 8 CPUs and 16 GB RAM
+VM_CPUS=8 VM_RAM_GB=16 vagrant up
+```
+
+### VM Resource Configuration
+
+| Environment Variable | Description                     | Default          |
+| -------------------- | ------------------------------- | ---------------- |
+| `VM_CPUS`            | Number of CPU cores to allocate | 50% of host CPUs |
+| `VM_RAM_GB`          | Amount of RAM in GB to allocate | 50% of host RAM  |
+
+## Test
 
 Run unit tests
 
@@ -52,12 +68,6 @@ Build harjus
 ```bash
 just build
 ```
-
-### Automatic builds
-
-Harjus packages are build automatically by CI/CD and pushed to S3. If the quality stage succeeds and the push is to the `main` branch, a build is made and its pushed with git hash tag and the `latest` tag.
-
-When a special release tag (releases/$semver) is pushed to any commit, if the quality stage succeeds, CI/CD builds a package with the $semver as the version string.
 
 ## Release
 
