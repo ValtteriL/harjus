@@ -1,3 +1,4 @@
+#include "Arbmapper.h"
 #include "Configuration.h"
 #include "Exchange.h"
 #include "FixConfig.h"
@@ -15,6 +16,7 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 #include <thread>
 #include <unordered_set>
@@ -87,16 +89,31 @@ auto main(int argc, char *argv[]) -> int
 
     // calculate trading paths
     BOOST_LOG_TRIVIAL(debug) << "Calculating trading paths";
-#ifdef NDEBUG
-    auto tradingPaths = getTradingPaths(symbolMap, config);
-#else
-    // speedup sanitized builds by hardcoding trading paths
-    std::vector<std::vector<Trade>> tradingPaths = {{
-        Trade{&symbolMap.at("BTCUSDT"), Position::LONG},
-        Trade{&symbolMap.at("ETHBTC"), Position::LONG},
-        Trade{&symbolMap.at("ETHUSDT"), Position::SHORT},
-    }};
-#endif
+
+    std::vector<std::vector<Trade>> tradingPaths;
+    auto staticPaths = config.getStaticTradingPaths();
+
+    if (!staticPaths.empty())
+    {
+        BOOST_LOG_TRIVIAL(info) << "Using static trading paths from configuration";
+        for (const auto &path : staticPaths)
+        {
+            std::vector<Trade> tradePath;
+            for (const auto &[symbolStr, position] : path)
+            {
+                if (symbolMap.find(symbolStr) == symbolMap.end())
+                {
+                    throw std::runtime_error("Symbol not found in symbol map: " + symbolStr);
+                }
+                tradePath.emplace_back(&symbolMap.at(symbolStr), position);
+            }
+            tradingPaths.push_back(tradePath);
+        }
+    }
+    else
+    {
+        tradingPaths = getTradingPaths(symbolMap, config);
+    }
 
     // Extract the list of symbols for subscription
     auto symbols = getUniqueSymbolsForTradingPaths(tradingPaths);
