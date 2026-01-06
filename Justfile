@@ -5,18 +5,23 @@ mod fstack
 default:
     just --list --unsorted
 
-# Build Harjus
+# Build Harjus in debug mode
 build:
     conan build --build=missing --profile:all conan-profile
+
+# Build Harjus release
+build-release:
+    conan build --build=missing --profile:all conan-profile --settings build_type=Release
 
 # Run unit tests
 test:
     ctest --preset conan-debug
 
 # Run debug build
-run-debug:
+run:
     ./flashfix/start.sh -b ./build/Debug/src/harjus -c ./flashfix/config.ini
 
+# Run release build
 run-release:
     ./flashfix/start.sh -b ./build/Release/src/harjus -c ./flashfix/config.ini
 
