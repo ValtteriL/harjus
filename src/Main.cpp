@@ -122,8 +122,15 @@ auto main(int argc, char *argv[]) -> int
     BOOST_LOG_TRIVIAL(info) << "There are " << symbolMap.size()
                             << " available trading symbols";
 
-    BOOST_LOG_TRIVIAL(info) << "Focusing only on " << config.getAssets().size()
-                            << " assets";
+    if (config.getAssets().empty())
+    {
+        BOOST_LOG_TRIVIAL(info) << "Focusing on all assets ";
+    }
+    else
+    {
+        BOOST_LOG_TRIVIAL(info) << "Focusing only on " << config.getAssets().size()
+                                << " assets";
+    }
 
     BOOST_LOG_TRIVIAL(info) << "These form " << tradingPaths.size()
                             << " trading paths";
