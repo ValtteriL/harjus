@@ -21,7 +21,10 @@ sudo apt-get update && \
     linux-headers-$(uname -r) \
     libdpdk-dev \
     dpdk-dev \
-    curl
+    curl \
+    clangd \
+    clang-tidy \
+    clang-format
 
 # Install conan
 wget https://github.com/conan-io/conan/releases/download/2.23.0/conan-2.23.0-amd64.deb && \
