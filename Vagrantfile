@@ -59,6 +59,10 @@ Vagrant.configure("2") do |config|
   config.vm.provision "initialize", type: "shell",  
     path: "deploy/scripts/initialize.sh", run: "always"
 
+  # Configure disk size
+  config.vm.disk :disk, size: "50GB", primary: true
+
+  # VirtualBox-specific configuration
   config.vm.provider "virtualbox" do |vb|
 
     vb.cpus = vm_cpus
