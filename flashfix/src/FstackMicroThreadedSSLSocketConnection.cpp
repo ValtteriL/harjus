@@ -4,6 +4,7 @@
 #include "UtilitySSL.h"
 #include <mt_api.h>
 #include <sys/poll.h>
+#include <sys/socket.h>
 
 namespace FIX
 {
@@ -115,6 +116,30 @@ namespace FIX
             int errCodeSSL = 0;
             ERR_clear_error();
 
+            bool readyToCheck = false;
+            {
+                Locker locker(m_mutex);
+                if (SSL_pending(m_ssl) > 0)
+                    readyToCheck = true;
+            }
+
+            if (!readyToCheck)
+            {
+                char c;
+                // Peek with timeout to wait for data without holding lock
+                ssize_t r = NS_MICRO_THREAD::mt_recv(m_socket, &c, 1, MSG_PEEK, 1000);
+                if (r > 0)
+                {
+                    readyToCheck = true;
+                }
+                else
+                {
+                    size = 0;
+                    errCodeSSL = SSL_ERROR_WANT_READ;
+                }
+            }
+
+            if (readyToCheck)
             {
                 Locker locker(m_mutex);
                 // This will block in BIO_read (which calls mt_recv) until data is available or timeout

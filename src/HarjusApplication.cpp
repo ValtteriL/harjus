@@ -16,6 +16,7 @@
 #include <cstddef>
 #include <fix44/MarketDataRequestReject.h>
 #include <fix44/Reject.h>
+#include <ostream>
 #include <vector>
 
 extern std::atomic<bool> isShuttingDown;
@@ -47,21 +48,18 @@ void Application::onLogon(const FIX::SessionID &sessionID)
 {
     BOOST_LOG_TRIVIAL(debug) << "FIX logon - " << sessionID;
 
-    // subscribe to symbols if market data session
-    if (sessionID.getSessionQualifier().starts_with("MARKETDATA"))
+    nLoggedOn++;
+
+    // subscribe to symbols after all sessions are logged on
+    if (nLoggedOn == (1 + marketDataSessionIDs.size())) // 1 for order entry session
     {
 
-        // Subscribe to market data for all symbols
-        if (subscribeToSymbols(symbols))
-        {
-            BOOST_LOG_TRIVIAL(debug)
-                << "Subscribed to " << symbols.size() << " symbols";
-        }
-        else
-        {
-            std::cerr << "Failed to subscribe to market data." << std::endl;
-            BOOST_LOG_TRIVIAL(error) << "Failed to subscribe to market data.";
-        }
+        if (!subscribeToSymbols(symbols))
+            throw std::runtime_error(
+                "Failed to subscribe to market data on logon.");
+
+        BOOST_LOG_TRIVIAL(debug)
+            << "Subscribed to " << symbols.size() << " symbols";
     }
 }
 
@@ -183,7 +181,7 @@ auto Application::subscribeToSymbols(const std::vector<std::string> &symbols)
     try
     {
         size_t symbolIndex = 0;
-        for (size_t i = 0; i < numSessions; ++i)
+        for (size_t i = 0; i < numSessions; i++)
         {
             size_t numSymbolsForThisSession =
                 symbolsPerSession + (i < remainder ? 1 : 0);
@@ -202,6 +200,10 @@ auto Application::subscribeToSymbols(const std::vector<std::string> &symbols)
             std::string reqId = "MDReq-" + std::to_string(std::time(nullptr)) + "-" +
                                 std::to_string(i);
             marketDataRequest.set(FIX::MDReqID(reqId));
+
+            BOOST_LOG_TRIVIAL(debug)
+                << "Subscribing to " << chunk.size() << " symbols" << " on session " << marketDataSessionIDs[i].toString()
+                << " with ReqID " << reqId;
 
             // Set subscription type (1 = Subscribe)
             marketDataRequest.set(FIX::SubscriptionRequestType(

@@ -21,6 +21,7 @@
 #include <SessionID.h>
 #include <Values.h>
 
+#include <cstddef>
 #include <fix44/ExecutionReport.h>
 #include <fix44/MarketDataIncrementalRefresh.h>
 #include <fix44/MarketDataRequest.h>
@@ -45,6 +46,7 @@ private:
     std::unordered_map<std::string, Symbol> *symbolMap;
     std::vector<std::string> symbols{};
     Worker worker;
+    size_t nLoggedOn{0};
 
     /**
      * Called when quickfix creates a new session.
