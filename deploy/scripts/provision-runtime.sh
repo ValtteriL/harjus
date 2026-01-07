@@ -10,4 +10,5 @@ sudo apt-get update && \
     dpdk-doc \
     dpdk-kmods-dkms \
     net-tools \
-    bc
+    bc \
+    sysstat
