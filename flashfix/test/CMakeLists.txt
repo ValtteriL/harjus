@@ -1,10 +1,10 @@
-add_definitions(-DCATCH_AMALGAMATED_CUSTOM_MAIN)
+include(CTest)
 
 set (ut_SOURCES
   catch_amalgamated.cpp
   ut.cpp
   DataDictionaryTestCase.cpp
-  DataDictionaryTestCase.cpp
+  DataDictionaryProviderTestCase.cpp
   DictionaryTestCase.cpp
   FieldBaseTestCase.cpp
   FieldConvertorsTestCase.cpp
@@ -35,14 +35,23 @@ set (ut_SOURCES
   UtcTimeStampTestCase.cpp
   UtilityTestCase.cpp
 )
+
+add_definitions(-DCATCH_AMALGAMATED_CUSTOM_MAIN)
   
-add_executable(ut ${ut_SOURCES})
+add_executable(FlashfixTest ${ut_SOURCES})
   
-target_include_directories(ut 
+target_include_directories(FlashfixTest 
   PRIVATE include
 )
 
-target_link_libraries(ut
+target_link_libraries(FlashfixTest
   PRIVATE
     flashfix_objs
+)
+
+# Register with CTest so it runs with `just test`
+add_test(
+  NAME FlashfixTest
+  COMMAND FlashfixTest --flashfix-spec-path ${CMAKE_CURRENT_SOURCE_DIR}/../spec
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..
 )

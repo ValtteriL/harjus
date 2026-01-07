@@ -7,7 +7,7 @@ target_link_libraries(MainTest PRIVATE
   GTest::gtest
 )
 
-gtest_discover_tests(MainTest)
+gtest_discover_tests(MainTest DISCOVERY_TIMEOUT 30)
 
 add_executable(ReservedTradesTest ReservedTradesTest.cpp)
 target_link_libraries(ReservedTradesTest PRIVATE
@@ -18,7 +18,7 @@ target_link_libraries(ReservedTradesTest PRIVATE
   Boost::boost
 )
 
-gtest_discover_tests(ReservedTradesTest)
+gtest_discover_tests(ReservedTradesTest DISCOVERY_TIMEOUT 30)
 
 add_executable(BalanceTest BalanceTest.cpp)
 target_link_libraries(BalanceTest PRIVATE
@@ -29,7 +29,7 @@ target_link_libraries(BalanceTest PRIVATE
   boost::boost
 )
 
-gtest_discover_tests(ReservedTradesTest)
+gtest_discover_tests(BalanceTest DISCOVERY_TIMEOUT 30)
 
 add_executable(Ed25519Test Ed25519Test.cpp)
 target_link_libraries(Ed25519Test PRIVATE
@@ -41,7 +41,7 @@ target_link_libraries(Ed25519Test PRIVATE
   Boost::boost
 )
 
-gtest_discover_tests(Ed25519Test)
+gtest_discover_tests(Ed25519Test DISCOVERY_TIMEOUT 30)
 
 
 add_executable(ExchangeTest ExchangeTest.cpp)
@@ -57,7 +57,7 @@ target_link_libraries(ExchangeTest PRIVATE
   Boost::boost
 )
 
-gtest_discover_tests(ExchangeTest)
+gtest_discover_tests(ExchangeTest DISCOVERY_TIMEOUT 30)
 
 
 add_executable(ArbmapperTest ArbmapperTest.cpp)
@@ -70,7 +70,7 @@ target_link_libraries(ArbmapperTest PRIVATE
   Boost::boost
 )
 
-gtest_discover_tests(ArbmapperTest)
+gtest_discover_tests(ArbmapperTest DISCOVERY_TIMEOUT 30)
 
 
 add_executable(OpportunityTest OpportunityTest.cpp)
@@ -82,7 +82,7 @@ target_link_libraries(OpportunityTest PRIVATE
   Boost::boost
 )
 
-gtest_discover_tests(OpportunityTest)
+gtest_discover_tests(OpportunityTest DISCOVERY_TIMEOUT 30)
 
 add_executable(WorkerTest WorkerTest.cpp)
 target_link_libraries(WorkerTest PRIVATE
@@ -94,7 +94,7 @@ target_link_libraries(WorkerTest PRIVATE
   Boost::boost
 )
 
-gtest_discover_tests(WorkerTest)
+gtest_discover_tests(WorkerTest DISCOVERY_TIMEOUT 30)
 
 add_executable(PreciseNumberTest PreciseNumberTest.cpp)
 target_link_libraries(PreciseNumberTest PRIVATE
@@ -106,4 +106,4 @@ target_link_libraries(PreciseNumberTest PRIVATE
   Boost::boost
 )
 
-gtest_discover_tests(PreciseNumberTest)
+gtest_discover_tests(PreciseNumberTest DISCOVERY_TIMEOUT 30)

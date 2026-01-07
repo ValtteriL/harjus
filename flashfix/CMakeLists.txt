@@ -805,5 +805,6 @@ install(DIRECTORY spec
 
 # TESTS
 if(HARJUS_TESTS)
+    include(CTest)
     add_subdirectory(test)
 endif()

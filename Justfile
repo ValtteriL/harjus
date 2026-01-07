@@ -25,10 +25,6 @@ run:
 run-release:
     sudo ./flashfix/start.sh -b ./build/Release/src/harjus -c ./flashfix/config.ini
 
-# Run flashfix unit tests
-test-flashfix:
-    ./build/Debug/flashfix/test/ut --flashfix-config-file ./flashfix/test-util/cfg/ut.cfg --flashfix-spec-path ./flashfix/spec
-
 # Build harjus release
 release version:
     conan create . --version={{version}} --build=missing --profile:all conan-profile

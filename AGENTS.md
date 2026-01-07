@@ -58,7 +58,6 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 | `just run`               | Runs debug build.                                         |
 | `just run-release`       | Runs release build.                                       |
 | `just release <version>` | Builds release with given version.                        |
-| `just test-flashfix`     | Runs Flashfix unit tests.                                 |
 | `just fstack release`    | Configures and builds F-Stack to be used as a dependency. |
 
 ## Coding Guidelines (Latency Sensitive)
