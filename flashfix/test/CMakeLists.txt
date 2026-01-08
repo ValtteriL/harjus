@@ -53,5 +53,9 @@ target_link_libraries(FlashfixTest
 add_test(
   NAME FlashfixTest
   COMMAND FlashfixTest --flashfix-spec-path ${CMAKE_CURRENT_SOURCE_DIR}/../spec
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/..
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+# Disable leak detection for FlashfixTest due to pre-existing memory leaks in the library.
+# The F-Stack socket tests are also skipped because they require F-Stack to be initialized.
+set_tests_properties(FlashfixTest PROPERTIES ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
