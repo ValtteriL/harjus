@@ -24,7 +24,8 @@ sudo apt-get update && \
     curl \
     clangd \
     clang-tidy \
-    clang-format
+    clang-format \
+    gdb
 
 # Install conan
 wget https://github.com/conan-io/conan/releases/download/2.23.0/conan-2.23.0-amd64.deb && \
