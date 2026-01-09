@@ -7,10 +7,10 @@
  * implements the FIX::Application interface and handles FIX messages.
  */
 
-#include "ExecutionReport.h"
 #include "IApplication.h"
 #include "IConfiguration.h"
 #include "PriceUpdate.h"
+#include "SessionSettings.h"
 #include "Worker.h"
 
 #include <Field.h>
@@ -31,6 +31,8 @@
 #include <fix44/OrderCancelReplaceRequest.h>
 #include <fix44/OrderCancelRequest.h>
 
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 class Application : public FIX::Application,
@@ -41,12 +43,12 @@ class Application : public FIX::Application,
 private:
     std::string username;
     std::string privateKeySeed;
-    std::vector<FIX::SessionID> marketDataSessionIDs{};
     FIX::SessionID orderEntrySessionID{};
     std::unordered_map<std::string, Symbol> *symbolMap;
     std::vector<std::string> symbols{};
     Worker worker;
-    size_t nLoggedOn{0};
+    FIX::SessionSettings sessionSettings;
+    std::unordered_map<std::string, std::vector<std::string>> marketSessionQualifierToSymbolsMap{};
 
     /**
      * Called when quickfix creates a new session.
@@ -145,13 +147,28 @@ private:
         const FIX44::MarketDataIncrementalRefresh &message)
         -> std::vector<PriceUpdate>;
 
+    // other helpers
+    /**
+     * Divide symbols evenly into vector of vectors
+     */
+    auto divideSymbolsEvenly(const std::vector<std::string> &symbols,
+                             size_t numSessions) -> std::vector<std::vector<std::string>>;
+
+    /**
+     * @brief Subscribe session to market data for a list of symbols
+     * @param sessionID FIX session ID
+     * @param symbols Vector of trading symbols to subscribe to
+     * @return true if subscription request was sent successfully, false
+     * otherwise
+     */
+    bool subscribeMarketSessionToSymbols(const FIX::SessionID sessionID, const std::vector<std::string> &symbols);
+
 public:
     Application(const IConfiguration &conf,
                 std::unordered_map<std::string, Symbol> &symbolMap,
-                const std::vector<std::string> &symbols, const Worker &worker);
+                const std::vector<std::string> &symbols, const Worker &worker, const FIX::SessionSettings &settings);
 
     void submitOrder(const std::string &id, const std::string &symbol,
                      PreciseNumber qty, PreciseNumber price,
                      Position position) override;
-    bool subscribeToSymbols(const std::vector<std::string> &symbols) override;
 };

@@ -4,6 +4,7 @@
 #include "Globals.h"
 #include "Position.h"
 #include "PriceUpdate.h"
+#include "SessionID.h"
 #include <Field.h>
 #include <FieldTypes.h>
 #include <FixFields.h>
@@ -16,7 +17,6 @@
 #include <cstddef>
 #include <fix44/MarketDataRequestReject.h>
 #include <fix44/Reject.h>
-#include <ostream>
 #include <vector>
 
 extern std::atomic<bool> isShuttingDown;
@@ -24,21 +24,58 @@ extern std::atomic<bool> isShuttingDown;
 Application::Application(
     const IConfiguration &conf,
     std::unordered_map<std::string, Symbol> &symbolMap,
-    const std::vector<std::string> &symbols, const Worker &worker)
+    const std::vector<std::string> &symbols, const Worker &worker, const FIX::SessionSettings &settings)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
-      symbolMap(&symbolMap), symbols(symbols), worker(worker)
+      symbolMap(&symbolMap), symbols(symbols), worker(worker), sessionSettings(settings)
 {
+    // Divide symbols between market data sessions
+    auto sessions = sessionSettings.getSessions();
+    std::erase_if(sessions, [](const FIX::SessionID &x)
+                  { return x.getSessionQualifier().starts_with("MARKETDATA") == false; });
+
+    // ensure at least one market data session for every 1000 symbols
+    if (sessions.size() < symbols.size() / 1000)
+    {
+        throw std::runtime_error(
+            "Not enough market data sessions available for subscription");
+    }
+
+    auto dividedSymbols = divideSymbolsEvenly(symbols, sessions.size());
+
+    int index = 0;
+    for (const auto &sessionID : sessions)
+    {
+        marketSessionQualifierToSymbolsMap[sessionID.getSessionQualifier()] = dividedSymbols[index];
+        index++;
+    }
+}
+
+auto Application::divideSymbolsEvenly(const std::vector<std::string> &symbols,
+                                      size_t numSessions)
+    -> std::vector<std::vector<std::string>>
+{
+    std::vector<std::vector<std::string>> dividedSymbols;
+    size_t totalSymbols = symbols.size();
+    size_t symbolsPerSession = totalSymbols / numSessions;
+    size_t remainder = totalSymbols % numSessions;
+
+    size_t symbolIndex = 0;
+    for (size_t i = 0; i < numSessions; i++)
+    {
+        size_t numSymbolsForThisSession =
+            symbolsPerSession + (i < remainder ? 1 : 0);
+        for (size_t j = 0; j < numSymbolsForThisSession; j++)
+        {
+            dividedSymbols[i].push_back(symbols[symbolIndex++]);
+        }
+    }
+    return dividedSymbols;
 }
 
 void Application::onCreate(const FIX::SessionID &sessionID)
 {
-    // store markert data session IDs if Qualifier starts with MARKETDATA
-    if (sessionID.getSessionQualifier().starts_with("MARKETDATA"))
-    {
-        marketDataSessionIDs.push_back(sessionID);
-    }
     // store order entry session ID if Qualifier is ORDERENTRY
-    else if (sessionID.getSessionQualifier() == "ORDERENTRY")
+    if (sessionID.getSessionQualifier() == "ORDERENTRY")
     {
         orderEntrySessionID = sessionID;
     }
@@ -48,18 +85,12 @@ void Application::onLogon(const FIX::SessionID &sessionID)
 {
     BOOST_LOG_TRIVIAL(debug) << "FIX logon - " << sessionID;
 
-    nLoggedOn++;
+    auto sessionQualifier = sessionID.getSessionQualifier();
 
-    // subscribe to symbols after all sessions are logged on
-    if (nLoggedOn == (1 + marketDataSessionIDs.size())) // 1 for order entry session
+    // subscribe to symbols for market data sessions
+    if (sessionQualifier.starts_with("MARKETDATA"))
     {
-
-        if (!subscribeToSymbols(symbols))
-            throw std::runtime_error(
-                "Failed to subscribe to market data on logon.");
-
-        BOOST_LOG_TRIVIAL(debug)
-            << "Subscribed to " << symbols.size() << " symbols";
+        subscribeMarketSessionToSymbols(sessionID, marketSessionQualifierToSymbolsMap.at(sessionQualifier));
     }
 }
 
@@ -154,86 +185,51 @@ void Application::toApp(FIX::Message &message, const FIX::SessionID &)
     }
 }
 
-auto Application::subscribeToSymbols(const std::vector<std::string> &symbols)
+auto Application::subscribeMarketSessionToSymbols(FIX::SessionID sessionID, const std::vector<std::string> &symbols)
     -> bool
 {
-    if (marketDataSessionIDs.empty())
-    {
-        throw std::runtime_error(
-            "No market data sessions available for subscription");
-    }
-
-    // check at least one session for every 1000 symbols
-    if (marketDataSessionIDs.size() < symbols.size() / 1000)
-    {
-        throw std::runtime_error(
-            "Not enough market data sessions available for subscription");
-    }
-
-    // Split symbols into chunks for each market data session
-    // Distribute symbols evenly across sessions
-
-    size_t numSessions = marketDataSessionIDs.size();
-    size_t totalSymbols = symbols.size();
-    size_t symbolsPerSession = totalSymbols / numSessions;
-    size_t remainder = totalSymbols % numSessions;
-
     try
     {
-        size_t symbolIndex = 0;
-        for (size_t i = 0; i < numSessions; i++)
+
+        FIX44::MarketDataRequest marketDataRequest;
+
+        // Generate a unique request ID for this session's request
+        std::string reqId = "MDReq-" + std::to_string(std::time(nullptr));
+        marketDataRequest.set(FIX::MDReqID(reqId));
+
+        BOOST_LOG_TRIVIAL(debug)
+            << "Subscribing to " << symbols.size() << " symbols" << " on session " << sessionID.toString()
+            << " with ReqID " << reqId;
+
+        // Set subscription type (1 = Subscribe)
+        marketDataRequest.set(FIX::SubscriptionRequestType(
+            FIX::SubscriptionRequestType_SNAPSHOT_AND_UPDATES));
+
+        // Set market depth
+        marketDataRequest.set(FIX::MarketDepth(1)); // 1 = Top of book
+
+        // Create NoMDEntryTypes group for requesting BID and OFFER
+        FIX44::MarketDataRequest::NoMDEntryTypes entryTypeGroup;
+
+        // Add BID entry type (0)
+        entryTypeGroup.set(FIX::MDEntryType(FIX::MDEntryType_BID));
+        marketDataRequest.addGroup(entryTypeGroup);
+
+        // Add OFFER entry type (1)
+        entryTypeGroup.set(FIX::MDEntryType(FIX::MDEntryType_OFFER));
+        marketDataRequest.addGroup(entryTypeGroup);
+
+        // Add all symbols in the current chunk
+        FIX44::MarketDataRequest::NoRelatedSym symbolGroup; // Reuse group object
+        for (const auto &symbol : symbols)
         {
-            size_t numSymbolsForThisSession =
-                symbolsPerSession + (i < remainder ? 1 : 0);
-            if (numSymbolsForThisSession == 0)
-                continue; // Skip if no symbols for this session
-
-            // Get the chunk of symbols for this session
-            auto startIt = symbols.begin() + symbolIndex;
-            auto endIt = startIt + numSymbolsForThisSession;
-            std::vector<std::string> chunk(startIt, endIt);
-            symbolIndex += numSymbolsForThisSession;
-
-            FIX44::MarketDataRequest marketDataRequest;
-
-            // Generate a unique request ID for this session's request
-            std::string reqId = "MDReq-" + std::to_string(std::time(nullptr)) + "-" +
-                                std::to_string(i);
-            marketDataRequest.set(FIX::MDReqID(reqId));
-
-            BOOST_LOG_TRIVIAL(debug)
-                << "Subscribing to " << chunk.size() << " symbols" << " on session " << marketDataSessionIDs[i].toString()
-                << " with ReqID " << reqId;
-
-            // Set subscription type (1 = Subscribe)
-            marketDataRequest.set(FIX::SubscriptionRequestType(
-                FIX::SubscriptionRequestType_SNAPSHOT_AND_UPDATES));
-
-            // Set market depth
-            marketDataRequest.set(FIX::MarketDepth(1)); // 1 = Top of book
-
-            // Create NoMDEntryTypes group for requesting BID and OFFER
-            FIX44::MarketDataRequest::NoMDEntryTypes entryTypeGroup;
-
-            // Add BID entry type (0)
-            entryTypeGroup.set(FIX::MDEntryType(FIX::MDEntryType_BID));
-            marketDataRequest.addGroup(entryTypeGroup);
-
-            // Add OFFER entry type (1)
-            entryTypeGroup.set(FIX::MDEntryType(FIX::MDEntryType_OFFER));
-            marketDataRequest.addGroup(entryTypeGroup);
-
-            // Add all symbols in the current chunk
-            FIX44::MarketDataRequest::NoRelatedSym symbolGroup; // Reuse group object
-            for (const auto &symbol : chunk)
-            {
-                symbolGroup.set(FIX::Symbol(symbol));
-                marketDataRequest.addGroup(symbolGroup);
-            }
-
-            // Send the request to the corresponding market data session
-            FIX::Session::sendToTarget(marketDataRequest, marketDataSessionIDs[i]);
+            symbolGroup.set(FIX::Symbol(symbol));
+            marketDataRequest.addGroup(symbolGroup);
         }
+
+        // Send the request to the corresponding market data session
+        FIX::Session::sendToTarget(marketDataRequest, sessionID);
+
         return true;
     }
     catch (const std::exception &e)

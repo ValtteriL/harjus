@@ -144,7 +144,7 @@ auto main(int argc, char *argv[]) -> int
 
     // Create the worker
     Worker worker{tradingPaths, relativeValueMap, *balance, config.getCommission()};
-    Application application{config, symbolMap, symbols, worker};
+    Application application{config, symbolMap, symbols, worker, settings};
     FIX::MemoryStoreFactory storeFactory{};
     FIX::ScreenLogFactory logFactory{settings};
 

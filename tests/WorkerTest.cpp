@@ -119,9 +119,6 @@ protected:
         : balance({{"BTC", startingAssetBudget}}), tradingPaths({trades}),
           worker(tradingPaths, balance, relativeValues, commission)
     {
-        // Setup mock application behavior
-        EXPECT_CALL(mockApplication, subscribeToSymbols(_))
-            .WillRepeatedly(Return(true));
     }
 
     // Helper method to create a simple opportunity
