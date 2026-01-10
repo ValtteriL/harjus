@@ -1,6 +1,5 @@
 # add libdpdk, libfstack, libmt dependencies
 find_package(OpenSSL REQUIRED)
-find_package(jansson REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBDPDK REQUIRED libdpdk)
 find_package(fstack REQUIRED)
