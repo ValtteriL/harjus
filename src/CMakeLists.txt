@@ -55,9 +55,10 @@ target_link_libraries(harjus
 )
 
 include(GNUInstallDirs)
+
+# Install harjus executable to /usr/sbin
 install(TARGETS harjus
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_SBINDIR}
 )
 
 # for quickfix

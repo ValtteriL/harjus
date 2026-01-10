@@ -796,24 +796,16 @@ target_link_libraries(flashfix_objs
 # include standard installation variables
 include(GNUInstallDirs)
 
-# Install FIX specification files to /share
-install(DIRECTORY spec 
-  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}
-  FILES_MATCHING PATTERN "FIX*.xml"
+# Install config.ini to /etc
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.ini
+    DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}
 )
 
-# copy F-Stack config to binary dir
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/config.ini 
-    ${CMAKE_CURRENT_BINARY_DIR}/config.ini 
-    COPYONLY
-)
-
-# Copy start.sh to binary dir
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/start.sh 
-    ${CMAKE_CURRENT_BINARY_DIR}/start.sh 
-    COPYONLY
+# Install start.sh to /usr/sbin
+install(PROGRAMS
+    ${CMAKE_CURRENT_SOURCE_DIR}/start.sh
+    DESTINATION ${CMAKE_INSTALL_SBINDIR}
 )
 
 # TESTS

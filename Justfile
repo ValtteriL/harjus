@@ -19,8 +19,16 @@ test:
 
 # Run debug build
 run:
-    sudo ./build/Debug/flashfix/start.sh -b ./build/Debug/src/harjus -c ./build/Debug/flashfix/config.ini
+    sudo ./flashfix/start.sh -b ./build/Debug/src/harjus -c ./flashfix/config.ini
 
 # Run release build
 run-release:
-    sudo ./build/Release/flashfix/start.sh -b ./build/Release/src/harjus -c ./build/Release/flashfix/config.ini
+    sudo ./flashfix/start.sh -b ./build/Release/src/harjus -c ./flashfix/config.ini
+
+# Install debug build to a directory (default: ./dist)
+install prefix="./dist":
+    cmake --install build/Debug --prefix {{prefix}}
+
+# Install release build to a directory (default: ./dist)
+install-release prefix="./dist":
+    cmake --install build/Release --prefix {{prefix}}

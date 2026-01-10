@@ -156,3 +156,6 @@ compile_commands.json
 
 # vagrant files
 .vagrant/
+
+# installation
+dist/
