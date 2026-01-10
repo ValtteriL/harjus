@@ -50,15 +50,14 @@ We use just as the standard command runner. Do not run raw CMake commands unless
 
 ### Build Commands
 
-| Command                  | Description                                               |
-| ------------------------ | --------------------------------------------------------- |
-| `just build`             | Configures and build (Incremental).                       |
-| `just test`              | Runs unit tests.                                          |
-| `just build-release`     | Configures and build in Release mode (Incremental).       |
-| `just run`               | Runs debug build.                                         |
-| `just run-release`       | Runs release build.                                       |
-| `just release <version>` | Builds release with given version.                        |
-| `just fstack release`    | Configures and builds F-Stack to be used as a dependency. |
+| Command               | Description                                               |
+| --------------------- | --------------------------------------------------------- |
+| `just build`          | Configures and build (Incremental).                       |
+| `just test`           | Runs unit tests.                                          |
+| `just build-release`  | Configures and build in Release mode (Incremental).       |
+| `just run`            | Runs debug build.                                         |
+| `just run-release`    | Runs release build.                                       |
+| `just fstack release` | Configures and builds F-Stack to be used as a dependency. |
 
 ## Coding Guidelines (Latency Sensitive)
 

@@ -24,7 +24,3 @@ run:
 # Run release build
 run-release:
     sudo ./build/Release/flashfix/start.sh -b ./build/Release/src/harjus -c ./build/Release/flashfix/config.ini
-
-# Build harjus release
-release version:
-    conan create . --version={{version}} --build=missing --profile:all conan-profile
