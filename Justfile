@@ -10,8 +10,8 @@ build:
     conan build --build=missing --profile:all conan-profile
 
 # Build Harjus release
-build-release:
-    conan build --build=missing --profile:all conan-profile --settings build_type=Release
+build-release architecture = "native":
+    conan build --build=missing --profile:all conan-profile --settings build_type=Release -c tools.build:cxxflags="['-march={{architecture}}','-mtune={{architecture}}']"
 
 # Run unit tests
 test:
