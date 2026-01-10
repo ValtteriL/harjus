@@ -802,6 +802,20 @@ install(DIRECTORY spec
   FILES_MATCHING PATTERN "FIX*.xml"
 )
 
+# copy F-Stack config to binary dir
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/config.ini 
+    ${CMAKE_CURRENT_BINARY_DIR}/config.ini 
+    COPYONLY
+)
+
+# Copy start.sh to binary dir
+configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/start.sh 
+    ${CMAKE_CURRENT_BINARY_DIR}/start.sh 
+    COPYONLY
+)
+
 # TESTS
 if(HARJUS_TESTS)
     include(CTest)

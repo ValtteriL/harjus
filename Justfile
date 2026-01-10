@@ -19,11 +19,11 @@ test:
 
 # Run debug build
 run:
-    sudo ./flashfix/start.sh -b ./build/Debug/src/harjus -c ./flashfix/config.ini
+    sudo ./build/Debug/flashfix/start.sh -b ./build/Debug/src/harjus -c ./build/Debug/flashfix/config.ini
 
 # Run release build
 run-release:
-    sudo ./flashfix/start.sh -b ./build/Release/src/harjus -c ./flashfix/config.ini
+    sudo ./build/Release/flashfix/start.sh -b ./build/Release/src/harjus -c ./build/Release/flashfix/config.ini
 
 # Build harjus release
 release version:
