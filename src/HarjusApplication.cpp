@@ -64,9 +64,10 @@ auto Application::divideSymbolsEvenly(const std::vector<std::string> &symbols,
     {
         size_t numSymbolsForThisSession =
             symbolsPerSession + (i < remainder ? 1 : 0);
+        dividedSymbols.emplace_back();
         for (size_t j = 0; j < numSymbolsForThisSession; j++)
         {
-            dividedSymbols[i].push_back(symbols[symbolIndex++]);
+            dividedSymbols.at(i).push_back(symbols.at(symbolIndex++));
         }
     }
     return dividedSymbols;
