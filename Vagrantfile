@@ -57,7 +57,7 @@ Vagrant.configure("2") do |config|
 
   # Prepare host for kernel bypass via f-stack
   config.vm.provision "initialize", type: "shell",  
-    path: "deploy/scripts/initialize.sh", run: "always"
+    path: "deploy/scripts/initialize.sh", args: "enp0s8", run: "always"
 
   # Configure disk size
   config.vm.disk :disk, size: "50GB", primary: true
