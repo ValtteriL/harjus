@@ -32,6 +32,12 @@ do
     esac
 done
 
+# ensure run as root
+if [ "$EUID" -ne 0 ]; then
+    echo "please run as root"
+    exit 1
+fi
+
 # if bin not defined, exit
 if [ -z "${bin}" ]; then
     echo "please specify binary path with -b"
