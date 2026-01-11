@@ -18,8 +18,8 @@ sudo apt-get update && \
     ca-certificates \
     python3 \
     python-is-python3 \
-    linux-headers-$(uname -r) \
     libdpdk-dev \
+    dpdk-doc \
     dpdk-dev \
     curl \
     clangd \
