@@ -189,6 +189,13 @@ void Application::toApp(FIX::Message &message, const FIX::SessionID &)
 auto Application::subscribeMarketSessionToSymbols(FIX::SessionID sessionID, const std::vector<std::string> &symbols)
     -> bool
 {
+    if (symbols.empty())
+    {
+        BOOST_LOG_TRIVIAL(warning)
+            << "No symbols to subscribe for session " << sessionID.toString();
+        return true;
+    }
+
     try
     {
 
