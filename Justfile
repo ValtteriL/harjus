@@ -9,6 +9,7 @@ default:
 build:
     conan build --build=missing --profile:all conan-profile
 
+# check valid architecture options with `gcc --target-help`
 # Build Harjus release
 build-release architecture = "native":
     conan build --build=missing --profile:all conan-profile --settings build_type=Release -c tools.build:cxxflags="['-march={{architecture}}','-mtune={{architecture}}']"
