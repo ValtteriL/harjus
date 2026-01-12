@@ -58,51 +58,6 @@ resource "local_sensitive_file" "ec_key_file" {
 
 # end ssh resources
 
-resource "aws_s3_bucket" "artifact_bucket" {
-  bucket = "harjus-artifacts-${random_id.suffix.hex}"
-}
-
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-
-resource "aws_iam_role" "instance_role" {
-  name = "harjus-instance-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      }
-    }]
-  })
-}
-
-resource "aws_iam_role_policy" "s3_read_policy" {
-  name = "harjus-instance-s3-read"
-  role = aws_iam_role.instance_role.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "s3:GetObject",
-        "s3:ListBucket"
-      ]
-      Resource = [
-        aws_s3_bucket.artifact_bucket.arn,
-        "${aws_s3_bucket.artifact_bucket.arn}/*"
-      ]
-    }]
-  })
-}
-
-resource "aws_iam_instance_profile" "instance_profile" {
-  name = "harjus-instance-profile"
-  role = aws_iam_role.instance_role.name
-}
 
 resource "aws_instance" "instance" {
 
@@ -112,7 +67,6 @@ resource "aws_instance" "instance" {
   instance_type        = "c6in.xlarge"
   key_name             = aws_key_pair.ec_key.key_name
   security_groups      = [aws_security_group.security.name]
-  iam_instance_profile = aws_iam_instance_profile.instance_profile.name
 
   user_data_replace_on_change = true
 
