@@ -1,5 +1,5 @@
 ---
-- name: Providion Harjus instance
+- name: Provision Harjus instance
   hosts: harjus_instance
   gather_facts: no
   become: yes
@@ -7,7 +7,6 @@
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
     ansible_user: ubuntu
   tasks:
-  
     - name: Install packages
       ansible.builtin.package:
         name:
@@ -56,7 +55,7 @@
       ansible.builtin.file:
         path: /etc/tuned/profiles/harjus
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Create tuned profile
       ansible.builtin.copy:
@@ -70,7 +69,7 @@
       ansible.builtin.command: tuned-adm verify
       register: tuned_verify
       ignore_errors: yes
-      changed_when: 'tuned_verify.rc != 0'
+      changed_when: "tuned_verify.rc != 0"
       failed_when: false
       notify: Reboot
 
@@ -85,11 +84,10 @@
           blacklist ip_tables
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
       notify: Reboot
 
   handlers:
-
     - name: Restart nix-daemon
       ansible.builtin.systemd_service:
         name: nix-daemon
