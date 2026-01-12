@@ -11,6 +11,7 @@
 #include <Log.h>
 #include <MessageStore.h>
 #include <SessionSettings.h>
+#include <UtilitySSL.h>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -76,6 +77,14 @@ auto main(int argc, char *argv[]) -> int
     initLogging(config.getLogLevel());
 
     BOOST_LOG_TRIVIAL(info) << "Starting Harjus";
+
+    // Set up SSL key logging for Wireshark TLS traffic decryption
+    auto sslKeyLogFile = config.getSSLKeyLogFile();
+    if (!sslKeyLogFile.empty())
+    {
+        FIX::ssl_set_keylog_file(sslKeyLogFile);
+        BOOST_LOG_TRIVIAL(info) << "SSL key logging enabled, writing to: " << sslKeyLogFile;
+    }
 
     // get balance, available symbols & relative values
     BOOST_LOG_TRIVIAL(debug) << "Getting balance";

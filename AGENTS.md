@@ -94,6 +94,14 @@ Performance is a critical feature. Adhere to these strict guidelines:
 
 - **Unit Tests**: Must cover all business logic. Mocks are allowed but prefer testing state changes.
 
+## Debugging
+
+### TLS Traffic Decryption with Wireshark
+
+Harjus supports exporting TLS session keys to a file for decrypting network traffic in Wireshark. This is useful for debugging FIX protocol communication over TLS.
+
+Set the `SSLKEYLOGFILE` environment variable to a path to export the keys to.
+
 ## VSCode Configuration
 
 - The project includes .vscode/settings.json which points clangd to the correct compilation database (compile_commands.json).

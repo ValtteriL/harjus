@@ -278,6 +278,46 @@ namespace FIX
     static void thread_cleanup();
     static void ssl_rand_seed();
 
+    /* SSL key logging for Wireshark traffic decryption */
+    static FILE *ssl_keylog_file = nullptr;
+    static std::string ssl_keylog_file_path;
+
+    static void ssl_keylog_callback(const SSL * /*ssl*/, const char *line)
+    {
+        if (ssl_keylog_file != nullptr)
+        {
+            fprintf(ssl_keylog_file, "%s\n", line);
+            fflush(ssl_keylog_file);
+        }
+    }
+
+    void ssl_set_keylog_file(const std::string &filePath)
+    {
+        if (filePath.empty())
+        {
+            ssl_keylog_file_path.clear();
+            return;
+        }
+
+        ssl_keylog_file_path = filePath;
+        ssl_keylog_file = fopen(filePath.c_str(), "a");
+    }
+
+    void ssl_close_keylog_file()
+    {
+        if (ssl_keylog_file != nullptr)
+        {
+            fclose(ssl_keylog_file);
+            ssl_keylog_file = nullptr;
+        }
+        ssl_keylog_file_path.clear();
+    }
+
+    auto ssl_is_keylog_enabled() -> bool
+    {
+        return ssl_keylog_file != nullptr;
+    }
+
     void ssl_init()
     {
 
@@ -317,6 +357,9 @@ namespace FIX
         }
 
         thread_cleanup();
+
+        /* Close SSL keylog file if open */
+        ssl_close_keylog_file();
 
 #ifndef OPENSSL_NO_DH
         free_dh_params();
@@ -1031,6 +1074,12 @@ namespace FIX
                 return 0;
             }
 #endif
+        }
+
+        /* Set up SSL keylog callback for Wireshark traffic decryption if enabled */
+        if (ssl_is_keylog_enabled())
+        {
+            SSL_CTX_set_keylog_callback(ctx, ssl_keylog_callback);
         }
 
         return ctx;

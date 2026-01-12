@@ -126,6 +126,11 @@ auto Configuration::getFixFileStorePath() const -> std::string
     return dotenv::getenv(FIX_FILE_DIR.c_str(), "./fix-file-dir");
 }
 
+auto Configuration::getSSLKeyLogFile() const -> std::string
+{
+    return dotenv::getenv("SSLKEYLOGFILE", "");
+}
+
 auto Configuration::getStaticTradingPaths() const
     -> std::vector<std::vector<std::pair<std::string, Position>>>
 {

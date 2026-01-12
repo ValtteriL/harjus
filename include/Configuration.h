@@ -101,4 +101,11 @@ public:
      * @return The FIX file directory as a string.
      */
     [[nodiscard]] auto getFixFileStorePath() const -> std::string override;
+
+    /**
+     * @brief Get the SSL key log file path for TLS session key export.
+     * @return The file path from SSLKEYLOGFILE env var, or empty if not set.
+     * @details When set, TLS session keys are written to this file for Wireshark decryption.
+     */
+    [[nodiscard]] auto getSSLKeyLogFile() const -> std::string override;
 };

@@ -142,8 +142,7 @@ namespace FIX
     {
 #define expand(x) \
     {             \
-        x, #x     \
-    }
+        x, #x}
         static struct
         {
             int code;
@@ -227,6 +226,24 @@ namespace FIX
     void ssl_init();
 
     void ssl_term();
+
+    /**
+     * @brief Set the file path for SSL key logging (for Wireshark TLS decryption).
+     * @param filePath Path to the keylog file. Empty string disables logging.
+     * @details Must be called before creating SSL contexts for keys to be logged.
+     */
+    void ssl_set_keylog_file(const std::string &filePath);
+
+    /**
+     * @brief Close the SSL keylog file and disable key logging.
+     */
+    void ssl_close_keylog_file();
+
+    /**
+     * @brief Check if SSL key logging is enabled.
+     * @return true if key logging is enabled, false otherwise.
+     */
+    auto ssl_is_keylog_enabled() -> bool;
 
     void ssl_socket_close(socket_handle socket, SSL *ssl);
 
