@@ -1,5 +1,6 @@
 # Justfile for dependencies
 mod fstack
+mod deploy
 
 # Default task: list all available tasks
 default:
@@ -33,3 +34,4 @@ install prefix="./dist":
 # Install release build to a directory (default: ./dist)
 install-release prefix="./dist":
     cmake --install build/Release --prefix {{prefix}}
+
