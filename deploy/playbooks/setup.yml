@@ -19,31 +19,9 @@
           - python3-botocore
           - python3-packaging
           - tuned
+          - sysstat
         state: present
         update_cache: yes
-
-    - name: Install Nix package manager
-      ansible.builtin.shell:
-        cmd: curl -L https://nixos.org/nix/install | sh -s -- --daemon
-        creates: /etc/nix/nix.conf
-
-    - name: Set default nix channels
-      ansible.builtin.shell: "bash -lc 'nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs && nix-channel --update'"
-      args:
-        creates: /root/.nix-defexpr/channels/nixpkgs
-
-    - name: allow unsigned nix packages
-      ansible.builtin.lineinfile:
-        path: /etc/nix/nix.conf
-        line: require-sigs = false
-        state: present
-      notify: Restart nix-daemon
-
-    - name: Install realtime kernel
-      ansible.builtin.package:
-        name: linux-realtime
-        state: present
-      notify: Reboot
 
     - name: Enable & start tuned service
       ansible.builtin.systemd:
@@ -73,10 +51,6 @@
       failed_when: false
       notify: Reboot
 
-    - name: Disable interrupt modification and dynamic interrupt moderation
-      ansible.builtin.command: >
-        ethtool -C ens5 adaptive-rx off rx-usecs 0 tx-usecs 0
-
     - name: Blacklist iptables kernel module
       ansible.builtin.copy:
         dest: /etc/modprobe.d/blacklist-iptables.conf
@@ -88,11 +62,5 @@
       notify: Reboot
 
   handlers:
-    - name: Restart nix-daemon
-      ansible.builtin.systemd_service:
-        name: nix-daemon
-        state: restarted
-        daemon_reload: yes
-
     - name: Reboot
       ansible.builtin.reboot:

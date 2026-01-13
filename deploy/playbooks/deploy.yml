@@ -7,7 +7,6 @@
   # Variables from group_vars/harjus_instance/<env>.yml will be loaded based on 'env' var
 
   vars:
-
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
     ansible_user: admin
     harjus_dir: /opt/harjus
@@ -38,27 +37,27 @@
       ansible.builtin.copy:
         src: harjus.service
         dest: "/etc/systemd/system/{{ service_name }}.service"
-        mode: '0644'
+        mode: "0644"
       notify: Reload systemd and restart app
 
     - name: Ensure systemd override directory exists
       ansible.builtin.file:
         path: "{{ service_override_dir }}"
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Create/Update systemd override for Application Environment
       ansible.builtin.template:
         src: templates/app_environment.conf.j2
         dest: "{{ app_env_override_file }}"
-        mode: '0600' # Stricter permissions as it contains resolved secrets
+        mode: "0600" # Stricter permissions as it contains resolved secrets
       notify: Reload systemd and restart app
 
     - name: Create opt directory for harjus
       ansible.builtin.file:
         path: "{{ harjus_dir }}"
         state: directory
-        mode: '0755'  
+        mode: "0755"
 
     - name: Download release from s3
       amazon.aws.s3_object:
@@ -68,7 +67,7 @@
         mode: get
 
     - name: Import to nix store
-      ansible.builtin.shell: "bash -lc 'zcat {{ harjus_dir }}/harjus-{{ version }}.nar.gzip | nix-store --import|grep -e \"-harjus-\"'"
+      ansible.builtin.shell: 'bash -lc ''zcat {{ harjus_dir }}/harjus-{{ version }}.nar.gzip | nix-store --import|grep -e "-harjus-"'''
       register: import_result
 
     - name: Link build artifact to /usr/bin

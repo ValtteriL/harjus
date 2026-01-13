@@ -2,10 +2,10 @@ terraform {
   # these come from the backend directory
   backend "s3" {
     encrypt        = true
-    bucket         = "harjus-terraform-state20250208211637665900000001"
+    bucket         = "harjus-terraform-state20260113194003605100000001"
     key            = "path/to/state"
     region         = "eu-north-1"
-    dynamodb_table = "terraform-lock"
+    use_lockfile = true
   }
 
   required_providers {
