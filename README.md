@@ -26,8 +26,12 @@ Exploiting triangular arbitrage opportunities in Binance testnet
 - VirtualBox
 - Vagrant
 - VSCode with Remote - SSH extension
+
+### For deployment
+
 - AWS CLI
-  - for deployment
+- Terraform
+- Ansible
 
 ## Development
 
