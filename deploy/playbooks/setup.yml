@@ -5,7 +5,7 @@
   become: yes
   vars:
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
-    ansible_user: ubuntu
+    ansible_user: admin
   tasks:
     - name: Install packages
       ansible.builtin.package:
