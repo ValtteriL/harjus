@@ -61,8 +61,8 @@ resource "local_sensitive_file" "ec_key_file" {
 
 resource "aws_instance" "instance" {
 
-  # Ubuntu 25.04 HVM ebs-ssd-gp3
-  ami = "ami-02145888c84f41705"
+  # debian-13-amd64-20250814-2204
+  ami = "ami-01a89c4a177e76f46"
 
   instance_type        = "c6in.xlarge"
   key_name             = aws_key_pair.ec_key.key_name
