@@ -32,6 +32,8 @@ Exploiting triangular arbitrage opportunities in Binance testnet
 - AWS CLI
 - Terraform
 - Ansible
+- python3-botocore
+- python3-boto3
 
 ## Development
 
