@@ -808,6 +808,12 @@ install(PROGRAMS
     DESTINATION ${CMAKE_INSTALL_SBINDIR}
 )
 
+# Install initialize.sh to /usr/sbin
+install(PROGRAMS
+    ${CMAKE_CURRENT_SOURCE_DIR}/../deploy/scripts/initialize.sh
+    DESTINATION ${CMAKE_INSTALL_SBINDIR}
+)
+
 # TESTS
 if(HARJUS_TESTS)
     include(CTest)
