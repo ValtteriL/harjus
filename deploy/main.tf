@@ -75,4 +75,14 @@ resource "aws_instance" "instance" {
   tags = {
     Name = "harjus-instance"
   }
+
+}
+
+resource "aws_network_interface" "dpdk_interface" {
+  subnet_id       = aws_instance.instance.subnet_id
+
+  attachment {
+    instance     = aws_instance.instance.id
+    device_index = 1
+  }
 }
