@@ -90,4 +90,9 @@ just deploy::init-backend
 
 # Provision host
 just deploy::provision-host
+
+# Deploy
+just deploy::deploy
+# or
+just deploy::deploy-prod
 ```

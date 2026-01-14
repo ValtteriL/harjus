@@ -21,3 +21,10 @@ destroy-host:
 # Access server
 connect-server:
     ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem admin@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
+
+# Deploy harjus to server
+deploy:
+    (cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa")
+
+deploy-prod:
+    (cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod")
