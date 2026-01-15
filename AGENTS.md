@@ -115,8 +115,8 @@ See [docs/choose-optimal-az.md](docs/choose-optimal-az.md) for detailed instruct
 When provisioning a host, you must specify the availability zone:
 
 ```bash
-just deploy::provision-host <availability_zone>
-# Example: just deploy::provision-host ap-northeast-1a
+just deploy::setup-server <availability_zone>
+# Example: just deploy::setup-server ap-northeast-1a
 ```
 
 ## Testing Strategy

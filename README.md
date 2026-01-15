@@ -94,15 +94,18 @@ just deploy::measure-latency
 ### Deploying
 
 ```bash
-# Create Terraform backend in S3
-just deploy::init-backend
+# Create and provision server in the optimal availability zone (use AZ from latency measurement)
+just deploy::setup-server <aws_availability_zone>
+# for example: just deploy::setup-server ap-northeast-1a
 
-# Provision host in the optimal availability zone (use AZ from latency measurement)
-just deploy::provision-host <aws_availability_zone>
-# for example: just deploy::provision-host ap-northeast-1a
-
-# Deploy
+# Deploy QA release
 just deploy::deploy
-# or
+# or deploy production release
 just deploy::deploy-prod
+
+# Connect to server via SSH
+just deploy::connect-server
+
+# Cleanup all resources
+just deploy::cleanup
 ```

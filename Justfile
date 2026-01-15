@@ -1,17 +1,19 @@
-# Justfile for dependencies
+# Dependency recipes
 mod fstack
+
+# Deployment recipes
 mod deploy
 
 # Default task: list all available tasks
 default:
     just --list --unsorted
 
-# Build Harjus in debug mode
+# Build in debug binary
 build:
     conan build --build=missing --profile:all conan-profile
 
 # check valid architecture options with `gcc --target-help`
-# Build Harjus release
+# Build release binary
 build-release architecture = "native":
     conan build --build=missing --profile:all conan-profile --settings build_type=Release -c tools.build:cxxflags="['-march={{architecture}}','-mtune={{architecture}}']"
 
