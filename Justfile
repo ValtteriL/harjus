@@ -27,11 +27,7 @@ run:
 run-release:
     sudo ./flashfix/start.sh -b ./build/Release/src/harjus -c ./flashfix/config.ini
 
-# Install debug build to a directory (default: ./dist)
-install prefix="./dist":
-    cmake --install build/Debug --prefix {{prefix}}
-
-# Install release build to a directory (default: ./dist)
-install-release prefix="./dist":
-    cmake --install build/Release --prefix {{prefix}}
-
+# Package a release into tar.gz for distribution
+package:
+    cpack --config build/Release/CPackConfig.cmake
+    ls -l dist

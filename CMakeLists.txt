@@ -38,6 +38,9 @@ find_package(GMP REQUIRED)
 # fstack
 find_package(fstack REQUIRED)
 
+# Add packaging directory
+add_subdirectory(packaging)
+
 # flashfix
 add_subdirectory(flashfix)
 
