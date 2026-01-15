@@ -7,10 +7,26 @@ init-backend:
 destroy-backend:
     terraform -chdir=deploy/backend destroy
 
+# Measure network latency from all AZs in ap-northeast-1 to Binance FIX endpoint
+# Use this to find the optimal AZ for deployment
+measure-latency:
+    terraform -chdir=deploy/latency-measure init
+    terraform -chdir=deploy/latency-measure apply -auto-approve \
+        -var="target_host=fix-md.binance.com" \
+        -var="target_port=9000" \
+        -var="num_probes=100"
+    @echo ""
+    @echo "=== Measurement complete. Cleaning up resources... ==="
+    terraform -chdir=deploy/latency-measure destroy -auto-approve
+    @echo ""
+    @echo "=== Done. Select the AZ with lowest avg RTT for deployment. ==="
+
 # Create + provision server
-provision-host:
+# availability_zone: The AWS availability zone to deploy the instance in (e.g., ap-northeast-1a)
+# Run `just deploy::measure-latency` first to find the optimal AZ
+provision-host availability_zone:
     terraform -chdir=deploy init
-    terraform -chdir=deploy apply -auto-approve
+    terraform -chdir=deploy apply -auto-approve -var="availability_zone={{availability_zone}}"
 
     (cd deploy/playbooks && ansible-playbook setup.yml)
 

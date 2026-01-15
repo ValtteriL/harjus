@@ -85,10 +85,39 @@ Performance is a critical feature. Adhere to these strict guidelines:
 - src/: Implementation files (.cpp).
 - include/: Public header files (.hpp).
 - tests/: GTest unit tests.
-- deploy/: Deployment files
+- deploy/: Deployment files (Terraform, Ansible, scripts).
+  - deploy/scripts/: Utility scripts for deployment operations.
+- docs/: Documentation files.
 - flashfix/: Flashfix library sources.
 - Jenkinsfile: CI pipeline definition.
 - Justfile: Task definitions.
+
+## Deployment
+
+### Choosing Optimal Availability Zone
+
+Before deploying, run the latency measurement utility to find the AWS availability zone with the lowest latency to the exchange:
+
+```bash
+just deploy::measure-latency
+```
+
+This utility:
+1. Spins up temporary EC2 instances in all AZs of the target region
+2. Runs `nping` TCP probes against the exchange endpoint
+3. Reports latency metrics for each AZ
+4. Automatically cleans up all resources
+
+See [docs/choose-optimal-az.md](docs/choose-optimal-az.md) for detailed instructions.
+
+### Provisioning
+
+When provisioning a host, you must specify the availability zone:
+
+```bash
+just deploy::provision-host <availability_zone>
+# Example: just deploy::provision-host ap-northeast-1a
+```
 
 ## Testing Strategy
 
