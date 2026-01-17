@@ -59,6 +59,9 @@ just
 ## Build
 
 ```bash
+# build F-Stack release (only needs to be ran once)
+just fstack::release
+
 # debug build
 just build
 
