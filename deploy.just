@@ -28,14 +28,27 @@ connect-server:
     ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem admin@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
 
 # Deploy harjus release with QA variables
-deploy:
-    (cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa")
+# package: Path to the release package (e.g., dist/harjus.tar.gz)
+deploy package:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    package_path=$(realpath {{package}})
+    cd deploy/playbooks
+    ansible-playbook deploy.yml -e "env=qa" -e "package_path=$package_path"
 
 # Deploy harjus release with prod variables
-deploy-prod:
-    (cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod")
+# package: Path to the release package (e.g., dist/harjus.tar.gz)
+deploy-prod package:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    package_path=$(realpath {{package}})
+    cd deploy/playbooks
+    ansible-playbook deploy.yml -e "env=prod" -e "package_path=$package_path"
 
 # Cleanup all resources
 cleanup:
+    #!/usr/bin/env bash
+    set -euxo pipefail
+    az=$(terraform -chdir=deploy output availability_zone|sed 's/"//g')
+    terraform -chdir=deploy destroy -var="availability_zone=$az"
     terraform -chdir=deploy/backend destroy
-    terraform -chdir=deploy destroy

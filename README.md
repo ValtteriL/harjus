@@ -97,14 +97,20 @@ just deploy::measure-latency
 ### Deploying
 
 ```bash
+# Build and package release
+just build-release <architecture>
+just package
+
 # Create and provision server in the optimal availability zone (use AZ from latency measurement)
 just deploy::setup-server <aws_availability_zone>
 # for example: just deploy::setup-server ap-northeast-1a
 
-# Deploy QA release
-just deploy::deploy
+# Deploy QA release (requires package path)
+just deploy::deploy <package_path>
+# for example: just deploy::deploy dist/harjus.tar.gz
+
 # or deploy production release
-just deploy::deploy-prod
+just deploy::deploy-prod <package_path>
 
 # Connect to server via SSH
 just deploy::connect-server

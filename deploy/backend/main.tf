@@ -2,6 +2,7 @@
 resource "aws_s3_bucket" "terraform_state" {
   # With account id, this S3 bucket names can be *globally* unique.
   bucket_prefix = "harjus-terraform-state"
+  force_destroy = true
 }
 
 # Enable versioning so we can see the full revision history of our

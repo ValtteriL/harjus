@@ -14,5 +14,5 @@ TimeoutStopSec=30
 RestartSec=60
 
 # Start the app
-ExecStart=/usr/bin/harjus
+ExecStart=/opt/harjus/bin/start.sh -b /opt/harjus/bin/harjus -c /opt/harjus/etc/config.ini
 

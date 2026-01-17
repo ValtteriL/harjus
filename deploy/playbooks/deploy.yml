@@ -15,6 +15,7 @@
     # e.g., uv run ansible-playbook ... -e "env=prod"
     # Set a default or leave empty to force user input. An empty string will fail the pre_task check.
     env: ""
+    package_path: ""
     service_override_dir: "/etc/systemd/system/{{ service_name }}.service.d"
     app_env_override_file: "{{ service_override_dir }}/20-app-environment.conf"
 
@@ -23,6 +24,11 @@
       ansible.builtin.fail:
         msg: "Variable 'env' must be set and be either 'qa' or 'prod'."
       when: env is not defined or env not in ['qa', 'prod']
+
+    - name: Validate 'package_path' variable
+      ansible.builtin.fail:
+        msg: "Variable 'package_path' must be set to a valid release package path."
+      when: package_path is not defined or package_path == ""
 
     - name: Load environment-specific variables (qa.yml or prod.yml)
       ansible.builtin.include_vars:
@@ -59,23 +65,21 @@
         state: directory
         mode: "0755"
 
-    - name: Download release from s3
-      amazon.aws.s3_object:
-        bucket: "{{ s3_bucket_name }}"
-        object: harjus-{{ version }}.nar.gzip
-        dest: "{{ harjus_dir }}/harjus-{{ version }}.nar.gzip"
-        mode: get
+    - name: Upload release package
+      ansible.builtin.copy:
+        src: "{{ package_path }}"
+        dest: "{{ harjus_dir }}/harjus.tar.gz"
+        mode: "0644"
 
-    - name: Import to nix store
-      ansible.builtin.shell: 'bash -lc ''zcat {{ harjus_dir }}/harjus-{{ version }}.nar.gzip | nix-store --import|grep -e "-harjus-"'''
-      register: import_result
+    - name: Unarchive release package
+      ansible.builtin.unarchive:
+        src: "{{ harjus_dir }}/harjus.tar.gz"
+        dest: /opt
+        remote_src: yes
 
-    - name: Link build artifact to /usr/bin
-      ansible.builtin.file:
-        src: "{{ import_result.stdout }}/bin/{{ service_name }}"
-        dest: "/usr/bin/{{ service_name }}"
-        state: link
-        force: yes
+    - name: Run initialize.sh
+      ansible.builtin.command:
+        cmd: "{{ harjus_dir }}/bin/initialize.sh ens5"
       notify: Reload systemd and restart app
 
     - name: Final deployment status message

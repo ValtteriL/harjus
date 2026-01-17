@@ -119,6 +119,15 @@ just deploy::setup-server <availability_zone>
 # Example: just deploy::setup-server ap-northeast-1a
 ```
 
+### Deploying
+
+Deploy a release package to the server:
+
+```bash
+just deploy::deploy <package_path>
+# Example: just deploy::deploy dist/harjus.tar.gz
+```
+
 ## Testing Strategy
 
 - **Unit Tests**: Must cover all business logic. Mocks are allowed but prefer testing state changes.
