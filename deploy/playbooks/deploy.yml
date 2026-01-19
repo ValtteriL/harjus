@@ -79,7 +79,7 @@
 
     - name: Run initialize.sh
       ansible.builtin.command:
-        cmd: "{{ harjus_dir }}/bin/initialize.sh ens5"
+        cmd: "{{ harjus_dir }}/bin/initialize.sh eth1"
       notify: Reload systemd and restart app
 
     - name: Final deployment status message
