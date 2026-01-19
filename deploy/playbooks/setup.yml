@@ -23,6 +23,7 @@
           - linux-headers-{{ ansible_kernel }}
           - dpdk
           - dpdk-kmods-dkms
+          - libdpdk-dev
           - net-tools
           - bc
         state: present
