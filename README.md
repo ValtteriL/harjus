@@ -87,6 +87,12 @@ just run-release
 
 ## Deployment
 
+### List available deployment commands
+
+```bash
+just deploy
+```
+
 ### Preparation
 
 ```bash
@@ -101,7 +107,10 @@ just deploy::measure-latency
 just build-release <architecture>
 just package
 
-# Create and provision server in the optimal availability zone (use AZ from latency measurement)
+# Setup Terraform backend (run once)
+just deploy::setup-backend
+
+# Setup server in the optimal availability zone (use AZ from latency measurement)
 just deploy::setup-server <aws_availability_zone>
 # for example: just deploy::setup-server ap-northeast-1a
 
@@ -114,6 +123,9 @@ just deploy::deploy-prod <package_path>
 
 # Connect to server via SSH
 just deploy::connect-server
+
+# Cleanup server
+just server-cleanup
 
 # Cleanup all resources
 just deploy::cleanup

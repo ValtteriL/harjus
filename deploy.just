@@ -1,3 +1,7 @@
+# Default task: list all available tasks
+default:
+    just --list deploy --unsorted
+
 # Measure network latency from all AZs in ap-northeast-1 to Binance FIX endpoint
 measure-latency:
     terraform -chdir=deploy/latency-measure init
@@ -11,15 +15,18 @@ measure-latency:
     @echo ""
     @echo "=== Done. Select the AZ with lowest avg RTT for deployment. ==="
 
-# Create + provision server
-# availability_zone: The AWS availability zone to deploy the instance in (e.g., ap-northeast-1a)
-# Run `just deploy::measure-latency` first to find the optimal AZ
-setup-server availability_zone:
+# Setup Terraform backend
+setup-backend:
     terraform -chdir=deploy/backend init
     terraform -chdir=deploy/backend apply -auto-approve
 
-    terraform -chdir=deploy init
-    terraform -chdir=deploy apply -auto-approve -var="availability_zone={{availability_zone}}"
+    terraform -chdir=deploy/backend output > .terraform-backend.conf
+
+# Setup server
+setup-server availability_zone:
+    terraform -chdir=deploy init -backend-config=../.terraform-backend.conf
+    terraform -chdir=deploy apply -auto-approve \
+        -var="availability_zone={{availability_zone}}"
 
     (cd deploy/playbooks && ansible-playbook setup.yml)
 
@@ -45,10 +52,11 @@ deploy-prod package:
     cd deploy/playbooks
     ansible-playbook deploy.yml -e "env=prod" -e "package_path=$package_path"
 
-# Cleanup all resources
+# Cleanup server
+cleanup-server:
+    terraform -chdir=deploy destroy
+
+# Cleanup server + Terraform backend
 cleanup:
-    #!/usr/bin/env bash
-    set -euxo pipefail
-    az=$(terraform -chdir=deploy output availability_zone|sed 's/"//g')
-    terraform -chdir=deploy destroy -var="availability_zone=$az"
+    terraform -chdir=deploy destroy
     terraform -chdir=deploy/backend destroy

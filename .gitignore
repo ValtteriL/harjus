@@ -159,3 +159,6 @@ compile_commands.json
 
 # installation
 dist/
+
+# terraform backend config file
+.terraform-backend.conf
