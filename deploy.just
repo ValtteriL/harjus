@@ -24,7 +24,7 @@ setup-backend:
 
 # Setup server
 setup-server availability_zone:
-    terraform -chdir=deploy init -backend-config=../.terraform-backend.conf
+    terraform -chdir=deploy init -backend-config=../.terraform-backend.conf -reconfigure
     terraform -chdir=deploy apply -auto-approve \
         -var="availability_zone={{availability_zone}}"
 
