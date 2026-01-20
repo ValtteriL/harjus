@@ -145,7 +145,7 @@ flashfix-build/
 
 .ansible_vault_password
 exchangeinfo.json
-
+prod-assets.txt
 
 CMakeFiles
 CMakeUserPresets.json
