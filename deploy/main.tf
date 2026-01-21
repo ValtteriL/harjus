@@ -61,10 +61,25 @@ resource "aws_instance" "instance" {
 }
 
 resource "aws_network_interface" "dpdk_interface" {
-  subnet_id       = aws_instance.instance.subnet_id
+  subnet_id         = aws_instance.instance.subnet_id
+  security_groups   = [aws_security_group.security.id]
+  source_dest_check = false
 
   attachment {
     instance     = aws_instance.instance.id
     device_index = 1
+  }
+}
+
+# Elastic IP for the DPDK interface to enable internet access
+resource "aws_eip" "dpdk_eip" {
+  domain            = "vpc"
+  network_interface = aws_network_interface.dpdk_interface.id
+
+  # Ensure the interface is attached before associating EIP
+  depends_on = [aws_network_interface.dpdk_interface]
+
+  tags = {
+    Name = "harjus-dpdk-eip"
   }
 }
