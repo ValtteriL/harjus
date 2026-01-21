@@ -10,6 +10,8 @@
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
     ansible_user: admin
     harjus_dir: /opt/harjus
+    harjus_config_dir: "{{ harjus_dir }}/etc"
+    harjus_config_file: "{{ harjus_config_dir }}/config.ini"
 
     # Mandatory: User must specify 'qa' or 'prod' when running the playbook
     # e.g., uv run ansible-playbook ... -e "env=prod"
@@ -38,6 +40,51 @@
     - name: Display deployment information
       ansible.builtin.debug:
         msg: "Starting deployment of '{{ service_name }}' for '{{ env_name | default(env) }}' env on {{ inventory_hostname }}"
+
+    - name: Check if config.ini already exists
+      ansible.builtin.stat:
+        path: "{{ harjus_config_file }}"
+      register: config_ini_stat
+
+    - name: Gather network interface information (first deploy only)
+      when: not config_ini_stat.stat.exists
+      block:
+        - name: Get IPv4 address from eth1
+          ansible.builtin.shell: ifconfig eth1 | grep "inet " | awk '{print $2}'
+          register: eth1_addr
+          changed_when: false
+
+        - name: Get netmask from eth1
+          ansible.builtin.shell: ifconfig eth1 | grep "inet " | awk '{print $4}'
+          register: eth1_netmask
+          changed_when: false
+
+        - name: Get broadcast address from eth1
+          ansible.builtin.shell: ifconfig eth1 | grep "inet " | awk '{print $6}'
+          register: eth1_broadcast
+          changed_when: false
+
+        - name: Get gateway for eth1
+          ansible.builtin.shell: route -n | grep '0.0.0.0' | grep eth1 | grep UG | awk '{print $2}'
+          register: eth1_gateway
+          changed_when: false
+
+        - name: Ensure harjus config directory exists
+          ansible.builtin.file:
+            path: "{{ harjus_config_dir }}"
+            state: directory
+            mode: "0755"
+
+        - name: Deploy config.ini from template (first deploy only)
+          ansible.builtin.template:
+            src: templates/config.ini.j2
+            dest: "{{ harjus_config_file }}"
+            mode: "0644"
+          vars:
+            dpdk_interface_ipv4_address: "{{ eth1_addr.stdout }}"
+            dpdk_interface_ipv4_netmask: "{{ eth1_netmask.stdout }}"
+            dpdk_interface_ipv4_broadcast_address: "{{ eth1_broadcast.stdout }}"
+            dpdk_interface_ipv4_gateway: "{{ eth1_gateway.stdout }}"
 
     - name: Copy service file to systemd directory
       ansible.builtin.copy:
@@ -76,8 +123,11 @@
         src: "{{ harjus_dir }}/harjus.tar.gz"
         dest: /opt
         remote_src: yes
+        exclude:
+          - "harjus/etc/config.ini"
 
     - name: Run initialize.sh
+      when: not config_ini_stat.stat.exists
       ansible.builtin.command:
         cmd: "{{ harjus_dir }}/bin/initialize.sh eth1"
       notify: Reload systemd and restart app
