@@ -96,6 +96,7 @@ do
     then
         echo "${bin} --conf ${conf} --proc-type=primary --proc-id=${proc_id} ${others}"
         ${bin} --conf ${conf} --proc-type=primary --proc-id=${proc_id} ${others} &
+        primary_pid=$!
         sleep 5
     else
         echo "${bin} --conf ${conf} --proc-type=secondary --proc-id=${proc_id} ${others}"
@@ -103,5 +104,11 @@ do
     fi
 done
 
-# wait for all background processes to finish
-wait
+# wait for primary process and capture its exit code
+wait ${primary_pid}
+exit_code=$?
+
+# kill any remaining secondary processes
+pkill -P $$ 2>/dev/null || true
+
+exit ${exit_code}
