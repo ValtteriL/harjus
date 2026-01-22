@@ -7,7 +7,7 @@ StartLimitIntervalSec=300
 
 [Service]
 StartLimitBurst=3
-Restart=on-failure
+Restart=always
 TimeoutStartSec=0
 # Time to wait for graceful shutdown
 TimeoutStopSec=30
