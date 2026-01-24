@@ -11,23 +11,22 @@
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
     ansible_user: ubuntu
     harjus_dir: /opt/harjus
-
-    # Mandatory: User must specify 'qa' or 'prod' when running the playbook
-    # e.g., uv run ansible-playbook ... -e "env=prod"
-    # Set a default or leave empty to force user input. An empty string will fail the pre_task check.
-    env: ""
+    service_name: "harjus"
     service_override_dir: "/etc/systemd/system/{{ service_name }}.service.d"
     app_env_override_file: "{{ service_override_dir }}/20-app-environment.conf"
 
   pre_tasks:
-    - name: Validate 'env' variable
-      ansible.builtin.fail:
-        msg: "Variable 'env' must be set and be either 'qa' or 'prod'."
-      when: env is not defined or env not in ['qa', 'prod']
-
-    - name: Load environment-specific variables (qa.yml or prod.yml)
-      ansible.builtin.include_vars:
-        file: "{{ playbook_dir }}/group_vars/harjus_instance/{{ env }}.yml"
+    - name: Load dotenv variables
+      ansible.builtin.set_fact:
+        assets: "{{ lookup('env', 'ASSETS')}}"
+        binance_rest_api_uri: "{{ lookup('env', 'BINANCE_REST_API_URI')}}"
+        binance_fix_api_hostname_orderentry: "{{ lookup('env', 'BINANCE_FIX_API_HOSTNAME_ORDERENTRY')}}"
+        binance_fix_api_hostname_marketdata: "{{ lookup('env', 'BINANCE_FIX_API_HOSTNAME_MARKETDATA')}}"
+        binance_ed25519_seed: "{{ lookup('env', 'BINANCE_ED25519_SEED')}}"
+        binance_ed25519_api_key: "{{ lookup('env', 'BINANCE_ED25519_API_KEY')}}"
+        commission: "{{ lookup('env', 'COMMISSION')}}"
+        max_trading_path_length: "{{ lookup('env', 'MAX_TRADING_PATH_LENGTH')}}"
+        log_level: "{{ lookup('env', 'LOG_LEVEL')}}"
 
   tasks:
     - name: Display deployment information
