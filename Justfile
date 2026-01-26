@@ -1,3 +1,6 @@
+# load dotenv
+set dotenv-load
+
 # Dependency recipes
 mod fstack
 
