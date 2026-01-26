@@ -15,7 +15,7 @@ build:
 # check valid architecture options with `gcc --target-help`
 # Build release binary
 build-release architecture = "native":
-    conan build --build=missing --profile:all conan-profile --settings build_type=Release -c tools.build:cxxflags="['-march={{architecture}}','-mtune={{architecture}}']"
+    conan build --build=missing --profile:all conan-profile --settings build_type=Release -c tools.build:cxxflags="['-march={{architecture}}','-mtune={{architecture}}']" -c tools.cmake.cmake_args="['-DHARJUS_TESTS=OFF']"
 
 # Run unit tests
 test:
