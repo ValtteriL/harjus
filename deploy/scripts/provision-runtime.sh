@@ -11,4 +11,5 @@ sudo apt-get update && \
     dpdk-kmods-dkms \
     net-tools \
     bc \
-    sysstat
+    sysstat \
+    libdpdk-dev

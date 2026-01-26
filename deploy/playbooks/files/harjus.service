@@ -7,12 +7,12 @@ StartLimitIntervalSec=300
 
 [Service]
 StartLimitBurst=3
-Restart=on-failure
+Restart=always
 TimeoutStartSec=0
 # Time to wait for graceful shutdown
 TimeoutStopSec=30
-RestartSec=60
+RestartSec=90
 
 # Start the app
-ExecStart=/usr/bin/harjus
+ExecStart=/opt/harjus/bin/start.sh -b /opt/harjus/bin/harjus -c /opt/harjus/etc/config.ini
 

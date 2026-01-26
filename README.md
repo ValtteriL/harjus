@@ -27,6 +27,14 @@ Exploiting triangular arbitrage opportunities in Binance testnet
 - Vagrant
 - VSCode with Remote - SSH extension
 
+### For deployment
+
+- AWS CLI
+- Terraform
+- Ansible
+- python3-botocore
+- python3-boto3
+
 ## Development
 
 Development is done inside a Vagrant VM accessed via VSCode Remote SSH. The VM provides a consistent development environment with all necessary dependencies pre-installed.
@@ -42,100 +50,83 @@ By default, the VM is allocated 50% of your host's CPU and RAM. You can override
 VM_CPUS=8 VM_RAM_GB=16 vagrant up
 ```
 
-### VM Resource Configuration
+### List available commands
 
-| Environment Variable | Description                     | Default          |
-| -------------------- | ------------------------------- | ---------------- |
-| `VM_CPUS`            | Number of CPU cores to allocate | 50% of host CPUs |
-| `VM_RAM_GB`          | Amount of RAM in GB to allocate | 50% of host RAM  |
+```bash
+just
+```
+
+## Build
+
+```bash
+# build F-Stack release (only needs to be ran once)
+just fstack::release
+
+# debug build
+just build
+
+# release build
+just build-release
+```
 
 ## Test
-
-Run unit tests
 
 ```bash
 just test
 ```
 
-### Automatic tests
-
-The unit tests are run by CI/CD on push to any branch.
-
-## Build
-
-Build harjus
+## Run
 
 ```bash
-just build
+# debug build
+just run
+
+# release build
+just run-release
 ```
-
-## Release
-
-1. Create a Git tag: Create a Git tag that matches the pattern `releases/[1-9]+.[0-9]+.[0-9]+`. For example:
-
-```bash
-git tag releases/1.0.0
-git push origin releases/1.0.0
-```
-
-2. Trigger the build for the tag manually through Jenkins.
 
 ## Deployment
 
-Deployment is done manually from local shell.
-
-### Prerequisite: Create Terraform backend in S3
+### List available deployment commands
 
 ```bash
-terraform -chdir=deploy/backend init
-terraform -chdir=deploy/backend apply
+just deploy
 ```
 
-### Prerequisite: Provision host
+### Preparation
 
 ```bash
-terraform -chdir=deploy init
-terraform -chdir=deploy apply
-
-(cd deploy/playbooks && uv run ansible-playbook setup.yml)
+# Measure latency to find optimal availability zone
+just deploy::measure-latency
 ```
 
-### Deploy
+### Deploying
 
 ```bash
-# QA (testnet)
-(cd deploy/playbooks && uv run ansible-playbook deploy.yml -e "env=qa") # defaults to 'latest' version
-(cd deploy/playbooks && uv run ansible-playbook deploy.yml -e "env=qa" -e "version=your-semver-or-git-hash-or-latest")
+# Build and package release
+just build-release <architecture>
+just package
 
-# Prod
-(cd deploy/playbooks && uv run ansible-playbook deploy.yml -e "env=prod")
-```
+# Setup Terraform backend (run once)
+just deploy::setup-backend
 
-## Debugging
+# Setup server in the optimal availability zone (use AZ from latency measurement)
+just deploy::setup-server <aws_availability_zone>
+# for example: just deploy::setup-server ap-northeast-1a
 
-### Access prod server
+# Deploy QA release (requires package path)
+just deploy::deploy <package_path>
+# for example: just deploy::deploy dist/harjus.tar.gz
 
-```bash
-ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ubuntu@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
-```
+# or deploy production release
+just deploy::deploy-prod <package_path>
 
-### Inspect service
+# Connect to server via SSH
+just deploy::connect-server
 
-```bash
-sudo systemctl status harjus
-# or
-sudo journalctl -au harjus.service
-```
+# Cleanup server
+just server-cleanup
 
-### List build artifacts
-
-```bash
-aws s3 ls $(terraform -chdir=deploy output artifact_bucket_name)
-```
-
-### check deployed version
-
-```bash
-# on prod server
-cat $(readlink $(which harjus) | sed 's/\/bin\/harjus//g')/version.txt
+# Cleanup all resources
+just deploy::cleanup
 ```

@@ -1,0 +1,12 @@
+# packaging/CMakeLists.txt
+
+# Base package settings
+set(CPACK_VERBATIM_VARIABLES YES)
+set(CPACK_PACKAGE_VENDOR "Valtteri Lehtinen")
+set(CPACK_PACKAGE_DIRECTORY dist)
+set(CPACK_PACKAGE_FILE_NAME "harjus")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
+
+set(CPACK_GENERATOR TGZ)
+
+include(CPack)

@@ -100,10 +100,10 @@ savepath=.
 ###############################################################################
 [port0]
 # IPv4 address for this DPDK port. Must be unique and routable.
-addr=192.168.1.137
-netmask=255.255.255.0
-broadcast=192.168.1.255
-gateway=192.168.1.1
+addr={{ dpdk_interface_ipv4_address }}
+netmask={{ dpdk_interface_ipv4_netmask }}
+broadcast={{ dpdk_interface_ipv4_broadcast_address }}
+gateway={{ dpdk_interface_ipv4_gateway }}
 
 ###############################################################################
 # FreeBSD Network Stack - Boot-time Parameters

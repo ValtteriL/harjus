@@ -11,10 +11,6 @@ Environment="BINANCE_ED25519_API_KEY={{ binance_ed25519_api_key }}"
 
 # Rest is optional
 
-{% if fix_file_dir is defined %}
-Environment="FIX_FILE_DIR={{ fix_file_dir }}"
-{% endif %}
-
 {% if binance_fix_api_port_orderentry is defined %}
 Environment="BINANCE_FIX_API_PORT_ORDERENTRY={{ binance_fix_api_port_orderentry }}"
 {% endif %}
@@ -39,3 +35,10 @@ Environment="COMMISSION={{ commission }}"
 Environment="LOG_LEVEL={{ log_level }}"
 {% endif %}
 
+{% if sslkeylogfile is defined %}
+Environment="SSLKEYLOGFILE={{ sslkeylogfile }}"
+{% endif %}
+
+{% if static_tradingpaths is defined %}
+Environment="STATIC_TRADINGPATHS={{ static_tradingpaths }}"
+{% endif %}
