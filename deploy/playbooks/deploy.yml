@@ -32,9 +32,6 @@
           - lookup('env', 'BINANCE_FIX_API_HOSTNAME_MARKETDATA') != ""
           - lookup('env', 'BINANCE_ED25519_SEED') != ""
           - lookup('env', 'BINANCE_ED25519_API_KEY') != ""
-          - lookup('env', 'COMMISSION') != ""
-          - lookup('env', 'MAX_TRADING_PATH_LENGTH') != ""
-          - lookup('env', 'LOG_LEVEL') != ""
         fail_msg: "One or more required environment variables are missing. Please ensure all required variables are set in the .env file."
 
     - name: Load dotenv variables

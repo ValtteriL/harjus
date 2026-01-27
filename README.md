@@ -12,32 +12,20 @@
   <p align="center">
     Binance Spot Arbitrage Bot
     <br />
-    <a href="https://shufflingbytes.com/posts/binance-triangular-arbitrage/"><strong>Read the writeup »</strong></a>
+    <a href="https://shufflingbytes.com/posts/binance-triangular-arbitrage/"><strong>Read the writeup (releases 1-3) »</strong></a>
   </p>
 </div>
 
+Ultra low latency Binance Spot Market [triangular arbitrage](https://en.wikipedia.org/wiki/Triangular_arbitrage) trading bot utilizing kernel bypass.
+
 ## Demo
 
-Exploiting triangular arbitrage opportunities in Binance testnet
+Running v3.0.0 in Binance testnet
 [![asciicast](https://asciinema.org/a/730934.svg)](https://asciinema.org/a/730934)
-
-## Requirements
-
-- VirtualBox
-- Vagrant
-- VSCode with Remote - SSH extension
-
-### For deployment
-
-- AWS CLI
-- Terraform
-- Ansible
-- python3-botocore
-- python3-boto3
 
 ## Development
 
-Development is done inside a Vagrant VM accessed via VSCode Remote SSH. The VM provides a consistent development environment with all necessary dependencies pre-installed.
+Development is done inside a Vagrant VM [accessed via VSCode Remote SSH](https://medium.com/@lizrice/ssh-to-vagrant-from-vscode-5b2c5996bc0e). The VM provides a consistent development environment with all necessary dependencies pre-installed, and an extra network card to dedicate to Harjus.
 
 ```bash
 vagrant up
@@ -50,13 +38,19 @@ By default, the VM is allocated 50% of your host's CPU and RAM. You can override
 VM_CPUS=8 VM_RAM_GB=16 vagrant up
 ```
 
+### Requirements
+
+- VirtualBox
+- Vagrant
+- VSCode with Remote - SSH extension
+
 ### List available commands
 
 ```bash
 just
 ```
 
-## Build
+### Build
 
 ```bash
 # build F-Stack release (only needs to be ran once)
@@ -69,15 +63,20 @@ just build
 just build-release
 ```
 
-## Test
+### Test
 
 ```bash
 just test
 ```
 
-## Run
+### Run
 
 ```bash
+# create .env following the sample
+# this is the main configuration
+cp .env.sample .env
+vim .env
+
 # debug build
 just run
 
@@ -87,6 +86,17 @@ just run-release
 
 ## Deployment
 
+Harjus is deployed to the availability zone closest to Binance FIX API Marked Data endpoint in AWS. This ensures the bot has the best conditions to learn about arbitrage opportunities before other participants.
+
+### Requirements
+
+- All development requirements
+- AWS CLI
+- Terraform
+- Ansible
+- python3-botocore
+- python3-boto3
+
 ### List available deployment commands
 
 ```bash
@@ -95,9 +105,16 @@ just deploy
 
 ### Preparation
 
+The optimal availability zone differs for each user. Use the latency measurement utility to find out yours. See [detailed instructions](./docs/choose-optimal-az.md).
+
 ```bash
 # Measure latency to find optimal availability zone
 just deploy::measure-latency
+
+# create .env following the sample
+# this is the main configuration
+cp .env.sample .env
+vim .env
 ```
 
 ### Deploying
@@ -114,12 +131,9 @@ just deploy::setup-backend
 just deploy::setup-server <aws_availability_zone>
 # for example: just deploy::setup-server ap-northeast-1a
 
-# Deploy QA release (requires package path)
+# Deploy (requires release package path)
 just deploy::deploy <package_path>
 # for example: just deploy::deploy dist/harjus.tar.gz
-
-# or deploy production release
-just deploy::deploy-prod <package_path>
 
 # Connect to server via SSH
 just deploy::connect-server
