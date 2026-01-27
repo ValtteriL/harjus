@@ -42,7 +42,9 @@ override.tf.json
 terraform.rc
 # end terraform
 
+
 .env*
+!.env.sample
 result
 result-*
 *.pem
@@ -141,6 +143,24 @@ fix-file-dir/
 
 
 build/.cmake/
+flashfix-build/
 
 .ansible_vault_password
 exchangeinfo.json
+prod-assets.txt
+
+CMakeFiles
+CMakeUserPresets.json
+store
+log
+CMakeCache.txt
+compile_commands.json
+
+# vagrant files
+.vagrant/
+
+# installation
+dist/
+
+# terraform backend config file
+.terraform-backend.conf

@@ -1,18 +1,20 @@
 #include "FixConfig.h"
+#include <SessionSettings.h>
 #include <filesystem>
 #include <fstream>
-#include <quickfix/SessionSettings.h>
 
 auto writeSchemaToTemp(const std::string &xml,
-                       const std::string &name) -> std::string {
-  auto tmp = std::filesystem::temp_directory_path() / name;
-  std::ofstream ofs(tmp);
-  ofs << xml;
-  return tmp.string();
+                       const std::string &name) -> std::string
+{
+    auto tmp = std::filesystem::temp_directory_path() / name;
+    std::ofstream ofs(tmp);
+    ofs << xml;
+    return tmp.string();
 }
 
-auto FixMdSchema() -> std::string {
-  return R"(<fix major='4' type='FIX' servicepack='0' minor='4'>
+auto FixMdSchema() -> std::string
+{
+    return R"(<fix major='4' type='FIX' servicepack='0' minor='4'>
  <header>
   <field name='BeginString' required='Y'/>
   <field name='BodyLength' required='Y'/>
@@ -275,8 +277,9 @@ auto FixMdSchema() -> std::string {
 )";
 }
 
-auto FixOeSchema() -> std::string {
-  return R"(<fix major='4' type='FIX' servicepack='0' minor='4'>
+auto FixOeSchema() -> std::string
+{
+    return R"(<fix major='4' type='FIX' servicepack='0' minor='4'>
  <header>
   <field name='BeginString' required='Y'/>
   <field name='BodyLength' required='Y'/>
@@ -787,14 +790,15 @@ auto FixOeSchema() -> std::string {
 )";
 }
 
-FixConfig::FixConfig(const IConfiguration &config) {
+FixConfig::FixConfig(const IConfiguration &config)
+{
 
-  // write schemas to disk
-  auto tmpMd = writeSchemaToTemp(FixMdSchema(), "spot-fix-md.xml");
-  auto tmpOe = writeSchemaToTemp(FixOeSchema(), "spot-fix-oe.xml");
+    // write schemas to disk
+    auto tmpMd = writeSchemaToTemp(FixMdSchema(), "spot-fix-md.xml");
+    auto tmpOe = writeSchemaToTemp(FixOeSchema(), "spot-fix-oe.xml");
 
-  // build config string
-  std::string confString = R"(
+    // build config string
+    std::string confString = R"(
   # default settings for sessions
   [DEFAULT]
   NonStopSession=Y
@@ -812,56 +816,98 @@ FixConfig::FixConfig(const IConfiguration &config) {
   SocketNodelay=Y
 )";
 
-  // hide screen logging of FIX messages unless highest verbosity used
-  if (config.getLogLevel() > 0) {
-    confString += R"(
+    // hide screen logging of FIX messages unless highest verbosity used
+    if (config.getLogLevel() > 0)
+    {
+        confString += R"(
   # silence logging
   ScreenLogShowOutgoing=N
   ScreenLogShowIncoming=N
 )";
-  }
+    }
 
-  // hide events when not in trace or debug mode
-  if (config.getLogLevel() > 1) {
-    confString += R"(
+    // hide events when not in trace or debug mode
+    if (config.getLogLevel() > 1)
+    {
+        confString += R"(
   # silence logging
   ScreenLogShowEvents=N
   )";
-  }
+    }
 
-  confString += R"(    
+    confString += R"(    
   # sessions
   [SESSION]
   SenderCompID=HARJUSM1
-  SessionQualifier=MARKETDATA
+  SessionQualifier=MARKETDATA1
   DataDictionary=)" +
-                tmpMd +
-                R"(
+                  tmpMd +
+                  R"(
   SocketConnectHost=)" +
-                config.getBinanceFIXApiHostnameMarketData() +
-                R"(
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
   SocketConnectPort=)" +
-                config.getBinanceFIXApiPortMarketData() +
-                R"(
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM2
+  SessionQualifier=MARKETDATA2
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM3
+  SessionQualifier=MARKETDATA3
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
+    
+  [SESSION]
+  SenderCompID=HARJUSM4
+  SessionQualifier=MARKETDATA4
+  DataDictionary=)" +
+                  tmpMd +
+                  R"(
+  SocketConnectHost=)" +
+                  config.getBinanceFIXApiHostnameMarketData() +
+                  R"(
+  SocketConnectPort=)" +
+                  config.getBinanceFIXApiPortMarketData() +
+                  R"(
     
   [SESSION]
   SenderCompID=HARJUSOE
   SessionQualifier=ORDERENTRY
   DataDictionary=)" +
-                tmpOe +
-                R"(
+                  tmpOe +
+                  R"(
   SocketConnectHost=)" +
-                config.getBinanceFIXApiHostnameOrderEntry() +
-                R"(
+                  config.getBinanceFIXApiHostnameOrderEntry() +
+                  R"(
   SocketConnectPort=)" +
-                config.getBinanceFIXApiPortOrderEntry() +
-                R"(
+                  config.getBinanceFIXApiPortOrderEntry() +
+                  R"(
   )";
 
-  _configString = confString;
+    _configString = confString;
 }
 
-auto FixConfig::sessionSettings() const -> FIX::SessionSettings {
-  std::istringstream fixConfigStream{_configString};
-  return FIX::SessionSettings{fixConfigStream};
+auto FixConfig::sessionSettings() const -> FIX::SessionSettings
+{
+    std::istringstream fixConfigStream{_configString};
+    return FIX::SessionSettings{fixConfigStream};
 }

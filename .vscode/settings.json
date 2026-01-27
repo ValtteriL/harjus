@@ -2,5 +2,5 @@
   "files.autoSave": "afterDelay",
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
-  "cmake.sourceDirectory": "/home/valtteri/development/harjus"
+  "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
 }

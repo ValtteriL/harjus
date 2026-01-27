@@ -1,0 +1,17 @@
+# nix builds
+result
+result-*
+
+# test output
+store
+log
+
+# vscode settings
+.vscode/
+
+# build artifacts
+build/
+build-*/
+
+# cache
+.cache/

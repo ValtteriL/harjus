@@ -12,123 +12,135 @@
   <p align="center">
     Binance Spot Arbitrage Bot
     <br />
-    <a href="https://shufflingbytes.com/posts/binance-triangular-arbitrage/"><strong>Read the writeup »</strong></a>
+    <a href="https://shufflingbytes.com/posts/binance-triangular-arbitrage/"><strong>Read the writeup (releases 1-3) »</strong></a>
   </p>
 </div>
 
+Ultra low latency Binance Spot Market [triangular arbitrage](https://en.wikipedia.org/wiki/Triangular_arbitrage) trading bot utilizing kernel bypass.
+
 ## Demo
 
-Exploiting triangular arbitrage opportunities in Binance testnet
+Running v3.0.0 in Binance testnet
 [![asciicast](https://asciinema.org/a/730934.svg)](https://asciinema.org/a/730934)
-
-## Requirements
-
-- nix
-- aws-cli configured (for deployment)
 
 ## Development
 
+Development is done inside a Vagrant VM [accessed via VSCode Remote SSH](https://medium.com/@lizrice/ssh-to-vagrant-from-vscode-5b2c5996bc0e). The VM provides a consistent development environment with all necessary dependencies pre-installed, and an extra network card to dedicate to Harjus.
+
 ```bash
-nix-shell -A devEnv
+vagrant up
+```
+
+By default, the VM is allocated 50% of your host's CPU and RAM. You can override this with environment variables:
+
+```bash
+# Allocate 8 CPUs and 16 GB RAM
+VM_CPUS=8 VM_RAM_GB=16 vagrant up
+```
+
+### Requirements
+
+- VirtualBox
+- Vagrant
+- VSCode with Remote - SSH extension
+
+### List available commands
+
+```bash
+just
+```
+
+### Build
+
+```bash
+# build F-Stack release (only needs to be ran once)
+just fstack::release
+
+# debug build
+just build
+
+# release build
+just build-release
 ```
 
 ### Test
 
-Run unit tests
-
 ```bash
-cmake -B build -G Ninja
-ninja -C build -j$(nproc)
-ctest --test-dir build/
+just test
 ```
 
-### Automatic tests
-
-The unit tests are run by CI/CD on push to any branch.
-
-## Build
-
-Build harjus
+### Run
 
 ```bash
-nix-build -A harjus
+# create .env following the sample
+# this is the main configuration
+cp .env.sample .env
+vim .env
 
-# harjus executable available at ./result/bin/harjus
+# debug build
+just run
+
+# release build
+just run-release
 ```
-
-### Automatic builds
-
-Harjus packages are build automatically by CI/CD and pushed to S3. If the quality stage succeeds and the push is to the `main` branch, a build is made and its pushed with git hash tag and the `latest` tag.
-
-When a special release tag (releases/$semver) is pushed to any commit, if the quality stage succeeds, CI/CD builds a package with the $semver as the version string.
-
-## Release
-
-1. Create a Git tag: Create a Git tag that matches the pattern `releases/[1-9]+.[0-9]+.[0-9]+`. For example:
-
-```bash
-git tag releases/1.0.0
-git push origin releases/1.0.0
-```
-
-2. Trigger the build for the tag manually through Jenkins.
 
 ## Deployment
 
-Deployment is done manually from local shell.
+Harjus is deployed to the availability zone closest to Binance FIX API Marked Data endpoint in AWS. This ensures the bot has the best conditions to learn about arbitrage opportunities before other participants.
 
-### Prerequisite: Create Terraform backend in S3
+### Requirements
+
+- All development requirements
+- AWS CLI
+- Terraform
+- Ansible
+- python3-botocore
+- python3-boto3
+
+### List available deployment commands
 
 ```bash
-terraform -chdir=deploy/backend init
-terraform -chdir=deploy/backend apply
+just deploy
 ```
 
-### Prerequisite: Provision host
+### Preparation
+
+The optimal availability zone differs for each user. Use the latency measurement utility to find out yours. See [detailed instructions](./docs/choose-optimal-az.md).
 
 ```bash
-terraform -chdir=deploy init
-terraform -chdir=deploy apply
+# Measure latency to find optimal availability zone
+just deploy::measure-latency
 
-(cd deploy/playbooks && ansible-playbook setup.yml)
+# create .env following the sample
+# this is the main configuration
+cp .env.sample .env
+vim .env
 ```
 
-### Deploy
+### Deploying
 
 ```bash
-# QA (testnet)
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa") # defaults to 'latest' version
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=qa" -e "version=your-semver-or-git-hash-or-latest")
+# Build and package release
+just build-release <architecture>
+just package
 
-# Prod
-(cd deploy/playbooks && ansible-playbook deploy.yml -e "env=prod")
-```
+# Setup Terraform backend (run once)
+just deploy::setup-backend
 
-## Debugging
+# Setup server in the optimal availability zone (use AZ from latency measurement)
+just deploy::setup-server <aws_availability_zone>
+# for example: just deploy::setup-server ap-northeast-1a
 
-### Access prod server
+# Deploy (requires release package path)
+just deploy::deploy <package_path>
+# for example: just deploy::deploy dist/harjus.tar.gz
 
-```bash
-ssh -o StrictHostKeyChecking=no -i deploy/harjus-ec2-key.pem ubuntu@$(terraform -chdir=deploy output instance_ip|sed 's/"//g')
-```
+# Connect to server via SSH
+just deploy::connect-server
 
-### Inspect service
+# Cleanup server
+just server-cleanup
 
-```bash
-sudo systemctl status harjus
-# or
-sudo journalctl -au harjus.service
-```
-
-### List build artifacts
-
-```bash
-aws s3 ls $(terraform -chdir=deploy output artifact_bucket_name)
-```
-
-### check deployed version
-
-```bash
-# on prod server
-cat $(readlink $(which harjus) | sed 's/\/bin\/harjus//g')/version.txt
+# Cleanup all resources
+just deploy::cleanup
 ```

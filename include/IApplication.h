@@ -10,28 +10,21 @@
  * application
  */
 
-class IApplication {
+class IApplication
+{
 public:
-  virtual ~IApplication() = default;
-  /**
-   * @brief Subscribe to market data for a list of symbols
-   * @param symbols Vector of trading symbols to subscribe to
-   * @return true if subscription request was sent successfully, false
-   * otherwise
-   */
-  virtual auto
-  subscribeToSymbols(const std::vector<std::string> &symbols) -> bool = 0;
+    virtual ~IApplication() = default;
 
-  /**
-   * @brief Submit new Market order.
-   * @details Submit new market order with FOK using the order entry session
-   * @param id Order ID
-   * @param symbol Trading symbol
-   * @param qty Order quantity
-   * @param price Order price
-   * @param position Position to buy/sell
-   */
-  virtual void submitOrder(const std::string &id, const std::string &symbol,
-                           const PreciseNumber qty, const PreciseNumber price,
-                           const Position position) = 0;
+    /**
+     * @brief Submit new Market order.
+     * @details Submit new market order with FOK using the order entry session
+     * @param id Order ID
+     * @param symbol Trading symbol
+     * @param qty Order quantity
+     * @param price Order price
+     * @param position Position to buy/sell
+     */
+    virtual void submitOrder(const std::string &id, const std::string &symbol,
+                             const PreciseNumber qty, const PreciseNumber price,
+                             const Position position) = 0;
 };

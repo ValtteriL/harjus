@@ -1,21 +1,3 @@
-terraform {
-  # these come from the backend directory
-  backend "s3" {
-    encrypt        = true
-    bucket         = "harjus-terraform-state20250208211637665900000001"
-    key            = "path/to/state"
-    region         = "eu-north-1"
-    dynamodb_table = "terraform-lock"
-  }
-
-  required_providers {
-    random = {
-      source  = "hashicorp/random"
-      version = ">= 3.0.0"
-    }
-  }
-}
-
 # resources required to SSH into the EC2 instance(s)
 
 # allow ingress traffic to port 22
@@ -58,67 +40,46 @@ resource "local_sensitive_file" "ec_key_file" {
 
 # end ssh resources
 
-resource "aws_s3_bucket" "artifact_bucket" {
-  bucket = "harjus-artifacts-${random_id.suffix.hex}"
-}
-
-resource "random_id" "suffix" {
-  byte_length = 4
-}
-
-resource "aws_iam_role" "instance_role" {
-  name = "harjus-instance-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Principal = {
-        Service = "ec2.amazonaws.com"
-      }
-    }]
-  })
-}
-
-resource "aws_iam_role_policy" "s3_read_policy" {
-  name = "harjus-instance-s3-read"
-  role = aws_iam_role.instance_role.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = [
-        "s3:GetObject",
-        "s3:ListBucket"
-      ]
-      Resource = [
-        aws_s3_bucket.artifact_bucket.arn,
-        "${aws_s3_bucket.artifact_bucket.arn}/*"
-      ]
-    }]
-  })
-}
-
-resource "aws_iam_instance_profile" "instance_profile" {
-  name = "harjus-instance-profile"
-  role = aws_iam_role.instance_role.name
-}
 
 resource "aws_instance" "instance" {
 
-  # Ubuntu 25.04 HVM ebs-ssd-gp3
-  ami = "ami-02145888c84f41705"
+  # debian-13-amd64-20250814-2204
+  ami = "ami-01a89c4a177e76f46"
 
   instance_type        = "c6in.xlarge"
   key_name             = aws_key_pair.ec_key.key_name
   security_groups      = [aws_security_group.security.name]
-  iam_instance_profile = aws_iam_instance_profile.instance_profile.name
 
   user_data_replace_on_change = true
 
-  availability_zone = "ap-northeast-1a"
+  availability_zone = var.availability_zone
 
   tags = {
     Name = "harjus-instance"
+  }
+
+}
+
+resource "aws_network_interface" "dpdk_interface" {
+  subnet_id         = aws_instance.instance.subnet_id
+  security_groups   = [aws_security_group.security.id]
+  source_dest_check = false
+
+  attachment {
+    instance     = aws_instance.instance.id
+    device_index = 1
+  }
+}
+
+# Elastic IP for the DPDK interface to enable internet access
+resource "aws_eip" "dpdk_eip" {
+  domain            = "vpc"
+  network_interface = aws_network_interface.dpdk_interface.id
+
+  # Ensure the interface is attached before associating EIP
+  depends_on = [aws_network_interface.dpdk_interface]
+
+  tags = {
+    Name = "harjus-dpdk-eip"
   }
 }

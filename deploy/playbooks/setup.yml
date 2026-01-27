@@ -1,13 +1,12 @@
 ---
-- name: Providion Harjus instance
+- name: Provision Harjus instance
   hosts: harjus_instance
-  gather_facts: no
+  gather_facts: yes
   become: yes
   vars:
     ansible_ssh_private_key_file: "{{ playbook_dir }}/../harjus-ec2-key.pem"
-    ansible_user: ubuntu
+    ansible_user: admin
   tasks:
-  
     - name: Install packages
       ansible.builtin.package:
         name:
@@ -20,31 +19,15 @@
           - python3-botocore
           - python3-packaging
           - tuned
+          - sysstat
+          - linux-headers-{{ ansible_kernel }}
+          - dpdk
+          - dpdk-kmods-dkms
+          - libdpdk-dev
+          - net-tools
+          - bc
         state: present
         update_cache: yes
-
-    - name: Install Nix package manager
-      ansible.builtin.shell:
-        cmd: curl -L https://nixos.org/nix/install | sh -s -- --daemon
-        creates: /etc/nix/nix.conf
-
-    - name: Set default nix channels
-      ansible.builtin.shell: "bash -lc 'nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs && nix-channel --update'"
-      args:
-        creates: /root/.nix-defexpr/channels/nixpkgs
-
-    - name: allow unsigned nix packages
-      ansible.builtin.lineinfile:
-        path: /etc/nix/nix.conf
-        line: require-sigs = false
-        state: present
-      notify: Restart nix-daemon
-
-    - name: Install realtime kernel
-      ansible.builtin.package:
-        name: linux-realtime
-        state: present
-      notify: Reboot
 
     - name: Enable & start tuned service
       ansible.builtin.systemd:
@@ -56,7 +39,7 @@
       ansible.builtin.file:
         path: /etc/tuned/profiles/harjus
         state: directory
-        mode: '0755'
+        mode: "0755"
 
     - name: Create tuned profile
       ansible.builtin.copy:
@@ -70,13 +53,9 @@
       ansible.builtin.command: tuned-adm verify
       register: tuned_verify
       ignore_errors: yes
-      changed_when: 'tuned_verify.rc != 0'
+      changed_when: "tuned_verify.rc != 0"
       failed_when: false
       notify: Reboot
-
-    - name: Disable interrupt modification and dynamic interrupt moderation
-      ansible.builtin.command: >
-        ethtool -C ens5 adaptive-rx off rx-usecs 0 tx-usecs 0
 
     - name: Blacklist iptables kernel module
       ansible.builtin.copy:
@@ -85,16 +64,9 @@
           blacklist ip_tables
         owner: root
         group: root
-        mode: '0644'
+        mode: "0644"
       notify: Reboot
 
   handlers:
-
-    - name: Restart nix-daemon
-      ansible.builtin.systemd_service:
-        name: nix-daemon
-        state: restarted
-        daemon_reload: yes
-
     - name: Reboot
       ansible.builtin.reboot:
