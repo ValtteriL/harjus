@@ -12,12 +12,12 @@ default:
     just --list --unsorted
 
 # Build in debug binary
-build:
-    conan build --build=missing --profile:all conan-profile
+build *args:
+    conan build --build=missing --profile:all conan-profile {{args}}
 
 # check valid architecture options with `gcc --target-help`
 # Build release binary
-build-release architecture = "native":
+build-release architecture = "native" *args:
     conan build --build=missing --profile:all conan-profile --settings build_type=Release -c tools.build:cxxflags="['-march={{architecture}}','-mtune={{architecture}}']" -c tools.cmake.cmaketoolchain:extra_variables="{'HARJUS_TESTS':'OFF'}"
 
 # Run unit tests
