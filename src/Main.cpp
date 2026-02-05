@@ -167,6 +167,10 @@ auto main(int argc, char *argv[]) -> int
     auto initiator =
         FIX::FstackMicroThreadedSSLSocketInitiator{application, storeFactory, settings, logFactory, argc, argv};
 
+    // Set the initiator pointer in the application so orders can be queued
+    // for sending in the F-Stack microthread context
+    application.setInitiator(&initiator);
+
     // Create the worker
     Worker worker{tradingPaths, priceUpdateQueue, reportQueue,
                   application, relativeValueMap, *balance,

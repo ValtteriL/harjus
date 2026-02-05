@@ -16,6 +16,7 @@
 #include <Field.h>
 
 #include <Application.h>
+#include <FstackMicroThreadedSSLSocketInitiator.h>
 #include <MessageCracker.h>
 #include <Mutex.h>
 #include <SessionID.h>
@@ -51,6 +52,10 @@ private:
     boost::lockfree::spsc_queue<ExecutionReport> *executionReportQueue;
     FIX::SessionSettings sessionSettings;
     std::unordered_map<std::string, std::vector<std::string>> marketSessionQualifierToSymbolsMap{};
+
+    /// Pointer to the FIX initiator, used for queueing outbound messages
+    /// to be sent in the F-Stack microthread context.
+    FIX::FstackMicroThreadedSSLSocketInitiator *initiator{nullptr};
 
     /**
      * Called when quickfix creates a new session.
@@ -171,6 +176,11 @@ public:
                 boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
                 std::unordered_map<std::string, Symbol> &symbolMap,
                 const std::vector<std::string> &symbols, const FIX::SessionSettings &settings);
+
+    /// Set the initiator pointer for queueing outbound messages.
+    /// Must be called before any orders can be submitted.
+    /// @param init Pointer to the FIX initiator
+    void setInitiator(FIX::FstackMicroThreadedSSLSocketInitiator *init) { initiator = init; }
 
     void submitOrder(const std::string &id, const std::string &symbol,
                      PreciseNumber qty, PreciseNumber price,

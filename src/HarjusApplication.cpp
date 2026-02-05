@@ -553,6 +553,12 @@ void Application::submitOrder(const std::string &id, const std::string &symbol,
 
     newOrder.set(FIX::TimeInForce(FIX::TimeInForce_FILL_OR_KILL));
 
-    // Send the order to the order entry session
-    FIX::Session::sendToTarget(newOrder, orderEntrySessionID);
+    // Queue the order to be sent in the F-Stack microthread context.
+    // Direct calls to Session::sendToTarget from the Worker thread would fail
+    // because F-Stack socket operations require the microthread frame to be
+    // initialized on the calling thread.
+    if (initiator != nullptr)
+    {
+        initiator->queueMessage(newOrder, orderEntrySessionID);
+    }
 }

@@ -3,7 +3,10 @@
 #include "FstackMicroThreadedSSLSocketConnection.h"
 #include "HostDetailsProvider.h"
 #include "Initiator.h"
+#include "Session.h"
+#include <boost/lockfree/spsc_queue.hpp>
 #include <map>
+#include <utility>
 
 namespace FIX
 {
@@ -35,7 +38,18 @@ namespace FIX
         static int passwordHandleCB(char *buf, int bufsize, int verify,
                                     void *instance);
 
+        /// Queue a message to be sent to a specific session.
+        /// This method is thread-safe and can be called from any thread.
+        /// The message will be processed and sent in the F-Stack microthread context.
+        /// @param message The FIX message to send
+        /// @param sessionID The target session ID
+        /// @return true if the message was successfully queued
+        bool queueMessage(Message message, const SessionID &sessionID);
+
     private:
+        /// Process any pending outbound messages from the queue.
+        /// Must be called from the F-Stack microthread context.
+        void processOutboundQueue();
         typedef std::pair<socket_handle, SSL *> SocketKey;
         typedef std::map<SocketKey, thread_id> SocketToThread;
         typedef std::pair<FstackMicroThreadedSSLSocketInitiator *,
@@ -71,6 +85,13 @@ namespace FIX
         RSA *m_key;
         int m_argc;
         char **m_argv;
+
+        /// Lock-free outbound message queue for cross-thread message submission.
+        /// Messages are queued by queueMessage() and processed by processOutboundQueue().
+        /// Capacity of 4096 should be sufficient for burst order submission.
+        static constexpr std::size_t OutboundQueueCapacity = 4096;
+        boost::lockfree::spsc_queue<std::pair<Message, SessionID>,
+                                    boost::lockfree::capacity<OutboundQueueCapacity>> m_outboundQueue;
     };
     /*! @} */
 } // namespace FIX
