@@ -23,10 +23,13 @@ extern std::atomic<bool> isShuttingDown;
 
 Application::Application(
     const IConfiguration &conf,
+    boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
+    boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
     std::unordered_map<std::string, Symbol> &symbolMap,
-    const std::vector<std::string> &symbols, const Worker &worker, const FIX::SessionSettings &settings)
+    const std::vector<std::string> &symbols, const FIX::SessionSettings &settings)
     : username(conf.getEd25519ApiKey()), privateKeySeed(conf.getEd25519Seed()),
-      symbolMap(&symbolMap), symbols(symbols), worker(worker), sessionSettings(settings)
+      symbolMap(&symbolMap), symbols(symbols), priceUpdateQueue(&priceUpdateQueue),
+      executionReportQueue(&executionReportQueue), sessionSettings(settings)
 {
     // Divide symbols between market data sessions
     auto sessions = sessionSettings.getSessions();
@@ -366,7 +369,7 @@ void Application::onMessage(const FIX44::ExecutionReport &message,
                             const FIX::SessionID &)
 {
     auto execReport = parseExecutionReport(message);
-    worker.processReport(&execReport);
+    executionReportQueue->push(execReport);
 }
 
 void Application::onMessage(const FIX44::MarketDataRequestReject &message,
@@ -439,7 +442,7 @@ void Application::onMessage(const FIX44::MarketDataSnapshotFullRefresh &message,
 {
     auto priceUpdate =
         parsePriceUpdateFromMarketDataSnapshotFullRefresh(message);
-    worker.processPriceUpdate(priceUpdate, *this);
+    priceUpdateQueue->push(priceUpdate);
 }
 
 auto Application::parsePriceUpdateFromMarketDataIncrementalRefresh(
@@ -528,7 +531,7 @@ void Application::onMessage(const FIX44::MarketDataIncrementalRefresh &message,
         parsePriceUpdateFromMarketDataIncrementalRefresh(message);
     for (auto &update : priceUpdates)
     {
-        worker.processPriceUpdate(update, *this);
+        priceUpdateQueue->push(update);
     }
 }
 

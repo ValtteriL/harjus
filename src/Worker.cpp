@@ -3,7 +3,6 @@
 #include "Balance.h"
 #include "Execution.h"
 #include "ExecutionReport.h"
-#include "HarjusApplication.h"
 #include "IApplication.h"
 #include "Position.h"
 #include "ReservedTrades.h"
@@ -17,9 +16,14 @@
 
 Worker::Worker(
     std::vector<std::vector<Trade>> &tradingPaths,
+    boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
+    boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
+    IApplication &application,
     std::unordered_map<std::string, PreciseNumber> &relativeValues,
     Balance &balance, const PreciseNumber &commission)
-    : _relativeValues(relativeValues), _balance(&balance)
+    : _priceUpdateQueue(&priceUpdateQueue),
+      _executionReportQueue(&executionReportQueue), _application(&application),
+      _relativeValues(relativeValues), _balance(&balance)
 {
 
     // Initialize _opportunities with the trading paths
@@ -65,7 +69,7 @@ auto generateId() -> std::string
     return id;
 }
 
-void Worker::processPriceUpdate(const PriceUpdate &update, IApplication &application)
+void Worker::processPriceUpdate(const PriceUpdate &update)
 {
     // Update symbol price
     update.symbol->askPrice = update.askPrice;
@@ -143,8 +147,8 @@ void Worker::processPriceUpdate(const PriceUpdate &update, IApplication &applica
         _executionIdMap.emplace(orderId, std::make_pair(trade, executionId));
 
         // Submit the order
-        application.submitOrder(orderId, trade.symbol(), trade.orderQty(),
-                                trade.orderPrice(), trade.position());
+        _application->submitOrder(orderId, trade.symbol(), trade.orderQty(),
+                                  trade.orderPrice(), trade.position());
     }
 
     // Store the execution and delta with execution ID
@@ -281,4 +285,43 @@ void Worker::processReport(ExecutionReport *execReport)
         // free symbols
         _reservedTrades.releaseAll(execution.getOriginalTrades());
     }
+}
+
+void Worker::run(const std::stop_token &stoken)
+{
+
+    BOOST_LOG_TRIVIAL(debug) << "Starting Worker";
+
+    // Wait for stop request
+    while (!stoken.stop_requested())
+    {
+
+        // Process price update
+        if (PriceUpdate update; _priceUpdateQueue->pop(update))
+        {
+            processPriceUpdate(update);
+        }
+
+        // Process execution report
+        if (ExecutionReport executionReport;
+            _executionReportQueue->pop(executionReport))
+        {
+            processReport(&executionReport);
+        }
+    }
+
+    BOOST_LOG_TRIVIAL(debug) << "Finishing executions...";
+
+    // Finish executions that are still in the map
+    while (!_executionsMap.empty())
+    {
+
+        if (ExecutionReport executionReport;
+            _executionReportQueue->pop(executionReport))
+        {
+            processReport(&executionReport);
+        }
+    }
+
+    BOOST_LOG_TRIVIAL(debug) << "Stopping Worker";
 }

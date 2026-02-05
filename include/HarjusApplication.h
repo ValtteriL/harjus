@@ -7,11 +7,11 @@
  * implements the FIX::Application interface and handles FIX messages.
  */
 
+#include "ExecutionReport.h"
 #include "IApplication.h"
 #include "IConfiguration.h"
 #include "PriceUpdate.h"
 #include "SessionSettings.h"
-#include "Worker.h"
 
 #include <Field.h>
 
@@ -20,6 +20,7 @@
 #include <Mutex.h>
 #include <SessionID.h>
 #include <Values.h>
+#include <boost/lockfree/spsc_queue.hpp>
 
 #include <cstddef>
 #include <fix44/ExecutionReport.h>
@@ -46,7 +47,8 @@ private:
     FIX::SessionID orderEntrySessionID{};
     std::unordered_map<std::string, Symbol> *symbolMap;
     std::vector<std::string> symbols{};
-    Worker worker;
+    boost::lockfree::spsc_queue<PriceUpdate> *priceUpdateQueue;
+    boost::lockfree::spsc_queue<ExecutionReport> *executionReportQueue;
     FIX::SessionSettings sessionSettings;
     std::unordered_map<std::string, std::vector<std::string>> marketSessionQualifierToSymbolsMap{};
 
@@ -165,8 +167,10 @@ private:
 
 public:
     Application(const IConfiguration &conf,
+                boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
+                boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
                 std::unordered_map<std::string, Symbol> &symbolMap,
-                const std::vector<std::string> &symbols, const Worker &worker, const FIX::SessionSettings &settings);
+                const std::vector<std::string> &symbols, const FIX::SessionSettings &settings);
 
     void submitOrder(const std::string &id, const std::string &symbol,
                      PreciseNumber qty, PreciseNumber price,

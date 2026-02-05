@@ -1,9 +1,11 @@
 #include "Arbmapper.h"
 #include "Configuration.h"
 #include "Exchange.h"
+#include "ExecutionReport.h"
 #include "FixConfig.h"
 #include "Globals.h"
 #include "HarjusApplication.h"
+#include "PriceUpdate.h"
 #include "Trade.h"
 #include "Worker.h"
 #include <FileStore.h>
@@ -151,24 +153,36 @@ auto main(int argc, char *argv[]) -> int
     auto fixConfig = FixConfig(config);
     auto settings = fixConfig.sessionSettings();
 
-    // Create the worker
-    Worker worker{tradingPaths, relativeValueMap, *balance, config.getCommission()};
-    Application application{config, symbolMap, symbols, worker, settings};
+    // Define a named constant for the queue size
+    constexpr std::size_t QUEUE_SIZE = 1000;
+
+    // Create queues for price updates & executions
+    boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{QUEUE_SIZE};
+    boost::lockfree::spsc_queue<ExecutionReport> reportQueue{QUEUE_SIZE};
+
+    Application application{config, priceUpdateQueue, reportQueue, symbolMap, symbols, settings};
     FIX::MemoryStoreFactory storeFactory{};
     FIX::ScreenLogFactory logFactory{settings};
 
     auto initiator =
         FIX::FstackMicroThreadedSSLSocketInitiator{application, storeFactory, settings, logFactory, argc, argv};
 
-    // create a jthread to run the application
-    std::jthread j_thread_application([&initiator, symbols]()
+    // Create the worker
+    Worker worker{tradingPaths, priceUpdateQueue, reportQueue,
+                  application, relativeValueMap, *balance,
+                  config.getCommission()};
+
+    // create a jthread to run worker
+    std::jthread j_thread_worker(
+        [&worker](const std::stop_token &stoken)
+        { worker.run(stoken); });
+
+    // create a jthread to run the initiator
+    std::jthread j_thread_application([&initiator]()
                                       {
-    BOOST_LOG_TRIVIAL(debug) << "Starting worker thread";
+    BOOST_LOG_TRIVIAL(debug) << "Starting initiator thread";
 
     initiator.block(); });
-
-    // Start processing execiutions
-    BOOST_LOG_TRIVIAL(info) << "Worker thread started. Press Ctrl+C to exit.";
 
     // wait for ctrl+c
 
@@ -177,6 +191,8 @@ auto main(int argc, char *argv[]) -> int
            { running = false; });
     signal(SIGTERM, [](int)
            { running = false; });
+
+    BOOST_LOG_TRIVIAL(info) << "Worker thread started. Press Ctrl+C to exit.";
 
     constexpr int MAIN_LOOP_SLEEP_MS = 100;
     while (running)
@@ -189,6 +205,10 @@ auto main(int argc, char *argv[]) -> int
 
     BOOST_LOG_TRIVIAL(info)
         << "Stopping threads... Press Ctrl+C to exit immediately.";
+
+    // Stop the worker
+    j_thread_worker.request_stop();
+    j_thread_worker.join();
 
     // Stop the application
     isShuttingDown = true;

@@ -13,6 +13,7 @@
 #include "PreciseNumber.h"
 #include "PriceUpdate.h"
 #include "TradeExecutionStatus.h"
+#include <boost/lockfree/spsc_queue.hpp>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <string>
@@ -30,16 +31,19 @@ class TestableWorker : public Worker
 public:
     TestableWorker(
         std::vector<std::vector<Trade>> &tradingPaths,
+        boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
+        boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
+        IApplication &application,
         Balance &balance,
         std::unordered_map<std::string, PreciseNumber> relativeValues,
         const PreciseNumber &commission)
-        : Worker(tradingPaths, relativeValues, balance, commission) {}
+        : Worker(tradingPaths, priceUpdateQueue, executionReportQueue, application, relativeValues, balance, commission) {}
 
     // Expose private methods for testing
-    void callProcessPriceUpdate(const PriceUpdate &update, IApplication &app)
+    void callProcessPriceUpdate(const PriceUpdate &update)
     {
         // Call the original processPriceUpdate method
-        processPriceUpdate(update, app);
+        processPriceUpdate(update);
     }
 
     void callProcessReport(ExecutionReport *execReport)
@@ -80,6 +84,7 @@ class WorkerTest : public testing::Test
 
     constexpr static auto precision = 8;
     const PreciseNumber dummySmall{"0.0001"};
+    static constexpr std::size_t QUEUE_SIZE = 100;
 
 protected:
     const PreciseNumber zero{"0.0"};
@@ -92,6 +97,8 @@ protected:
         {"ETH", PreciseNumber{"1.0"}},
         {"USDT", PreciseNumber{"1.0"}}};
     PreciseNumber commission{"0.001"};
+    boost::lockfree::spsc_queue<PriceUpdate> priceUpdateQueue{QUEUE_SIZE};
+    boost::lockfree::spsc_queue<ExecutionReport> executionReportQueue{QUEUE_SIZE};
 
     Symbol ethBtcSymbol{"ETHBTC", "ETH", "BTC", dummySmall,
                         dummySmall, dummySmall, precision, precision,
@@ -117,7 +124,7 @@ protected:
 
     WorkerTest()
         : balance({{"BTC", startingAssetBudget}}), tradingPaths({trades}),
-          worker(tradingPaths, balance, relativeValues, commission)
+          worker(tradingPaths, priceUpdateQueue, executionReportQueue, mockApplication, balance, relativeValues, commission)
     {
     }
 
@@ -178,7 +185,7 @@ TEST_F(WorkerTest, detectsArbitrageOpportunity)
     // Process the price updates
     for (auto &update : updates)
     {
-        worker.callProcessPriceUpdate(update, mockApplication);
+        worker.callProcessPriceUpdate(update);
     }
 
     // verify that balance is reserved
@@ -207,7 +214,7 @@ TEST_F(WorkerTest, processesFilledExecutionReportCompleted)
 
     for (const auto &update : updates)
     {
-        worker.callProcessPriceUpdate(update, mockApplication);
+        worker.callProcessPriceUpdate(update);
     }
 
     std::unordered_map<std::string, PreciseNumber> feeDelta{
@@ -282,7 +289,7 @@ TEST_F(WorkerTest, processesExpiredExecutionReport)
 
     for (const auto &update : updates)
     {
-        worker.callProcessPriceUpdate(update, mockApplication);
+        worker.callProcessPriceUpdate(update);
     }
 
     // expire all orders in the execution
