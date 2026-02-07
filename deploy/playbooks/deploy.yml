@@ -13,10 +13,7 @@
     harjus_config_dir: "{{ harjus_dir }}/etc"
     harjus_config_file: "{{ harjus_config_dir }}/config.ini"
 
-    # Mandatory: User must specify 'qa' or 'prod' when running the playbook
-    # e.g., uv run ansible-playbook ... -e "env=prod"
     # Set a default or leave empty to force user input. An empty string will fail the pre_task check.
-    env: ""
     package_path: ""
     service_name: "harjus"
     service_override_dir: "/etc/systemd/system/{{ service_name }}.service.d"
@@ -26,7 +23,6 @@
     - name: Ensure all required env exist in dotenv
       ansible.builtin.assert:
         that:
-          - env != ""
           - lookup('env', 'BINANCE_REST_API_URI') != ""
           - lookup('env', 'BINANCE_FIX_API_HOSTNAME_ORDERENTRY') != ""
           - lookup('env', 'BINANCE_FIX_API_HOSTNAME_MARKETDATA') != ""
@@ -49,7 +45,7 @@
   tasks:
     - name: Display deployment information
       ansible.builtin.debug:
-        msg: "Starting deployment of '{{ service_name }}' for '{{ env_name | default(env) }}' env on {{ inventory_hostname }}"
+        msg: "Starting deployment of '{{ service_name }}' on {{ inventory_hostname }}"
 
     - name: Check if config.ini already exists
       ansible.builtin.stat:
@@ -145,7 +141,7 @@
     - name: Final deployment status message
       ansible.builtin.debug:
         msg: |
-          Deployment of '{{ service_name }}' for '{{ env_name | default(env) }}' has been triggered.
+          Deployment of '{{ service_name }}' has been triggered.
           To check status: sudo systemctl status {{ service_name }}
           To tail logs: sudo journalctl -fu {{ service_name }}.service
 

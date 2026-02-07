@@ -150,6 +150,9 @@ namespace FIX
                 m_lastConnect = now;
             }
 
+            // Process any queued outbound messages in the F-Stack microthread context
+            processOutboundQueue();
+
             process_sleep(1);
         }
     }
@@ -383,5 +386,25 @@ namespace FIX
 
         std::strcpy(buf, m_password.c_str());
         return m_password.length();
+    }
+
+    auto FstackMicroThreadedSSLSocketInitiator::queueMessage(Message message,
+                                                             const SessionID &sessionID) -> bool
+    {
+        return m_outboundQueue.push(std::make_pair(std::move(message), sessionID));
+    }
+
+    void FstackMicroThreadedSSLSocketInitiator::processOutboundQueue()
+    {
+        // Process all pending messages from the lock-free queue
+        std::pair<Message, SessionID> item;
+        while (m_outboundQueue.pop(item))
+        {
+            Session *pSession = Session::lookupSession(item.second);
+            if (pSession)
+            {
+                pSession->send(item.first);
+            }
+        }
     }
 } // namespace FIX

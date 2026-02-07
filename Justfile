@@ -12,8 +12,8 @@ default:
     just --list --unsorted
 
 # Build in debug binary
-build:
-    conan build --build=missing --profile:all conan-profile
+build *args:
+    conan build --build=missing --profile:all conan-profile {{args}}
 
 # check valid architecture options with `gcc --target-help`
 # Build release binary

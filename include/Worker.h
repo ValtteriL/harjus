@@ -12,6 +12,7 @@
 #include "ExecutionReport.h"
 #include "IApplication.h"
 #include "ReservedTrades.h"
+#include <stop_token>
 #include <string>
 #include <unordered_map>
 
@@ -22,10 +23,12 @@
 #include "ReservedTrades.h"
 #include "Trade.h"
 #include <cstddef>
+#include <stop_token>
 #include <string>
 #include <unordered_map>
 
 #include "PreciseNumber.h"
+#include <boost/lockfree/spsc_queue.hpp>
 #include <vector>
 
 using entry =
@@ -35,6 +38,9 @@ class Worker
 {
 
 private:
+    boost::lockfree::spsc_queue<PriceUpdate> *_priceUpdateQueue;
+    boost::lockfree::spsc_queue<ExecutionReport> *_executionReportQueue;
+    IApplication *_application;
     std::unordered_multimap<std::string, size_t> _opportunities{};
     std::vector<Opportunity> _opportunityList{};
     std::unordered_map<std::string, PreciseNumber> _relativeValues{};
@@ -52,6 +58,7 @@ private:
     void reserveBudgetAndSymbols(const Opportunity &opp);
 
 protected:
+    void processReport(ExecutionReport *execReport);
     Balance *_balance;
     ReservedTrades _reservedTrades{};
     std::unordered_map<std::string, entry>
@@ -63,25 +70,24 @@ protected:
     std::unordered_set<std::string>
         _failedExecutions{}; // Set of failed execution IDs
 
-public:
-    /**
-     * @brief Process an execution report
-     * @param execReport The execution report to process
-     * @details This function updates the execution status based on the report,
-     * updates balances, and cleans up completed executions.
-     */
-    void processReport(ExecutionReport *execReport);
-
     /**
      * Process a price update
      * @param update The price update to process
-     * @param application The application instance to use for submitting orders
      * @details This function updates the symbol prices and checks opportunities
      * for profitability. It finds 2 most profitable non-overlapping
      * opportunities, reserves symbols and budget for them, and queues them for
      * execution.
      */
-    void processPriceUpdate(const PriceUpdate &update, IApplication &application);
+    void processPriceUpdate(const PriceUpdate &update);
+
+public:
+    /**
+     * @brief Run the worker
+     * @param stoken The stop token to stop the thread
+     * @details This function runs the worker in a loop, processing price updates
+     * and trades.
+     */
+    void run(const std::stop_token &stoken);
 
     /**
      * @brief Constructor for the Engine class.
@@ -94,6 +100,9 @@ public:
      * @param relativeValues A map of relative values for symbols.
      */
     Worker(std::vector<std::vector<Trade>> &tradingPaths,
+           boost::lockfree::spsc_queue<PriceUpdate> &priceUpdateQueue,
+           boost::lockfree::spsc_queue<ExecutionReport> &executionReportQueue,
+           IApplication &application,
            std::unordered_map<std::string, PreciseNumber> &relativeValues,
            Balance &balance, const PreciseNumber &commission);
 };
