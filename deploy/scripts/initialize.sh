@@ -2,6 +2,9 @@
 set -e
 set -x
 
+# verify dkms is up to date
+dkms autoinstall
+
 # prepare host for kernel bypass via f-stack
 
 # ensure run as root
