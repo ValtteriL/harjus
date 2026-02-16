@@ -153,7 +153,8 @@ namespace FIX
             // Process any queued outbound messages in the F-Stack microthread context
             processOutboundQueue();
 
-            process_sleep(1);
+            // let other threads run
+            mt_swap_thread();
         }
     }
 
@@ -397,9 +398,9 @@ namespace FIX
     void FstackMicroThreadedSSLSocketInitiator::processOutboundQueue()
     {
         // Process all pending messages from the lock-free queue
-        std::pair<Message, SessionID> item;
+            std::pair<Message, SessionID> item;
         while (m_outboundQueue.pop(item))
-        {
+                {
             Session *pSession = Session::lookupSession(item.second);
             if (pSession)
             {

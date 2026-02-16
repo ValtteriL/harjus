@@ -122,6 +122,8 @@
 #endif
 
 #include "mt_api.h"
+#include <micro_thread.h>
+#include <mt_incl.h>
 
 namespace FIX
 {
@@ -1571,7 +1573,7 @@ namespace FIX
                     ssl_socket_close(socket, ssl);
                     return result;
                 }
-                process_sleep(0.01);
+                mt_swap_thread();
             }
 
             X509 *xs = nullptr;
