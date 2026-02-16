@@ -25,7 +25,6 @@
           - dpdk-kmods-dkms
           - libdpdk-dev
           - net-tools
-          - bc
         state: present
         update_cache: yes
 
