@@ -4,6 +4,7 @@
 #include "HostDetailsProvider.h"
 #include "Initiator.h"
 #include "Session.h"
+#include <atomic>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <map>
 #include <utility>
@@ -86,12 +87,17 @@ namespace FIX
         int m_argc;
         char **m_argv;
 
+        /// Flag indicating that the F-Stack thread has completed cleanup.
+        /// Set by onStart() after socket/SSL teardown, checked by onStop().
+        std::atomic<bool> m_cleanupDone{false};
+
         /// Lock-free outbound message queue for cross-thread message submission.
         /// Messages are queued by queueMessage() and processed by processOutboundQueue().
         /// Capacity of 4096 should be sufficient for burst order submission.
         static constexpr std::size_t OutboundQueueCapacity = 4096;
         boost::lockfree::spsc_queue<std::pair<Message, SessionID>,
-                                    boost::lockfree::capacity<OutboundQueueCapacity>> m_outboundQueue;
+                                    boost::lockfree::capacity<OutboundQueueCapacity>>
+            m_outboundQueue;
     };
     /*! @} */
 } // namespace FIX
