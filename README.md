@@ -20,8 +20,8 @@ Ultra low latency Binance Spot Market [triangular arbitrage](https://en.wikipedi
 
 ## Demo
 
-Running v3.0.0 in Binance testnet
-[![asciicast](https://asciinema.org/a/730934.svg)](https://asciinema.org/a/730934)
+Running v4.0.0 in Binance testnet
+[![asciicast](https://asciinema.org/a/789065.svg)](https://asciinema.org/a/789065)
 
 ## Development
 
