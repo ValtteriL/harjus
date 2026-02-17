@@ -30,7 +30,9 @@
 #include "scope_guard.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <fstream>
+#include <thread>
 #include <utility>
 
 namespace FIX
@@ -260,7 +262,7 @@ namespace FIX
         {
             for (int second = 1; second <= 10 && isLoggedOn(); ++second)
             {
-                process_sleep(1);
+                std::this_thread::sleep_for(std::chrono::seconds(1));
             }
         }
 

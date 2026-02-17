@@ -6,8 +6,10 @@
 #include "Session.h"
 #include "Settings.h"
 #include "UtilitySSL.h"
+#include <chrono>
 #include <micro_thread.h>
 #include <mt_incl.h>
+#include <thread>
 
 namespace FIX
 {
@@ -133,6 +135,9 @@ namespace FIX
 
     void FstackMicroThreadedSSLSocketInitiator::onStart()
     {
+        // Reset cleanup flag for this run cycle
+        m_cleanupDone.store(false, std::memory_order_relaxed);
+
         // Initialize F-Stack microthread frame on the worker thread
         // This must be done here, not in constructor, because socket operations
         // require F-Stack's thread-local state to be initialized on this thread
@@ -153,49 +158,51 @@ namespace FIX
             // Process any queued outbound messages in the F-Stack microthread context
             processOutboundQueue();
 
-            process_sleep(1);
+            // let other threads run
+            mt_swap_thread();
         }
+
+        // Perform socket/SSL cleanup here on the F-Stack thread where
+        // mt_init_frame() was called, because ff_close() and other DPDK/F-Stack
+        // functions assert that they run on the DPDK lcore thread.
+        {
+            SocketToThread threads;
+            {
+                Locker l(m_mutex);
+                threads = m_threads;
+                m_threads.clear();
+            }
+
+            for (auto i = threads.begin(); i != threads.end(); ++i)
+            {
+                ssl_socket_close(i->first.first, i->first.second);
+            }
+
+            for (auto i = threads.begin(); i != threads.end(); ++i)
+            {
+                if (i->first.second != 0)
+                {
+                    SSL_free(i->first.second);
+                }
+            }
+        }
+
+        m_cleanupDone.store(true, std::memory_order_release);
     }
 
     auto FstackMicroThreadedSSLSocketInitiator::onPoll() -> bool { return false; }
 
     void FstackMicroThreadedSSLSocketInitiator::onStop()
     {
-        SocketToThread threads;
-        SocketToThread::iterator i;
-
+        // Socket/SSL cleanup is performed by onStart() on the F-Stack thread
+        // (where mt_init_frame() was called) to avoid DPDK lcore assertion
+        // failures. Wait here for that cleanup to complete.
+        // Note: cannot use process_sleep() here as it calls mt_sleep() which
+        // requires F-Stack thread-local state. Use std::this_thread instead.
+        while (!m_cleanupDone.load(std::memory_order_acquire))
         {
-            Locker l(m_mutex);
-
-            time_t start = 0;
-            time_t now = 0;
-
-            ::time(&start);
-            while (isLoggedOn())
-            {
-                if (::time(&now) - 5 >= start)
-                {
-                    break;
-                }
-            }
-
-            threads = m_threads;
-            m_threads.clear();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
-
-        for (i = threads.begin(); i != threads.end(); ++i)
-        {
-            ssl_socket_close(i->first.first, i->first.second);
-        }
-
-        for (i = threads.begin(); i != threads.end(); ++i)
-        {
-            if (i->first.second != 0)
-            {
-                SSL_free(i->first.second);
-            }
-        }
-        threads.clear();
     }
 
     void FstackMicroThreadedSSLSocketInitiator::doConnect(const SessionID &s,
