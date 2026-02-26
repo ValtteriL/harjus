@@ -122,6 +122,10 @@ vim .env
 ```bash
 # Build and package release
 just build-release <architecture>
+# for example: just build-release icelake-server
+# ^ this optimizes for the c6in.xlarge instance used in deployment
+
+# Package into dist/harjus.tar.gz
 just package
 
 # Setup Terraform backend (run once)
