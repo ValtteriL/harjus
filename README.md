@@ -12,7 +12,9 @@
   <p align="center">
     Binance Spot Arbitrage Bot
     <br />
-    <a href="https://shufflingbytes.com/posts/binance-triangular-arbitrage/"><strong>Read the writeup (releases 1-3) »</strong></a>
+    <a href="https://shufflingbytes.com/posts/binance-triangular-arbitrage/"><strong>Writeup (releases 1-3) »</strong></a>
+    <br />
+    <a href="https://shufflingbytes.com/posts/harjus-release-4.0.0/"><strong>Writeup (latest) »</strong></a>
   </p>
 </div>
 
